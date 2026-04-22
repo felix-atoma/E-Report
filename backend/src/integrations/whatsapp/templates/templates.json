@@ -1,0 +1,12 @@
+{
+  "bulletin_disponible_fr": {
+    "language": "fr",
+    "category": "UTILITY",
+    "components": [
+      {
+        "type": "BODY",
+        "text": "Bonjour {{1}}, le bulletin de {{2}} pour le {{3}} est disponible. Moyenne: {{4}}/20 — Mention: {{5}}. Bulletin en pièce jointe. — {{6}}"
+      }
+    ]
+  }
+}

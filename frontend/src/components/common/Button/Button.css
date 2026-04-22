@@ -1,0 +1,27 @@
+.button--primary {
+  background-color: var(--color-primary);
+  color: var(--color-text-inverse);
+}
+.button--primary:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--color-primary) 85%, black);
+}
+.button--secondary {
+  background-color: var(--color-bg-muted);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+.button--secondary:hover:not(:disabled) { background-color: var(--color-border); }
+.button--danger {
+  background-color: var(--color-danger);
+  color: var(--color-text-inverse);
+}
+.button--ghost {
+  background-color: transparent;
+  color: var(--color-primary);
+}
+.button--ghost:hover:not(:disabled) { background-color: var(--color-bg-muted); }
+.button--sm { padding: var(--spacing-xs) var(--spacing-sm); font-size: var(--font-size-xs); }
+.button--lg { padding: var(--spacing-md) var(--spacing-lg); font-size: var(--font-size-md); }
+.button--icon-only { padding: var(--spacing-sm); }
+.button__icon { display: inline-flex; width: 16px; height: 16px; }
+.button__label { white-space: nowrap; }

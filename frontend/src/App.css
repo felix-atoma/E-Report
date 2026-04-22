@@ -1,0 +1,6 @@
+/* App-level layout only. Component styles live next to their components. */
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}

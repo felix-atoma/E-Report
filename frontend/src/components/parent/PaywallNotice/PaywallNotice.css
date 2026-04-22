@@ -1,0 +1,39 @@
+.paywall-notice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background-color: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-warning);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+.paywall-notice__header { display: flex; align-items: center; gap: var(--spacing-sm); }
+.paywall-notice__icon { font-size: var(--font-size-xl); color: var(--color-warning); }
+.paywall-notice__title {
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  margin: 0;
+}
+.paywall-notice__message { color: var(--color-text-muted); line-height: 1.6; margin: 0; }
+.paywall-notice__balance {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: var(--spacing-md);
+  background-color: var(--color-bg);
+  border-radius: var(--radius-sm);
+}
+.paywall-notice__balance-label { font-size: var(--font-size-sm); color: var(--color-text-muted); }
+.paywall-notice__balance-amount {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-danger);
+}
+.paywall-notice__actions { display: flex; gap: var(--spacing-sm); }
+@media (max-width: 640px) {
+  .paywall-notice__balance { flex-direction: column; align-items: flex-start; gap: var(--spacing-xs); }
+}

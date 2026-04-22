@@ -1,0 +1,3 @@
+.transition-base { transition: all var(--transition-base); }
+.fade-in { animation: fade-in var(--transition-base); }
+.slide-up { animation: slide-up var(--transition-base); }

@@ -1,0 +1,3 @@
+.stack > * + * { margin-top: var(--spacing-md); }
+.stack--sm > * + * { margin-top: var(--spacing-sm); }
+.stack--lg > * + * { margin-top: var(--spacing-lg); }

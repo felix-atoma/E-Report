@@ -1,0 +1,9 @@
+.u-text-center { text-align: center; }
+.u-text-right { text-align: right; }
+.u-text-muted { color: var(--color-text-muted); }
+.u-text-bold { font-weight: var(--font-weight-bold); }
+.u-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

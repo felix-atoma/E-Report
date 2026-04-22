@@ -1,0 +1,8 @@
+{
+  "welcome": "Bienvenue sur NovaBulletin",
+  "errors": {
+    "unauthorized": "Non autorisé",
+    "notFound": "Ressource introuvable",
+    "validation": "Données invalides"
+  }
+}

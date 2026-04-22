@@ -1,0 +1,485 @@
+// NovaBulletin Prisma schema
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  TEACHER
+  PARENT
+  STUDENT
+  BURSAR
+}
+
+enum ReportStatus {
+  DRAFT
+  REVIEW
+  PUBLISHED
+}
+
+enum PaymentStatus {
+  PAID
+  PARTIAL
+  UNPAID
+  EXEMPT
+}
+
+enum PaymentMethod {
+  MOBILE_MONEY_TMONEY
+  MOBILE_MONEY_FLOOZ
+  MOBILE_MONEY_MOMO
+  BANK_TRANSFER
+  CASH
+  CHEQUE
+  OTHER
+}
+
+enum NotificationChannel {
+  WHATSAPP
+  EMAIL
+  IN_APP
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+  HELD_UNPAID
+  HELD_PARTIAL
+}
+
+enum FeeType {
+  TUITION
+  REGISTRATION
+  EXAM
+  CANTEEN
+  TRANSPORT
+  OTHER
+}
+
+enum TermSystem {
+  TRIMESTRE
+  SEMESTRE
+  CUSTOM
+}
+
+enum Language {
+  FR
+  EN
+}
+
+enum ConductRating {
+  TRES_BIEN
+  BIEN
+  PASSABLE
+  MEDIOCRE
+}
+
+model Institution {
+  id                String   @id @default(uuid())
+  name              String
+  address           String?
+  phone             String?
+  email             String?
+  website           String?
+  motto             String?
+  missionStatement  String?
+  logo              String?
+  crest             String?
+  stamp             String?
+  brandingSettings  Json?
+  academicSettings  Json?
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  users             User[]
+  classes           Class[]
+  students          Student[]
+  subjects          Subject[]
+  bulletins         Bulletin[]
+  fees              Fee[]
+  payments          Payment[]
+  brandingAssets    BrandingAsset[]
+  reportCardTemplates ReportCardTemplate[]
+}
+
+model User {
+  id              String   @id @default(uuid())
+  email           String   @unique
+  password        String
+  name            String
+  role            Role
+  profileImage    String?
+  whatsappNumber  String?
+  whatsappVerified Boolean @default(false)
+  language        Language @default(FR)
+  notificationPreferences Json?
+  isActive        Boolean  @default(true)
+
+  institutionId   String
+  institution     Institution @relation(fields: [institutionId], references: [id])
+
+  studentProfile  Student?  @relation("StudentUser")
+  childrenAsParent Student[] @relation("ParentUser")
+  classesTeaching Class[]   @relation("ClassTeacher")
+  classSubjectsTeaching ClassSubject[]
+  reportsCreated  ReportCard[] @relation("ReportCreator")
+  bulletinsAuthored Bulletin[]
+  paymentsRecorded Payment[]
+  notificationLogs NotificationLog[]
+  refreshTokens   RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
+  whatsappVerifications WhatsappVerification[]
+  auditLogs       AuditLog[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Class {
+  id              String   @id @default(uuid())
+  name            String
+  level           String
+  series          String?
+  section         String?
+  capacity        Int?
+  academicYear    String
+  room            String?
+  notes           String?
+
+  institutionId   String
+  institution     Institution @relation(fields: [institutionId], references: [id])
+
+  teacherId       String?
+  teacher         User?    @relation("ClassTeacher", fields: [teacherId], references: [id])
+
+  students        ClassStudent[]
+  subjects        ClassSubject[]
+  reportCards     ReportCard[]
+
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Subject {
+  id              String   @id @default(uuid())
+  nameFr          String
+  nameEn          String
+  code            String
+  description     String?
+  category        String?
+  department      String?
+  passMark        Float    @default(10)
+
+  institutionId   String
+  institution     Institution @relation(fields: [institutionId], references: [id])
+
+  classSubjects   ClassSubject[]
+  grades          Grade[]
+
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([institutionId, code])
+}
+
+model ClassStudent {
+  id              String   @id @default(uuid())
+  classId         String
+  studentId       String
+  academicYear    String
+  term            String?
+
+  class           Class    @relation(fields: [classId], references: [id])
+  student         Student  @relation(fields: [studentId], references: [id])
+
+  @@unique([classId, studentId, academicYear])
+}
+
+model ClassSubject {
+  id              String   @id @default(uuid())
+  classId         String
+  subjectId       String
+  teacherId       String?
+
+  class           Class    @relation(fields: [classId], references: [id])
+  subject         Subject  @relation(fields: [subjectId], references: [id])
+  teacher         User?    @relation(fields: [teacherId], references: [id])
+
+  @@unique([classId, subjectId])
+}
+
+model Student {
+  id              String   @id @default(uuid())
+  admissionNumber String   @unique
+  dateOfBirth     DateTime
+  enrollmentDate  DateTime @default(now())
+
+  userId          String?  @unique
+  user            User?    @relation("StudentUser", fields: [userId], references: [id])
+
+  parentId        String?
+  parent          User?    @relation("ParentUser", fields: [parentId], references: [id])
+
+  institutionId   String
+  institution     Institution @relation(fields: [institutionId], references: [id])
+
+  classes         ClassStudent[]
+  reportCards     ReportCard[]
+  studentFees     StudentFee[]
+  payments        Payment[]
+  notificationLogs NotificationLog[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ReportCard {
+  id                String   @id @default(uuid())
+  studentId         String
+  classId           String
+  academicYear      String
+  termType          TermSystem
+  termNumber        Int
+  termName          String
+  status            ReportStatus @default(DRAFT)
+  teacherComment    String?
+  principalComment  String?
+  conductRating     ConductRating?
+  attendanceDays    Int?
+  attendancePresent Int?
+  overallAverage    Float?
+  classRank         Int?
+  classSize         Int?
+  mention           String?
+  pdfUrl            String?
+  deliveryStatus    String?
+  publishedAt       DateTime?
+
+  createdById       String
+  createdBy         User     @relation("ReportCreator", fields: [createdById], references: [id])
+
+  student           Student  @relation(fields: [studentId], references: [id])
+  class             Class    @relation(fields: [classId], references: [id])
+  grades            Grade[]
+  notificationLogs  NotificationLog[]
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([studentId, academicYear, termNumber])
+}
+
+model Grade {
+  id              String   @id @default(uuid())
+  reportCardId    String
+  subjectId       String
+  score           Float
+  coefficient     Float
+  weightedScore   Float
+  teacherComment  String?
+
+  reportCard      ReportCard @relation(fields: [reportCardId], references: [id], onDelete: Cascade)
+  subject         Subject    @relation(fields: [subjectId], references: [id])
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([reportCardId, subjectId])
+}
+
+model Bulletin {
+  id              String   @id @default(uuid())
+  title           String
+  content         String   @db.Text
+  type            String
+  targetAudience  String
+  targetId        String?
+  attachments     Json?
+  publishedAt     DateTime?
+
+  authorId        String
+  author          User     @relation(fields: [authorId], references: [id])
+
+  institutionId   String
+  institution     Institution @relation(fields: [institutionId], references: [id])
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model BrandingAsset {
+  id              String   @id @default(uuid())
+  type            String
+  label           String?
+  fileUrl         String
+  metadata        Json?
+
+  institutionId   String
+  institution     Institution @relation(fields: [institutionId], references: [id])
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ReportCardTemplate {
+  id              String   @id @default(uuid())
+  name            String
+  description     String?
+  templateKey     String
+  config          Json
+  isDefault       Boolean  @default(false)
+
+  institutionId   String
+  institution     Institution @relation(fields: [institutionId], references: [id])
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Fee {
+  id              String   @id @default(uuid())
+  name            String
+  feeType         FeeType
+  amount          Decimal  @db.Decimal(12, 2)
+  currency        String   @default("XOF")
+  academicYear    String
+  term            String?
+  appliesToLevel  String?
+  appliesToClassId String?
+
+  institutionId   String
+  institution     Institution @relation(fields: [institutionId], references: [id])
+
+  studentFees     StudentFee[]
+
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model StudentFee {
+  id              String   @id @default(uuid())
+  studentId       String
+  feeId           String
+  academicYear    String
+  term            String?
+  amountDue       Decimal  @db.Decimal(12, 2)
+  isExempt        Boolean  @default(false)
+  exemptionReason String?
+
+  student         Student  @relation(fields: [studentId], references: [id])
+  fee             Fee      @relation(fields: [feeId], references: [id])
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([studentId, feeId, academicYear, term])
+}
+
+model Payment {
+  id              String   @id @default(uuid())
+  studentId       String
+  academicYear    String
+  term            String?
+  amount          Decimal  @db.Decimal(12, 2)
+  paymentMethod   PaymentMethod
+  referenceNumber String?
+  receiptNumber   String   @unique
+  paymentDate     DateTime
+  notes           String?
+
+  recordedById    String
+  recordedBy      User     @relation(fields: [recordedById], references: [id])
+
+  student         Student  @relation(fields: [studentId], references: [id])
+
+  institutionId   String
+  institution     Institution @relation(fields: [institutionId], references: [id])
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model NotificationLog {
+  id                String   @id @default(uuid())
+  reportCardId      String?
+  studentId         String?
+  recipientUserId   String
+  channel           NotificationChannel
+  status            NotificationStatus @default(PENDING)
+  heldReason        String?
+  attemptCount      Int      @default(0)
+  lastAttemptAt     DateTime?
+  deliveredAt       DateTime?
+  providerMessageId String?
+  errorMessage      String?
+
+  reportCard        ReportCard? @relation(fields: [reportCardId], references: [id])
+  student           Student?    @relation(fields: [studentId], references: [id])
+  recipient         User        @relation(fields: [recipientUserId], references: [id])
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model WhatsappVerification {
+  id              String   @id @default(uuid())
+  userId          String
+  phoneNumber     String
+  otpCode         String
+  expiresAt       DateTime
+  verifiedAt      DateTime?
+
+  user            User     @relation(fields: [userId], references: [id])
+
+  createdAt       DateTime @default(now())
+}
+
+model RefreshToken {
+  id              String   @id @default(uuid())
+  token           String   @unique
+  userId          String
+  expiresAt       DateTime
+  revokedAt       DateTime?
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
+}
+
+model PasswordResetToken {
+  id              String   @id @default(uuid())
+  token           String   @unique
+  userId          String
+  expiresAt       DateTime
+  usedAt          DateTime?
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
+}
+
+model AuditLog {
+  id              String   @id @default(uuid())
+  userId          String?
+  action          String
+  resource        String
+  resourceId      String?
+  metadata        Json?
+  ipAddress       String?
+  userAgent       String?
+
+  user            User?    @relation(fields: [userId], references: [id])
+
+  createdAt       DateTime @default(now())
+}
