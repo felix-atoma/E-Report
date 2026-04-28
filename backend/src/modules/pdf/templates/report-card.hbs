@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Arial', sans-serif; font-size: 11px; color: #1a1a1a; background: #fff; padding: 20px; }
+  .page { width: 210mm; min-height: 297mm; }
+
+  /* Header */
+  .header { display: flex; align-items: center; border-bottom: 3px solid #1e3a8a; padding-bottom: 10px; margin-bottom: 12px; }
+  .header .logo { width: 70px; height: 70px; object-fit: contain; margin-right: 16px; }
+  .header .institution-info { flex: 1; text-align: center; }
+  .header .institution-info h1 { font-size: 16px; font-weight: bold; color: #1e3a8a; text-transform: uppercase; }
+  .header .institution-info p { font-size: 10px; color: #555; margin-top: 2px; }
+  .header .crest { width: 70px; height: 70px; object-fit: contain; margin-left: 16px; }
+
+  /* Title bar */
+  .title-bar { background: #1e3a8a; color: #fff; text-align: center; padding: 6px; font-size: 13px; font-weight: bold; letter-spacing: 1px; margin-bottom: 12px; border-radius: 3px; }
+
+  /* Student info */
+  .student-info { display: flex; gap: 16px; margin-bottom: 12px; border: 1px solid #d1d5db; border-radius: 4px; padding: 10px; }
+  .student-info .field { flex: 1; }
+  .student-info .field label { font-size: 9px; color: #6b7280; text-transform: uppercase; display: block; }
+  .student-info .field span { font-weight: bold; font-size: 12px; }
+
+  /* Grades table */
+  table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+  thead tr { background: #1e3a8a; color: #fff; }
+  thead th { padding: 6px 8px; text-align: left; font-size: 10px; font-weight: bold; }
+  thead th.center { text-align: center; }
+  tbody tr:nth-child(even) { background: #f9fafb; }
+  tbody tr:hover { background: #eff6ff; }
+  tbody td { padding: 5px 8px; border-bottom: 1px solid #e5e7eb; font-size: 10px; }
+  tbody td.center { text-align: center; }
+  tbody td.fail { color: #dc2626; font-weight: bold; }
+  tbody td.pass { color: #16a34a; }
+  tfoot tr { background: #1e3a8a; color: #fff; font-weight: bold; }
+  tfoot td { padding: 6px 8px; font-size: 11px; }
+
+  /* Summary row */
+  .summary { display: flex; gap: 12px; margin-bottom: 14px; }
+  .summary-card { flex: 1; border: 1px solid #d1d5db; border-radius: 4px; padding: 8px 12px; text-align: center; }
+  .summary-card .label { font-size: 9px; color: #6b7280; text-transform: uppercase; }
+  .summary-card .value { font-size: 18px; font-weight: bold; color: #1e3a8a; margin-top: 2px; }
+  .summary-card .mention { font-size: 11px; color: #16a34a; font-weight: bold; }
+  .summary-card .mention.fail { color: #dc2626; }
+
+  /* Comments */
+  .comments { display: flex; gap: 12px; margin-bottom: 14px; }
+  .comment-box { flex: 1; border: 1px solid #d1d5db; border-radius: 4px; padding: 8px; }
+  .comment-box .title { font-size: 9px; font-weight: bold; color: #1e3a8a; text-transform: uppercase; margin-bottom: 4px; }
+  .comment-box p { font-size: 10px; color: #374151; min-height: 36px; }
+
+  /* Attendance + conduct */
+  .meta { display: flex; gap: 12px; margin-bottom: 14px; }
+  .meta-box { flex: 1; border: 1px solid #d1d5db; border-radius: 4px; padding: 8px; text-align: center; }
+  .meta-box .label { font-size: 9px; color: #6b7280; text-transform: uppercase; }
+  .meta-box .value { font-size: 13px; font-weight: bold; margin-top: 2px; }
+
+  /* Signatures */
+  .signatures { display: flex; gap: 16px; margin-top: 16px; }
+  .sig-box { flex: 1; border-top: 1px solid #9ca3af; padding-top: 6px; text-align: center; font-size: 9px; color: #6b7280; }
+
+  /* Stamp */
+  .stamp-area { position: absolute; bottom: 40px; right: 40px; opacity: 0.5; }
+  .stamp-area img { width: 80px; height: 80px; object-fit: contain; }
+
+  /* Footer */
+  .footer { border-top: 1px solid #d1d5db; padding-top: 6px; text-align: center; font-size: 9px; color: #9ca3af; margin-top: 12px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    {{#if institution.logo}}
+    <img class="logo" src="{{institution.logo}}" alt="Logo" />
+    {{/if}}
+    <div class="institution-info">
+      <h1>{{institution.name}}</h1>
+      {{#if institution.address}}<p>{{institution.address}}</p>{{/if}}
+      {{#if institution.phone}}<p>Tél : {{institution.phone}}</p>{{/if}}
+      {{#if institution.motto}}<p><em>{{institution.motto}}</em></p>{{/if}}
+    </div>
+    {{#if institution.crest}}
+    <img class="crest" src="{{institution.crest}}" alt="Crest" />
+    {{/if}}
+  </div>
+
+  <!-- Title -->
+  <div class="title-bar">BULLETIN DE NOTES — {{report.termName}} &mdash; Année {{report.academicYear}}</div>
+
+  <!-- Student info -->
+  <div class="student-info">
+    <div class="field">
+      <label>Nom &amp; Prénom</label>
+      <span>{{student.name}}</span>
+    </div>
+    <div class="field">
+      <label>N° d'admission</label>
+      <span>{{student.admissionNumber}}</span>
+    </div>
+    <div class="field">
+      <label>Date de naissance</label>
+      <span>{{student.dateOfBirth}}</span>
+    </div>
+    <div class="field">
+      <label>Classe</label>
+      <span>{{class.name}}</span>
+    </div>
+  </div>
+
+  <!-- Grades table -->
+  <table>
+    <thead>
+      <tr>
+        <th>Matière</th>
+        <th class="center">Note /20</th>
+        <th class="center">Coef.</th>
+        <th class="center">Pondéré</th>
+        <th class="center">Résultat</th>
+        <th>Appréciation</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each grades}}
+      <tr>
+        <td>{{subject.nameFr}}</td>
+        <td class="center {{#if this.passed}}pass{{else}}fail{{/if}}">{{formatScore this.score}}</td>
+        <td class="center">{{this.coefficient}}</td>
+        <td class="center">{{formatScore this.weightedScore}}</td>
+        <td class="center {{#if this.passed}}pass{{else}}fail{{/if}}">
+          {{#if this.passed}}✓{{else}}✗{{/if}}
+        </td>
+        <td>{{this.teacherComment}}</td>
+      </tr>
+      {{/each}}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="3">Moyenne Générale</td>
+        <td class="center">{{formatScore report.overallAverage}}</td>
+        <td colspan="2">{{report.mention}}</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <!-- Summary cards -->
+  <div class="summary">
+    <div class="summary-card">
+      <div class="label">Moyenne</div>
+      <div class="value">{{formatScore report.overallAverage}}</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">Mention</div>
+      <div class="mention {{#unless report.isPassing}}fail{{/unless}}">{{report.mention}}</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">Rang</div>
+      <div class="value">{{report.classRank}}<small>/{{report.classSize}}</small></div>
+    </div>
+    <div class="summary-card">
+      <div class="label">Conduite</div>
+      <div class="value">{{report.conductLabel}}</div>
+    </div>
+  </div>
+
+  <!-- Attendance -->
+  {{#if report.attendanceDays}}
+  <div class="meta">
+    <div class="meta-box">
+      <div class="label">Jours de cours</div>
+      <div class="value">{{report.attendanceDays}}</div>
+    </div>
+    <div class="meta-box">
+      <div class="label">Jours présent</div>
+      <div class="value">{{report.attendancePresent}}</div>
+    </div>
+    <div class="meta-box">
+      <div class="label">Absences</div>
+      <div class="value">{{report.absences}}</div>
+    </div>
+    <div class="meta-box">
+      <div class="label">Taux présence</div>
+      <div class="value">{{report.attendanceRate}}%</div>
+    </div>
+  </div>
+  {{/if}}
+
+  <!-- Comments -->
+  <div class="comments">
+    <div class="comment-box">
+      <div class="title">Appréciation du professeur principal</div>
+      <p>{{report.teacherComment}}</p>
+    </div>
+    <div class="comment-box">
+      <div class="title">Appréciation du directeur</div>
+      <p>{{report.principalComment}}</p>
+    </div>
+  </div>
+
+  <!-- Signatures -->
+  <div class="signatures">
+    <div class="sig-box">Signature du parent / tuteur</div>
+    <div class="sig-box">Signature du professeur principal</div>
+    <div class="sig-box">
+      Cachet &amp; signature du directeur
+      {{#if institution.stamp}}
+      <br/><img src="{{institution.stamp}}" style="width:50px;height:50px;object-fit:contain;opacity:0.6;" />
+      {{/if}}
+    </div>
+  </div>
+
+  <div class="footer">
+    Généré le {{generatedAt}} &mdash; {{institution.name}} &mdash; NovaBulletin
+  </div>
+
+</div>
+</body>
+</html>

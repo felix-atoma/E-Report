@@ -1,3 +1,17 @@
-.report-cards-page {
-  padding: var(--spacing-md);
+.reports-page__toolbar {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.reports-page__filter {
+  width: 200px;
+  margin-bottom: 0;
+}
+
+.reports-table__class {
+  font-weight: 600;
+  color: var(--color-text, #1f2937);
 }

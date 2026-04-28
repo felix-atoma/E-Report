@@ -1,3 +1,59 @@
-.students-page {
-  padding: var(--spacing-md);
+.students-page__toolbar {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.students-page__search {
+  flex: 1;
+  min-width: 220px;
+}
+
+.students-page__class-filter {
+  width: 200px;
+  margin-bottom: 0;
+}
+
+.students-table__student {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.students-table__name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-text, #1f2937);
+}
+
+.students-table__sub {
+  font-size: 0.78rem;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.students-table__empty {
+  color: var(--color-text-muted, #6b7280);
+}
+
+.student-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.student-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 480px) {
+  .student-form__row {
+    grid-template-columns: 1fr;
+  }
+  .students-page__class-filter {
+    width: 100%;
+  }
 }

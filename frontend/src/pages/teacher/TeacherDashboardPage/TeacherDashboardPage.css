@@ -1,3 +1,96 @@
-.teacher-dashboard-page {
-  padding: var(--spacing-md);
+.teacher-dash__link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.teacher-dash__stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.teacher-dash__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.teacher-dash__stat-icon  { font-size: 1.75rem; }
+.teacher-dash__stat-value { font-size: 2rem; font-weight: 700; color: var(--color-text, #1f2937); line-height: 1; }
+.teacher-dash__stat-label { font-size: 0.8rem; color: var(--color-text-muted, #6b7280); }
+
+.teacher-dash__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.25rem;
+}
+
+.teacher-dash__card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.teacher-dash__card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.teacher-dash__card-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--color-text, #1f2937);
+}
+
+.teacher-dash__see-all {
+  font-size: 0.8rem;
+  color: var(--color-primary, #3b82f6);
+  text-decoration: none;
+}
+
+.teacher-dash__empty {
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #6b7280);
+  margin: 0;
+}
+
+.teacher-dash__class-list,
+.teacher-dash__report-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.teacher-dash__class-row,
+.teacher-dash__report-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm, 4px);
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.12s;
+}
+
+.teacher-dash__class-row:hover,
+.teacher-dash__report-row:hover {
+  background: var(--color-surface-alt, #f9fafb);
+}
+
+.teacher-dash__class-name  { font-weight: 600; font-size: 0.875rem; }
+.teacher-dash__class-meta  { font-size: 0.78rem; color: var(--color-text-muted, #6b7280); }
+.teacher-dash__report-name { font-weight: 500; font-size: 0.875rem; }
+.teacher-dash__report-meta { font-size: 0.78rem; color: var(--color-text-muted, #6b7280); }
+
+@media (max-width: 500px) {
+  .teacher-dash__stats {
+    grid-template-columns: 1fr;
+  }
 }

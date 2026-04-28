@@ -1,3 +1,23 @@
 .login-form {
-  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
+.login-form__error {
+  font-size: 0.875rem;
+  color: var(--color-danger, #ef4444);
+  background: #fee2e2;
+  border-radius: var(--radius-md, 6px);
+  padding: 0.5rem 0.75rem;
+  margin: 0;
+}
+.login-form__forgot {
+  text-align: center;
+  font-size: 0.875rem;
+  margin: 0;
+}
+.login-form__forgot a {
+  color: var(--color-primary, #1e40af);
+  text-decoration: none;
+}
+.login-form__forgot a:hover { text-decoration: underline; }

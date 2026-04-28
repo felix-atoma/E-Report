@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node --max-old-space-size=4096 node_modules/.bin/vite build",
     "preview": "vite preview",
     "lint": "eslint src --ext .js,.jsx --fix",
     "test": "vitest"
@@ -27,6 +27,7 @@
     "react-pdf": "^7.6.0",
     "react-quill": "^2.0.0",
     "react-router-dom": "^6.21.1",
+    "react-select": "^5.10.2",
     "recharts": "^2.10.4"
   },
   "devDependencies": {

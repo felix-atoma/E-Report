@@ -1,3 +1,26 @@
 .card {
-  padding: var(--spacing-md);
+  background: #fff;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-lg, 10px);
+}
+.card--shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
+.card--pad-sm  { padding: 0.75rem; }
+.card--pad-md  { padding: 1.25rem; }
+.card--pad-lg  { padding: 2rem; }
+.card--pad-none { padding: 0; }
+.card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
+}
+.card__footer {
+  padding-top: 1rem;
+  margin-top: 1rem;
+  border-top: 1px solid var(--color-border, #e5e7eb);
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
 }

@@ -1,10 +1,10 @@
 import './Spinner.css';
 
-function Spinner() {
+function Spinner({ size = 'md', label = 'Chargement…' }) {
   return (
-    <div className="spinner">
-      <p>Spinner — TODO: implement</p>
-    </div>
+    <span className={`spinner spinner--${size}`} role="status" aria-label={label}>
+      <span className="spinner__ring" />
+    </span>
   );
 }
 

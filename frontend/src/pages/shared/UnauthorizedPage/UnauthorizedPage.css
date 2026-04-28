@@ -1,3 +1,1 @@
-.unauthorized-page {
-  padding: var(--spacing-md);
-}
+/* shares .error-page styles from NotFoundPage.css */

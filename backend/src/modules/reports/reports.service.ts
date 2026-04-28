@@ -1,12 +1,284 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../prisma/prisma.service';
+import { PdfService } from '../pdf/pdf.service';
+import { Role } from '../../common/enums/role.enum';
+import { CreateReportDto } from './dto/create-report.dto';
+import { UpdateReportDto } from './dto/update-report.dto';
+
+function computeMention(avg: number): string {
+  if (avg >= 18) return 'Excellent';
+  if (avg >= 16) return 'Très Bien';
+  if (avg >= 14) return 'Bien';
+  if (avg >= 12) return 'Assez Bien';
+  if (avg >= 10) return 'Passable';
+  return 'Insuffisant';
+}
 
 @Injectable()
 export class ReportsService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(ReportsService.name);
 
-  async findAll() {
-    // TODO: implement
-    return [];
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly events: EventEmitter2,
+    private readonly pdf: PdfService,
+  ) {}
+
+  async findAll(
+    institutionId: string,
+    userId: string,
+    role: Role,
+    filters: { classId?: string; studentId?: string; academicYear?: string; termNumber?: number },
+  ) {
+    const where: any = { class: { institutionId } };
+
+    if (role === Role.TEACHER) {
+      where.OR = [
+        { createdById: userId },
+        { class: { teacherId: userId } },
+      ];
+    }
+    if (role === Role.STUDENT) {
+      const student = await this.prisma.student.findFirst({ where: { userId } });
+      if (student) where.studentId = student.id;
+    }
+    if (role === Role.PARENT) {
+      const children = await this.prisma.student.findMany({ where: { parentId: userId }, select: { id: true } });
+      where.studentId = { in: children.map((c) => c.id) };
+    }
+
+    if (filters.classId) where.classId = filters.classId;
+    if (filters.studentId) where.studentId = filters.studentId;
+    if (filters.academicYear) where.academicYear = filters.academicYear;
+    if (filters.termNumber) where.termNumber = filters.termNumber;
+
+    return this.prisma.reportCard.findMany({
+      where,
+      include: {
+        student: { include: { user: { select: { name: true } } } },
+        class: { select: { id: true, name: true } },
+        createdBy: { select: { id: true, name: true } },
+      },
+      orderBy: [{ academicYear: 'desc' }, { termNumber: 'desc' }, { student: { admissionNumber: 'asc' } }],
+    });
+  }
+
+  async findOne(id: string, institutionId: string) {
+    const report = await this.prisma.reportCard.findFirst({
+      where: { id, class: { institutionId } },
+      include: {
+        student: {
+          include: {
+            user: { select: { name: true, profileImage: true } },
+            parent: { select: { id: true, name: true } },
+          },
+        },
+        class: { select: { id: true, name: true, level: true, series: true } },
+        createdBy: { select: { id: true, name: true } },
+        grades: {
+          include: { subject: { select: { id: true, nameFr: true, nameEn: true, code: true, passMark: true } } },
+          orderBy: { subject: { nameFr: 'asc' } },
+        },
+      },
+    });
+    if (!report) throw new NotFoundException('Report card not found');
+    return report;
+  }
+
+  async create(dto: CreateReportDto, institutionId: string, createdById: string) {
+    const cls = await this.prisma.class.findFirst({ where: { id: dto.classId, institutionId } });
+    if (!cls) throw new NotFoundException('Class not found');
+
+    const student = await this.prisma.student.findFirst({ where: { id: dto.studentId, institutionId } });
+    if (!student) throw new NotFoundException('Student not found');
+
+    return this.prisma.reportCard.create({
+      data: {
+        studentId: dto.studentId,
+        classId: dto.classId,
+        academicYear: dto.academicYear,
+        termType: dto.termType as any,
+        termNumber: dto.termNumber,
+        termName: dto.termName,
+        createdById,
+      },
+      include: {
+        student: { include: { user: { select: { name: true } } } },
+        class: { select: { id: true, name: true } },
+      },
+    });
+  }
+
+  async update(id: string, dto: UpdateReportDto, institutionId: string, userId: string, role: Role) {
+    await this.ensureEditable(id, institutionId, userId, role);
+    return this.prisma.reportCard.update({ where: { id }, data: dto });
+  }
+
+  async submit(id: string, institutionId: string, userId: string, role: Role) {
+    const report = await this.ensureEditable(id, institutionId, userId, role);
+    if (report.status !== 'DRAFT') throw new BadRequestException('Only DRAFT reports can be submitted');
+    return this.prisma.reportCard.update({ where: { id }, data: { status: 'REVIEW' } });
+  }
+
+  async publish(id: string, institutionId: string, _userId: string, role: Role) {
+    const report = await this.prisma.reportCard.findFirst({
+      where: { id, class: { institutionId } },
+      include: {
+        grades: {
+          include: { subject: { select: { nameFr: true, passMark: true } } },
+        },
+        student: {
+          include: {
+            user: { select: { name: true } },
+            parent: { select: { id: true } },
+          },
+        },
+        class: { select: { name: true } },
+      },
+    });
+    if (!report) throw new NotFoundException('Report card not found');
+    if (role !== Role.ADMIN) throw new ForbiddenException('Only admins can publish reports');
+    if (report.status !== 'REVIEW') throw new BadRequestException('Only REVIEW reports can be published');
+
+    // Compute overall average
+    const grades = report.grades;
+    let overallAverage: number | null = null;
+    if (grades.length > 0) {
+      const totalWeighted = grades.reduce((sum, g) => sum + g.weightedScore, 0);
+      const totalCoef = grades.reduce((sum, g) => sum + g.coefficient, 0);
+      overallAverage = totalCoef > 0 ? Math.round((totalWeighted / totalCoef) * 100) / 100 : null;
+    }
+
+    // Recompute class ranks for this class/year/term
+    const siblings = await this.prisma.reportCard.findMany({
+      where: {
+        classId: report.classId,
+        academicYear: report.academicYear,
+        termNumber: report.termNumber,
+        status: 'PUBLISHED',
+      },
+      select: { id: true, overallAverage: true },
+    });
+
+    const allAverages = [
+      ...siblings.map((r) => ({ id: r.id, avg: r.overallAverage ?? 0 })),
+      { id, avg: overallAverage ?? 0 },
+    ].sort((a, b) => b.avg - a.avg);
+
+    const classSize = allAverages.length;
+    const rankMap = new Map<string, number>();
+    allAverages.forEach((r, i) => rankMap.set(r.id, i + 1));
+
+    await this.prisma.$transaction(
+      allAverages.map((r) =>
+        this.prisma.reportCard.update({
+          where: { id: r.id },
+          data: { classRank: rankMap.get(r.id), classSize },
+        }),
+      ),
+    );
+
+    const mention = overallAverage !== null ? computeMention(overallAverage) : null;
+
+    const published = await this.prisma.reportCard.update({
+      where: { id },
+      data: {
+        status: 'PUBLISHED',
+        publishedAt: new Date(),
+        overallAverage,
+        classRank: rankMap.get(id),
+        classSize,
+        mention,
+      },
+      include: {
+        student: {
+          include: {
+            user: { select: { name: true } },
+            parent: { select: { id: true } },
+          },
+        },
+      },
+    });
+
+    // Generate PDF in the background — don't block the response
+    this.generateAndSavePdf(published, report, institutionId).catch((err) =>
+      this.logger.error(`PDF generation failed for report ${id}`, err),
+    );
+
+    this.events.emit('report.published', { report: published, institutionId });
+
+    return published;
+  }
+
+  // ─── PDF generation (called after publish) ───────────────────────────────
+
+  private async generateAndSavePdf(published: any, reportWithGrades: any, institutionId: string) {
+    const institution = await this.prisma.institution.findUnique({
+      where: { id: institutionId },
+      select: { name: true, address: true, phone: true, motto: true, logo: true, crest: true, stamp: true },
+    });
+    if (!institution) return;
+
+    const pdfUrl = await this.pdf.generateReportCardPdf({
+      report: {
+        id: published.id,
+        termName: published.termName,
+        academicYear: published.academicYear,
+        termNumber: published.termNumber,
+        overallAverage: published.overallAverage,
+        classRank: published.classRank,
+        classSize: published.classSize,
+        mention: published.mention,
+        conductRating: published.conductRating,
+        teacherComment: published.teacherComment,
+        principalComment: published.principalComment,
+        attendanceDays: published.attendanceDays,
+        attendancePresent: published.attendancePresent,
+      },
+      student: {
+        admissionNumber: reportWithGrades.student.admissionNumber,
+        dateOfBirth: reportWithGrades.student.dateOfBirth,
+        user: reportWithGrades.student.user,
+      },
+      className: reportWithGrades.class.name,
+      grades: reportWithGrades.grades.map((g: any) => ({
+        score: g.score,
+        coefficient: g.coefficient,
+        weightedScore: g.weightedScore,
+        teacherComment: g.teacherComment,
+        subject: { nameFr: g.subject.nameFr, passMark: g.subject.passMark },
+      })),
+      institution,
+    });
+
+    await this.prisma.reportCard.update({
+      where: { id: published.id },
+      data: { pdfUrl },
+    });
+
+    this.logger.log(`PDF generated for report ${published.id}: ${pdfUrl}`);
+  }
+
+  private async ensureEditable(id: string, institutionId: string, userId: string, role: Role) {
+    const report = await this.prisma.reportCard.findFirst({
+      where: { id, class: { institutionId } },
+    });
+    if (!report) throw new NotFoundException('Report card not found');
+    if (report.status === 'PUBLISHED') throw new ForbiddenException('Cannot edit a published report');
+
+    if (role !== Role.ADMIN) {
+      const cls = await this.prisma.class.findFirst({ where: { id: report.classId, teacherId: userId } });
+      if (!cls && report.createdById !== userId) {
+        throw new ForbiddenException('You do not have access to this report');
+      }
+    }
+    return report;
   }
 }

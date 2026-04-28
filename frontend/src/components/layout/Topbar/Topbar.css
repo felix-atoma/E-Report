@@ -1,3 +1,109 @@
 .topbar {
-  padding: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 1.5rem;
+  height: 64px;
+  background: #fff;
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* Hamburger — hidden on desktop, shown on mobile */
+.topbar__hamburger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--color-text-muted, #6b7280);
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 6px;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: color 0.15s, background 0.15s;
+}
+.topbar__hamburger:hover {
+  color: var(--color-text, #1f2937);
+  background: var(--color-bg-subtle, #f3f4f6);
+}
+
+.topbar__title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-text, #1f2937);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topbar__spacer { flex: 1; }
+
+.topbar__user {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+.topbar__user-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.topbar__user-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text, #1f2937);
+  white-space: nowrap;
+}
+
+.topbar__user-role {
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #6b7280);
+  white-space: nowrap;
+}
+
+.topbar__logout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted, #6b7280);
+  padding: 0.4rem;
+  border-radius: 6px;
+  line-height: 1;
+  transition: color 0.15s, background 0.15s;
+}
+.topbar__logout:hover {
+  color: var(--color-danger, #ef4444);
+  background: #fee2e2;
+}
+
+/* ── Mobile / tablet ───────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .topbar {
+    padding: 0 1rem;
+  }
+
+  .topbar__hamburger {
+    display: flex;
+  }
+
+  .topbar__user-info {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .topbar__title {
+    font-size: 0.95rem;
+  }
 }

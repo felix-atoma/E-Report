@@ -1,3 +1,166 @@
-.child-report-cards-page {
-  padding: var(--spacing-md);
+.fee-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  border-radius: var(--radius-md, 8px);
+  margin-bottom: 1.25rem;
+  border-left: 4px solid;
+}
+
+.fee-banner--partial {
+  background: #fffbeb;
+  border-color: #f59e0b;
+}
+
+.fee-banner--unpaid {
+  background: #fef2f2;
+  border-color: #ef4444;
+}
+
+.fee-banner__icon { font-size: 1.2rem; margin-top: 0.1rem; }
+
+.fee-banner__title {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-text, #1f2937);
+  margin-bottom: 0.2rem;
+}
+
+.fee-banner__desc {
+  font-size: 0.8rem;
+  color: var(--color-text-muted, #6b7280);
+  line-height: 1.5;
+}
+
+.child-reports__list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.report-card-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.report-card-item__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  user-select: none;
+  gap: 0.75rem;
+  transition: background 0.12s;
+}
+
+.report-card-item__header:hover {
+  background: var(--color-surface-alt, #f9fafb);
+}
+
+.report-card-item__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.report-card-item__term {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-text, #1f2937);
+}
+
+.report-card-item__year {
+  font-size: 0.78rem;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.report-card-item__right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.report-card-item__chevron {
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #6b7280);
+  margin-left: 0.25rem;
+}
+
+.report-card-item__body {
+  padding: 0 1.25rem 1.25rem;
+  border-top: 1px solid var(--color-border, #e5e7eb);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 1rem;
+}
+
+.report-card-item__grades {
+  overflow-x: auto;
+}
+
+.report-grades-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.report-grades-table th {
+  text-align: left;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text-muted, #6b7280);
+  border-bottom: 2px solid var(--color-border, #e5e7eb);
+  background: var(--color-surface-alt, #f9fafb);
+}
+
+.report-grades-table td {
+  padding: 0.4rem 0.75rem;
+  border-bottom: 1px solid var(--color-border, #f3f4f6);
+  color: var(--color-text, #1f2937);
+}
+
+.report-grades-table__row--fail td {
+  color: var(--color-danger, #ef4444);
+}
+
+.report-grades-table__score {
+  font-weight: 600;
+  text-align: center;
+}
+
+.report-grades-table__avg-row td {
+  font-weight: 600;
+  background: var(--color-surface-alt, #f9fafb);
+  border-top: 2px solid var(--color-border, #e5e7eb);
+}
+
+.report-card-item__comment {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.report-card-item__comment-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text-muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.report-card-item__comment-text {
+  font-size: 0.875rem;
+  color: var(--color-text, #1f2937);
+  line-height: 1.6;
+  margin: 0;
+  font-style: italic;
 }

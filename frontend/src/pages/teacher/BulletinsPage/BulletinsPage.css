@@ -1,3 +1,24 @@
-.bulletins-page {
-  padding: var(--spacing-md);
+.bulletins-table__title {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-text, #1f2937);
+}
+
+.bulletins-table__preview {
+  font-size: 0.78rem;
+  color: var(--color-text-muted, #6b7280);
+  margin-top: 0.15rem;
+  line-height: 1.4;
+}
+
+.bulletins-table__actions {
+  display: flex;
+  gap: 0.25rem;
+  justify-content: flex-end;
+}
+
+.bulletin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }

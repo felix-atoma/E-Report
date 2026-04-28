@@ -1,3 +1,43 @@
-.fees-page {
-  padding: var(--spacing-md);
+.fees-table__name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-text, #1f2937);
+}
+
+.fees-table__desc {
+  font-size: 0.78rem;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.fees-table__amount {
+  font-weight: 600;
+  color: var(--color-text, #1f2937);
+}
+
+.fees-table__empty {
+  color: var(--color-text-muted, #6b7280);
+}
+
+.fees-table__actions {
+  display: flex;
+  gap: 0.25rem;
+  justify-content: flex-end;
+}
+
+.fee-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.fee-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 480px) {
+  .fee-form__row {
+    grid-template-columns: 1fr;
+  }
 }

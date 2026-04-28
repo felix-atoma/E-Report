@@ -1,10 +1,10 @@
 import './Badge.css';
 
-function Badge() {
+function Badge({ variant = 'default', size = 'md', children }) {
   return (
-    <div className="badge">
-      <p>Badge — TODO: implement</p>
-    </div>
+    <span className={`badge badge--${variant} badge--${size}`}>
+      {children}
+    </span>
   );
 }
 

@@ -5,9 +5,7 @@
   "compilerOptions": {
     "deleteOutDir": true,
     "assets": [
-      { "include": "i18n/**/*", "outDir": "dist" },
-      { "include": "integrations/email/templates/**/*", "outDir": "dist" },
-      { "include": "integrations/pdf/templates/**/*", "outDir": "dist" }
+      { "include": "modules/pdf/templates/**/*", "outDir": "dist/src" }
     ],
     "watchAssets": true
   }

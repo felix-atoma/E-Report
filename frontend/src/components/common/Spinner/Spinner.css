@@ -1,3 +1,12 @@
-.spinner {
-  padding: var(--spacing-md);
+.spinner { display: inline-flex; align-items: center; justify-content: center; }
+.spinner--sm .spinner__ring { width: 1rem; height: 1rem; border-width: 2px; }
+.spinner--md .spinner__ring { width: 1.5rem; height: 1.5rem; border-width: 2px; }
+.spinner--lg .spinner__ring { width: 2.5rem; height: 2.5rem; border-width: 3px; }
+.spinner__ring {
+  display: block;
+  border-style: solid;
+  border-color: var(--color-primary, #1e40af) transparent transparent transparent;
+  border-radius: 50%;
+  animation: spinner-spin 0.7s linear infinite;
 }
+@keyframes spinner-spin { to { transform: rotate(360deg); } }

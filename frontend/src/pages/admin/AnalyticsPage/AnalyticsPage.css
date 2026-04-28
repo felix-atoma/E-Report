@@ -1,3 +1,88 @@
-.analytics-page {
-  padding: var(--spacing-md);
+.analytics-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.analytics-stat {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.analytics-stat__icon  { font-size: 1.75rem; }
+.analytics-stat__body  { display: flex; flex-direction: column; }
+.analytics-stat__value { font-size: 1.6rem; font-weight: 700; color: var(--color-text, #1f2937); line-height: 1.1; }
+.analytics-stat__label { font-size: 0.8rem; color: var(--color-text-muted, #6b7280); margin-top: 0.15rem; }
+.analytics-stat__sub   { font-size: 0.72rem; color: var(--color-text-muted, #6b7280); margin-top: 0.2rem; }
+
+.analytics-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.25rem;
+}
+
+.analytics-chart-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.analytics-chart-card--wide {
+  grid-column: 1 / -1;
+}
+
+.analytics-chart-card__title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text, #1f2937);
+  margin: 0;
+}
+
+.analytics-empty {
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #6b7280);
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.analytics-collection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.analytics-collection__bar-wrap {
+  height: 1.25rem;
+  background: var(--color-border, #e5e7eb);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.analytics-collection__bar {
+  height: 100%;
+  background: var(--color-primary, #3b82f6);
+  border-radius: 999px;
+  transition: width 0.6s ease;
+  min-width: 4px;
+}
+
+.analytics-collection__meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.analytics-collection__rate {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--color-text, #1f2937);
+}
+
+.analytics-collection__detail {
+  font-size: 0.8rem;
+  color: var(--color-text-muted, #6b7280);
 }

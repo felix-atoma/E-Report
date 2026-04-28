@@ -1,3 +1,65 @@
-.users-page {
-  padding: var(--spacing-md);
+.users-page__toolbar {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.users-page__search {
+  flex: 1;
+  min-width: 220px;
+}
+
+.users-page__role-filter {
+  width: 200px;
+  margin-bottom: 0;
+}
+
+.users-table__user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.users-table__name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-text, #1f2937);
+}
+
+.users-table__email {
+  font-size: 0.8rem;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.users-table__empty {
+  color: var(--color-text-muted, #6b7280);
+}
+
+.users-table__actions {
+  display: flex;
+  gap: 0.25rem;
+  justify-content: flex-end;
+}
+
+.user-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.user-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 480px) {
+  .user-form__row {
+    grid-template-columns: 1fr;
+  }
+  .users-page__role-filter {
+    width: 100%;
+  }
 }

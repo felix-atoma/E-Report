@@ -1,3 +1,70 @@
-.profile-page {
-  padding: var(--spacing-md);
+.profile__loading {
+  padding: 2rem;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.profile__layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 640px;
+}
+
+.profile__identity {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.profile__identity-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.profile__full-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-text, #1f2937);
+}
+
+.profile__email {
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.profile__section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.profile__section-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text, #1f2937);
+  margin: 0;
+}
+
+.profile__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.profile__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.profile__actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 0.25rem;
+}
+
+@media (max-width: 480px) {
+  .profile__row { grid-template-columns: 1fr; }
 }

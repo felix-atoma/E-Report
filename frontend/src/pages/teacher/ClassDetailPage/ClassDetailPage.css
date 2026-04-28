@@ -1,3 +1,53 @@
-.class-detail-page {
-  padding: var(--spacing-md);
+.class-detail__error {
+  padding: 2rem;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.class-detail__meta {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-surface-alt, #f9fafb);
+  border-radius: var(--radius-md, 8px);
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.class-detail__meta-item strong {
+  color: var(--color-text, #1f2937);
+}
+
+.class-detail__student {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.class-detail__student-name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-text, #1f2937);
+}
+
+.class-detail__student-sub {
+  font-size: 0.78rem;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.class-detail__subject-name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-text, #1f2937);
+}
+
+.class-detail__subject-code {
+  font-size: 0.78rem;
+  color: var(--color-text-muted, #6b7280);
+  font-family: monospace;
+}
+
+.class-detail__empty {
+  color: var(--color-text-muted, #6b7280);
 }

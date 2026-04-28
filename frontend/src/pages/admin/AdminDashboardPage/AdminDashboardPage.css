@@ -1,3 +1,34 @@
-.admin-dashboard-page {
-  padding: var(--spacing-md);
+.dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.stat-card__icon { font-size: 1.75rem; }
+.stat-card__body { display: flex; flex-direction: column; }
+.stat-card__value { font-size: 1.6rem; font-weight: 700; color: var(--color-text, #1f2937); line-height: 1.1; }
+.stat-card__label { font-size: 0.8rem; color: var(--color-text-muted, #6b7280); margin-top: 0.15rem; }
+.stat-card__sub   { font-size: 0.72rem; color: var(--color-text-muted, #6b7280); margin-top: 0.2rem; }
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+.dashboard-card__title {
+  font-size: 0.9rem; font-weight: 600;
+  margin: 0 0 1rem; color: var(--color-text, #1f2937);
+}
+.dashboard-breakdown { display: flex; flex-direction: column; gap: 0.6rem; }
+.dashboard-breakdown__row {
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 0.5rem;
+}
+.dashboard-breakdown__count {
+  font-size: 0.875rem; font-weight: 600; color: var(--color-text, #1f2937);
 }

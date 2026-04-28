@@ -1,3 +1,2 @@
-.select {
-  padding: var(--spacing-md);
-}
+/* React Select sits inside the shared form-field wrapper — no extra CSS needed.
+   All styling is applied via the styles prop in Select.jsx. */

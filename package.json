@@ -3,7 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "description": "NovaBulletin — Digital Report Card & Academic Bulletin Platform",
-  "workspaces": ["backend", "frontend", "shared"],
+  "workspaces": [
+    "backend",
+    "frontend",
+    "shared"
+  ],
   "scripts": {
     "dev": "concurrently -n backend,frontend -c blue,green \"npm run start:dev -w backend\" \"npm run dev -w frontend\"",
     "dev:backend": "npm run start:dev -w backend",
@@ -17,6 +21,7 @@
     "db:studio": "npm run prisma:studio -w backend"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "vite": "^5.4.21"
   }
 }

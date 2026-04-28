@@ -1,3 +1,18 @@
 .status-pill {
-  padding: var(--spacing-md);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
 }
+.status-pill--paid    { background: #d1fae5; color: #065f46; }
+.status-pill--partial { background: #fef3c7; color: #92400e; }
+.status-pill--unpaid  { background: #fee2e2; color: #991b1b; }
+.status-pill--exempt  { background: #f3f4f6; color: #4b5563; }
+.status-pill--success { background: #d1fae5; color: #065f46; }
+.status-pill--warning { background: #fef3c7; color: #92400e; }
+.status-pill--danger  { background: #fee2e2; color: #991b1b; }
+.status-pill--gray    { background: #f3f4f6; color: #4b5563; }

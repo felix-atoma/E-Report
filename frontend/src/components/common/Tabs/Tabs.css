@@ -1,3 +1,30 @@
-.tabs {
-  padding: var(--spacing-md);
+.tabs__nav {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--color-border, #e5e7eb);
+  margin-bottom: 1.25rem;
+  overflow-x: auto;
 }
+.tabs__tab {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--color-text-muted, #6b7280);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.12s, border-color 0.12s;
+}
+.tabs__tab:hover:not(:disabled) { color: var(--color-text, #1f2937); }
+.tabs__tab--active {
+  color: var(--color-primary, #1e40af);
+  border-bottom-color: var(--color-primary, #1e40af);
+}
+.tabs__tab:disabled { opacity: 0.4; cursor: not-allowed; }
+.tabs__tab-icon { font-size: 1rem; }

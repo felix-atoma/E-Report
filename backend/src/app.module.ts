@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ServeStaticModule } from '@nestjs/serve-static';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import * as path from 'path';
 import { PrismaModule } from './prisma/prisma.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
@@ -22,6 +24,9 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { BrandingModule } from './modules/branding/branding.module';
+import { MailModule } from './modules/mail/mail.module';
+import { WhatsAppModule } from './modules/whatsapp/whatsapp.module';
+import { PdfModule } from './modules/pdf/pdf.module';
 import { HealthModule } from './health/health.module';
 
 @Module({
@@ -30,6 +35,15 @@ import { HealthModule } from './health/health.module';
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
+    ServeStaticModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => [{
+        rootPath: path.resolve(process.cwd(), config.get<string>('UPLOADS_DIR', 'uploads')),
+        serveRoot: '/uploads',
+        serveStaticOptions: { index: false },
+      }],
+    }),
     PrismaModule,
     AuthModule,
     UsersModule,
@@ -46,6 +60,9 @@ import { HealthModule } from './health/health.module';
     NotificationsModule,
     AnalyticsModule,
     UploadModule,
+    MailModule,
+    WhatsAppModule,
+    PdfModule,
     HealthModule,
   ],
   providers: [

@@ -2,9 +2,11 @@ import './Footer.css';
 
 function Footer() {
   return (
-    <div className="footer">
-      <p>Footer — TODO: implement</p>
-    </div>
+    <footer className="footer">
+      <span>© {new Date().getFullYear()} NovaBulletin</span>
+      <span className="footer__sep">·</span>
+      <span>v0.1.0</span>
+    </footer>
   );
 }
 

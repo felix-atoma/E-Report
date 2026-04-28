@@ -1,3 +1,18 @@
-.textarea {
-  padding: var(--spacing-md);
+.textarea-field__control {
+  width: 100%;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-md, 6px);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9375rem;
+  font-family: inherit;
+  color: var(--color-text, #1f2937);
+  resize: vertical;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
 }
+.textarea-field__control:focus {
+  outline: none;
+  border-color: var(--color-primary, #1e40af);
+  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.12);
+}
+.textarea-field__control--error { border-color: var(--color-danger, #ef4444); }

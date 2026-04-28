@@ -1,3 +1,66 @@
-.children-page {
-  padding: var(--spacing-md);
+.children-page__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+
+.child-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-surface, #fff);
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.child-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border-color: var(--color-primary, #3b82f6);
+}
+
+.child-card__top {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.child-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.child-card__name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-text, #1f2937);
+}
+
+.child-card__class {
+  font-size: 0.85rem;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.child-card__matricule {
+  font-size: 0.78rem;
+  color: var(--color-text-muted, #6b7280);
+  font-family: monospace;
+}
+
+.child-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border, #e5e7eb);
+}
+
+.child-card__link {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-primary, #3b82f6);
 }

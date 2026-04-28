@@ -1,0 +1,10 @@
+import api from './api';
+
+export const reportsService = {
+  list: (params) => api.get('/reports', { params }),
+  get: (id) => api.get(`/reports/${id}`),
+  create: (data) => api.post('/reports', data),
+  update: (id, data) => api.patch(`/reports/${id}`, data),
+  submit: (id) => api.patch(`/reports/${id}/submit`),
+  publish: (id) => api.patch(`/reports/${id}/publish`),
+};
