@@ -7,6 +7,36 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateSubjectDto } from './dto/create-subject.dto';
 import { UpdateSubjectDto } from './dto/update-subject.dto';
 
+// Articles and prepositions to skip when building initials
+const STOP_WORDS = new Set([
+  'de', 'du', 'des', 'd', 'la', 'le', 'les', 'l',
+  'et', 'ou', 'au', 'aux', 'un', 'une', 'en', 'à', 'a',
+]);
+
+function deriveCode(name: string): string {
+  // Strip diacritics, lower-case, split on spaces and hyphens
+  const words = name
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .split(/[\s\-_/]+/)
+    .filter(Boolean);
+
+  const significant = words.filter((w) => !STOP_WORDS.has(w));
+  const base = significant.length > 0 ? significant : words;
+
+  let code: string;
+  if (base.length === 1) {
+    // Single word → first 4 consonant-anchored chars (drop leading vowels after first char)
+    code = base[0].slice(0, 4);
+  } else {
+    // Multiple words → first letter of each, up to 6
+    code = base.map((w) => w[0]).join('').slice(0, 6);
+  }
+
+  return code.toUpperCase().replace(/[^A-Z0-9]/g, '') || 'SUB';
+}
+
 @Injectable()
 export class SubjectsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -35,13 +65,22 @@ export class SubjectsService {
   }
 
   async create(dto: CreateSubjectDto, institutionId: string) {
-    const existing = await this.prisma.subject.findUnique({
-      where: { institutionId_code: { institutionId, code: dto.code } },
-    });
-    if (existing) throw new ConflictException(`Subject code '${dto.code}' already exists`);
+    const nameEn = dto.nameEn || dto.nameFr;
+    const base   = dto.code ? dto.code.toUpperCase() : deriveCode(dto.nameFr);
+
+    // Ensure uniqueness within the institution — append suffix if needed
+    let code = base;
+    let suffix = 2;
+    while (await this.prisma.subject.findUnique({
+      where: { institutionId_code: { institutionId, code } },
+    })) {
+      if (dto.code) throw new ConflictException(`Subject code '${code}' already exists`);
+      code = `${base}${suffix}`;
+      suffix++;
+    }
 
     return this.prisma.subject.create({
-      data: { ...dto, institutionId },
+      data: { ...dto, nameEn, code, institutionId },
     });
   }
 

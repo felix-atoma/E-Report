@@ -43,6 +43,10 @@ export class PdfService {
     const templateSrc = fs.readFileSync(templatePath, 'utf8');
 
     Handlebars.registerHelper('formatScore', (val: number | null) => formatScore(val));
+    Handlebars.registerHelper('fmtScore', (val: number | null) => formatScore(val));
+    Handlebars.registerHelper('fmtNote', (val: number | null | undefined) =>
+      val == null ? '—' : Number(val).toFixed(0).replace('.', ','),
+    );
 
     this.template = Handlebars.compile(templateSrc);
   }
@@ -78,10 +82,25 @@ export class PdfService {
   private buildHtml(data: ReportCardData): string {
     const { report, student, grades, institution } = data;
 
-    const enrichedGrades = grades.map((g) => ({
-      ...g,
-      passed: g.score >= (g.subject?.passMark ?? 10),
-    }));
+    const enrichedGrades = grades.map((g) => {
+      const interros = [g.noteInterro1, g.noteInterro2, g.noteInterro3, g.noteInterro4]
+        .filter((v) => v != null) as number[];
+      const moyInterros = interros.length > 0
+        ? Math.round((interros.reduce((a, b) => a + b, 0) / interros.length) * 100) / 100
+        : null;
+      return {
+        ...g,
+        moyInterros,
+        passed: (g.moyenneMatiere ?? g.score) >= (g.subject?.passMark ?? 10),
+        ficheSignedAt: g.ficheSignedAt
+          ? new Date(g.ficheSignedAt).toLocaleDateString('fr-FR')
+          : null,
+        signatureData: g.signatureData ?? null,
+      };
+    });
+
+    const totalCoef   = enrichedGrades.reduce((s, g) => s + g.coefficient, 0);
+    const totalPoints = enrichedGrades.reduce((s, g) => s + (g.weightedScore ?? 0), 0);
 
     const absences =
       report.attendanceDays != null && report.attendancePresent != null
@@ -109,7 +128,8 @@ export class PdfService {
         isPassing: (report.overallAverage ?? 0) >= 10,
         absences,
         attendanceRate,
-        overallAverage: report.overallAverage,
+        totalCoef,
+        totalPoints: Math.round(totalPoints * 100) / 100,
       },
       grades: enrichedGrades,
       generatedAt: new Date().toLocaleDateString('fr-FR', {
@@ -130,12 +150,19 @@ export interface ReportCardData {
     overallAverage: number | null;
     classRank: number | null;
     classSize: number | null;
+    classHighest: number | null;
+    classLowest: number | null;
+    classAverage: number | null;
     mention: string | null;
     conductRating: string | null;
     teacherComment: string | null;
     principalComment: string | null;
     attendanceDays: number | null;
     attendancePresent: number | null;
+    attendanceLate: number | null;
+    honorCouncil: boolean | null;
+    commendations: number | null;
+    warnings: number | null;
   };
   student: {
     admissionNumber: string;
@@ -145,9 +172,21 @@ export interface ReportCardData {
   className: string;
   grades: Array<{
     score: number;
+    moyenneMatiere: number | null;
     coefficient: number;
-    weightedScore: number;
+    weightedScore: number | null;
+    noteInterro1: number | null;
+    noteInterro2: number | null;
+    noteInterro3: number | null;
+    noteInterro4: number | null;
+    noteDevoir: number | null;
+    noteComposition: number | null;
+    rangMatiere: number | null;
+    appreciation: string | null;
     teacherComment: string | null;
+    teacherName: string | null;
+    ficheSignedAt: Date | null;
+    signatureData: string | null;
     subject: { nameFr: string; passMark: number };
   }>;
   institution: {

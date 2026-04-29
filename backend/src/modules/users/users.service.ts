@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -6,6 +7,8 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
+import * as fs from 'fs';
+import * as path from 'path';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Role } from '../../common/enums/role.enum';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -70,7 +73,7 @@ export class UsersService {
     const saltRounds = this.config.get<number>('BCRYPT_SALT_ROUNDS', 12);
     const hashed = await bcrypt.hash(dto.password, Number(saltRounds));
 
-    return this.prisma.user.create({
+    const user = await this.prisma.user.create({
       data: {
         name: dto.name,
         email: dto.email,
@@ -81,6 +84,26 @@ export class UsersService {
       },
       select: USER_SELECT,
     });
+
+    if (dto.role === Role.TEACHER && dto.subjectIds?.length) {
+      await this.prisma.classSubject.updateMany({
+        where: {
+          subjectId: { in: dto.subjectIds },
+          teacherId: null,
+          class: { institutionId },
+        },
+        data: { teacherId: user.id },
+      });
+    }
+
+    if (dto.role === Role.TEACHER && dto.mainClassId) {
+      await this.prisma.class.updateMany({
+        where: { id: dto.mainClassId, institutionId, teacherId: null },
+        data: { teacherId: user.id },
+      });
+    }
+
+    return user;
   }
 
   async update(id: string, dto: UpdateUserDto, requestingUserId: string, requestingRole: Role, institutionId: string) {
@@ -95,6 +118,40 @@ export class UsersService {
     return this.prisma.user.update({
       where: { id },
       data: dto,
+      select: USER_SELECT,
+    });
+  }
+
+  async uploadAvatar(
+    targetId: string,
+    file: any,
+    requesterId: string,
+    requestingRole: Role,
+    institutionId: string,
+  ) {
+    if (!file) throw new BadRequestException('No image file provided');
+    if (requestingRole !== Role.ADMIN && targetId !== requesterId) {
+      throw new ForbiddenException('You can only update your own avatar');
+    }
+
+    const uploadsRoot = path.resolve(
+      process.cwd(),
+      this.config.get<string>('UPLOADS_DIR', 'uploads'),
+    );
+    const destDir = path.join(uploadsRoot, 'profile-photos');
+    fs.mkdirSync(destDir, { recursive: true });
+
+    const ext = path.extname(file.originalname).toLowerCase();
+    const uniqueName = `${institutionId}-${targetId}-${Date.now()}${ext}`;
+    const destPath = path.join(destDir, uniqueName);
+    fs.renameSync(file.path, destPath);
+
+    const baseUrl = this.config.get<string>('BASE_URL', 'http://localhost:4000');
+    const profileImage = `${baseUrl}/uploads/profile-photos/${uniqueName}`;
+
+    return this.prisma.user.update({
+      where: { id: targetId },
+      data: { profileImage },
       select: USER_SELECT,
     });
   }

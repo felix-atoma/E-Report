@@ -8,7 +8,7 @@
 }
 .input-field__wrapper:focus-within {
   border-color: var(--color-primary, #1e40af);
-  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.12);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
 }
 .input-field__control {
   flex: 1;

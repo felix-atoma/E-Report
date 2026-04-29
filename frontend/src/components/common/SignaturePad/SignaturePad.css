@@ -1,0 +1,77 @@
+.sig-pad {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sig-pad__instructions {
+  font-size: 0.8rem;
+  color: #6b7280;
+  text-align: center;
+}
+
+.sig-pad__canvas-wrap {
+  position: relative;
+  border: 2px dashed #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  overflow: hidden;
+  cursor: crosshair;
+}
+
+.sig-pad__canvas-wrap:hover {
+  border-color: #1e3a8a;
+}
+
+.sig-pad__canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  touch-action: none;
+}
+
+.sig-pad__placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  color: #d1d5db;
+  pointer-events: none;
+  font-style: italic;
+  user-select: none;
+}
+
+.sig-pad__footer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.sig-pad__clear {
+  background: none;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+  color: #6b7280;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.12s, border-color 0.12s;
+}
+.sig-pad__clear:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+  color: #374151;
+}
+.sig-pad__clear:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.sig-pad__ok {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #0f766e;
+}

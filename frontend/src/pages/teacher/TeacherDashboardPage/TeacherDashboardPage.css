@@ -19,7 +19,15 @@
   text-align: center;
 }
 
-.teacher-dash__stat-icon  { font-size: 1.75rem; }
+.teacher-dash__stat-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+}
+.teacher-dash__stat-icon--orange { background: #ffedd5; color: #c2410c; }
+.teacher-dash__stat-icon--blue   { background: #dbeafe; color: #1d4ed8; }
+.teacher-dash__stat-icon--teal   { background: #ccfbf1; color: #0f766e; }
+.teacher-dash__stat-icon--green  { background: #d1fae5; color: #065f46; }
 .teacher-dash__stat-value { font-size: 2rem; font-weight: 700; color: var(--color-text, #1f2937); line-height: 1; }
 .teacher-dash__stat-label { font-size: 0.8rem; color: var(--color-text-muted, #6b7280); }
 

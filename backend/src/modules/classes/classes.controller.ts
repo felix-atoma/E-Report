@@ -87,6 +87,18 @@ export class ClassesController {
     return this.service.assignSubject(id, dto, user.institutionId);
   }
 
+  @Patch(':id/subjects/:subjectId')
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Update teacher assignment for a subject in this class (Admin only)' })
+  updateSubjectTeacher(
+    @Param('id') id: string,
+    @Param('subjectId') subjectId: string,
+    @Body() body: { teacherId?: string },
+    @CurrentUser() user: any,
+  ) {
+    return this.service.updateSubjectTeacher(id, subjectId, body.teacherId ?? null, user.institutionId);
+  }
+
   @Delete(':id/subjects/:subjectId')
   @Roles(Role.ADMIN)
   @HttpCode(HttpStatus.OK)

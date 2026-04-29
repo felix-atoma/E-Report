@@ -51,3 +51,109 @@
 .class-detail__empty {
   color: var(--color-text-muted, #6b7280);
 }
+
+.class-detail__profile-link {
+  color: var(--color-primary, #1e40af);
+  font-size: 0.8rem;
+  text-decoration: none;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.class-detail__profile-link:hover { text-decoration: underline; }
+
+.class-detail__grade-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.75rem;
+  background: var(--color-primary, #f97316);
+  color: #fff;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.class-detail__grade-link:hover { background: var(--color-accent, #ea580c); }
+
+/* ── Term selector bar ── */
+.class-detail__term-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.75rem 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.class-detail__term-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-muted, #6b7280);
+  white-space: nowrap;
+}
+
+.class-detail__term-tabs {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.class-detail__term-btn {
+  padding: 0.3rem 0.9rem;
+  border-radius: 20px;
+  border: 1.5px solid #d1d5db;
+  background: #f9fafb;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  font-family: inherit;
+}
+.class-detail__term-btn:hover { background: #f3f4f6; border-color: #9ca3af; }
+.class-detail__term-btn--active {
+  background: var(--color-primary, #f97316);
+  border-color: var(--color-primary, #f97316);
+  color: #fff;
+}
+
+.class-detail__fiche-summary {
+  margin-left: auto;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #92400e;
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: 20px;
+  padding: 0.25rem 0.75rem;
+  white-space: nowrap;
+}
+.class-detail__fiche-summary--done {
+  color: #065f46;
+  background: #d1fae5;
+  border-color: #6ee7b7;
+}
+
+/* ── Fiche status badges ── */
+.class-detail__fiche-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+.class-detail__fiche-badge--signed {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+.class-detail__fiche-badge--unsigned {
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+}
+

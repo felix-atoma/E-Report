@@ -10,7 +10,7 @@
 }
 .search-bar:focus-within {
   border-color: var(--color-primary, #1e40af);
-  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
 }
 .search-bar__icon { font-size: 0.85rem; color: var(--color-text-muted, #6b7280); }
 .search-bar__input {

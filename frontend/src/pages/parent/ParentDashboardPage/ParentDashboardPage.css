@@ -14,7 +14,14 @@
   text-align: center;
 }
 
-.parent-dash__stat-icon  { font-size: 1.75rem; }
+.parent-dash__stat-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+}
+.parent-dash__stat-icon--orange { background: #ffedd5; color: #c2410c; }
+.parent-dash__stat-icon--blue   { background: #dbeafe; color: #1d4ed8; }
+.parent-dash__stat-icon--teal   { background: #ccfbf1; color: #0f766e; }
 .parent-dash__stat-value { font-size: 2rem; font-weight: 700; color: var(--color-text, #1f2937); line-height: 1; }
 .parent-dash__stat-label { font-size: 0.8rem; color: var(--color-text-muted, #6b7280); }
 

@@ -37,9 +37,9 @@ async function main() {
         currency: 'XOF',
       },
       brandingSettings: {
-        primaryColor: '#1e40af',
-        secondaryColor: '#64748b',
-        accentColor: '#f59e0b',
+        primaryColor: '#f97316',
+        secondaryColor: '#0f766e',
+        accentColor: '#ea580c',
         fontFamilyHeading: 'Open Sans',
         fontFamilyBody: 'Roboto',
       },
@@ -54,7 +54,7 @@ async function main() {
   const bursarPw    = await hash('Bursar@123');
   const parentPw    = await hash('Parent@123');
 
-  await prisma.user.upsert({
+  const admin = await prisma.user.upsert({
     where: { email: 'admin@demo.novabulletin.local' },
     update: {},
     create: {
@@ -321,6 +321,277 @@ async function main() {
   });
 
   console.log('✅ Fees and student fees created');
+
+  // ─── Payment — student1 fee cleared ─────────────────────────────────────
+  await prisma.payment.upsert({
+    where: { receiptNumber: 'REC-2024-S1-T1' },
+    update: {},
+    create: {
+      receiptNumber: 'REC-2024-S1-T1',
+      studentId: student1.id,
+      academicYear: '2024-2025',
+      term: '1er Trimestre',
+      amount: 45000,
+      paymentMethod: 'CASH',
+      paymentDate: new Date('2024-10-15'),
+      recordedById: admin.id,
+      institutionId: institution.id,
+      notes: 'Paiement intégral — frais de scolarité T1',
+    },
+  });
+  console.log('✅ Payment recorded for student1');
+
+  // ─── Report Cards (bulletins de notes) ──────────────────────────────────
+  // 6ème A — student1 (strong student, fees paid)
+  const coefs6A: Record<string, number> = {
+    MATH: 4, PC: 3, SVT: 3, FR: 4, ANGL: 3, HIST: 2, EPS: 2,
+  };
+  const grades6A_s1: Record<string, { i1: number; i2: number; devoir: number; compo: number }> = {
+    MATH: { i1: 14, i2: 13, devoir: 13, compo: 15 },
+    PC:   { i1: 11, i2: 10, devoir: 12, compo: 10 },
+    SVT:  { i1: 16, i2: 15, devoir: 14, compo: 15 },
+    FR:   { i1: 13, i2: 12, devoir: 12, compo: 14 },
+    ANGL: { i1: 15, i2: 16, devoir: 14, compo: 16 },
+    HIST: { i1: 12, i2: 13, devoir: 13, compo: 14 },
+    EPS:  { i1: 17, i2: 18, devoir: 18, compo: 17 },
+  };
+  // moyenne = (i1 + i2 + devoir + 2*compo) / 5  (Togolese formula)
+  function calcMoyenne(g: { i1: number; i2: number; devoir: number; compo: number }) {
+    return Math.round(((g.i1 + g.i2 + g.devoir + 2 * g.compo) / 5) * 100) / 100;
+  }
+  function appreciation(m: number) {
+    if (m >= 16) return 'TB';
+    if (m >= 14) return 'B';
+    if (m >= 12) return 'AB';
+    if (m >= 10) return 'P';
+    return 'F';
+  }
+
+  let totalWeighted6A_s1 = 0, totalCoef6A_s1 = 0;
+  for (const code of Object.keys(grades6A_s1)) {
+    const m = calcMoyenne(grades6A_s1[code]);
+    totalWeighted6A_s1 += m * coefs6A[code];
+    totalCoef6A_s1 += coefs6A[code];
+  }
+  const avg6A_s1 = Math.round((totalWeighted6A_s1 / totalCoef6A_s1) * 100) / 100;
+
+  const grades6A_s2: Record<string, { i1: number; i2: number; devoir: number; compo: number }> = {
+    MATH: { i1: 8,  i2: 9,  devoir: 9,  compo: 8  },
+    PC:   { i1: 7,  i2: 8,  devoir: 8,  compo: 7  },
+    SVT:  { i1: 11, i2: 10, devoir: 11, compo: 11 },
+    FR:   { i1: 10, i2: 9,  devoir: 10, compo: 10 },
+    ANGL: { i1: 12, i2: 11, devoir: 11, compo: 12 },
+    HIST: { i1: 10, i2: 10, devoir: 10, compo: 10 },
+    EPS:  { i1: 14, i2: 13, devoir: 14, compo: 13 },
+  };
+  let totalWeighted6A_s2 = 0, totalCoef6A_s2 = 0;
+  for (const code of Object.keys(grades6A_s2)) {
+    const m = calcMoyenne(grades6A_s2[code]);
+    totalWeighted6A_s2 += m * coefs6A[code];
+    totalCoef6A_s2 += coefs6A[code];
+  }
+  const avg6A_s2 = Math.round((totalWeighted6A_s2 / totalCoef6A_s2) * 100) / 100;
+
+  // Terminale D — student3
+  const coefsTermD: Record<string, number> = {
+    MATH: 7, PC: 6, SVT: 5, FR: 3, ANGL: 3, HIST: 2, PHILO: 3, EPS: 2, ECON: 2,
+  };
+  const gradesTermD_s3: Record<string, { i1: number; i2: number; devoir: number; compo: number }> = {
+    MATH:  { i1: 14, i2: 13, devoir: 15, compo: 14 },
+    PC:    { i1: 12, i2: 13, devoir: 12, compo: 13 },
+    SVT:   { i1: 13, i2: 14, devoir: 13, compo: 13 },
+    FR:    { i1: 11, i2: 10, devoir: 11, compo: 11 },
+    ANGL:  { i1: 13, i2: 14, devoir: 13, compo: 13 },
+    HIST:  { i1: 12, i2: 11, devoir: 12, compo: 12 },
+    PHILO: { i1: 11, i2: 12, devoir: 11, compo: 12 },
+    EPS:   { i1: 16, i2: 17, devoir: 16, compo: 16 },
+    ECON:  { i1: 12, i2: 11, devoir: 12, compo: 12 },
+  };
+  let totalWeightedTD = 0, totalCoefTD = 0;
+  for (const code of Object.keys(gradesTermD_s3)) {
+    const m = calcMoyenne(gradesTermD_s3[code]);
+    totalWeightedTD += m * coefsTermD[code];
+    totalCoefTD += coefsTermD[code];
+  }
+  const avgTD = Math.round((totalWeightedTD / totalCoefTD) * 100) / 100;
+
+  function computeMentionSeed(avg: number): string {
+    if (avg >= 18) return 'Excellent';
+    if (avg >= 16) return 'Très Bien';
+    if (avg >= 14) return 'Bien';
+    if (avg >= 12) return 'Assez Bien';
+    if (avg >= 10) return 'Passable';
+    return 'Insuffisant';
+  }
+
+  // student1 rank=1, student2 rank=2 (both in 6A)
+  const report6A_s1 = await prisma.reportCard.upsert({
+    where: { studentId_academicYear_termNumber: { studentId: student1.id, academicYear: '2024-2025', termNumber: 1 } },
+    update: {},
+    create: {
+      studentId:        student1.id,
+      classId:          class6A.id,
+      academicYear:     '2024-2025',
+      termType:         'TRIMESTRE',
+      termNumber:       1,
+      termName:         '1er Trimestre',
+      status:           'PUBLISHED',
+      publishedAt:      new Date('2024-12-20'),
+      overallAverage:   avg6A_s1,
+      classRank:        1,
+      classSize:        2,
+      classHighest:     avg6A_s1,
+      classLowest:      avg6A_s2,
+      classAverage:     Math.round(((avg6A_s1 + avg6A_s2) / 2) * 100) / 100,
+      mention:          computeMentionSeed(avg6A_s1),
+      conductRating:    'BIEN',
+      attendanceDays:   60,
+      attendancePresent: 59,
+      attendanceLate:   1,
+      attendanceAbsent: 0,
+      teacherComment:   'Élève sérieux, continue sur cette lancée.',
+      principalComment: 'Bon trimestre, félicitations.',
+      createdById:      teacher1.id,
+    },
+  });
+
+  for (const code of Object.keys(grades6A_s1)) {
+    const g  = grades6A_s1[code];
+    const m  = calcMoyenne(g);
+    const c  = coefs6A[code];
+    await prisma.grade.upsert({
+      where: { reportCardId_subjectId: { reportCardId: report6A_s1.id, subjectId: subjects[code].id } },
+      update: {},
+      create: {
+        reportCardId:     report6A_s1.id,
+        subjectId:        subjects[code].id,
+        noteInterro1:     g.i1,
+        noteInterro2:     g.i2,
+        noteDevoir:       g.devoir,
+        noteComposition:  g.compo,
+        moyenneMatiere:   m,
+        score:            m,
+        coefficient:      c,
+        weightedScore:    Math.round(m * c * 100) / 100,
+        appreciation:     appreciation(m),
+        teacherName:      teacher1.name,
+      },
+    });
+  }
+
+  const report6A_s2 = await prisma.reportCard.upsert({
+    where: { studentId_academicYear_termNumber: { studentId: student2.id, academicYear: '2024-2025', termNumber: 1 } },
+    update: {},
+    create: {
+      studentId:        student2.id,
+      classId:          class6A.id,
+      academicYear:     '2024-2025',
+      termType:         'TRIMESTRE',
+      termNumber:       1,
+      termName:         '1er Trimestre',
+      status:           'PUBLISHED',
+      publishedAt:      new Date('2024-12-20'),
+      overallAverage:   avg6A_s2,
+      classRank:        2,
+      classSize:        2,
+      classHighest:     avg6A_s1,
+      classLowest:      avg6A_s2,
+      classAverage:     Math.round(((avg6A_s1 + avg6A_s2) / 2) * 100) / 100,
+      mention:          computeMentionSeed(avg6A_s2),
+      conductRating:    'PASSABLE',
+      attendanceDays:   60,
+      attendancePresent: 55,
+      attendanceLate:   3,
+      attendanceAbsent: 2,
+      teacherComment:   'Des efforts sont encore nécessaires, surtout en sciences.',
+      principalComment: 'Trimestre difficile, un soutien est recommandé.',
+      createdById:      teacher1.id,
+    },
+  });
+
+  for (const code of Object.keys(grades6A_s2)) {
+    const g  = grades6A_s2[code];
+    const m  = calcMoyenne(g);
+    const c  = coefs6A[code];
+    await prisma.grade.upsert({
+      where: { reportCardId_subjectId: { reportCardId: report6A_s2.id, subjectId: subjects[code].id } },
+      update: {},
+      create: {
+        reportCardId:     report6A_s2.id,
+        subjectId:        subjects[code].id,
+        noteInterro1:     g.i1,
+        noteInterro2:     g.i2,
+        noteDevoir:       g.devoir,
+        noteComposition:  g.compo,
+        moyenneMatiere:   m,
+        score:            m,
+        coefficient:      c,
+        weightedScore:    Math.round(m * c * 100) / 100,
+        appreciation:     appreciation(m),
+        teacherName:      teacher1.name,
+      },
+    });
+  }
+
+  const reportTD_s3 = await prisma.reportCard.upsert({
+    where: { studentId_academicYear_termNumber: { studentId: student3.id, academicYear: '2024-2025', termNumber: 1 } },
+    update: {},
+    create: {
+      studentId:        student3.id,
+      classId:          classTleD.id,
+      academicYear:     '2024-2025',
+      termType:         'TRIMESTRE',
+      termNumber:       1,
+      termName:         '1er Trimestre',
+      status:           'PUBLISHED',
+      publishedAt:      new Date('2024-12-20'),
+      overallAverage:   avgTD,
+      classRank:        1,
+      classSize:        1,
+      classHighest:     avgTD,
+      classLowest:      avgTD,
+      classAverage:     avgTD,
+      mention:          computeMentionSeed(avgTD),
+      conductRating:    'TRES_BIEN',
+      attendanceDays:   60,
+      attendancePresent: 60,
+      attendanceLate:   0,
+      attendanceAbsent: 0,
+      teacherComment:   'Excellent travail, continue ainsi pour le bac.',
+      principalComment: 'Tableau d\'honneur. Félicitations au conseil des professeurs.',
+      honorCouncil:     true,
+      createdById:      teacher2.id,
+    },
+  });
+
+  for (const code of Object.keys(gradesTermD_s3)) {
+    const g  = gradesTermD_s3[code];
+    const m  = calcMoyenne(g);
+    const c  = coefsTermD[code];
+    await prisma.grade.upsert({
+      where: { reportCardId_subjectId: { reportCardId: reportTD_s3.id, subjectId: subjects[code].id } },
+      update: {},
+      create: {
+        reportCardId:     reportTD_s3.id,
+        subjectId:        subjects[code].id,
+        noteInterro1:     g.i1,
+        noteInterro2:     g.i2,
+        noteDevoir:       g.devoir,
+        noteComposition:  g.compo,
+        moyenneMatiere:   m,
+        score:            m,
+        coefficient:      c,
+        weightedScore:    Math.round(m * c * 100) / 100,
+        appreciation:     appreciation(m),
+        teacherName:      teacher2.name,
+      },
+    });
+  }
+
+  console.log(`✅ Report cards seeded:`);
+  console.log(`   student1 (6A T1): moyenne ${avg6A_s1}/20 — rank 1/2`);
+  console.log(`   student2 (6A T1): moyenne ${avg6A_s2}/20 — rank 2/2`);
+  console.log(`   student3 (TleD T1): moyenne ${avgTD}/20 — rank 1/1`);
 
   // ─── Summary ────────────────────────────────────────────────────────────
   console.log('\n✅ Seed complete!\n');

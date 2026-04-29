@@ -42,7 +42,7 @@ function StudentDashboardPage() {
   return (
     <AppShell title="Tableau de bord">
       <PageHeader
-        title={`Bonjour, ${user?.firstName ?? 'Étudiant'}`}
+        title={`Bonjour, ${user?.name ?? 'Étudiant'}`}
         subtitle="Votre espace personnel"
       />
 
@@ -79,18 +79,32 @@ function StudentDashboardPage() {
         {/* Stats */}
         <div className="student-dash__stats">
           <Card className="student-dash__stat">
-            <span className="student-dash__stat-icon">📋</span>
+            <div className="student-dash__stat-icon student-dash__stat-icon--teal">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+              </svg>
+            </div>
             <span className="student-dash__stat-value">{published.length}</span>
             <span className="student-dash__stat-label">Bulletin{published.length !== 1 ? 's' : ''}</span>
           </Card>
           <Card className="student-dash__stat">
-            <span className="student-dash__stat-icon">📢</span>
+            <div className="student-dash__stat-icon student-dash__stat-icon--orange">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 11l19-9-9 19-2-8-8-2z"/>
+              </svg>
+            </div>
             <span className="student-dash__stat-value">{bulletins.filter((b) => b.publishedAt).length}</span>
             <span className="student-dash__stat-label">Annonce{bulletins.length !== 1 ? 's' : ''}</span>
           </Card>
           <Link to="/student/progress" className="student-dash__stat-link">
             <Card className="student-dash__stat">
-              <span className="student-dash__stat-icon">📈</span>
+              <div className="student-dash__stat-icon student-dash__stat-icon--blue">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+                  <polyline points="16 7 22 7 22 13"/>
+                </svg>
+              </div>
               <span className="student-dash__stat-label">Voir ma progression</span>
             </Card>
           </Link>

@@ -10,7 +10,23 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:4000/api/auth/me)",
       "Bash(curl -s -X POST http://localhost:4000/api/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"admin@demo.novabulletin.local\",\"password\":\"Admin@123\"}')",
       "Bash(NODE_OPTIONS=\"--max-old-space-size=4096\" npm run build)",
-      "Bash(xargs grep *)"
+      "Bash(xargs grep *)",
+      "WebFetch(domain:gitlab.com)",
+      "Read(//c/Users/felix/ZDesk/Frontend/public/assets/css/**)",
+      "Read(//c/Users/felix/ZDesk/**)",
+      "PowerShell(\\(Get-ChildItem \"C:\\\\Users\\\\felix\\\\E-Report\\\\backend\\\\node_modules\" -ErrorAction SilentlyContinue\\).Count)",
+      "PowerShell(cmd /c \"dir C:\\\\Users\\\\felix\\\\E-Report\\\\backend\\\\node_modules /a\")",
+      "PowerShell(cmd /c \"dir C:\\\\Users\\\\felix\\\\E-Report\\\\node_modules\\\\@prisma\\\\client\\\\ /a /b\")",
+      "PowerShell(cmd /c \"dir C:\\\\Users\\\\felix\\\\E-Report\\\\node_modules\\\\@prisma\\\\client\\\\.prisma\\\\client\\\\ /a /b\" 2>&1)",
+      "PowerShell($item = Get-Item \"C:\\\\Users\\\\felix\\\\E-Report\\\\node_modules\\\\@prisma\\\\client\" -Force; $item.LinkType; $item.Target)",
+      "PowerShell(cmd /c \"dir /al C:\\\\Users\\\\felix\\\\E-Report\\\\node_modules\\\\@prisma\\\\client\")",
+      "PowerShell(cmd /c \"dir /a C:\\\\Users\\\\felix\\\\E-Report\\\\node_modules\\\\@prisma\\\\client\")",
+      "Bash(python3 -c \"import json; d=json.load\\(open\\('C:/Users/felix/E-Report/node_modules/@prisma/client/package.json'\\)\\); print\\(json.dumps\\(d.get\\('exports', {}\\), indent=2\\)\\)\")",
+      "Bash(npx tsc *)",
+      "Bash(curl -s http://localhost:3000/health)",
+      "Bash(set PRISMA_MIGRATE_SKIP_GENERATE=true)",
+      "Bash(netstat -ano)",
+      "Bash(findstr \":4000\")"
     ]
   }
 }

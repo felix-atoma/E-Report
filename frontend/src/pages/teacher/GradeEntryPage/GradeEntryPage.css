@@ -1,0 +1,287 @@
+/* ── Fiche de notes ───────────────────────────────────────────────────── */
+
+.fdn__table-wrap {
+  overflow-x: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+  margin-bottom: 1rem;
+}
+
+.fdn__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────── */
+.fdn__th {
+  background: #f1f5f9;
+  border-bottom: 2px solid #e5e7eb;
+  border-right: 1px solid #e5e7eb;
+  padding: 0.5rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+  text-align: center;
+  vertical-align: middle;
+}
+.fdn__th:last-child { border-right: none; }
+.fdn__th span { display: block; font-size: 0.65rem; font-weight: 400; color: #9ca3af; }
+
+.fdn__th--name       { text-align: left; min-width: 160px; background: #f8fafc; }
+.fdn__th--group      { background: #e8f0fe; color: #1e40af; font-size: 0.72rem; }
+.fdn__th--note       { min-width: 72px; }
+.fdn__th--moyinterro { background: #dbeafe; }
+.fdn__th--devoir     { background: #fef9c3; min-width: 80px; }
+.fdn__th--compo      { background: #fae8ff; min-width: 80px; }
+.fdn__th--moy        { background: #dcfce7; min-width: 72px; font-weight: 700; }
+.fdn__th--coef       { min-width: 48px; }
+.fdn__th--total      { min-width: 60px; background: #f0fdf4; }
+.fdn__th--rang       { min-width: 52px; }
+.fdn__th--appr       { min-width: 100px; }
+.fdn__th--teacher    { min-width: 130px; text-align: left; }
+
+/* ── Rows ────────────────────────────────────────────────────────────── */
+.fdn__tr     { background: #fff; }
+.fdn__tr--alt { background: #f9fafb; }
+.fdn__tr:hover { background: #f0f9ff; transition: background 0.1s; }
+
+.fdn__td {
+  border-bottom: 1px solid #e5e7eb;
+  border-right: 1px solid #e5e7eb;
+  padding: 0.3rem 0.45rem;
+  text-align: center;
+  color: #1f2937;
+  vertical-align: middle;
+}
+.fdn__td:last-child { border-right: none; }
+
+.fdn__td--name     { text-align: left; padding-left: 0.75rem; }
+.fdn__td--computed { color: #6b7280; font-style: italic; background: #eff6ff; }
+.fdn__td--devoir   { background: rgba(254,252,193,0.25); }
+.fdn__td--compo    { background: rgba(250,232,255,0.25); }
+.fdn__td--moy      { font-weight: 700; background: rgba(220,252,231,0.35); }
+.fdn__td--coef     { color: #6b7280; font-size: 0.78rem; }
+.fdn__td--total    { font-weight: 600; background: rgba(240,253,244,0.5); }
+.fdn__td--rang     { font-weight: 700; color: #0f766e; }
+.fdn__td--appr     { font-size: 0.75rem; font-weight: 600; }
+.fdn__td--fail     { color: #ef4444 !important; }
+
+/* ── Student name ────────────────────────────────────────────────────── */
+.fdn__student-name { font-weight: 500; color: #1f2937; line-height: 1.3; }
+.fdn__student-id   { font-size: 0.68rem; color: #9ca3af; }
+
+/* ── Note input ──────────────────────────────────────────────────────── */
+.fdn__note-input {
+  width: 58px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  padding: 0.2rem 0.35rem;
+  font-size: 0.85rem;
+  font-family: inherit;
+  text-align: center;
+  color: #1f2937;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+.fdn__note-input:focus {
+  border-color: var(--color-primary, #f97316);
+  box-shadow: 0 0 0 2px rgba(249,115,22,0.15);
+}
+.fdn__note-input::placeholder { color: #d1d5db; }
+
+/* ── Teacher name input ──────────────────────────────────────────────── */
+.fdn__teacher-input {
+  width: 100%;
+  min-width: 110px;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.78rem;
+  font-family: inherit;
+  color: #374151;
+  background: transparent;
+  outline: none;
+  transition: border-color 0.12s;
+}
+.fdn__teacher-input:focus { border-color: var(--color-primary, #f97316); background: #fff; }
+
+/* ── Totals footer ───────────────────────────────────────────────────── */
+.fdn__totals td {
+  background: #f1f5f9;
+  border-top: 2px solid #cbd5e1;
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+.fdn__totals-label { text-align: right; color: #475569; padding-right: 1rem; }
+.fdn__totals-val   { color: #0f766e; }
+
+.fdn__stats td { background: #f8fafc; }
+.fdn__stats-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.78rem;
+  color: #374151;
+}
+
+/* ── Coefficient bar ─────────────────────────────────────────────────── */
+.fdn__coef-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+.fdn__coef-input {
+  width: 56px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 0.3rem 0.4rem;
+  font-size: 0.875rem;
+  font-family: inherit;
+  text-align: center;
+  outline: none;
+}
+.fdn__coef-input:focus {
+  border-color: var(--color-primary, #f97316);
+  box-shadow: 0 0 0 2px rgba(249,115,22,0.12);
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────── */
+.fdn__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+.fdn__btn--primary { background: var(--color-primary, #f97316); color: #fff; }
+.fdn__btn--primary:hover:not(:disabled) { background: var(--color-accent, #ea580c); box-shadow: 0 3px 10px rgba(249,115,22,0.3); }
+.fdn__btn--primary:disabled { opacity: 0.65; cursor: not-allowed; }
+.fdn__btn--secondary { background: #f3f4f6; color: #374151; }
+.fdn__btn--secondary:hover { background: #e5e7eb; }
+.fdn__btn--sign { background: #0f766e; color: #fff; }
+.fdn__btn--sign:hover:not(:disabled) { background: #0d6660; box-shadow: 0 3px 10px rgba(15,118,110,0.3); }
+.fdn__btn--sign:disabled { opacity: 0.65; cursor: not-allowed; }
+.fdn__btn--unsign { background: #f3f4f6; color: #92400e; border: 1px solid #fcd34d; }
+.fdn__btn--unsign:hover:not(:disabled) { background: #fef3c7; }
+
+/* ── Appreciation colours ────────────────────────────────────────────── */
+.appr--good { color: #0f766e; }
+.appr--pass { color: #d97706; }
+.appr--fail { color: #ef4444; }
+
+/* ── Toast ───────────────────────────────────────────────────────────── */
+.fdn__toast {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #d1fae5;
+  border: 1px solid #6ee7b7;
+  color: #065f46;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+.fdn__toast--error { background: #fef2f2; border-color: #fca5a5; color: #991b1b; }
+
+/* ── Legend ──────────────────────────────────────────────────────────── */
+.fdn__legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+  padding: 0.4rem 0.25rem;
+}
+.fdn__legend-sep { color: #d1d5db; }
+
+.fdn__empty {
+  text-align: center;
+  padding: 2rem;
+  color: #9ca3af;
+  font-size: 0.875rem;
+}
+.fdn__error { padding: 2rem; color: #ef4444; font-size: 0.875rem; }
+
+/* ── Locked inputs ───────────────────────────────────────────────────── */
+.fdn__note-input--locked,
+.fdn__teacher-input:disabled {
+  background: #f3f4f6;
+  color: #6b7280;
+  cursor: not-allowed;
+  border-color: #e5e7eb;
+}
+
+/* ── Signature preview (after signing) ──────────────────────────────── */
+.fdn__sig-preview {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+.fdn__sig-preview__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #6b7280;
+  white-space: nowrap;
+}
+.fdn__sig-preview__img {
+  max-height: 60px;
+  max-width: 220px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background: #fff;
+  object-fit: contain;
+}
+
+/* ── Sign modal body ─────────────────────────────────────────────────── */
+.fdn__sign-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.fdn__sign-modal-info {
+  font-size: 0.85rem;
+  color: #374151;
+  background: #fef9c3;
+  border: 1px solid #fcd34d;
+  border-radius: 6px;
+  padding: 0.65rem 0.9rem;
+  line-height: 1.5;
+}
+
+/* ── Signature banner ────────────────────────────────────────────────── */
+.fdn__signature-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #d1fae5;
+  border: 1px solid #6ee7b7;
+  border-left: 4px solid #0f766e;
+  color: #064e3b;
+  border-radius: 8px;
+  padding: 0.75rem 1.1rem;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+.fdn__signature-banner__icon { font-size: 1.1rem; flex-shrink: 0; }

@@ -1,46 +1,127 @@
-.auth-page {
+/* ── ZDesk-style auth layout ─────────────────────────────────────────── */
+/* Body background matches ZDesk's --ins-body-bg (#f5f6f8)               */
+.auth-box {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
-  padding: 1.5rem;
+  padding: 3rem 1.5rem;
+  background: #f5f6f8;
 }
-.auth-card {
-  background: #fff;
-  border-radius: 16px;
-  padding: 2.5rem 2rem;
-  width: 100%;
-  max-width: 400px;
-  box-shadow: 0 25px 60px rgba(0,0,0,0.3);
-}
-.auth-card__logo {
+
+.auth-container {
   display: flex;
-  justify-content: center;
-  margin-bottom: 1rem;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 440px;
+  gap: 1rem;
 }
-.auth-card__logo-mark {
-  width: 52px; height: 52px;
-  background: var(--color-primary, #1e40af);
+
+/* ── Session / redirect alert (above card) ───────────────────────────── */
+.auth-alert {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  border-radius: 6px;
+  padding: 0.65rem 0.875rem;
+  font-size: 0.875rem;
+}
+
+.auth-alert--warning {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-left: 3px solid #f59e0b;
+  color: #92400e;
+}
+
+/* ── ZDesk hard-card (outer depth shadow) ────────────────────────────── */
+.hard-card {
+  width: 100%;
+  border-radius: 22px;
+  padding: 6px;
+  background: #ffffff;
+  box-shadow:
+    4px 8px 18px rgba(0, 0, 0, 0.15),
+    -8px -8px 18px rgba(255, 255, 255, 0.7);
+}
+
+/* ── ZDesk embossed-card (inner inset shadow) ────────────────────────── */
+.embossed-card {
+  border-radius: 18px;
+  border: none;
+  box-shadow:
+    inset 8px 8px 18px rgba(0, 0, 0, 0.18),
+    inset -8px -8px 18px rgba(255, 255, 255, 0.9);
+}
+
+/* ── Login card inner padding ────────────────────────────────────────── */
+.login-card {
+  position: relative;
+  overflow: hidden;
+  padding: 1.75rem 1.75rem 1.5rem;
+  background: #fff;
+}
+
+/* ── Decorative corner SVG ───────────────────────────────────────────── */
+.login-card__corner-deco {
+  position: absolute;
+  top: 0;
+  right: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── Brand: centered stack (matches ZDesk auth-brand text-center) ─────── */
+.login-card__brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+
+.login-card__logo-mark {
+  width: 64px;
+  height: 64px;
+  background: var(--color-primary, #f97316);
   border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
   font-weight: 800;
-  font-size: 1.1rem;
+  font-size: 1.25rem;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.35);
+  margin-bottom: 0.625rem;
 }
-.auth-card__title {
-  text-align: center; margin: 0 0 0.25rem;
-  font-size: 1.4rem; font-weight: 700;
-  color: var(--color-text, #1f2937);
+
+.login-card__app-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1f2937;
+  display: block;
 }
-.auth-card__subtitle {
-  text-align: center; margin: 0 0 1.5rem;
-  font-size: 0.875rem; color: var(--color-text-muted, #6b7280);
+
+.login-card__subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0.5rem 0 0;
+  max-width: 280px;
 }
-.auth-card__info {
-  background: #dbeafe; color: #1e40af;
-  border-radius: 6px; padding: 0.5rem 0.75rem;
-  font-size: 0.875rem; margin: 0 0 1rem; text-align: center;
+
+/* ── Footer ──────────────────────────────────────────────────────────── */
+.auth-footer {
+  font-size: 0.78rem;
+  color: #8a969c;
+  text-align: center;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .auth-box { padding: 1.5rem 1rem; }
+  .login-card { padding: 1.5rem 1.25rem 1.25rem; }
 }

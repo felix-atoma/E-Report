@@ -5,3 +5,9 @@ img, picture, video, canvas, svg { display: block; max-width: 100%; }
 input, button, textarea, select { font: inherit; }
 ul, ol { list-style: none; }
 a { color: inherit; text-decoration: none; }
+
+/* ZDesk-style thin scrollbars */
+*::-webkit-scrollbar { width: 4px !important; height: 4px !important; }
+*::-webkit-scrollbar-track { background: transparent !important; }
+*::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 10px; }
+*::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.35); }

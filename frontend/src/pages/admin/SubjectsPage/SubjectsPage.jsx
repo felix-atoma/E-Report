@@ -15,32 +15,27 @@ import SearchBar from '../../../components/common/SearchBar/SearchBar';
 import './SubjectsPage.css';
 
 const CATEGORIES = [
-  { value: 'SCIENCES',    label: 'Sciences' },
-  { value: 'LETTRES',     label: 'Lettres' },
-  { value: 'MATHS',       label: 'Mathématiques' },
-  { value: 'LANGUES',     label: 'Langues' },
-  { value: 'ARTS',        label: 'Arts' },
-  { value: 'EPS',         label: 'EPS' },
-  { value: 'TECHNIQUES',  label: 'Techniques' },
-  { value: 'AUTRE',       label: 'Autre' },
+  { value: 'SCIENCES',   label: 'Sciences' },
+  { value: 'LETTRES',    label: 'Lettres' },
+  { value: 'MATHS',      label: 'Mathématiques' },
+  { value: 'LANGUES',    label: 'Langues' },
+  { value: 'ARTS',       label: 'Arts' },
+  { value: 'EPS',        label: 'EPS' },
+  { value: 'TECHNIQUES', label: 'Techniques' },
+  { value: 'AUTRE',      label: 'Autre' },
 ];
 
 const CATEGORY_VARIANT = {
-  SCIENCES: 'info',
-  LETTRES:  'success',
-  MATHS:    'warning',
-  LANGUES:  'danger',
-  ARTS:     'default',
-  EPS:      'info',
-  TECHNIQUES: 'warning',
-  AUTRE:    'default',
+  SCIENCES: 'info', LETTRES: 'success', MATHS: 'warning',
+  LANGUES: 'danger', ARTS: 'default', EPS: 'info',
+  TECHNIQUES: 'warning', AUTRE: 'default',
 };
 
-const EMPTY_FORM = { name: '', code: '', category: '', description: '' };
+const EMPTY_FORM = { nameFr: '', code: '', category: '', description: '' };
 
 function validate(form) {
   const errors = {};
-  if (!form.name.trim()) errors.name = 'Nom de la matière requis';
+  if (!form.nameFr.trim()) errors.nameFr = 'Nom de la matière requis';
   return errors;
 }
 
@@ -49,15 +44,15 @@ function SubjectForm({ form, errors, onChange }) {
     <div className="subject-form">
       <div className="subject-form__row">
         <Input
-          id="name" label="Nom de la matière" required
-          value={form.name} error={errors.name}
-          placeholder="ex: Mathématiques, Français"
-          onChange={(e) => onChange('name', e.target.value)}
+          id="nameFr" label="Nom de la matière" required
+          value={form.nameFr} error={errors.nameFr}
+          placeholder="ex: Mathématiques, Français…"
+          onChange={(e) => onChange('nameFr', e.target.value)}
         />
         <Input
           id="code" label="Code"
           value={form.code}
-          placeholder="ex: MATH, FR"
+          placeholder="ex: MATH (auto si vide)"
           onChange={(e) => onChange('code', e.target.value)}
         />
       </div>
@@ -96,8 +91,10 @@ function SubjectsPage() {
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     return subjects.filter((s) => {
-      const matchSearch = !q || s.name.toLowerCase().includes(q) || (s.code ?? '').toLowerCase().includes(q);
-      const matchCat    = !catFilter || s.category === catFilter;
+      const matchSearch = !q
+        || (s.nameFr ?? '').toLowerCase().includes(q)
+        || (s.code  ?? '').toLowerCase().includes(q);
+      const matchCat = !catFilter || s.category === catFilter;
       return matchSearch && matchCat;
     });
   }, [subjects, search, catFilter]);
@@ -129,7 +126,7 @@ function SubjectsPage() {
   function openEdit(subject) {
     setSelected(subject);
     setForm({
-      name:        subject.name        ?? '',
+      nameFr:      subject.nameFr      ?? '',
       code:        subject.code        ?? '',
       category:    subject.category    ?? '',
       description: subject.description ?? '',
@@ -154,7 +151,7 @@ function SubjectsPage() {
     const errs = validate(form);
     if (Object.keys(errs).length) { setErrors(errs); return; }
     const payload = {
-      ...form,
+      nameFr:      form.nameFr,
       code:        form.code        || undefined,
       category:    form.category    || undefined,
       description: form.description || undefined,
@@ -170,11 +167,11 @@ function SubjectsPage() {
 
   const columns = [
     {
-      key: 'name',
+      key: 'nameFr',
       label: 'Matière',
       render: (s) => (
         <div>
-          <div className="subjects-table__name">{s.name}</div>
+          <div className="subjects-table__name">{s.nameFr}</div>
           {s.code && <div className="subjects-table__code">{s.code}</div>}
         </div>
       ),
@@ -193,11 +190,6 @@ function SubjectsPage() {
       key: 'description',
       label: 'Description',
       render: (s) => s.description ?? <span className="subjects-table__empty">—</span>,
-    },
-    {
-      key: 'classes',
-      label: 'Classes',
-      render: (s) => s._count?.classes ?? s.classCount ?? '—',
     },
     {
       key: 'actions',
@@ -267,7 +259,7 @@ function SubjectsPage() {
         onConfirm={() => deleteMutation.mutate(confirm.id)}
         loading={deleteMutation.isPending}
         title="Supprimer la matière"
-        message={`Supprimer "${confirm?.name}" ? Cette action est irréversible.`}
+        message={`Supprimer "${confirm?.nameFr}" ? Cette action est irréversible.`}
         confirmLabel="Supprimer"
         variant="danger"
       />

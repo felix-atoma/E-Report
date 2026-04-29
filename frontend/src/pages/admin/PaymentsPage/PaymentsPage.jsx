@@ -51,10 +51,13 @@ function validate(form) {
 }
 
 function PaymentForm({ form, errors, onChange, students }) {
-  const studentOptions = students.map((s) => ({
-    value: s.id,
-    label: `${s.firstName} ${s.lastName}${s.class?.name ? ` — ${s.class.name}` : ''}`,
-  }));
+  const studentOptions = students.map((s) => {
+    const cls = s.classes?.[0]?.class ?? s.class;
+    return {
+      value: s.id,
+      label: `${s.user?.name ?? s.admissionNumber}${cls?.name ? ` — ${cls.name}` : ''}`,
+    };
+  });
 
   return (
     <div className="payment-form">
@@ -116,7 +119,7 @@ function PaymentsPage() {
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     return payments.filter((p) => {
-      const name = `${p.student?.firstName ?? ''} ${p.student?.lastName ?? ''}`.toLowerCase();
+      const name = (p.student?.user?.name ?? p.student?.admissionNumber ?? '').toLowerCase();
       const matchSearch = !q || name.includes(q) || (p.reference ?? '').toLowerCase().includes(q);
       const matchStatus = !statusFilter || p.status === statusFilter;
       return matchSearch && matchStatus;
@@ -164,10 +167,12 @@ function PaymentsPage() {
       render: (p) => (
         <div>
           <div className="payments-table__name">
-            {p.student ? `${p.student.firstName} ${p.student.lastName}` : '—'}
+            {p.student ? (p.student.user?.name ?? p.student.admissionNumber ?? '—') : '—'}
           </div>
-          {p.student?.class?.name && (
-            <div className="payments-table__class">{p.student.class.name}</div>
+          {(p.student?.classes?.[0]?.class?.name ?? p.student?.class?.name) && (
+            <div className="payments-table__class">
+              {p.student.classes?.[0]?.class?.name ?? p.student.class?.name}
+            </div>
           )}
         </div>
       ),

@@ -40,7 +40,7 @@ function StudentProfilePage() {
   if (isLoading) return <AppShell title="Profil élève"><Loading /></AppShell>;
 
   const fullName = student
-    ? `${student.firstName ?? ''} ${student.lastName ?? ''}`.trim() || student.name || '—'
+    ? (student.user?.name ?? student.admissionNumber ?? '—')
     : '—';
 
   const dob = student?.dateOfBirth

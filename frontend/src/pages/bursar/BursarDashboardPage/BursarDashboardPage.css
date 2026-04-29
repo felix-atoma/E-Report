@@ -1,0 +1,146 @@
+.bursar-dash__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.bursar-dash__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+  padding: 1.25rem 1.5rem;
+}
+
+.bursar-dash__stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.25rem;
+}
+.bursar-dash__stat-icon--teal   { background: #d1fae5; color: #0f766e; }
+.bursar-dash__stat-icon--blue   { background: #dbeafe; color: #1d4ed8; }
+.bursar-dash__stat-icon--orange { background: #ffedd5; color: #ea580c; }
+.bursar-dash__stat-icon--yellow { background: #fef9c3; color: #b45309; }
+
+.bursar-dash__stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text, #1f2937);
+  line-height: 1;
+}
+
+.bursar-dash__stat-label {
+  font-size: 0.78rem;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.bursar-dash__body {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (max-width: 860px) {
+  .bursar-dash__body { grid-template-columns: 1fr; }
+}
+
+.bursar-dash__recent,
+.bursar-dash__actions {
+  padding: 1.25rem;
+}
+
+.bursar-dash__card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.bursar-dash__card-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text, #1f2937);
+  margin: 0;
+}
+
+.bursar-dash__see-all {
+  font-size: 0.8rem;
+  color: var(--color-primary, #f97316);
+  text-decoration: none;
+  font-weight: 500;
+}
+.bursar-dash__see-all:hover { text-decoration: underline; }
+
+.bursar-dash__empty {
+  font-size: 0.875rem;
+  color: var(--color-text-muted, #6b7280);
+  text-align: center;
+  padding: 1.5rem 0;
+}
+
+.bursar-dash__table-wrap { overflow-x: auto; }
+
+.bursar-dash__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.bursar-dash__table th {
+  text-align: left;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted, #6b7280);
+  border-bottom: 2px solid var(--color-border, #e5e7eb);
+  background: var(--color-surface-alt, #f9fafb);
+  white-space: nowrap;
+}
+
+.bursar-dash__table td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--color-border, #f3f4f6);
+  color: var(--color-text, #1f2937);
+  vertical-align: middle;
+}
+
+.bursar-dash__student-name { font-weight: 500; }
+.bursar-dash__student-class { font-size: 0.72rem; color: var(--color-text-muted, #6b7280); }
+.bursar-dash__amount { font-weight: 600; color: #0f766e; white-space: nowrap; }
+.bursar-dash__date { color: var(--color-text-muted, #6b7280); white-space: nowrap; }
+
+.bursar-dash__quick-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.bursar-dash__quick-link {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  background: var(--color-surface-alt, #f9fafb);
+  color: var(--color-text, #1f2937);
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.12s;
+  border: 1px solid transparent;
+}
+.bursar-dash__quick-link:hover {
+  background: #fff;
+  border-color: var(--color-border, #e5e7eb);
+  color: var(--color-primary, #f97316);
+}
+.bursar-dash__quick-link svg { flex-shrink: 0; }

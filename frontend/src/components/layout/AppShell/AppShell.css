@@ -4,6 +4,57 @@
   background: var(--color-bg-subtle, #f8fafc);
 }
 
+/* ── ZDesk-style fixed right-side floating buttons ─────────────────────── */
+.side-btn-wrapper {
+  position: fixed;
+  top: 40%;
+  right: 0;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 200;
+  padding: 4px;
+  box-shadow: -2px 4px 12px rgba(0,0,0,0.15);
+  border-radius: 6px 0 0 6px;
+}
+
+.side-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, filter 0.2s;
+  border-radius: 4px;
+}
+
+.side-btn:hover {
+  transform: scale(1.1);
+  filter: brightness(0.92);
+}
+
+.side-btn--green {
+  background: #d4edda;
+  color: #155724;
+}
+
+.side-btn--red {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.side-btn--blue {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+@media (max-width: 768px) {
+  .side-btn-wrapper { display: none; }
+}
+
 .app-shell__main {
   flex: 1;
   display: flex;

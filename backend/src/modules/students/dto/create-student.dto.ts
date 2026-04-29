@@ -1,11 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsDateString, IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateStudentDto {
-  @ApiProperty({ example: 'LYC-2024-001' })
+  @ApiPropertyOptional({ example: 'LYC-2024-001', description: 'Auto-generated if omitted' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  admissionNumber: string;
+  admissionNumber?: string;
 
   @ApiProperty({ example: 'Ama Kofi', description: 'Student full name' })
   @IsString()
@@ -18,13 +18,23 @@ export class CreateStudentDto {
 
   @ApiPropertyOptional({ example: 'ama.kofi@parent.tg', description: 'Student email (creates linked user account)' })
   @IsOptional()
-  @IsString()
+  @IsEmail()
   email?: string;
 
   @ApiPropertyOptional({ description: 'UUID of existing parent User account' })
   @IsOptional()
   @IsString()
   parentId?: string;
+
+  @ApiPropertyOptional({ example: 'parent@example.tg', description: 'Parent email — looked up and linked automatically' })
+  @IsOptional()
+  @IsEmail()
+  parentEmail?: string;
+
+  @ApiPropertyOptional({ description: 'UUID of class to enroll the student in' })
+  @IsOptional()
+  @IsString()
+  classId?: string;
 
   @ApiPropertyOptional({ example: '2024-01-10' })
   @IsOptional()

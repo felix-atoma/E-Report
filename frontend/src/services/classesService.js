@@ -8,6 +8,9 @@ export const classesService = {
   deactivate: (id) => api.patch(`/classes/${id}/deactivate`),
   enrollStudent: (classId, studentId) => api.post(`/classes/${classId}/enroll`, { studentId }),
   unenrollStudent: (classId, studentId) => api.delete(`/classes/${classId}/students/${studentId}`),
-  addSubject: (classId, subjectId) => api.post(`/classes/${classId}/subjects`, { subjectId }),
+  addSubject: (classId, subjectId, teacherId) =>
+    api.post(`/classes/${classId}/subjects`, { subjectId, ...(teacherId ? { teacherId } : {}) }),
+  updateSubjectTeacher: (classId, subjectId, teacherId) =>
+    api.patch(`/classes/${classId}/subjects/${subjectId}`, { teacherId: teacherId || null }),
   removeSubject: (classId, subjectId) => api.delete(`/classes/${classId}/subjects/${subjectId}`),
 };

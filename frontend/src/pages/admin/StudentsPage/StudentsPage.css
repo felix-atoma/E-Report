@@ -43,10 +43,124 @@
   gap: 1rem;
 }
 
+/* Photo picker */
+.student-form__photo-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: var(--color-surface-alt, #f9fafb);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+}
+
+.student-form__photo-wrap {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  cursor: pointer;
+  background: var(--color-border, #e5e7eb);
+  border: 2px solid var(--color-border, #d1d5db);
+}
+
+.student-form__photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.student-form__photo-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted, #9ca3af);
+}
+
+.student-form__photo-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.student-form__photo-wrap:hover .student-form__photo-overlay { opacity: 1; }
+
+.student-form__photo-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.student-form__photo-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text, #1f2937);
+}
+
+.student-form__photo-hint {
+  font-size: 0.72rem;
+  color: var(--color-text-muted, #9ca3af);
+}
+
+.student-form__photo-ready {
+  font-size: 0.72rem;
+  color: #16a34a;
+  font-weight: 500;
+}
+
 .student-form__row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
+}
+
+.student-form__matricule-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--color-text-muted, #6b7280);
+  background: var(--color-surface-alt, #f9fafb);
+  border: 1px dashed var(--color-border, #d1d5db);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+}
+
+.student-form__matricule-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  background: var(--color-surface-alt, #f9fafb);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 6px;
+}
+
+.student-form__matricule-label {
+  font-size: 0.78rem;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.student-form__matricule-value {
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-family: monospace;
+  color: var(--color-text, #1f2937);
+  letter-spacing: 0.05em;
 }
 
 @media (max-width: 480px) {

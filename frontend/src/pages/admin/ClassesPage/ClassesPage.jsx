@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { classesService } from '../../../services/classesService';
 import { usersService } from '../../../services/usersService';
+import { subjectsService } from '../../../services/subjectsService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Table from '../../../components/common/Table/Table';
@@ -13,6 +14,7 @@ import Select from '../../../components/common/Select/Select';
 import Button from '../../../components/common/Button/Button';
 import Badge from '../../../components/common/Badge/Badge';
 import SearchBar from '../../../components/common/SearchBar/SearchBar';
+import Loading from '../../../components/common/Loading/Loading';
 import './ClassesPage.css';
 
 const LEVELS = [
@@ -40,11 +42,7 @@ function validate(form) {
 }
 
 function ClassForm({ form, errors, onChange, teachers }) {
-  const teacherOptions = teachers.map((t) => ({
-    value: t.id,
-    label: `${t.firstName} ${t.lastName}`,
-  }));
-
+  const teacherOptions = teachers.map((t) => ({ value: t.id, label: t.name ?? t.email }));
   return (
     <div className="class-form">
       <Input
@@ -76,7 +74,7 @@ function ClassForm({ form, errors, onChange, teachers }) {
           onChange={(e) => onChange('capacity', e.target.value)}
         />
         <Select
-          id="teacherId" label="Enseignant principal"
+          id="teacherId" label="Professeur principal (titulaire)"
           value={form.teacherId}
           placeholder="Aucun"
           options={teacherOptions}
@@ -87,15 +85,175 @@ function ClassForm({ form, errors, onChange, teachers }) {
   );
 }
 
+/* ── Manage Subjects modal ── */
+function ManageSubjectsModal({ cls, teachers, allSubjects, onClose, qc }) {
+  const [addSubjectId, setAddSubjectId] = useState('');
+  const [addTeacherId, setAddTeacherId] = useState('');
+
+  const { data: detail, isLoading } = useQuery({
+    queryKey: ['class-detail', cls.id],
+    queryFn: () => classesService.get(cls.id).then((r) => r.data),
+  });
+
+  const teacherOptions = [
+    { value: '', label: '— Aucun —' },
+    ...teachers.map((t) => ({ value: t.id, label: t.name ?? t.email })),
+  ];
+
+  const assignedIds  = new Set((detail?.subjects ?? []).map((cs) => cs.subjectId));
+  const availableSubs = allSubjects.filter((s) => !assignedIds.has(s.id));
+  const subjectOptions = availableSubs.map((s) => ({
+    value: s.id,
+    label: s.nameFr ?? s.nameEn ?? s.code,
+  }));
+
+  const addMutation = useMutation({
+    mutationFn: ({ subjectId, teacherId }) =>
+      classesService.addSubject(cls.id, subjectId, teacherId || undefined),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['class-detail', cls.id] });
+      toast.success('Matière ajoutée');
+      setAddSubjectId('');
+      setAddTeacherId('');
+    },
+    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur'),
+  });
+
+  const updateTeacherMutation = useMutation({
+    mutationFn: ({ subjectId, teacherId }) =>
+      classesService.updateSubjectTeacher(cls.id, subjectId, teacherId || null),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['class-detail', cls.id] });
+      toast.success('Enseignant mis à jour');
+    },
+    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur'),
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: (subjectId) => classesService.removeSubject(cls.id, subjectId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['class-detail', cls.id] });
+      toast.success('Matière retirée');
+    },
+    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur'),
+  });
+
+  function handleAdd() {
+    if (!addSubjectId) { toast.error('Sélectionner une matière'); return; }
+    addMutation.mutate({ subjectId: addSubjectId, teacherId: addTeacherId });
+  }
+
+  const subjects = detail?.subjects ?? [];
+
+  return (
+    <Modal
+      open
+      onClose={onClose}
+      title={`Matières — ${cls.name}`}
+      size="lg"
+      footer={<Button onClick={onClose}>Fermer</Button>}
+    >
+      {isLoading ? (
+        <Loading />
+      ) : (
+        <>
+          {/* Subjects list */}
+          <p className="cls-subjects__section-title">
+            Matières enseignées ({subjects.length})
+          </p>
+          <div className="cls-subjects__list">
+            <div className="cls-subjects__header-row">
+              <span>Matière</span>
+              <span>Enseignant</span>
+              <span />
+            </div>
+            {subjects.length === 0 ? (
+              <div className="cls-subjects__empty">
+                Aucune matière assignée. Ajoutez-en ci-dessous.
+              </div>
+            ) : (
+              subjects.map((cs) => (
+                <div key={cs.subjectId} className="cls-subjects__row">
+                  <div>
+                    <div className="cls-subjects__name">
+                      {cs.subject?.nameFr ?? cs.subject?.nameEn ?? cs.subjectId}
+                    </div>
+                    {cs.subject?.code && (
+                      <div className="cls-subjects__code">{cs.subject.code}</div>
+                    )}
+                  </div>
+                  <select
+                    className="cls-subjects__teacher-select"
+                    value={cs.teacher?.id ?? ''}
+                    onChange={(e) =>
+                      updateTeacherMutation.mutate({
+                        subjectId: cs.subjectId,
+                        teacherId: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="">— Aucun —</option>
+                    {teachers.map((t) => (
+                      <option key={t.id} value={t.id}>{t.name ?? t.email}</option>
+                    ))}
+                  </select>
+                  <button
+                    className="cls-subjects__remove"
+                    title="Retirer la matière"
+                    onClick={() => removeMutation.mutate(cs.subjectId)}
+                    disabled={removeMutation.isPending}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Add subject row */}
+          <p className="cls-subjects__section-title">Ajouter une matière</p>
+          <div className="cls-subjects__add">
+            <Select
+              id="add-subject"
+              label="Matière"
+              value={addSubjectId}
+              placeholder="Sélectionner…"
+              options={subjectOptions}
+              onChange={(e) => setAddSubjectId(e.target.value)}
+            />
+            <Select
+              id="add-teacher"
+              label="Enseignant"
+              value={addTeacherId}
+              placeholder="— Aucun —"
+              options={teacherOptions}
+              onChange={(e) => setAddTeacherId(e.target.value)}
+            />
+            <button
+              className="cls-subjects__add-btn"
+              onClick={handleAdd}
+              disabled={addMutation.isPending || !addSubjectId}
+            >
+              {addMutation.isPending ? '…' : '+ Ajouter'}
+            </button>
+          </div>
+        </>
+      )}
+    </Modal>
+  );
+}
+
+/* ── Main page ── */
 function ClassesPage() {
   const qc = useQueryClient();
-  const [search, setSearch]     = useState('');
-  const [levelFilter, setLevel] = useState('');
-  const [modal, setModal]       = useState(null);
-  const [selected, setSelected] = useState(null);
-  const [confirm, setConfirm]   = useState(null);
-  const [form, setForm]         = useState(EMPTY_FORM);
-  const [errors, setErrors]     = useState({});
+  const [search, setSearch]         = useState('');
+  const [levelFilter, setLevel]     = useState('');
+  const [modal, setModal]           = useState(null);   // null | 'create' | 'edit'
+  const [manageClass, setManage]    = useState(null);   // class object | null
+  const [selected, setSelected]     = useState(null);
+  const [confirm, setConfirm]       = useState(null);
+  const [form, setForm]             = useState(EMPTY_FORM);
+  const [errors, setErrors]         = useState({});
 
   const { data: classes = [], isLoading } = useQuery({
     queryKey: ['classes'],
@@ -105,6 +263,11 @@ function ClassesPage() {
   const { data: teachers = [] } = useQuery({
     queryKey: ['teachers'],
     queryFn: () => usersService.listTeachers().then((r) => r.data),
+  });
+
+  const { data: allSubjects = [] } = useQuery({
+    queryKey: ['subjects'],
+    queryFn: () => subjectsService.list().then((r) => r.data),
   });
 
   const filtered = useMemo(() => {
@@ -173,11 +336,8 @@ function ClassesPage() {
       capacity:  form.capacity  ? Number(form.capacity) : undefined,
       teacherId: form.teacherId || undefined,
     };
-    if (modal === 'create') {
-      createMutation.mutate(payload);
-    } else {
-      updateMutation.mutate({ id: selected.id, data: payload });
-    }
+    if (modal === 'create') createMutation.mutate(payload);
+    else updateMutation.mutate({ id: selected.id, data: payload });
   }
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
@@ -204,17 +364,22 @@ function ClassesPage() {
     },
     {
       key: 'teacher',
-      label: 'Enseignant principal',
+      label: 'Prof. principal',
       render: (c) =>
         c.teacher
-          ? `${c.teacher.firstName} ${c.teacher.lastName}`
+          ? (c.teacher.name ?? c.teacher.email)
           : <span className="classes-table__empty">—</span>,
+    },
+    {
+      key: 'subjects',
+      label: 'Matières',
+      render: (c) => c._count?.subjects ?? '—',
     },
     {
       key: 'students',
       label: 'Élèves',
       render: (c) => {
-        const count = c._count?.students ?? c.studentsCount ?? '—';
+        const count = c._count?.students ?? '—';
         const cap   = c.capacity ? ` / ${c.capacity}` : '';
         return `${count}${cap}`;
       },
@@ -231,9 +396,10 @@ function ClassesPage() {
     {
       key: 'actions',
       label: '',
-      style: { width: '120px', textAlign: 'right' },
+      style: { width: '180px', textAlign: 'right' },
       render: (c) => (
         <div className="classes-table__actions">
+          <Button size="sm" variant="ghost" onClick={() => setManage(c)}>Matières</Button>
           <Button size="sm" variant="ghost" onClick={() => openEdit(c)}>Modifier</Button>
           {c.isActive !== false && (
             <Button size="sm" variant="ghost" onClick={() => setConfirm(c)}>Désactiver</Button>
@@ -275,6 +441,7 @@ function ClassesPage() {
         emptyMessage="Aucune classe trouvée"
       />
 
+      {/* Create / Edit modal */}
       <Modal
         open={!!modal}
         onClose={closeModal}
@@ -291,6 +458,17 @@ function ClassesPage() {
       >
         <ClassForm form={form} errors={errors} onChange={handleChange} teachers={teachers} />
       </Modal>
+
+      {/* Manage subjects modal */}
+      {manageClass && (
+        <ManageSubjectsModal
+          cls={manageClass}
+          teachers={teachers}
+          allSubjects={allSubjects}
+          onClose={() => setManage(null)}
+          qc={qc}
+        />
+      )}
 
       <ConfirmDialog
         open={!!confirm}

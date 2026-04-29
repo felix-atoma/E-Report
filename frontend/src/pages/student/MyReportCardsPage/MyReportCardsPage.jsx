@@ -81,6 +81,29 @@ function ReportItem({ report }) {
             </table>
           )}
 
+          {report.pdfUrl && (
+            <div className="student-report-item__pdf-actions">
+              <a
+                href={report.pdfUrl}
+                target="_blank"
+                rel="noreferrer"
+                download
+                className="student-report-item__btn student-report-item__btn--download"
+              >
+                Télécharger PDF ↓
+              </a>
+              <a
+                href={report.pdfUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="student-report-item__btn student-report-item__btn--print"
+                onClick={(e) => { e.preventDefault(); const w = window.open(report.pdfUrl, '_blank'); w && w.focus(); }}
+              >
+                Imprimer ⎙
+              </a>
+            </div>
+          )}
+
           {report.teacherComment && (
             <div className="student-report-item__comment">
               <span className="student-report-item__comment-label">Appréciation :</span>

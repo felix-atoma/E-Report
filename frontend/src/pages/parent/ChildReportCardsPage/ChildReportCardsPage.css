@@ -164,3 +164,40 @@
   margin: 0;
   font-style: italic;
 }
+
+.report-card-item__pdf-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.report-card-item__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 1rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s, box-shadow 0.15s;
+  cursor: pointer;
+}
+
+.report-card-item__btn--download {
+  background: var(--color-primary, #f97316);
+  color: #fff;
+}
+.report-card-item__btn--download:hover {
+  background: var(--color-accent, #ea580c);
+  box-shadow: 0 3px 10px rgba(249,115,22,0.3);
+}
+
+.report-card-item__btn--print {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+.report-card-item__btn--print:hover {
+  background: #e5e7eb;
+}

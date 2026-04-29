@@ -7,10 +7,53 @@ import StatusPill from '../../../components/common/StatusPill/StatusPill';
 import Loading from '../../../components/common/Loading/Loading';
 import './AdminDashboardPage.css';
 
-function StatCard({ label, value, icon, sub }) {
+const STAT_ICONS = {
+  students: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 20V10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/>
+      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+      <line x1="8" y1="14" x2="16" y2="14"/>
+    </svg>
+  ),
+  teachers: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+    </svg>
+  ),
+  classes: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+  ),
+  reports: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+      <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+    </svg>
+  ),
+  collection: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/>
+      <path d="M7 6h1v4"/>
+    </svg>
+  ),
+  pending: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <polyline points="12 6 12 12 16 14"/>
+    </svg>
+  ),
+};
+
+function StatCard({ label, value, icon, sub, color = 'primary' }) {
   return (
     <Card className="stat-card">
-      <div className="stat-card__icon">{icon}</div>
+      <div className={`stat-card__icon-wrap stat-card__icon-wrap--${color}`}>
+        {STAT_ICONS[icon]}
+      </div>
       <div className="stat-card__body">
         <span className="stat-card__value">{value ?? '—'}</span>
         <span className="stat-card__label">{label}</span>
@@ -47,20 +90,22 @@ function AdminDashboardPage() {
       <PageHeader title="Vue d'ensemble" subtitle={`Année scolaire en cours`} />
 
       <div className="dashboard-stats">
-        <StatCard label="Élèves"       value={overview?.totalStudents}  icon="🎒" />
-        <StatCard label="Enseignants"  value={overview?.totalTeachers}  icon="👩‍🏫" />
-        <StatCard label="Classes"      value={overview?.totalClasses}   icon="🏫" />
-        <StatCard label="Bulletins publiés" value={overview?.publishedReports} icon="📋" />
+        <StatCard label="Élèves"       value={overview?.totalStudents}  icon="students"    color="blue" />
+        <StatCard label="Enseignants"  value={overview?.totalTeachers}  icon="teachers"    color="teal" />
+        <StatCard label="Classes"      value={overview?.totalClasses}   icon="classes"     color="orange" />
+        <StatCard label="Bulletins publiés" value={overview?.publishedReports} icon="reports" color="green" />
         <StatCard
           label="Taux de recouvrement"
           value={collectionRate}
-          icon="💰"
+          icon="collection"
+          color="teal"
           sub={payments ? `${payments.totalPaid?.toLocaleString('fr-FR')} / ${payments.totalDue?.toLocaleString('fr-FR')} FCFA` : null}
         />
         <StatCard
           label="Paiements en attente"
           value={overview?.pendingPayments}
-          icon="⏳"
+          icon="pending"
+          color="orange"
         />
       </div>
 

@@ -132,6 +132,7 @@ model User {
   classSubjectsTeaching ClassSubject[]
   reportsCreated  ReportCard[] @relation("ReportCreator")
   bulletinsAuthored Bulletin[]
+  signedFiches    GradeFiche[] @relation("FicheSigner")
   paymentsRecorded Payment[]
   notificationLogs NotificationLog[]
   refreshTokens   RefreshToken[]
@@ -163,6 +164,7 @@ model Class {
   students        ClassStudent[]
   subjects        ClassSubject[]
   reportCards     ReportCard[]
+  gradeFiches     GradeFiche[]
 
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
@@ -184,6 +186,7 @@ model Subject {
 
   classSubjects   ClassSubject[]
   grades          Grade[]
+  gradeFiches     GradeFiche[]
 
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
@@ -252,15 +255,24 @@ model ReportCard {
   termNumber        Int
   termName          String
   status            ReportStatus @default(DRAFT)
-  teacherComment    String?
-  principalComment  String?
+  teacherComment    String?   // Nom et observation du prof titulaire
+  principalComment  String?   // Observations générales du conseil des profs
   conductRating     ConductRating?
-  attendanceDays    Int?
-  attendancePresent Int?
-  overallAverage    Float?
-  classRank         Int?
-  classSize         Int?
-  mention           String?
+  attendanceDays    Int?      // Nombre de jours de classe
+  attendancePresent Int?      // Jours de présence
+  attendanceLate    Int?      // Retards
+  attendanceAbsent  Int?      // Absences (in half-days)
+  attendanceExcluded Int?     // Exclusions
+  warnings          Int?      // Avertissements
+  commendations     Int?      // Félicitations
+  honorCouncil      Boolean?  // Tableau d'honneur
+  overallAverage    Float?    // Moyenne générale du trimestre
+  classRank         Int?      // Rang dans la classe
+  classSize         Int?      // Effectif de la classe
+  classHighest      Float?    // Moyenne la plus forte de la classe
+  classLowest       Float?    // Moyenne la plus faible
+  classAverage      Float?    // Moyenne de la classe
+  mention           String?   // Mention (TB, B, AB, P, Insuf.)
   pdfUrl            String?
   deliveryStatus    String?
   publishedAt       DateTime?
@@ -283,10 +295,26 @@ model Grade {
   id              String   @id @default(uuid())
   reportCardId    String
   subjectId       String
-  score           Float
-  coefficient     Float
-  weightedScore   Float
-  teacherComment  String?
+
+  // Togolese bulletin note breakdown
+  noteInterro1    Float?   // 1ère interrogation /20
+  noteInterro2    Float?   // 2ème interrogation /20
+  noteInterro3    Float?   // 3ème interrogation /20
+  noteInterro4    Float?   // 4ème interrogation /20
+  noteDevoir      Float?   // Devoir surveillé /20
+  noteComposition Float?   // Composition (examen) /20
+
+  // Computed values (stored for fast display)
+  moyenneMatiere  Float?   // Moyenne trimestrielle dans la matière /20
+  coefficient     Float    @default(1)
+  weightedScore   Float?   // moyenneMatiere × coefficient
+  rangMatiere     Int?     // Rang dans la matière au sein de la classe
+  appreciation    String?  // TB / B / AB / P / F
+
+  // Backward-compat / legacy field (mirrors moyenneMatiere)
+  score           Float    @default(0)
+  teacherComment  String?  // Observation libre du prof de la matière
+  teacherName     String?  // Nom du professeur de la matière (pour signature)
 
   reportCard      ReportCard @relation(fields: [reportCardId], references: [id], onDelete: Cascade)
   subject         Subject    @relation(fields: [subjectId], references: [id])
@@ -315,6 +343,30 @@ model Bulletin {
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+// Tracks teacher sign-off on a fiche de notes (class × subject × term)
+model GradeFiche {
+  id           String    @id @default(uuid())
+  classId      String
+  subjectId    String
+  academicYear String
+  termNumber   Int
+  termName     String
+
+  signedAt      DateTime?
+  signedByName  String?
+  signedById    String?
+  signatureData String?   @db.Text
+  signedBy     User?     @relation("FicheSigner", fields: [signedById], references: [id])
+
+  class        Class     @relation(fields: [classId], references: [id])
+  subject      Subject   @relation(fields: [subjectId], references: [id])
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([classId, subjectId, academicYear, termNumber])
 }
 
 model BrandingAsset {

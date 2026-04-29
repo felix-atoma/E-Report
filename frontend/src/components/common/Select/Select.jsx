@@ -16,7 +16,7 @@ const getStyles = (error) => ({
     boxShadow: state.isFocused
       ? error
         ? '0 0 0 3px rgba(239,68,68,0.12)'
-        : '0 0 0 3px rgba(30,64,175,0.12)'
+        : '0 0 0 3px rgba(249,115,22,0.15)'
       : 'none',
     '&:hover': {
       borderColor: error
@@ -46,10 +46,10 @@ const getStyles = (error) => ({
     backgroundColor: state.isSelected
       ? 'var(--color-primary, #1e40af)'
       : state.isFocused
-      ? 'rgba(30,64,175,0.07)'
+      ? 'rgba(249,115,22,0.08)'
       : '#fff',
     color: state.isSelected ? '#fff' : 'var(--color-text, #1f2937)',
-    '&:active': { backgroundColor: 'rgba(30,64,175,0.15)' },
+    '&:active': { backgroundColor: 'rgba(249,115,22,0.18)' },
   }),
   menu: (base) => ({
     ...base,

@@ -116,6 +116,27 @@ export class ClassesService {
     });
   }
 
+  async updateSubjectTeacher(
+    classId: string,
+    subjectId: string,
+    teacherId: string | null,
+    institutionId: string,
+  ) {
+    await this.ensureExists(classId, institutionId);
+    const cs = await this.prisma.classSubject.findUnique({
+      where: { classId_subjectId: { classId, subjectId } },
+    });
+    if (!cs) throw new NotFoundException('Subject not assigned to this class');
+    return this.prisma.classSubject.update({
+      where: { id: cs.id },
+      data: { teacherId: teacherId ?? null },
+      include: {
+        subject: { select: { id: true, nameFr: true, code: true } },
+        teacher: { select: { id: true, name: true } },
+      },
+    });
+  }
+
   async removeSubject(classId: string, subjectId: string, institutionId: string) {
     await this.ensureExists(classId, institutionId);
     const cs = await this.prisma.classSubject.findUnique({

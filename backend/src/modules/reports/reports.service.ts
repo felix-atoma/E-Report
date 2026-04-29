@@ -147,11 +147,32 @@ export class ReportsService {
     if (role !== Role.ADMIN) throw new ForbiddenException('Only admins can publish reports');
     if (report.status !== 'REVIEW') throw new BadRequestException('Only REVIEW reports can be published');
 
+    // Verify all teacher fiches are signed
+    const classSubjects = await this.prisma.classSubject.findMany({
+      where: { classId: report.classId },
+    });
+    const fiches = await this.prisma.gradeFiche.findMany({
+      where: {
+        classId: report.classId,
+        academicYear: report.academicYear,
+        termNumber: report.termNumber,
+      },
+    });
+    const signedSubjectIds = new Set(
+      fiches.filter((f) => f.signedAt).map((f) => f.subjectId),
+    );
+    const unsigned = classSubjects.filter((cs) => !signedSubjectIds.has(cs.subjectId));
+    if (unsigned.length > 0) {
+      throw new BadRequestException(
+        `${unsigned.length} fiche(s) de notes non signée(s). Tous les professeurs doivent signer leur fiche avant la publication.`,
+      );
+    }
+
     // Compute overall average
     const grades = report.grades;
     let overallAverage: number | null = null;
     if (grades.length > 0) {
-      const totalWeighted = grades.reduce((sum, g) => sum + g.weightedScore, 0);
+      const totalWeighted = grades.reduce((sum, g) => sum + (g.weightedScore ?? 0), 0);
       const totalCoef = grades.reduce((sum, g) => sum + g.coefficient, 0);
       overallAverage = totalCoef > 0 ? Math.round((totalWeighted / totalCoef) * 100) / 100 : null;
     }
@@ -207,8 +228,36 @@ export class ReportsService {
       },
     });
 
+    // Reload report with full grade detail for PDF
+    const reportWithFullGrades = await this.prisma.reportCard.findFirst({
+      where: { id },
+      include: {
+        grades: {
+          include: { subject: { select: { nameFr: true, passMark: true } } },
+          orderBy: { subject: { nameFr: 'asc' } },
+        },
+        student: {
+          include: {
+            user: { select: { name: true, profileImage: true } },
+            parent: { select: { id: true } },
+          },
+        },
+        class: { select: { name: true } },
+      },
+    });
+
+    // Attach fiche signature data to each grade for PDF rendering
+    const ficheMap = new Map(fiches.map((f) => [f.subjectId, f]));
+    if (reportWithFullGrades) {
+      reportWithFullGrades.grades = reportWithFullGrades.grades.map((g: any) => ({
+        ...g,
+        ficheSignedAt: ficheMap.get(g.subjectId)?.signedAt ?? null,
+        signatureData: ficheMap.get(g.subjectId)?.signatureData ?? null,
+      }));
+    }
+
     // Generate PDF in the background — don't block the response
-    this.generateAndSavePdf(published, report, institutionId).catch((err) =>
+    this.generateAndSavePdf(published, reportWithFullGrades ?? report, institutionId).catch((err) =>
       this.logger.error(`PDF generation failed for report ${id}`, err),
     );
 
@@ -235,12 +284,19 @@ export class ReportsService {
         overallAverage: published.overallAverage,
         classRank: published.classRank,
         classSize: published.classSize,
+        classHighest: (published as any).classHighest ?? null,
+        classLowest: (published as any).classLowest ?? null,
+        classAverage: (published as any).classAverage ?? null,
         mention: published.mention,
         conductRating: published.conductRating,
         teacherComment: published.teacherComment,
         principalComment: published.principalComment,
         attendanceDays: published.attendanceDays,
         attendancePresent: published.attendancePresent,
+        attendanceLate: (published as any).attendanceLate ?? null,
+        honorCouncil: (published as any).honorCouncil ?? null,
+        commendations: (published as any).commendations ?? null,
+        warnings: (published as any).warnings ?? null,
       },
       student: {
         admissionNumber: reportWithGrades.student.admissionNumber,
@@ -250,9 +306,21 @@ export class ReportsService {
       className: reportWithGrades.class.name,
       grades: reportWithGrades.grades.map((g: any) => ({
         score: g.score,
+        moyenneMatiere: g.moyenneMatiere,
         coefficient: g.coefficient,
         weightedScore: g.weightedScore,
+        noteInterro1: g.noteInterro1,
+        noteInterro2: g.noteInterro2,
+        noteInterro3: g.noteInterro3,
+        noteInterro4: g.noteInterro4,
+        noteDevoir: g.noteDevoir,
+        noteComposition: g.noteComposition,
+        rangMatiere: g.rangMatiere,
+        appreciation: g.appreciation,
         teacherComment: g.teacherComment,
+        teacherName: g.teacherName,
+        ficheSignedAt: g.ficheSignedAt ?? null,
+        signatureData: g.signatureData ?? null,
         subject: { nameFr: g.subject.nameFr, passMark: g.subject.passMark },
       })),
       institution,

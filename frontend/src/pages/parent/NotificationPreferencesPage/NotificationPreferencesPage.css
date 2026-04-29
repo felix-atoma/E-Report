@@ -1,3 +1,138 @@
-.notification-preferences-page {
-  padding: var(--spacing-md);
+.np-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 640px;
+}
+
+.np-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.np-section__title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text, #1f2937);
+  margin: 0;
+}
+
+.np-section__desc {
+  font-size: 0.8rem;
+  color: var(--color-text-muted, #6b7280);
+  margin: 0;
+}
+
+.np-section--info {
+  background: #f0fdfa;
+  border-color: #99f6e4;
+}
+
+.np-info-text {
+  font-size: 0.8rem;
+  color: #0f766e;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.np-whatsapp-row {
+  max-width: 320px;
+}
+
+.np-verified {
+  font-size: 0.8rem;
+  color: #16a34a;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Toggle list */
+.np-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.np-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--color-border, #f3f4f6);
+  gap: 1rem;
+}
+
+.np-row:last-child { border-bottom: none; }
+
+.np-row__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.np-row__label {
+  font-size: 0.875rem;
+  color: var(--color-text, #1f2937);
+  font-weight: 500;
+}
+
+.np-row__sub {
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.np-row__badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+}
+
+.np-row__badge--warn {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* Toggle switch */
+.np-toggle {
+  position: relative;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.np-toggle__input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.np-toggle__track {
+  display: flex;
+  align-items: center;
+  width: 42px;
+  height: 24px;
+  background: #d1d5db;
+  border-radius: 999px;
+  transition: background 0.2s;
+  padding: 2px;
+}
+
+.np-toggle__input:checked + .np-toggle__track {
+  background: var(--color-primary, #1e40af);
+}
+
+.np-toggle__thumb {
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: transform 0.2s;
+}
+
+.np-toggle__input:checked + .np-toggle__track .np-toggle__thumb {
+  transform: translateX(18px);
 }

@@ -2,6 +2,8 @@ import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { usersService } from '../../../services/usersService';
+import { subjectsService } from '../../../services/subjectsService';
+import { classesService } from '../../../services/classesService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Table from '../../../components/common/Table/Table';
@@ -24,50 +26,60 @@ const ROLES = [
 ];
 
 const ROLE_VARIANT = {
-  ADMIN: 'danger',
-  TEACHER: 'info',
-  BURSAR: 'warning',
-  PARENT: 'success',
-  STUDENT: 'default',
+  ADMIN: 'danger', TEACHER: 'info', BURSAR: 'warning', PARENT: 'success', STUDENT: 'default',
 };
 
-const EMPTY_FORM = { firstName: '', lastName: '', email: '', phone: '', role: '' };
+const EMPTY_FORM = {
+  name: '', email: '', whatsappNumber: '', role: '', password: '',
+  subjectIds: [], mainClassId: '',
+};
 
-function validate(form) {
+function validate(form, isCreate) {
   const errors = {};
-  if (!form.firstName.trim()) errors.firstName = 'Prénom requis';
-  if (!form.lastName.trim())  errors.lastName  = 'Nom requis';
-  if (!form.email.trim())     errors.email     = 'Email requis';
+  if (!form.name.trim())  errors.name  = 'Nom complet requis';
+  if (!form.email.trim()) errors.email = 'Email requis';
   else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errors.email = 'Email invalide';
-  if (!form.role)             errors.role      = 'Rôle requis';
+  if (!form.role)         errors.role  = 'Rôle requis';
+  if (isCreate && !form.password.trim()) errors.password = 'Mot de passe requis';
   return errors;
 }
 
-function UserForm({ form, errors, onChange }) {
+function UserForm({ form, errors, onChange, isCreate, subjects, classes }) {
+  const isTeacher = form.role === 'TEACHER';
+
+  function toggleSubject(id) {
+    const next = form.subjectIds.includes(id)
+      ? form.subjectIds.filter((s) => s !== id)
+      : [...form.subjectIds, id];
+    onChange('subjectIds', next);
+  }
+
   return (
     <div className="user-form">
-      <div className="user-form__row">
-        <Input
-          id="firstName" label="Prénom" required
-          value={form.firstName} error={errors.firstName}
-          onChange={(e) => onChange('firstName', e.target.value)}
-        />
-        <Input
-          id="lastName" label="Nom" required
-          value={form.lastName} error={errors.lastName}
-          onChange={(e) => onChange('lastName', e.target.value)}
-        />
-      </div>
+      <Input
+        id="name" label="Nom complet" required
+        value={form.name} error={errors.name}
+        placeholder="ex: Koffi Amevor"
+        onChange={(e) => onChange('name', e.target.value)}
+      />
       <Input
         id="email" label="Email" type="email" required
         value={form.email} error={errors.email}
         onChange={(e) => onChange('email', e.target.value)}
       />
+      {isCreate && (
+        <Input
+          id="password" label="Mot de passe" type="password" required
+          value={form.password} error={errors.password}
+          placeholder="Minimum 8 caractères"
+          onChange={(e) => onChange('password', e.target.value)}
+        />
+      )}
       <Input
-        id="phone" label="Téléphone"
-        value={form.phone} error={errors.phone}
+        id="whatsappNumber" label="Téléphone / WhatsApp"
+        value={form.whatsappNumber}
         placeholder="+228 XX XX XX XX"
-        onChange={(e) => onChange('phone', e.target.value)}
+        onChange={(e) => onChange('whatsappNumber', e.target.value)}
       />
       <Select
         id="role" label="Rôle" required
@@ -76,30 +88,90 @@ function UserForm({ form, errors, onChange }) {
         options={ROLES}
         onChange={(e) => onChange('role', e.target.value)}
       />
+
+      {isCreate && isTeacher && (
+        <>
+          {/* Subject assignment */}
+          <div className="user-form__section">
+            <div className="user-form__section-title">Matières enseignées</div>
+            <div className="user-form__section-hint">
+              L'enseignant sera automatiquement assigné aux classes concernées.
+            </div>
+            {subjects.length === 0 ? (
+              <p className="user-form__empty">Aucune matière disponible</p>
+            ) : (
+              <div className="user-form__subject-grid">
+                {subjects.map((s) => (
+                  <label key={s.id} className="user-form__subject-item">
+                    <input
+                      type="checkbox"
+                      className="user-form__subject-checkbox"
+                      checked={form.subjectIds.includes(s.id)}
+                      onChange={() => toggleSubject(s.id)}
+                    />
+                    <span className="user-form__subject-name">{s.nameFr}</span>
+                    <span className="user-form__subject-code">{s.code}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Main class (professeur principal) */}
+          <div className="user-form__section">
+            <div className="user-form__section-title">Classe principale <span className="user-form__optional">(optionnel)</span></div>
+            <div className="user-form__section-hint">
+              Désigne cet enseignant comme professeur principal de la classe.
+            </div>
+            <select
+              className="user-form__class-select"
+              value={form.mainClassId}
+              onChange={(e) => onChange('mainClassId', e.target.value)}
+            >
+              <option value="">— Aucune —</option>
+              {classes.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                  {c.teacher ? ` (${c.teacher.name ?? c.teacher.email})` : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
 function UsersPage() {
   const qc = useQueryClient();
-  const [search, setSearch]       = useState('');
+  const [search, setSearch]         = useState('');
   const [roleFilter, setRoleFilter] = useState('');
-  const [modal, setModal]         = useState(null); // null | 'create' | 'edit'
-  const [selected, setSelected]   = useState(null);
-  const [confirm, setConfirm]     = useState(null); // null | { user, action }
-  const [form, setForm]           = useState(EMPTY_FORM);
-  const [errors, setErrors]       = useState({});
+  const [modal, setModal]           = useState(null);
+  const [selected, setSelected]     = useState(null);
+  const [confirm, setConfirm]       = useState(null);
+  const [form, setForm]             = useState(EMPTY_FORM);
+  const [errors, setErrors]         = useState({});
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['users'],
     queryFn: () => usersService.list().then((r) => r.data),
   });
 
+  const { data: subjects = [] } = useQuery({
+    queryKey: ['subjects'],
+    queryFn: () => subjectsService.list().then((r) => r.data),
+  });
+
+  const { data: classes = [] } = useQuery({
+    queryKey: ['classes'],
+    queryFn: () => classesService.list().then((r) => r.data),
+  });
+
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     return users.filter((u) => {
-      const name = `${u.firstName} ${u.lastName}`.toLowerCase();
-      const matchSearch = !q || name.includes(q) || u.email.toLowerCase().includes(q);
+      const matchSearch = !q || (u.name ?? '').toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
       const matchRole   = !roleFilter || u.role === roleFilter;
       return matchSearch && matchRole;
     });
@@ -109,6 +181,7 @@ function UsersPage() {
     mutationFn: (data) => usersService.create(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['users'] });
+      qc.invalidateQueries({ queryKey: ['classes'] });
       toast.success('Utilisateur créé');
       closeModal();
     },
@@ -145,11 +218,13 @@ function UsersPage() {
   function openEdit(user) {
     setSelected(user);
     setForm({
-      firstName: user.firstName ?? '',
-      lastName:  user.lastName  ?? '',
-      email:     user.email     ?? '',
-      phone:     user.phone     ?? '',
-      role:      user.role      ?? '',
+      name:           user.name           ?? '',
+      email:          user.email          ?? '',
+      whatsappNumber: user.whatsappNumber ?? '',
+      role:           user.role           ?? '',
+      password:       '',
+      subjectIds:     [],
+      mainClassId:    '',
     });
     setErrors({});
     setModal('edit');
@@ -168,12 +243,27 @@ function UsersPage() {
   }
 
   function handleSubmit() {
-    const errs = validate(form);
+    const isCreate = modal === 'create';
+    const errs = validate(form, isCreate);
     if (Object.keys(errs).length) { setErrors(errs); return; }
-    if (modal === 'create') {
-      createMutation.mutate(form);
+
+    const payload = {
+      name:           form.name,
+      email:          form.email,
+      role:           form.role,
+      whatsappNumber: form.whatsappNumber || undefined,
+      ...(isCreate ? { password: form.password } : {}),
+    };
+
+    if (isCreate && form.role === 'TEACHER') {
+      if (form.subjectIds.length) payload.subjectIds = form.subjectIds;
+      if (form.mainClassId)       payload.mainClassId = form.mainClassId;
+    }
+
+    if (isCreate) {
+      createMutation.mutate(payload);
     } else {
-      updateMutation.mutate({ id: selected.id, data: form });
+      updateMutation.mutate({ id: selected.id, data: payload });
     }
   }
 
@@ -185,9 +275,9 @@ function UsersPage() {
       label: 'Utilisateur',
       render: (u) => (
         <div className="users-table__user">
-          <Avatar name={`${u.firstName} ${u.lastName}`} size="sm" />
+          <Avatar name={u.name ?? u.email} size="sm" />
           <div>
-            <div className="users-table__name">{u.firstName} {u.lastName}</div>
+            <div className="users-table__name">{u.name ?? '—'}</div>
             <div className="users-table__email">{u.email}</div>
           </div>
         </div>
@@ -205,7 +295,7 @@ function UsersPage() {
     {
       key: 'phone',
       label: 'Téléphone',
-      render: (u) => u.phone ?? <span className="users-table__empty">—</span>,
+      render: (u) => u.whatsappNumber ?? <span className="users-table__empty">—</span>,
     },
     {
       key: 'status',
@@ -242,9 +332,7 @@ function UsersPage() {
       <PageHeader
         title="Utilisateurs"
         subtitle={`${users.length} compte${users.length !== 1 ? 's' : ''}`}
-        actions={
-          <Button icon="+" onClick={openCreate}>Nouvel utilisateur</Button>
-        }
+        actions={<Button icon="+" onClick={openCreate}>Nouvel utilisateur</Button>}
       />
 
       <div className="users-page__toolbar">
@@ -271,11 +359,10 @@ function UsersPage() {
         emptyMessage="Aucun utilisateur trouvé"
       />
 
-      {/* Create / Edit modal */}
       <Modal
         open={!!modal}
         onClose={closeModal}
-        title={modal === 'create' ? 'Nouvel utilisateur' : 'Modifier l\'utilisateur'}
+        title={modal === 'create' ? 'Nouvel utilisateur' : "Modifier l'utilisateur"}
         size="md"
         footer={
           <>
@@ -286,10 +373,16 @@ function UsersPage() {
           </>
         }
       >
-        <UserForm form={form} errors={errors} onChange={handleChange} />
+        <UserForm
+          form={form}
+          errors={errors}
+          onChange={handleChange}
+          isCreate={modal === 'create'}
+          subjects={subjects}
+          classes={classes}
+        />
       </Modal>
 
-      {/* Deactivate / Activate confirm */}
       <ConfirmDialog
         open={!!confirm}
         onClose={() => setConfirm(null)}
@@ -298,8 +391,8 @@ function UsersPage() {
         title={confirm?.action === 'deactivate' ? 'Désactiver le compte' : 'Activer le compte'}
         message={
           confirm?.action === 'deactivate'
-            ? `Désactiver le compte de ${confirm?.user.firstName} ${confirm?.user.lastName} ? L'utilisateur ne pourra plus se connecter.`
-            : `Réactiver le compte de ${confirm?.user.firstName} ${confirm?.user.lastName} ?`
+            ? `Désactiver le compte de ${confirm?.user.name ?? confirm?.user.email} ? L'utilisateur ne pourra plus se connecter.`
+            : `Réactiver le compte de ${confirm?.user.name ?? confirm?.user.email} ?`
         }
         confirmLabel={confirm?.action === 'deactivate' ? 'Désactiver' : 'Activer'}
         variant={confirm?.action === 'deactivate' ? 'danger' : 'primary'}

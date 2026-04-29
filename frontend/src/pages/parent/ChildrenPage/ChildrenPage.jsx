@@ -42,15 +42,13 @@ function ChildrenPage() {
               className="child-card"
             >
               <div className="child-card__top">
-                <Avatar name={`${child.firstName} ${child.lastName}`} size="lg" />
+                <Avatar name={child.user?.name ?? child.admissionNumber ?? '?'} size="lg" />
                 <div className="child-card__info">
-                  <div className="child-card__name">{child.firstName} {child.lastName}</div>
-                  {child.class?.name && (
-                    <div className="child-card__class">{child.class.name}</div>
+                  <div className="child-card__name">{child.user?.name ?? child.admissionNumber ?? '—'}</div>
+                  {(child.classes?.[0]?.class?.name ?? child.class?.name) && (
+                    <div className="child-card__class">{child.classes?.[0]?.class?.name ?? child.class?.name}</div>
                   )}
-                  {child.matricule && (
-                    <div className="child-card__matricule">{child.matricule}</div>
-                  )}
+                  <div className="child-card__matricule">{child.admissionNumber}</div>
                 </div>
               </div>
 

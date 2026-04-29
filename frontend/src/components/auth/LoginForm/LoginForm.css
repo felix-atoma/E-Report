@@ -3,21 +3,240 @@
   flex-direction: column;
   gap: 1rem;
 }
-.login-form__error {
+
+/* ── Dismissible alert (matches ZDesk Bootstrap alert-danger) ──────────── */
+.login-form__alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-left: 3px solid #ef4444;
+  border-radius: 6px;
+  padding: 0.6rem 0.75rem;
   font-size: 0.875rem;
-  color: var(--color-danger, #ef4444);
-  background: #fee2e2;
-  border-radius: var(--radius-md, 6px);
-  padding: 0.5rem 0.75rem;
-  margin: 0;
+  color: #991b1b;
 }
+
+.login-form__alert-icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: #ef4444;
+}
+
+.login-form__alert-text {
+  flex: 1;
+  line-height: 1.45;
+}
+
+.login-form__alert-close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #ef4444;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+.login-form__alert-close:hover { opacity: 1; }
+
+/* ── Field ─────────────────────────────────────────────────────────────── */
+.login-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.login-form__label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.125rem;
+}
+
+.login-form__required {
+  color: #ef4444;
+  margin-left: 2px;
+}
+
+/* ── Input group — matches ZDesk Bootstrap .input-group exactly ─────────── */
+.login-form__input-group {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.login-form__input-group:focus-within {
+  border-color: var(--color-primary, #f97316);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.18);
+}
+
+/* Matches Bootstrap .input-group-text.bg-light */
+.login-form__input-prefix {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.75rem;
+  background: #f8f9fa;
+  border-right: 1px solid #ced4da;
+  color: #6c757d;
+  flex-shrink: 0;
+}
+
+/* Matches Bootstrap .form-control */
+.login-form__input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  font-family: inherit;
+  color: #1f2937;
+  background: #fff;
+  min-width: 0;
+  min-height: 38px;
+}
+
+.login-form__input::placeholder { color: #adb5bd; }
+
+.login-form__input--has-suffix {
+  padding-right: 0.5rem;
+}
+
+/* Matches Bootstrap .input-group-text.bg-light (right side / button) */
+.login-form__input-suffix {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.75rem;
+  background: #f8f9fa;
+  border-left: 1px solid #ced4da;
+  border: none;
+  border-left: 1px solid #ced4da;
+  cursor: pointer;
+  color: #6c757d;
+  transition: color 0.15s;
+  flex-shrink: 0;
+  font-family: inherit;
+}
+.login-form__input-suffix:hover { color: #374151; }
+
+/* ── Remember me toggle — matches ZDesk .form-check.form-switch ────────── */
+.login-form__remember {
+  display: flex;
+  align-items: center;
+}
+
+.login-form__toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.login-form__toggle { position: relative; flex-shrink: 0; }
+
+.login-form__toggle-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.login-form__toggle-track {
+  display: flex;
+  align-items: center;
+  width: 40px;
+  height: 22px;
+  background: #ced4da;
+  border-radius: 999px;
+  padding: 3px;
+  transition: background 0.2s;
+}
+
+.login-form__toggle-input:checked + .login-form__toggle-track {
+  background: var(--color-primary, #f97316);
+}
+
+.login-form__toggle-thumb {
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s;
+}
+
+.login-form__toggle-input:checked + .login-form__toggle-track .login-form__toggle-thumb {
+  transform: translateX(18px);
+}
+
+.login-form__remember-text {
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+/* ── Submit button — matches ZDesk .d-grid > .btn.btn-primary.fw-semibold.py-2 */
+.login-form__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  background: var(--color-primary, #f97316);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+  margin-top: 0.25rem;
+}
+.login-form__btn:hover:not(:disabled) {
+  background: var(--color-accent, #ea580c);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.35);
+}
+.login-form__btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Spinner */
+.login-form__spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: loginSpin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes loginSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Forgot link — matches ZDesk .text-muted.text-center link ───────────── */
 .login-form__forgot {
   text-align: center;
   font-size: 0.875rem;
-  margin: 0;
+  color: #6b7280;
+  margin: 0.25rem 0 0;
 }
+
 .login-form__forgot a {
-  color: var(--color-primary, #1e40af);
+  color: var(--color-primary, #f97316);
   text-decoration: none;
+  font-weight: 600;
 }
 .login-form__forgot a:hover { text-decoration: underline; }

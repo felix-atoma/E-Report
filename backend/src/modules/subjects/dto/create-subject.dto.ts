@@ -7,15 +7,15 @@ export class CreateSubjectDto {
   @IsNotEmpty()
   nameFr: string;
 
-  @ApiProperty({ example: 'Mathematics' })
+  @ApiPropertyOptional({ example: 'Mathematics', description: 'Defaults to nameFr if omitted' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  nameEn: string;
+  nameEn?: string;
 
-  @ApiProperty({ example: 'MATH' })
+  @ApiPropertyOptional({ example: 'MATH', description: 'Auto-generated from nameFr if omitted' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  code: string;
+  code?: string;
 
   @ApiPropertyOptional({ example: 'Sciences exactes' })
   @IsOptional()

@@ -42,24 +42,41 @@ function ParentDashboardPage() {
   return (
     <AppShell title="Tableau de bord">
       <PageHeader
-        title={`Bonjour, ${user?.firstName ?? 'Parent'}`}
+        title={`Bonjour, ${user?.name ?? 'Parent'}`}
         subtitle="Suivez la scolarité de vos enfants"
       />
 
       {/* Summary bar */}
       <div className="parent-dash__stats">
         <Card className="parent-dash__stat">
-          <span className="parent-dash__stat-icon">👶</span>
+          <div className="parent-dash__stat-icon parent-dash__stat-icon--blue">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
           <span className="parent-dash__stat-value">{children.length}</span>
           <span className="parent-dash__stat-label">Enfant{children.length !== 1 ? 's' : ''}</span>
         </Card>
         <Card className="parent-dash__stat">
-          <span className="parent-dash__stat-icon">📋</span>
+          <div className="parent-dash__stat-icon parent-dash__stat-icon--teal">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+              <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+            </svg>
+          </div>
           <span className="parent-dash__stat-value">{published.length}</span>
           <span className="parent-dash__stat-label">Bulletin{published.length !== 1 ? 's' : ''}</span>
         </Card>
         <Card className="parent-dash__stat">
-          <span className="parent-dash__stat-icon">⏳</span>
+          <div className="parent-dash__stat-icon parent-dash__stat-icon--orange">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
           <span className="parent-dash__stat-value">{held.length}</span>
           <span className="parent-dash__stat-label">En attente paiement</span>
         </Card>
@@ -78,9 +95,9 @@ function ParentDashboardPage() {
             <div className="parent-dash__children-list">
               {children.map((child) => (
                 <Link key={child.id} to={`/parent/children/${child.id}/reports`} className="parent-dash__child-row">
-                  <Avatar name={`${child.firstName} ${child.lastName}`} size="sm" />
+                  <Avatar name={child.user?.name ?? child.admissionNumber ?? '?'} size="sm" />
                   <div className="parent-dash__child-info">
-                    <span className="parent-dash__child-name">{child.firstName} {child.lastName}</span>
+                    <span className="parent-dash__child-name">{child.user?.name ?? child.admissionNumber ?? '—'}</span>
                     <span className="parent-dash__child-class">{child.class?.name ?? '—'}</span>
                   </div>
                   {child.paymentStatus && (
@@ -111,7 +128,7 @@ function ParentDashboardPage() {
                 >
                   <div>
                     <div className="parent-dash__report-name">
-                      {r.student ? `${r.student.firstName} ${r.student.lastName}` : '—'}
+                      {r.student ? (r.student.user?.name ?? r.student.admissionNumber ?? '—') : '—'}
                     </div>
                     <div className="parent-dash__report-meta">
                       {r.termName ?? `Trimestre ${r.termNumber}`} — {r.academicYear}

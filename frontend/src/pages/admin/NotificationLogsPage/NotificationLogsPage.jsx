@@ -45,10 +45,10 @@ function NotificationLogsPage() {
       render: (n) => (
         <div>
           <div className="notif-table__name">
-            {n.student ? `${n.student.firstName} ${n.student.lastName}` : '—'}
+            {n.student ? (n.student.user?.name ?? n.student.admissionNumber ?? '—') : '—'}
           </div>
-          {n.student?.class?.name && (
-            <div className="notif-table__sub">{n.student.class.name}</div>
+          {(n.student?.classes?.[0]?.class?.name ?? n.student?.class?.name) && (
+            <div className="notif-table__sub">{n.student.classes?.[0]?.class?.name ?? n.student.class?.name}</div>
           )}
         </div>
       ),
@@ -103,10 +103,10 @@ function NotificationLogsPage() {
       render: (n) => (
         <div>
           <div className="notif-table__name">
-            {n.student ? `${n.student.firstName} ${n.student.lastName}` : n.recipient ?? '—'}
+            {n.student ? (n.student.user?.name ?? n.student.admissionNumber ?? '—') : (n.recipient ?? '—')}
           </div>
-          {n.student?.class?.name && (
-            <div className="notif-table__sub">{n.student.class.name}</div>
+          {(n.student?.classes?.[0]?.class?.name ?? n.student?.class?.name) && (
+            <div className="notif-table__sub">{n.student.classes?.[0]?.class?.name ?? n.student.class?.name}</div>
           )}
         </div>
       ),
@@ -187,7 +187,7 @@ function NotificationLogsPage() {
         onConfirm={() => forceSend.mutate(confirm.id)}
         loading={forceSend.isPending}
         title="Forcer l'envoi"
-        message={`Envoyer le bulletin de ${confirm?.student?.firstName ?? ''} ${confirm?.student?.lastName ?? ''} maintenant, même si les frais ne sont pas à jour ?`}
+        message={`Envoyer le bulletin de ${confirm?.student?.user?.name ?? confirm?.student?.admissionNumber ?? 'cet élève'} maintenant, même si les frais ne sont pas à jour ?`}
         confirmLabel="Envoyer"
         variant="primary"
       />

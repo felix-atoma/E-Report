@@ -8,9 +8,15 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import * as path from 'path';
+import * as os from 'os';
+import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -63,6 +69,33 @@ export class UsersController {
     @CurrentUser() user: any,
   ) {
     return this.service.update(id, dto, user.id, user.role, user.institutionId);
+  }
+
+  @Post(':id/avatar')
+  @ApiOperation({ summary: 'Upload profile photo (Admin or self)' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: os.tmpdir(),
+        filename: (_req, file, cb) => {
+          const unique = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+          cb(null, unique + path.extname(file.originalname));
+        },
+      }),
+      limits: { fileSize: 5 * 1024 * 1024 },
+      fileFilter: (_req, file, cb) => {
+        const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        cb(null, allowed.includes(file.mimetype));
+      },
+    }),
+  )
+  uploadAvatar(
+    @Param('id') id: string,
+    @UploadedFile() file: any,
+    @CurrentUser() user: any,
+  ) {
+    return this.service.uploadAvatar(id, file, user.id, user.role, user.institutionId);
   }
 
   @Patch(':id/deactivate')

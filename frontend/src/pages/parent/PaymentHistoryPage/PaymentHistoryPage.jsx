@@ -38,9 +38,9 @@ function PaymentHistoryPage() {
       render: (p) => {
         const child = children.find((c) => c.id === p.studentId);
         const name  = child
-          ? `${child.firstName} ${child.lastName}`
+          ? (child.user?.name ?? child.admissionNumber ?? '—')
           : p.student
-            ? `${p.student.firstName} ${p.student.lastName}`
+            ? (p.student.user?.name ?? p.student.admissionNumber ?? '—')
             : '—';
         return <span className="payments-hist__name">{name}</span>;
       },

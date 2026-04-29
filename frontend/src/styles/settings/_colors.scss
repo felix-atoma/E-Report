@@ -1,23 +1,23 @@
-$color-primary: #1e40af;
-$color-secondary: #64748b;
-$color-accent: #f59e0b;
-$color-success: #10b981;
-$color-danger: #ef4444;
-$color-warning: #f59e0b;
-$color-info: #3b82f6;
+$color-primary:   #f97316; // Orange-500
+$color-secondary: #0f766e; // Teal-700
+$color-accent:    #ea580c; // Orange-600 (hover/darker)
+$color-success:   #10b981;
+$color-danger:    #ef4444;
+$color-warning:   #f59e0b;
+$color-info:      #0f766e; // Teal matches secondary
 
-$color-text: #1f2937;
-$color-text-muted: #6b7280;
+$color-text:         #1f2937;
+$color-text-muted:   #6b7280;
 $color-text-inverse: #ffffff;
 
-$color-bg: #ffffff;
-$color-bg-subtle: #f9fafb;
-$color-bg-muted: #f3f4f6;
+$color-bg:       #ffffff;
+$color-bg-subtle: #eef2f7;
+$color-bg-muted:  #e2e8f0;
 
-$color-border: #e5e7eb;
+$color-border:        #e5e7eb;
 $color-border-strong: #d1d5db;
 
-$color-status-paid: #10b981;
+$color-status-paid:    #10b981;
 $color-status-partial: #f59e0b;
-$color-status-unpaid: #ef4444;
-$color-status-exempt: #6b7280;
+$color-status-unpaid:  #ef4444;
+$color-status-exempt:  #6b7280;

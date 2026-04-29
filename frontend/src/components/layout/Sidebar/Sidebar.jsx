@@ -1,21 +1,31 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { useInstitution } from '../../../context/InstitutionContext';
+import Avatar from '../../common/Avatar/Avatar';
 import './Sidebar.css';
+
+const ROLE_LABEL = {
+  ADMIN: 'Administrateur', TEACHER: 'Enseignant',
+  BURSAR: 'Économe', PARENT: 'Parent', STUDENT: 'Élève',
+};
 
 const NAV = {
   ADMIN: [
     { to: '/admin',                icon: 'grid',       label: 'Tableau de bord' },
+    { divider: true, label: 'ÉCOLE' },
     { to: '/admin/users',          icon: 'users',      label: 'Utilisateurs' },
     { to: '/admin/classes',        icon: 'school',     label: 'Classes' },
     { to: '/admin/students',       icon: 'backpack',   label: 'Élèves' },
     { to: '/admin/subjects',       icon: 'book',       label: 'Matières' },
+    { divider: true, label: 'PÉDAGOGIE' },
     { to: '/admin/reports',        icon: 'clipboard',  label: 'Bulletins' },
+    { to: '/admin/bulletins',      icon: 'megaphone',  label: 'Annonces' },
+    { divider: true, label: 'FINANCES' },
     { to: '/admin/fees',           icon: 'coins',      label: 'Frais' },
     { to: '/admin/payments',       icon: 'card',       label: 'Paiements' },
+    { divider: true, label: 'SYSTÈME' },
     { to: '/admin/notifications',  icon: 'bell',       label: 'Notifications' },
     { to: '/admin/analytics',      icon: 'chart',      label: 'Analytiques' },
-    { to: '/admin/bulletins',      icon: 'megaphone',  label: 'Annonces' },
     { to: '/admin/branding',       icon: 'palette',    label: 'Apparence' },
     { to: '/admin/settings',       icon: 'settings',   label: 'Paramètres' },
   ],
@@ -32,10 +42,11 @@ const NAV = {
     { to: '/bursar/notifications', icon: 'bell',       label: 'Bulletins retenus' },
   ],
   PARENT: [
-    { to: '/parent',               icon: 'grid',       label: 'Tableau de bord' },
-    { to: '/parent/children',      icon: 'backpack',   label: 'Mes enfants' },
-    { to: '/parent/bulletins',     icon: 'megaphone',  label: 'Annonces' },
-    { to: '/parent/payments',      icon: 'card',       label: 'Historique paiements' },
+    { to: '/parent',                  icon: 'grid',       label: 'Tableau de bord' },
+    { to: '/parent/children',         icon: 'backpack',   label: 'Mes enfants' },
+    { to: '/parent/bulletins',        icon: 'megaphone',  label: 'Annonces' },
+    { to: '/parent/payments',         icon: 'card',       label: 'Historique paiements' },
+    { to: '/parent/notifications',    icon: 'bell',       label: 'Notifications' },
   ],
   STUDENT: [
     { to: '/student',              icon: 'grid',       label: 'Tableau de bord' },
@@ -187,26 +198,61 @@ function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
           </button>
         </div>
 
+        {/* ZDesk-style user profile section */}
+        {!collapsed && (
+          <div className="sidebar__user">
+            <NavLink to="/profile" className="sidebar__user-link" onClick={onMobileClose}>
+              <Avatar name={user?.name ?? 'Utilisateur'} src={user?.profileImage} size="sm" />
+              <div className="sidebar__user-info">
+                <span className="sidebar__user-name">{user?.name ?? 'Utilisateur'}</span>
+                <span className="sidebar__user-role">{ROLE_LABEL[user?.role] ?? user?.role}</span>
+              </div>
+            </NavLink>
+          </div>
+        )}
+        {collapsed && (
+          <div className="sidebar__user sidebar__user--collapsed">
+            <NavLink to="/profile" onClick={onMobileClose} title={user?.name}>
+              <Avatar name={user?.name ?? 'Utilisateur'} src={user?.profileImage} size="sm" />
+            </NavLink>
+          </div>
+        )}
+
         {/* Nav items */}
         <nav className="sidebar__nav" aria-label="Navigation principale">
-          {items.map(({ to, icon, label }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={to.split('/').length <= 2}
-              onClick={onMobileClose}
-              className={({ isActive }) =>
-                `sidebar__link${isActive ? ' sidebar__link--active' : ''}`
-              }
-            >
-              <span className="sidebar__link-icon" aria-hidden="true">{ICONS[icon]}</span>
-              {!collapsed && <span className="sidebar__link-label">{label}</span>}
-            </NavLink>
-          ))}
+          {items.map((item, idx) => {
+            if (item.divider) {
+              return !collapsed ? (
+                <div key={`div-${idx}`} className="sidebar__group-label">{item.label}</div>
+              ) : (
+                <div key={`div-${idx}`} className="sidebar__group-divider" />
+              );
+            }
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to.split('/').length <= 2}
+                onClick={onMobileClose}
+                className={({ isActive }) =>
+                  `sidebar__link${isActive ? ' sidebar__link--active' : ''}`
+                }
+              >
+                <span className="sidebar__link-icon" aria-hidden="true">{ICONS[item.icon]}</span>
+                {!collapsed && <span className="sidebar__link-label">{item.label}</span>}
+              </NavLink>
+            );
+          })}
         </nav>
 
-        {/* Footer: profile */}
+        {/* ZDesk-style help box + logout */}
         <div className="sidebar__footer">
+          {!collapsed && (
+            <div className="sidebar__help-box">
+              <p className="sidebar__help-title">Besoin d'aide ?</p>
+              <p className="sidebar__help-text">Contactez le support NovaBulletin</p>
+            </div>
+          )}
           <NavLink
             to="/profile"
             onClick={onMobileClose}

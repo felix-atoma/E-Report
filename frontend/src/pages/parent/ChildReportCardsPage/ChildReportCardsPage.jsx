@@ -63,13 +63,37 @@ function ReportCard({ report, feeSummary }) {
         <div className="report-card-item__body">
           {showPaywall ? (
             <PaywallNotice
-              studentName={`${report.student?.firstName ?? ''} ${report.student?.lastName ?? ''}`.trim()}
+              studentName={report.student?.user?.name ?? report.student?.admissionNumber ?? ''}
               termName={termLabel}
               balance={feeSummary?.balance ?? 0}
               onContact={() => window.location.href = 'tel:'}
             />
           ) : (
             <>
+              {/* PDF actions */}
+              {report.pdfUrl && (
+                <div className="report-card-item__pdf-actions">
+                  <a
+                    href={report.pdfUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    download
+                    className="report-card-item__btn report-card-item__btn--download"
+                  >
+                    Télécharger PDF ↓
+                  </a>
+                  <a
+                    href={report.pdfUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="report-card-item__btn report-card-item__btn--print"
+                    onClick={(e) => { e.preventDefault(); const w = window.open(report.pdfUrl, '_blank'); w && w.focus(); }}
+                  >
+                    Imprimer ⎙
+                  </a>
+                </div>
+              )}
+
               {/* Grade summary */}
               {report.grades && report.grades.length > 0 && (
                 <div className="report-card-item__grades">
@@ -150,7 +174,7 @@ function ChildReportCardsPage() {
   if (l1 || l2) return <AppShell title="Bulletins"><Loading /></AppShell>;
 
   const published = reports.filter((r) => r.status === 'PUBLISHED');
-  const childName = child ? `${child.firstName} ${child.lastName}` : '—';
+  const childName = child ? (child.user?.name ?? child.admissionNumber ?? '—') : '—';
 
   return (
     <AppShell title={`Bulletins — ${childName}`}>

@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsArray, IsEmail, IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
 import { Role } from '../../../common/enums/role.enum';
 
 export class CreateUserDto {
@@ -24,4 +24,15 @@ export class CreateUserDto {
   @IsOptional()
   @IsString()
   whatsappNumber?: string;
+
+  @ApiPropertyOptional({ type: [String], description: 'Subject IDs to assign (teachers only)' })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  subjectIds?: string[];
+
+  @ApiPropertyOptional({ description: 'Class ID to set as professeur principal (teachers only)' })
+  @IsOptional()
+  @IsString()
+  mainClassId?: string;
 }

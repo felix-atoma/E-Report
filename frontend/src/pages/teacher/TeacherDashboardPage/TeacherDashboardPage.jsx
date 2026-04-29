@@ -32,7 +32,7 @@ function TeacherDashboardPage() {
   return (
     <AppShell title="Tableau de bord">
       <PageHeader
-        title={`Bonjour, ${user?.firstName ?? 'Enseignant'}`}
+        title={`Bonjour, ${user?.name ?? 'Enseignant'}`}
         subtitle="Voici un aperçu de vos activités"
         actions={
           <Button icon="+" onClick={() => {}}>
@@ -43,17 +43,32 @@ function TeacherDashboardPage() {
 
       <div className="teacher-dash__stats">
         <Card className="teacher-dash__stat">
-          <span className="teacher-dash__stat-icon">🏫</span>
+          <div className="teacher-dash__stat-icon teacher-dash__stat-icon--orange">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+          </div>
           <span className="teacher-dash__stat-value">{classes.length}</span>
           <span className="teacher-dash__stat-label">Mes classes</span>
         </Card>
         <Card className="teacher-dash__stat">
-          <span className="teacher-dash__stat-icon">✏️</span>
+          <div className="teacher-dash__stat-icon teacher-dash__stat-icon--blue">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </div>
           <span className="teacher-dash__stat-value">{pending.length}</span>
           <span className="teacher-dash__stat-label">En cours</span>
         </Card>
         <Card className="teacher-dash__stat">
-          <span className="teacher-dash__stat-icon">📋</span>
+          <div className="teacher-dash__stat-icon teacher-dash__stat-icon--teal">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+              <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+            </svg>
+          </div>
           <span className="teacher-dash__stat-value">{published.length}</span>
           <span className="teacher-dash__stat-label">Publiés</span>
         </Card>

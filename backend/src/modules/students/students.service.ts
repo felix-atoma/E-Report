@@ -67,54 +67,119 @@ export class StudentsService {
     return student;
   }
 
-  async create(dto: CreateStudentDto, institutionId: string) {
-    const existing = await this.prisma.student.findUnique({
-      where: { admissionNumber: dto.admissionNumber },
+  private async generateAdmissionNumber(institutionId: string, year: number): Promise<string> {
+    const institution = await this.prisma.institution.findUnique({
+      where: { id: institutionId },
+      select: { name: true },
     });
-    if (existing) throw new ConflictException('Admission number already in use');
 
-    if (dto.parentId) {
-      const parent = await this.prisma.user.findFirst({ where: { id: dto.parentId, institutionId } });
+    const prefix = (institution?.name ?? 'SCH')
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-zA-Z]/g, '')
+      .slice(0, 3)
+      .toUpperCase()
+      || 'SCH';
+
+    const yearStart = new Date(`${year}-01-01`);
+    const yearEnd   = new Date(`${year + 1}-01-01`);
+    const count = await this.prisma.student.count({
+      where: {
+        institutionId,
+        enrollmentDate: { gte: yearStart, lt: yearEnd },
+      },
+    });
+
+    const sequence = String(count + 1).padStart(3, '0');
+    return `${prefix}-${year}-${sequence}`;
+  }
+
+  async create(dto: CreateStudentDto, institutionId: string) {
+    if (dto.admissionNumber) {
+      const existing = await this.prisma.student.findUnique({
+        where: { admissionNumber: dto.admissionNumber },
+      });
+      if (existing) throw new ConflictException('Admission number already in use');
+    }
+
+    const enrollYear = dto.enrollmentDate
+      ? new Date(dto.enrollmentDate).getFullYear()
+      : new Date().getFullYear();
+
+    const admissionNumber = dto.admissionNumber
+      || await this.generateAdmissionNumber(institutionId, enrollYear);
+
+    // Resolve parentId from parentEmail if provided
+    let parentId = dto.parentId;
+    if (!parentId && dto.parentEmail) {
+      const parent = await this.prisma.user.findFirst({
+        where: { email: dto.parentEmail, institutionId },
+        select: { id: true },
+      });
+      if (!parent) throw new NotFoundException(`No parent account found for email: ${dto.parentEmail}`);
+      parentId = parent.id;
+    } else if (parentId) {
+      const parent = await this.prisma.user.findFirst({ where: { id: parentId, institutionId } });
       if (!parent) throw new NotFoundException('Parent user not found');
     }
 
-    // When email + name are provided, create a linked STUDENT user account
-    let userId: string | undefined;
-    if (dto.email && dto.name) {
-      const existingUser = await this.prisma.user.findUnique({ where: { email: dto.email } });
-      if (existingUser) throw new ConflictException('Email already in use by another user');
-
-      const saltRounds = this.config.get<number>('BCRYPT_SALT_ROUNDS', 12);
-      // Temporary password — student should reset via forgot-password flow
-      const tempPassword = await bcrypt.hash(
-        `Temp@${Math.random().toString(36).slice(2, 10)}`,
-        Number(saltRounds),
-      );
-
-      const userRecord = await this.prisma.user.create({
-        data: {
-          name: dto.name,
-          email: dto.email,
-          password: tempPassword,
-          role: 'STUDENT',
-          institutionId,
-        },
-        select: { id: true },
+    // Validate class if provided
+    let classRecord: { id: string; academicYear: string } | null = null;
+    if (dto.classId) {
+      classRecord = await this.prisma.class.findFirst({
+        where: { id: dto.classId, institutionId },
+        select: { id: true, academicYear: true },
       });
-      userId = userRecord.id;
+      if (!classRecord) throw new NotFoundException('Class not found');
     }
 
-    return this.prisma.student.create({
+    // Create linked STUDENT user account when name is provided (always, since name is required)
+    const saltRounds = this.config.get<number>('BCRYPT_SALT_ROUNDS', 12);
+    const tempPassword = await bcrypt.hash(
+      `Temp@${Math.random().toString(36).slice(2, 10)}`,
+      Number(saltRounds),
+    );
+
+    if (dto.email) {
+      const existingUser = await this.prisma.user.findUnique({ where: { email: dto.email } });
+      if (existingUser) throw new ConflictException('Email already in use by another user');
+    }
+
+    const userRecord = await this.prisma.user.create({
       data: {
-        admissionNumber: dto.admissionNumber,
+        name: dto.name,
+        email: dto.email ?? `student-${admissionNumber}@noreply.local`,
+        password: tempPassword,
+        role: 'STUDENT',
+        institutionId,
+      },
+      select: { id: true },
+    });
+
+    const student = await this.prisma.student.create({
+      data: {
+        admissionNumber,
         dateOfBirth: new Date(dto.dateOfBirth),
         enrollmentDate: dto.enrollmentDate ? new Date(dto.enrollmentDate) : undefined,
-        parentId: dto.parentId,
+        parentId,
         institutionId,
-        ...(userId ? { userId } : {}),
+        userId: userRecord.id,
       },
       include: STUDENT_INCLUDE,
     });
+
+    // Enroll in class if provided
+    if (classRecord) {
+      await this.prisma.classStudent.create({
+        data: {
+          classId: classRecord.id,
+          studentId: student.id,
+          academicYear: classRecord.academicYear,
+        },
+      });
+    }
+
+    return student;
   }
 
   async update(id: string, dto: UpdateStudentDto, institutionId: string) {
