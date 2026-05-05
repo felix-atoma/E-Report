@@ -3,6 +3,41 @@
   color: var(--color-text-muted, #6b7280);
 }
 
+.settings-section__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.settings-field__label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary, #374151);
+  margin-bottom: 0.35rem;
+}
+
+.settings-field__textarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border, #d1d5db);
+  border-radius: var(--radius-sm, 6px);
+  font-size: 0.875rem;
+  color: var(--color-text, #111827);
+  background: var(--color-bg, #fff);
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.5;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.settings-field__textarea:focus {
+  border-color: var(--color-primary, #3b82f6);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary, #3b82f6) 15%, transparent);
+}
+
 .settings-page__grid {
   display: flex;
   flex-direction: column;

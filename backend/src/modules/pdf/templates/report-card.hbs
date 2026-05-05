@@ -3,34 +3,40 @@
 <head>
 <meta charset="UTF-8" />
 <style>
+:root {
+  --c-primary: {{institution.primaryColor}};
+  --c-secondary: {{institution.secondaryColor}};
+  --c-primary-light: color-mix(in srgb, var(--c-primary) 12%, white);
+  --c-primary-text: color-mix(in srgb, var(--c-primary) 80%, black);
+}
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family: Arial, Helvetica, sans-serif; font-size:10px; color:#1a1a1a; background:#fff; }
 .page { width:210mm; min-height:297mm; padding:12mm 10mm; position:relative; }
 
 /* ── Header ── */
-.header { display:flex; align-items:center; border-bottom:3px double #1e3a8a; padding-bottom:8px; margin-bottom:8px; }
+.header { display:flex; align-items:center; border-bottom:3px double var(--c-primary); padding-bottom:8px; margin-bottom:8px; }
 .header .logo  { width:60px; height:60px; object-fit:contain; margin-right:12px; }
 .header .crest { width:60px; height:60px; object-fit:contain; margin-left:12px; }
 .header .center { flex:1; text-align:center; }
-.header .center h1 { font-size:14px; font-weight:bold; color:#1e3a8a; text-transform:uppercase; letter-spacing:1px; }
+.header .center h1 { font-size:14px; font-weight:bold; color:var(--c-primary); text-transform:uppercase; letter-spacing:1px; }
 .header .center .subtitle { font-size:9px; color:#555; margin-top:2px; }
 .header .center .motto { font-size:9px; font-style:italic; color:#374151; margin-top:2px; }
 
 /* ── Title bar ── */
-.title-bar { background:#1e3a8a; color:#fff; text-align:center; padding:5px; font-size:12px; font-weight:bold; letter-spacing:1px; margin-bottom:8px; }
+.title-bar { background:var(--c-primary); color:#fff; text-align:center; padding:5px; font-size:12px; font-weight:bold; letter-spacing:1px; margin-bottom:8px; }
 
 /* ── Student band ── */
-.student-band { display:flex; gap:0; border:1px solid #1e3a8a; margin-bottom:8px; }
+.student-band { display:flex; gap:0; border:1px solid var(--c-primary); margin-bottom:8px; }
 .student-band .field { flex:1; padding:4px 8px; border-right:1px solid #9ca3af; }
 .student-band .field:last-child { border-right:none; }
-.student-band .field label { display:block; font-size:7.5px; font-weight:bold; color:#1e3a8a; text-transform:uppercase; margin-bottom:1px; }
+.student-band .field label { display:block; font-size:7.5px; font-weight:bold; color:var(--c-primary); text-transform:uppercase; margin-bottom:1px; }
 .student-band .field span { font-size:10px; font-weight:bold; }
 
 /* ── Grades table ── */
 .grades-table { width:100%; border-collapse:collapse; margin-bottom:8px; font-size:8.5px; }
 .grades-table th, .grades-table td { border:1px solid #d1d5db; padding:2px 3px; text-align:center; vertical-align:middle; }
-.grades-table thead tr:first-child th { background:#1e3a8a; color:#fff; font-size:8px; font-weight:bold; padding:3px 3px; }
-.grades-table thead tr:last-child th  { background:#e8f0fe; color:#1e40af; font-size:7.5px; }
+.grades-table thead tr:first-child th { background:var(--c-primary); color:#fff; font-size:8px; font-weight:bold; padding:3px 3px; }
+.grades-table thead tr:last-child th  { background:var(--c-primary-light); color:var(--c-primary-text); font-size:7.5px; }
 .grades-table .col-matiere { text-align:left; min-width:90px; font-weight:600; padding-left:5px; }
 .grades-table .col-num  { min-width:28px; }
 .grades-table .col-moy  { background:#dcfce7; font-weight:700; min-width:30px; }
@@ -45,15 +51,15 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:10px; color:#1a1a1a;
 .grades-table tbody tr:nth-child(even) { background:#f9fafb; }
 .grades-table tbody td.fail { color:#dc2626; font-weight:bold; }
 .grades-table tbody td.pass { color:#15803d; }
-.grades-table tfoot td { background:#1e3a8a; color:#fff; font-weight:bold; font-size:9px; padding:3px; }
+.grades-table tfoot td { background:var(--c-primary); color:#fff; font-weight:bold; font-size:9px; padding:3px; }
 .grades-table .col-sig { min-width:70px; border-bottom:1px dotted #9ca3af; }
 
 /* ── Summary row ── */
-.summary { display:flex; gap:0; border:1px solid #1e3a8a; margin-bottom:8px; }
+.summary { display:flex; gap:0; border:1px solid var(--c-primary); margin-bottom:8px; }
 .sum-card { flex:1; padding:5px 8px; text-align:center; border-right:1px solid #9ca3af; }
 .sum-card:last-child { border-right:none; }
 .sum-card .label { font-size:7.5px; color:#6b7280; text-transform:uppercase; font-weight:bold; }
-.sum-card .value { font-size:16px; font-weight:bold; color:#1e3a8a; line-height:1.2; }
+.sum-card .value { font-size:16px; font-weight:bold; color:var(--c-primary); line-height:1.2; }
 .sum-card .value.fail { color:#dc2626; }
 .sum-card .value.pass { color:#15803d; }
 .sum-card .mention { font-size:10px; font-weight:bold; }
@@ -64,33 +70,33 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:10px; color:#1a1a1a;
 
 /* ── Attendance box ── */
 .attendance-box { border:1px solid #d1d5db; border-radius:3px; }
-.attendance-box .box-title { background:#f1f5f9; padding:3px 8px; font-size:8px; font-weight:bold; color:#1e3a8a; text-transform:uppercase; border-bottom:1px solid #d1d5db; }
+.attendance-box .box-title { background:#f1f5f9; padding:3px 8px; font-size:8px; font-weight:bold; color:var(--c-primary); text-transform:uppercase; border-bottom:1px solid #d1d5db; }
 .att-row { display:flex; }
 .att-cell { flex:1; padding:4px 6px; text-align:center; border-right:1px solid #e5e7eb; }
 .att-cell:last-child { border-right:none; }
 .att-cell .att-label { font-size:7px; color:#6b7280; }
-.att-cell .att-val   { font-size:12px; font-weight:bold; color:#1e3a8a; }
+.att-cell .att-val   { font-size:12px; font-weight:bold; color:var(--c-primary); }
 
 /* ── Comment box ── */
 .comment-box { border:1px solid #d1d5db; border-radius:3px; }
-.comment-box .box-title { background:#f1f5f9; padding:3px 8px; font-size:8px; font-weight:bold; color:#1e3a8a; text-transform:uppercase; border-bottom:1px solid #d1d5db; }
+.comment-box .box-title { background:#f1f5f9; padding:3px 8px; font-size:8px; font-weight:bold; color:var(--c-primary); text-transform:uppercase; border-bottom:1px solid #d1d5db; }
 .comment-box .content { padding:5px 8px; font-size:9px; min-height:32px; color:#374151; }
 .comment-box .honor-badge { display:inline-block; background:#fef9c3; border:1px solid #fbbf24; color:#92400e; font-size:8px; font-weight:bold; padding:1px 6px; border-radius:10px; margin-top:3px; }
 
 /* ── Class stats ── */
 .class-stats { border:1px solid #d1d5db; border-radius:3px; margin-bottom:8px; }
-.class-stats .box-title { background:#f1f5f9; padding:3px 8px; font-size:8px; font-weight:bold; color:#1e3a8a; text-transform:uppercase; border-bottom:1px solid #d1d5db; }
+.class-stats .box-title { background:#f1f5f9; padding:3px 8px; font-size:8px; font-weight:bold; color:var(--c-primary); text-transform:uppercase; border-bottom:1px solid #d1d5db; }
 .stats-row { display:flex; }
 .stats-cell { flex:1; padding:4px 6px; text-align:center; border-right:1px solid #e5e7eb; }
 .stats-cell:last-child { border-right:none; }
 .stats-cell .stats-label { font-size:7px; color:#6b7280; }
-.stats-cell .stats-val   { font-size:12px; font-weight:bold; color:#1e3a8a; }
+.stats-cell .stats-val   { font-size:12px; font-weight:bold; color:var(--c-primary); }
 
 /* ── Signatures ── */
-.signatures { display:flex; gap:0; margin-top:12px; border-top:2px solid #1e3a8a; padding-top:8px; }
+.signatures { display:flex; gap:0; margin-top:12px; border-top:2px solid var(--c-primary); padding-top:8px; }
 .sig-box { flex:1; text-align:center; border-right:1px solid #d1d5db; padding:0 8px; }
 .sig-box:last-child { border-right:none; }
-.sig-box .sig-title { font-size:8px; font-weight:bold; text-transform:uppercase; color:#1e3a8a; margin-bottom:24px; }
+.sig-box .sig-title { font-size:8px; font-weight:bold; text-transform:uppercase; color:var(--c-primary); margin-bottom:24px; }
 .sig-box .sig-line  { border-bottom:1px solid #374151; margin:0 8px; margin-bottom:3px; }
 .sig-box .sig-name  { font-size:7.5px; color:#6b7280; }
 
@@ -129,6 +135,11 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:10px; color:#1a1a1a;
 
   <!-- Student band -->
   <div class="student-band">
+    {{#if student.photo}}
+    <div class="field" style="flex:0;padding:4px 6px;display:flex;align-items:center;">
+      <img src="{{student.photo}}" alt="Photo" style="width:50px;height:60px;object-fit:cover;border-radius:2px;border:1px solid #d1d5db;" />
+    </div>
+    {{/if}}
     <div class="field"><label>Nom &amp; Prénom</label><span>{{student.name}}</span></div>
     <div class="field"><label>N° Admission</label><span>{{student.admissionNumber}}</span></div>
     <div class="field"><label>Date de naissance</label><span>{{student.dateOfBirth}}</span></div>

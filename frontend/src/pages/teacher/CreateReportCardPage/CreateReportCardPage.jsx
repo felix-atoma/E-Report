@@ -60,8 +60,9 @@ function CreateReportCardPage() {
   const mutation = useMutation({
     mutationFn: (data) => reportsService.create(data),
     onSuccess: (res) => {
-      toast.success('Bulletin créé');
-      navigate(`/teacher/reports/${res.data.id}`);
+      const count = res.data?.count ?? 1;
+      toast.success(`${count} bulletin${count !== 1 ? 's' : ''} créé${count !== 1 ? 's' : ''}`);
+      navigate('/teacher/reports');
     },
     onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur de création'),
   });
@@ -79,7 +80,7 @@ function CreateReportCardPage() {
       academicYear: form.academicYear,
       termType:     form.termType,
       termNumber:   Number(form.termNumber),
-      termName:     form.termName || undefined,
+      ...(form.termName ? { termName: form.termName } : {}),
     });
   }
 

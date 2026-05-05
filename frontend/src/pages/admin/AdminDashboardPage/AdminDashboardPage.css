@@ -36,9 +36,13 @@
 }
 .dashboard-breakdown { display: flex; flex-direction: column; gap: 0.6rem; }
 .dashboard-breakdown__row {
-  display: flex; align-items: center;
-  justify-content: space-between; gap: 0.5rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.dashboard-breakdown__label {
+  flex: 1;
+  font-size: 0.8rem; color: var(--color-text-muted, #6b7280);
 }
 .dashboard-breakdown__count {
   font-size: 0.875rem; font-weight: 600; color: var(--color-text, #1f2937);
+  white-space: nowrap;
 }

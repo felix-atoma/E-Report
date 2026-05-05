@@ -69,61 +69,72 @@ function AdminDashboardPage() {
     queryFn: () => analyticsService.overview().then((r) => r.data),
   });
 
+  const academicYear = overview?.academicYear ?? null;
+
   const { data: payments } = useQuery({
-    queryKey: ['analytics', 'payment-summary'],
-    queryFn: () => analyticsService.paymentSummary().then((r) => r.data),
+    queryKey: ['analytics', 'payment-summary', academicYear],
+    queryFn: () => analyticsService.paymentSummary({ academicYear }).then((r) => r.data),
+    enabled: !!academicYear,
   });
 
   const { data: reports } = useQuery({
-    queryKey: ['analytics', 'report-stats'],
-    queryFn: () => analyticsService.reportStats().then((r) => r.data),
+    queryKey: ['analytics', 'report-stats', academicYear],
+    queryFn: () => analyticsService.reportStats({ academicYear }).then((r) => r.data),
+    enabled: !!academicYear,
   });
 
   if (loadingOverview) return <AppShell title="Tableau de bord"><Loading /></AppShell>;
 
-  const collectionRate = payments?.collectionRate != null
-    ? `${Math.round(payments.collectionRate)}%`
-    : '—';
+  const collectionRate =
+    payments?.totalDue > 0
+      ? `${Math.round((payments.totalCollected / payments.totalDue) * 100)}%`
+      : '—';
+
+  const fmt = (n) => (n != null ? Number(n).toLocaleString('fr-FR') : '—');
 
   return (
     <AppShell title="Tableau de bord">
-      <PageHeader title="Vue d'ensemble" subtitle={`Année scolaire en cours`} />
+      <PageHeader
+        title="Vue d'ensemble"
+        subtitle={academicYear ? `Année scolaire ${academicYear}` : 'Année scolaire en cours'}
+      />
 
       <div className="dashboard-stats">
-        <StatCard label="Élèves"       value={overview?.totalStudents}  icon="students"    color="blue" />
-        <StatCard label="Enseignants"  value={overview?.totalTeachers}  icon="teachers"    color="teal" />
-        <StatCard label="Classes"      value={overview?.totalClasses}   icon="classes"     color="orange" />
-        <StatCard label="Bulletins publiés" value={overview?.publishedReports} icon="reports" color="green" />
+        <StatCard label="Élèves"            value={overview?.students}        icon="students"    color="blue" />
+        <StatCard label="Enseignants"       value={overview?.teachers}        icon="teachers"    color="teal" />
+        <StatCard label="Classes"           value={overview?.classes}         icon="classes"     color="orange" />
+        <StatCard label="Bulletins publiés" value={overview?.publishedReports} icon="reports"    color="green" />
         <StatCard
           label="Taux de recouvrement"
           value={collectionRate}
           icon="collection"
           color="teal"
-          sub={payments ? `${payments.totalPaid?.toLocaleString('fr-FR')} / ${payments.totalDue?.toLocaleString('fr-FR')} FCFA` : null}
+          sub={payments ? `${fmt(payments.totalCollected)} / ${fmt(payments.totalDue)} FCFA` : null}
         />
         <StatCard
-          label="Paiements en attente"
-          value={overview?.pendingPayments}
+          label="Reste à percevoir"
+          value={payments ? `${fmt(payments.totalPending)} FCFA` : '—'}
           icon="pending"
           color="orange"
         />
       </div>
 
       <div className="dashboard-grid">
-        {/* Payment breakdown */}
+        {/* Payment summary card */}
         {payments && (
           <Card className="dashboard-card">
-            <h3 className="dashboard-card__title">Statut des paiements</h3>
+            <h3 className="dashboard-card__title">Recouvrement des frais</h3>
             <div className="dashboard-breakdown">
               {[
-                { label: 'À jour',   count: payments.paidCount,    status: 'PAID' },
-                { label: 'Partiel',  count: payments.partialCount, status: 'PARTIAL' },
-                { label: 'Non payé', count: payments.unpaidCount,  status: 'UNPAID' },
-                { label: 'Exonéré', count: payments.exemptCount,  status: 'EXEMPT' },
-              ].map(({ label, count, status }) => (
+                { label: 'Total attendu',   value: `${fmt(payments.totalDue)} FCFA`,       status: 'PAID' },
+                { label: 'Collecté',        value: `${fmt(payments.totalCollected)} FCFA`, status: 'PARTIAL' },
+                { label: 'Reste à payer',   value: `${fmt(payments.totalPending)} FCFA`,   status: 'UNPAID' },
+                { label: 'Élèves exonérés', value: `${payments.exemptCount ?? 0}`,         status: 'EXEMPT' },
+              ].map(({ label, value, status }) => (
                 <div key={status} className="dashboard-breakdown__row">
                   <StatusPill status={status} />
-                  <span className="dashboard-breakdown__count">{count ?? 0} élèves</span>
+                  <span className="dashboard-breakdown__label">{label}</span>
+                  <span className="dashboard-breakdown__count">{value}</span>
                 </div>
               ))}
             </div>
@@ -136,12 +147,13 @@ function AdminDashboardPage() {
             <h3 className="dashboard-card__title">Bulletins</h3>
             <div className="dashboard-breakdown">
               {[
-                { label: 'Brouillons', count: reports.draftCount,     status: 'DRAFT' },
-                { label: 'En révision', count: reports.reviewCount,   status: 'REVIEW' },
-                { label: 'Publiés',    count: reports.publishedCount, status: 'PUBLISHED' },
+                { label: 'Brouillons',  count: reports.draft,     status: 'DRAFT' },
+                { label: 'En révision', count: reports.review,    status: 'REVIEW' },
+                { label: 'Publiés',     count: reports.published, status: 'PUBLISHED' },
               ].map(({ label, count, status }) => (
                 <div key={status} className="dashboard-breakdown__row">
                   <StatusPill status={status} />
+                  <span className="dashboard-breakdown__label">{label}</span>
                   <span className="dashboard-breakdown__count">{count ?? 0}</span>
                 </div>
               ))}

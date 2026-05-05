@@ -97,8 +97,137 @@
 .teacher-dash__report-name { font-weight: 500; font-size: 0.875rem; }
 .teacher-dash__report-meta { font-size: 0.78rem; color: var(--color-text-muted, #6b7280); }
 
+/* ── Fiches de notes section ── */
+.teacher-dash__fiches-card {
+  margin-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.teacher-dash__fiches-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.teacher-dash__fiches-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text, #1f2937);
+}
+
+.teacher-dash__term-tabs {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.teacher-dash__term-btn {
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 20px;
+  background: var(--color-surface-alt, #f9fafb);
+  color: var(--color-text-muted, #6b7280);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.teacher-dash__term-btn:hover { background: var(--color-border, #e5e7eb); }
+.teacher-dash__term-btn--active {
+  background: var(--color-primary, #6366f1);
+  border-color: var(--color-primary, #6366f1);
+  color: #fff;
+}
+
+.teacher-dash__fiches-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.teacher-dash__fiche-class {
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.teacher-dash__fiche-class-name {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  background: var(--color-surface-alt, #f3f4f6);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-text, #1f2937);
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
+}
+
+.teacher-dash__fiche-year {
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--color-text-muted, #9ca3af);
+}
+
+.td__fiche-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 0.75rem;
+  border-bottom: 1px solid var(--color-border, #f3f4f6);
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.12s;
+}
+.td__fiche-row:last-child { border-bottom: none; }
+.td__fiche-row:hover { background: var(--color-surface-alt, #f9fafb); }
+.td__fiche-row--signed { background: #f0fdf4; }
+.td__fiche-row--signed:hover { background: #dcfce7; }
+
+.td__fiche-subject {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--color-text, #1f2937);
+}
+
+.td__fiche-code {
+  font-size: 0.7rem;
+  color: var(--color-text-muted, #9ca3af);
+  font-family: monospace;
+}
+
+.td__fiche-badge {
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.td__fiche-badge--signed  { background: #dcfce7; color: #15803d; }
+.td__fiche-badge--pending { background: var(--color-surface-alt, #f3f4f6); color: var(--color-text-muted, #9ca3af); }
+
+.td__fiche-loading,
+.td__fiche-empty {
+  padding: 0.6rem 0.75rem;
+  font-size: 0.8rem;
+  color: var(--color-text-muted, #9ca3af);
+}
+
 @media (max-width: 500px) {
   .teacher-dash__stats {
     grid-template-columns: 1fr;
+  }
+  .teacher-dash__fiches-head {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

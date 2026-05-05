@@ -270,6 +270,69 @@
   line-height: 1.5;
 }
 
+/* ── Named stat cards ────────────────────────────────────────────────── */
+.fdn__extra-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.fdn__extra-stat {
+  flex: 1 1 180px;
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  border: 1px solid transparent;
+}
+
+.fdn__extra-stat--high  { background: #f0fdf4; border-color: #bbf7d0; }
+.fdn__extra-stat--low   { background: #fff7ed; border-color: #fed7aa; }
+.fdn__extra-stat--up    { background: #eff6ff; border-color: #bfdbfe; }
+.fdn__extra-stat--down  { background: #fef2f2; border-color: #fecaca; }
+.fdn__extra-stat--muted { opacity: 0.6; }
+
+.fdn__extra-stat__label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6b7280;
+  margin-bottom: 0.2rem;
+}
+
+.fdn__extra-stat--high .fdn__extra-stat__label  { color: #15803d; }
+.fdn__extra-stat--low  .fdn__extra-stat__label  { color: #c2410c; }
+.fdn__extra-stat--up   .fdn__extra-stat__label  { color: #1d4ed8; }
+.fdn__extra-stat--down .fdn__extra-stat__label  { color: #dc2626; }
+
+.fdn__extra-stat__value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #1f2937;
+}
+.fdn__extra-stat__value span {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #9ca3af;
+  margin-left: 2px;
+}
+
+.fdn__extra-stat__name {
+  font-size: 0.82rem;
+  color: #374151;
+  margin-top: 0.1rem;
+}
+
+.fdn__extra-stat__sub {
+  font-size: 0.7rem;
+  color: #9ca3af;
+  margin-top: 0.15rem;
+}
+
 /* ── Signature banner ────────────────────────────────────────────────── */
 .fdn__signature-banner {
   display: flex;

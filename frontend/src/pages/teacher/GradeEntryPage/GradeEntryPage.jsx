@@ -110,6 +110,15 @@ export default function GradeEntryPage() {
     enabled: !!classId && !!subjectId && !!academicYear && !isNaN(termNumber),
   });
 
+  // Previous term — used to compute progression/regression
+  const prevTerm = termNumber > 1 ? termNumber - 1 : null;
+  const { data: prevData } = useQuery({
+    queryKey: ['fiche', classId, subjectId, academicYear, prevTerm],
+    queryFn: () =>
+      gradesService.getForClassSubject(classId, subjectId, academicYear, prevTerm).then((r) => r.data),
+    enabled: !!classId && !!subjectId && !!academicYear && prevTerm !== null,
+  });
+
   // Initialise rows from server data (only once)
   if (data && rows === null) {
     setRows(data.students.map((s) => ({ ...s })));
@@ -181,7 +190,10 @@ export default function GradeEntryPage() {
   };
 
   if (isLoading) return <AppShell title="Fiche de notes"><Loading /></AppShell>;
-  if (error)     return <AppShell title="Fiche de notes"><p className="fdn__error">Impossible de charger la fiche.</p></AppShell>;
+  if (error) {
+    const msg = error?.response?.data?.message ?? 'Impossible de charger la fiche.';
+    return <AppShell title="Fiche de notes"><p className="fdn__error">{msg}</p></AppShell>;
+  }
 
   const displayRows = rows ?? data?.students ?? [];
   const ranks = computeRanks(displayRows);
@@ -191,9 +203,34 @@ export default function GradeEntryPage() {
   const totalPoints  = displayRows.reduce((s, r) => s + (r.moyenneMatiere !== null ? r.moyenneMatiere * coef : 0), 0);
   const moyClasse    = displayRows.filter((r) => r.moyenneMatiere !== null).length > 0
     ? totalPoints / totalCoef : null;
-  const moyennes     = displayRows.map((r) => r.moyenneMatiere).filter((v) => v !== null);
-  const classHighest = moyennes.length > 0 ? Math.max(...moyennes) : null;
-  const classLowest  = moyennes.length > 0 ? Math.min(...moyennes) : null;
+  const rowsWithMoy  = displayRows.filter((r) => r.moyenneMatiere !== null);
+  const classHighest = rowsWithMoy.length > 0 ? Math.max(...rowsWithMoy.map((r) => r.moyenneMatiere)) : null;
+  const classLowest  = rowsWithMoy.length > 0 ? Math.min(...rowsWithMoy.map((r) => r.moyenneMatiere)) : null;
+
+  // Named extremes
+  const strongestRow = rowsWithMoy.length > 0
+    ? rowsWithMoy.reduce((a, b) => b.moyenneMatiere > a.moyenneMatiere ? b : a)
+    : null;
+  const weakestRow = rowsWithMoy.length > 0
+    ? rowsWithMoy.reduce((a, b) => b.moyenneMatiere < a.moyenneMatiere ? b : a)
+    : null;
+
+  // Progression vs previous term
+  let mostImproved = null;
+  let mostDeclined = null;
+  if (prevData?.students && rowsWithMoy.length > 0) {
+    const prevMap = new Map(prevData.students.map((s) => [s.studentId, s.moyenneMatiere]));
+    const withDelta = rowsWithMoy
+      .map((r) => {
+        const prev = prevMap.get(r.studentId);
+        return prev != null ? { ...r, delta: Math.round((r.moyenneMatiere - prev) * 100) / 100 } : null;
+      })
+      .filter(Boolean);
+    const improved = withDelta.filter((r) => r.delta > 0);
+    const declined = withDelta.filter((r) => r.delta < 0);
+    if (improved.length > 0) mostImproved = improved.reduce((a, b) => b.delta > a.delta ? b : a);
+    if (declined.length > 0) mostDeclined = declined.reduce((a, b) => b.delta < a.delta ? b : a);
+  }
 
   return (
     <AppShell title={`Fiche de notes — ${data?.subject?.nameFr ?? ''}`}>
@@ -347,18 +384,60 @@ export default function GradeEntryPage() {
             </tr>
             <tr className="fdn__stats">
               <td colSpan={14} className="fdn__stats-row">
-                <span><strong>Moy. la plus forte :</strong> {fmt(classHighest)}</span>
+                <span><strong>Moy. la plus forte :</strong> {fmt(classHighest)} {strongestRow ? `— ${strongestRow.studentName}` : ''}</span>
                 <span className="fdn__legend-sep">|</span>
-                <span><strong>Moy. la plus faible :</strong> {fmt(classLowest)}</span>
+                <span><strong>Moy. la plus faible :</strong> {fmt(classLowest)} {weakestRow ? `— ${weakestRow.studentName}` : ''}</span>
                 <span className="fdn__legend-sep">|</span>
                 <span><strong>Moy. de la classe :</strong> {fmt(moyClasse)}</span>
                 <span className="fdn__legend-sep">|</span>
-                <span><strong>Effectif :</strong> {displayRows.filter((r) => r.moyenneMatiere !== null).length} / {displayRows.length}</span>
+                <span><strong>Effectif :</strong> {rowsWithMoy.length} / {displayRows.length}</span>
               </td>
             </tr>
           </tfoot>
         </table>
       </div>
+
+      {/* ── Named stat cards ─────────────────────────────────────────────── */}
+      {rowsWithMoy.length > 0 && (
+        <div className="fdn__extra-stats">
+          <div className="fdn__extra-stat fdn__extra-stat--high">
+            <div className="fdn__extra-stat__label">Moy. la plus forte</div>
+            <div className="fdn__extra-stat__value">{fmt(strongestRow.moyenneMatiere)}<span>/20</span></div>
+            <div className="fdn__extra-stat__name">obtenue par <strong>{strongestRow.studentName}</strong></div>
+          </div>
+          <div className="fdn__extra-stat fdn__extra-stat--low">
+            <div className="fdn__extra-stat__label">Moy. la plus faible</div>
+            <div className="fdn__extra-stat__value">{fmt(weakestRow.moyenneMatiere)}<span>/20</span></div>
+            <div className="fdn__extra-stat__name">obtenue par <strong>{weakestRow.studentName}</strong></div>
+          </div>
+          {mostImproved ? (
+            <div className="fdn__extra-stat fdn__extra-stat--up">
+              <div className="fdn__extra-stat__label">A le plus progressé</div>
+              <div className="fdn__extra-stat__value">+{fmt(mostImproved.delta)}<span>pts</span></div>
+              <div className="fdn__extra-stat__name"><strong>{mostImproved.studentName}</strong></div>
+              <div className="fdn__extra-stat__sub">T{prevTerm} → T{termNumber} · {fmt(prevData.students.find(s => s.studentId === mostImproved.studentId)?.moyenneMatiere)} → {fmt(mostImproved.moyenneMatiere)}</div>
+            </div>
+          ) : prevTerm && (
+            <div className="fdn__extra-stat fdn__extra-stat--up fdn__extra-stat--muted">
+              <div className="fdn__extra-stat__label">A le plus progressé</div>
+              <div className="fdn__extra-stat__name">Aucune progression</div>
+            </div>
+          )}
+          {mostDeclined ? (
+            <div className="fdn__extra-stat fdn__extra-stat--down">
+              <div className="fdn__extra-stat__label">A le plus régressé</div>
+              <div className="fdn__extra-stat__value">{fmt(mostDeclined.delta)}<span>pts</span></div>
+              <div className="fdn__extra-stat__name"><strong>{mostDeclined.studentName}</strong></div>
+              <div className="fdn__extra-stat__sub">T{prevTerm} → T{termNumber} · {fmt(prevData.students.find(s => s.studentId === mostDeclined.studentId)?.moyenneMatiere)} → {fmt(mostDeclined.moyenneMatiere)}</div>
+            </div>
+          ) : prevTerm && (
+            <div className="fdn__extra-stat fdn__extra-stat--down fdn__extra-stat--muted">
+              <div className="fdn__extra-stat__label">A le plus régressé</div>
+              <div className="fdn__extra-stat__name">Aucune régression</div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Existing signature preview when signed */}
       {isSigned && data?.fiche?.signatureData && (

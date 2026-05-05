@@ -21,6 +21,13 @@
   color: var(--color-text, #1f2937);
 }
 
+.classes-table__name-link {
+  font-weight: 600;
+  color: var(--color-primary, #f97316);
+  text-decoration: none;
+}
+.classes-table__name-link:hover { text-decoration: underline; }
+
 .classes-table__empty {
   color: var(--color-text-muted, #6b7280);
 }
@@ -50,6 +57,33 @@
   .classes-page__level-filter {
     width: 100%;
   }
+}
+
+/* ── Subjects section inside create form ──────────────────────── */
+.class-form__subjects-wrap {
+  border-top: 1px solid var(--color-border, #e5e7eb);
+  padding-top: 1rem;
+  margin-top: 0.25rem;
+}
+
+.class-form__subjects-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted, #6b7280);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.class-form__subjects-count {
+  font-size: 0.72rem;
+  background: var(--color-primary, #f97316);
+  color: #fff;
+  padding: 1px 7px;
+  border-radius: 10px;
 }
 
 /* ── Manage Subjects modal ─────────────────────────────────────── */

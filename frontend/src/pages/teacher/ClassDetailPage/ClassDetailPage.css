@@ -77,6 +77,25 @@
 }
 .class-detail__grade-link:hover { background: var(--color-accent, #ea580c); }
 
+.class-detail__program-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-text-muted, #6b7280);
+  text-decoration: none;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 6px;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+.class-detail__program-link:hover {
+  background: var(--color-surface-alt, #f9fafb);
+  color: var(--color-text, #1f2937);
+}
+
 /* ── Term selector bar ── */
 .class-detail__term-bar {
   display: flex;
@@ -155,5 +174,63 @@
   background: #f3f4f6;
   color: #6b7280;
   border: 1px solid #d1d5db;
+}
+
+/* ── Timetable view (teacher read-only) ── */
+.class-detail__tt-grid {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.25rem 0;
+}
+
+.class-detail__tt-day {
+  flex: 1 1 140px;
+  min-width: 130px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.class-detail__tt-day-header {
+  background: var(--color-surface-alt, #f3f4f6);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted, #6b7280);
+  padding: 0.45rem 0.75rem;
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
+}
+
+.class-detail__tt-slot {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--color-border, #f3f4f6);
+}
+.class-detail__tt-slot:last-child { border-bottom: none; }
+
+.class-detail__tt-time {
+  font-size: 0.72rem;
+  color: var(--color-text-muted, #9ca3af);
+  font-family: monospace;
+  margin-bottom: 0.15rem;
+}
+
+.class-detail__tt-subject {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text, #1f2937);
+}
+
+.class-detail__tt-teacher {
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #6b7280);
+  margin-top: 0.1rem;
+}
+
+.class-detail__tt-room {
+  font-size: 0.72rem;
+  color: var(--color-text-muted, #9ca3af);
+  margin-top: 0.1rem;
 }
 

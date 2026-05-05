@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, BadRequestException } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AnalyticsService } from './analytics.service';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -32,5 +32,22 @@ export class AnalyticsController {
   @ApiQuery({ name: 'academicYear', required: false })
   getReportStats(@CurrentUser() user: any, @Query('academicYear') academicYear?: string) {
     return this.service.getReportStats(user.institutionId, academicYear);
+  }
+
+  @Get('class-stats')
+  @Roles(Role.ADMIN, Role.TEACHER)
+  @ApiOperation({ summary: 'Class progress statistics compared to previous term' })
+  @ApiQuery({ name: 'classId', required: true })
+  @ApiQuery({ name: 'academicYear', required: true })
+  @ApiQuery({ name: 'termNumber', required: true })
+  getClassStats(
+    @CurrentUser() user: any,
+    @Query('classId') classId: string,
+    @Query('academicYear') academicYear: string,
+    @Query('termNumber') termNumber: string,
+  ) {
+    const term = parseInt(termNumber, 10);
+    if (!classId || !academicYear || isNaN(term)) throw new BadRequestException('classId, academicYear et termNumber sont requis');
+    return this.service.getClassStats(user.institutionId, classId, academicYear, term);
   }
 }

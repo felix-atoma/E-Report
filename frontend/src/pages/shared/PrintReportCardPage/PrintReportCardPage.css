@@ -1,0 +1,370 @@
+/* ── Theme defaults (overridden at runtime by useEffect) ── */
+:root {
+  --bulletin-primary: var(--bulletin-primary);
+  --bulletin-secondary: #f59e0b;
+}
+
+/* ── Screen wrapper ── */
+.print-page__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.print-page {
+  background: #e5e7eb;
+  min-height: 100vh;
+  padding-bottom: 2rem;
+}
+
+/* ── Toolbar (hidden on print) ── */
+.print-page__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--bulletin-primary);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.print-page__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1.2rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.print-page__btn:hover { opacity: 0.85; }
+
+.print-page__btn--print {
+  background: #f97316;
+  color: #fff;
+}
+
+.print-page__btn--close {
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px solid #475569;
+}
+
+/* ── A4 page ── */
+.print-page__a4 {
+  width: 210mm;
+  height: 297mm;
+  margin: 1.5rem auto;
+  padding: 10mm 12mm;
+  background: #fff;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  color: #1a1a1a;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Watermark ── */
+.pr-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-38deg);
+  font-size: 62px;
+  font-weight: 900;
+  color: color-mix(in srgb, var(--bulletin-primary) 6%, transparent);
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  text-transform: uppercase;
+  letter-spacing: 8px;
+  z-index: 0;
+}
+
+/* Push footer to bottom of the A4 sheet */
+.pr-footer {
+  margin-top: auto;
+}
+
+/* ── Header ── */
+.pr-header {
+  display: flex;
+  align-items: center;
+  border-bottom: 3px double var(--bulletin-primary);
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+.pr-header__logo,
+.pr-header__crest {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+.pr-header__logo { margin-right: 12px; }
+.pr-header__crest { margin-left: 12px; }
+.pr-header__center {
+  flex: 1;
+  text-align: center;
+}
+.pr-header__country {
+  font-size: 8px;
+  color: #6b7280;
+  margin-bottom: 3px;
+}
+.pr-header__school {
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--bulletin-primary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.pr-header__sub {
+  font-size: 9px;
+  color: #555;
+  margin-top: 2px;
+}
+.pr-header__motto {
+  font-size: 9px;
+  font-style: italic;
+  color: #374151;
+  margin-top: 2px;
+}
+
+/* ── Title bar ── */
+.pr-title {
+  background: var(--bulletin-primary);
+  color: #fff;
+  text-align: center;
+  padding: 5px;
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+/* ── Student band ── */
+.pr-student-band {
+  display: flex;
+  border: 1px solid var(--bulletin-primary);
+  margin-bottom: 8px;
+}
+.pr-student-band__field {
+  flex: 1;
+  padding: 4px 8px;
+  border-right: 1px solid #9ca3af;
+}
+.pr-student-band__field:last-child { border-right: none; }
+.pr-student-band__field label {
+  display: block;
+  font-size: 7.5px;
+  font-weight: bold;
+  color: var(--bulletin-primary);
+  text-transform: uppercase;
+  margin-bottom: 1px;
+}
+.pr-student-band__field span {
+  font-size: 10px;
+  font-weight: bold;
+}
+
+/* ── Grades table ── */
+.pr-grades {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 8px;
+  font-size: 8.5px;
+}
+.pr-grades th,
+.pr-grades td {
+  border: 1px solid #d1d5db;
+  padding: 2px 3px;
+  text-align: center;
+  vertical-align: middle;
+}
+.pr-grades__head-top th {
+  background: var(--bulletin-primary);
+  color: #fff;
+  font-size: 8px;
+  font-weight: bold;
+  padding: 3px;
+}
+.pr-grades__head-sub th {
+  background: #e8f0fe;
+  color: #1e40af;
+  font-size: 7.5px;
+}
+.pr-grades__col-matiere { text-align: left !important; min-width: 90px; font-weight: 600; padding-left: 5px !important; }
+.pr-grades__col-num  { min-width: 28px; }
+.pr-grades__col-dev  { background: rgba(254,252,193,0.6); }
+.pr-grades__col-cmp  { background: rgba(250,232,255,0.6); }
+.pr-grades__col-moy  { background: #dcfce7; font-weight: 700; min-width: 30px; }
+.pr-grades__col-coef { min-width: 28px; }
+.pr-grades__col-pts  { background: #f0fdf4; font-weight: 600; }
+.pr-grades__col-rang { color: #0f766e; font-weight: 700; min-width: 28px; }
+.pr-grades__col-appr { text-align: left !important; min-width: 70px; font-size: 8px; }
+.pr-grades__fail { color: #dc2626 !important; font-weight: bold; }
+.pr-grades__pass { color: #15803d; }
+.pr-grades tbody tr:nth-child(even) { background: #f9fafb; }
+.pr-grades__foot td {
+  background: var(--bulletin-primary);
+  color: #fff;
+  font-weight: bold;
+  font-size: 9px;
+  padding: 3px;
+}
+
+/* ── Stats ── */
+.pr-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.pr-stats__box {
+  flex: 1 1 70px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  padding: 4px 6px;
+  text-align: center;
+}
+.pr-stats__box label {
+  display: block;
+  font-size: 7px;
+  color: #6b7280;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.pr-stats__box strong { font-size: 10px; }
+.pr-stats__pass { color: #15803d; }
+.pr-stats__fail { color: #dc2626; }
+.pr-stats__box--honor {
+  background: #fef3c7;
+  border-color: #fcd34d;
+  color: #92400e;
+}
+
+/* ── Comments ── */
+.pr-comments {
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pr-comment-row {
+  font-size: 9px;
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+.pr-comment-label {
+  font-weight: bold;
+  white-space: nowrap;
+  color: var(--bulletin-primary);
+  min-width: 100px;
+}
+.pr-comment-text { font-style: italic; color: #374151; }
+
+/* ── Signature column inside grades table ── */
+.pr-grades__col-sig {
+  min-width: 72px;
+  width: 80px;
+  text-align: center !important;
+  vertical-align: middle;
+  padding: 1px 2px !important;
+}
+
+.pr-sig-img {
+  max-height: 28px;
+  max-width: 76px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+
+.pr-sig-blank {
+  width: 50px;
+  height: 1px;
+  background: #d1d5db;
+  margin: 12px auto 10px;
+}
+
+.pr-sig-verified {
+  font-size: 8px;
+  font-weight: 700;
+  color: #15803d;
+}
+
+/* ── Signatures ── */
+.pr-signatures {
+  display: flex;
+  gap: 16px;
+  margin-top: 20px;
+  margin-bottom: 8px;
+}
+.pr-sig { flex: 1; text-align: center; }
+.pr-sig__space { height: 28px; }
+.pr-sig__line {
+  height: 1px;
+  background: #374151;
+  margin-bottom: 3px;
+}
+.pr-sig__name {
+  font-size: 8.5px;
+  font-weight: 600;
+  color: var(--bulletin-primary);
+  min-height: 11px;
+  margin-bottom: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pr-sig__label {
+  font-size: 7.5px;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* ── Footer ── */
+.pr-footer {
+  font-size: 7.5px;
+  color: #9ca3af;
+  text-align: center;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 4px;
+}
+
+/* ── Print media ── */
+@media print {
+  .no-print { display: none !important; }
+
+  body { background: #fff !important; }
+
+  .print-page {
+    background: #fff;
+    padding: 0;
+  }
+
+  .print-page__a4 {
+    width: 210mm;
+    height: 297mm;
+    margin: 0;
+    padding: 10mm 12mm;
+    box-shadow: none;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
+
+@page {
+  size: A4 portrait;
+  margin: 0;
+}

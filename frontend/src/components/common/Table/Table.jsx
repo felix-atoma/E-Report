@@ -30,7 +30,7 @@ function Table({ columns = [], rows = [], emptyMessage = 'Aucune donnée', loadi
               <tr key={row.id ?? i} className="table__row">
                 {columns.map((col) => (
                   <td key={col.key} className="table__td">
-                    {col.render ? col.render(row) : row[col.key]}
+                    {col.render ? col.render(row, i) : row[col.key]}
                   </td>
                 ))}
               </tr>

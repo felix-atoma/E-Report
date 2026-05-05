@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { studentsService } from '../../../services/studentsService';
 import { reportsService } from '../../../services/reportsService';
@@ -71,28 +71,25 @@ function ReportCard({ report, feeSummary }) {
           ) : (
             <>
               {/* PDF actions */}
-              {report.pdfUrl && (
-                <div className="report-card-item__pdf-actions">
+              <div className="report-card-item__pdf-actions">
+                <Link
+                  to={`/reports/${report.id}/print`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="report-card-item__btn report-card-item__btn--download"
+                >
+                  🖨️ Imprimer / PDF
+                </Link>
+                {report.pdfUrl && (
                   <a
                     href={report.pdfUrl}
-                    target="_blank"
-                    rel="noreferrer"
                     download
-                    className="report-card-item__btn report-card-item__btn--download"
-                  >
-                    Télécharger PDF ↓
-                  </a>
-                  <a
-                    href={report.pdfUrl}
-                    target="_blank"
-                    rel="noreferrer"
                     className="report-card-item__btn report-card-item__btn--print"
-                    onClick={(e) => { e.preventDefault(); const w = window.open(report.pdfUrl, '_blank'); w && w.focus(); }}
                   >
-                    Imprimer ⎙
+                    ↓ Télécharger
                   </a>
-                </div>
-              )}
+                )}
+              </div>
 
               {/* Grade summary */}
               {report.grades && report.grades.length > 0 && (

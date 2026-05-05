@@ -82,6 +82,10 @@ export class PdfService {
   private buildHtml(data: ReportCardData): string {
     const { report, student, grades, institution } = data;
 
+    const branding = (institution.brandingSettings as Record<string, unknown>) ?? {};
+    const primaryColor   = (branding.primaryColor   as string) || '#1e3a8a';
+    const secondaryColor = (branding.secondaryColor as string) || '#f59e0b';
+
     const enrichedGrades = grades.map((g) => {
       const interros = [g.noteInterro1, g.noteInterro2, g.noteInterro3, g.noteInterro4]
         .filter((v) => v != null) as number[];
@@ -113,13 +117,14 @@ export class PdfService {
         : null;
 
     const ctx = {
-      institution,
+      institution: { ...institution, primaryColor, secondaryColor },
       student: {
         name: student.user?.name ?? '—',
         admissionNumber: student.admissionNumber,
         dateOfBirth: student.dateOfBirth
           ? new Date(student.dateOfBirth).toLocaleDateString('fr-FR')
           : '—',
+        photo: student.user?.profileImage ?? null,
       },
       class: { name: data.className },
       report: {
@@ -167,7 +172,7 @@ export interface ReportCardData {
   student: {
     admissionNumber: string;
     dateOfBirth: Date;
-    user: { name: string } | null;
+    user: { name: string; profileImage?: string | null } | null;
   };
   className: string;
   grades: Array<{
@@ -197,5 +202,6 @@ export interface ReportCardData {
     logo: string | null;
     crest: string | null;
     stamp: string | null;
+    brandingSettings?: unknown;
   };
 }

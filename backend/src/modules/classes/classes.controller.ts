@@ -29,7 +29,7 @@ export class ClassesController {
   @Roles(Role.ADMIN, Role.TEACHER)
   @ApiOperation({ summary: 'List all active classes in the institution' })
   findAll(@CurrentUser() user: any) {
-    return this.service.findAll(user.institutionId);
+    return this.service.findAll(user.institutionId, user.id, user.role);
   }
 
   @Post()
@@ -43,7 +43,7 @@ export class ClassesController {
   @Roles(Role.ADMIN, Role.TEACHER)
   @ApiOperation({ summary: 'Get a class with its students and subjects' })
   findOne(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.service.findOne(id, user.institutionId);
+    return this.service.findOne(id, user.institutionId, user.id, user.role);
   }
 
   @Patch(':id')

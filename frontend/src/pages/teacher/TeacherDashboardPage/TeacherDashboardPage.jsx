@@ -122,6 +122,7 @@ function TeacherDashboardPage() {
           )}
         </Card>
       </div>
+
     </AppShell>
   );
 }

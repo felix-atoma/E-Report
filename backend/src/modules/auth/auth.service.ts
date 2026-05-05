@@ -22,7 +22,8 @@ export class AuthService {
 
   // ─── Validate email + password (used by LocalStrategy) ─────────────────
   async validateUser(email: string, password: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    const normalizedEmail = email.toLowerCase().trim();
+    const user = await this.prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (!user || !user.isActive) return null;
 
     const matches = await bcrypt.compare(password, user.password);
@@ -34,7 +35,8 @@ export class AuthService {
 
   // ─── Register ────────────────────────────────────────────────────────────
   async register(dto: RegisterDto) {
-    const existing = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    const email = dto.email.toLowerCase().trim();
+    const existing = await this.prisma.user.findUnique({ where: { email } });
     if (existing) throw new ConflictException('Email already in use');
 
     const institution = await this.prisma.institution.findUnique({
@@ -48,7 +50,7 @@ export class AuthService {
     const user = await this.prisma.user.create({
       data: {
         name: dto.name,
-        email: dto.email,
+        email,
         password: hashed,
         role: dto.role,
         institutionId: dto.institutionId,
@@ -120,16 +122,11 @@ export class AuthService {
   }
 
   // ─── Logout ──────────────────────────────────────────────────────────────
-  async logout(userId: string, refreshToken: string) {
-    const hashed = await bcrypt.hash(refreshToken, 10);
-
-    // Revoke all active refresh tokens for this user
-    // (simpler than matching the specific one — avoids timing attacks)
+  async logout(userId: string) {
     await this.prisma.refreshToken.updateMany({
       where: { userId, revokedAt: null },
       data: { revokedAt: new Date() },
     });
-
     return { message: 'Logged out successfully' };
   }
 
@@ -161,9 +158,9 @@ export class AuthService {
 
   // ─── Forgot password ─────────────────────────────────────────────────────
   async forgotPassword(email: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    const normalizedEmail = email.toLowerCase().trim();
+    const user = await this.prisma.user.findUnique({ where: { email: normalizedEmail } });
 
-    // Always return same response — prevents email enumeration
     if (!user) return { message: 'If that email exists, a reset link has been sent.' };
 
     // Invalidate existing reset tokens

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { institutionsService } from '../../../services/institutionsService';
+import { useInstitution } from '../../../context/InstitutionContext';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Card from '../../../components/common/Card/Card';
@@ -16,7 +17,17 @@ const TERM_TYPES = [
   { value: 'CUSTOM',    label: 'Personnalisé' },
 ];
 
-const DEFAULT_FORM = {
+const DEFAULT_INFO = {
+  name: '',
+  email: '',
+  phone: '',
+  address: '',
+  website: '',
+  motto: '',
+  missionStatement: '',
+};
+
+const DEFAULT_ACADEMIC = {
   academicYear: '',
   termType: 'TRIMESTRE',
   currentTerm: '1',
@@ -27,7 +38,10 @@ const DEFAULT_FORM = {
 
 function SettingsPage() {
   const qc = useQueryClient();
-  const [form, setForm] = useState(DEFAULT_FORM);
+  const { setInstitution } = useInstitution();
+
+  const [infoForm, setInfoForm]         = useState(DEFAULT_INFO);
+  const [academicForm, setAcademicForm] = useState(DEFAULT_ACADEMIC);
 
   const { data: institution, isLoading } = useQuery({
     queryKey: ['institution-me'],
@@ -36,8 +50,17 @@ function SettingsPage() {
 
   useEffect(() => {
     if (!institution) return;
+    setInfoForm({
+      name:             institution.name             ?? '',
+      email:            institution.email            ?? '',
+      phone:            institution.phone            ?? '',
+      address:          institution.address          ?? '',
+      website:          institution.website          ?? '',
+      motto:            institution.motto            ?? '',
+      missionStatement: institution.missionStatement ?? '',
+    });
     const s = institution.academicSettings ?? {};
-    setForm({
+    setAcademicForm({
       academicYear:   institution.academicYear ?? '',
       termType:       s.termType      ?? 'TRIMESTRE',
       currentTerm:    String(s.currentTerm ?? '1'),
@@ -47,32 +70,57 @@ function SettingsPage() {
     });
   }, [institution]);
 
-  const mutation = useMutation({
-    mutationFn: (data) => institutionsService.updateAcademicSettings(data),
-    onSuccess: () => {
+  const infoMutation = useMutation({
+    mutationFn: (data) => institutionsService.update(data),
+    onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ['institution-me'] });
-      toast.success('Paramètres enregistrés');
+      if (res?.data) setInstitution(res.data);
+      toast.success('Informations enregistrées');
     },
     onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur de sauvegarde'),
   });
 
-  function set(field, value) {
-    setForm((f) => ({ ...f, [field]: value }));
+  const academicMutation = useMutation({
+    mutationFn: (data) => institutionsService.updateAcademicSettings(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['institution-me'] });
+      toast.success('Paramètres académiques enregistrés');
+    },
+    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur de sauvegarde'),
+  });
+
+  function setInfo(field, value) {
+    setInfoForm((f) => ({ ...f, [field]: value }));
+  }
+  function setAcademic(field, value) {
+    setAcademicForm((f) => ({ ...f, [field]: value }));
   }
 
-  function handleSave() {
-    mutation.mutate({
-      academicYear:   form.academicYear   || undefined,
-      termType:       form.termType,
-      currentTerm:    Number(form.currentTerm),
-      passMark:       Number(form.passMark),
-      maxScore:       Number(form.maxScore),
-      feeGateEnabled: form.feeGateEnabled,
+  function handleInfoSave() {
+    infoMutation.mutate({
+      name:             infoForm.name             || undefined,
+      email:            infoForm.email            || undefined,
+      phone:            infoForm.phone            || undefined,
+      address:          infoForm.address          || undefined,
+      website:          infoForm.website          || undefined,
+      motto:            infoForm.motto            || undefined,
+      missionStatement: infoForm.missionStatement || undefined,
+    });
+  }
+
+  function handleAcademicSave() {
+    academicMutation.mutate({
+      academicYear:   academicForm.academicYear   || undefined,
+      termType:       academicForm.termType,
+      currentTerm:    Number(academicForm.currentTerm),
+      passMark:       Number(academicForm.passMark),
+      maxScore:       Number(academicForm.maxScore),
+      feeGateEnabled: academicForm.feeGateEnabled,
     });
   }
 
   const termCountOptions =
-    form.termType === 'SEMESTRE'
+    academicForm.termType === 'SEMESTRE'
       ? [{ value: '1', label: '1er semestre' }, { value: '2', label: '2ème semestre' }]
       : [
           { value: '1', label: '1er trimestre' },
@@ -85,65 +133,147 @@ function SettingsPage() {
   return (
     <AppShell title="Paramètres">
       <PageHeader
-        title="Paramètres académiques"
+        title="Paramètres"
         subtitle={institution?.name}
-        actions={
-          <Button onClick={handleSave} disabled={mutation.isPending}>
-            {mutation.isPending ? 'Enregistrement…' : 'Enregistrer'}
-          </Button>
-        }
       />
 
       <div className="settings-page__grid">
-        {/* Academic year */}
+
+        {/* ── Informations de l'établissement ── */}
         <Card className="settings-section">
-          <h3 className="settings-section__title">Année scolaire</h3>
+          <div className="settings-section__header">
+            <div>
+              <h3 className="settings-section__title">Informations de l'établissement</h3>
+              <p className="settings-section__desc">Ces informations apparaissent sur les bulletins et documents officiels.</p>
+            </div>
+            <Button
+              size="sm"
+              onClick={handleInfoSave}
+              disabled={infoMutation.isPending}
+            >
+              {infoMutation.isPending ? 'Enregistrement…' : 'Enregistrer'}
+            </Button>
+          </div>
+
           <div className="settings-section__body">
             <Input
-              id="academicYear" label="Année scolaire en cours"
-              value={form.academicYear}
-              placeholder="ex: 2024-2025"
-              onChange={(e) => set('academicYear', e.target.value)}
+              id="instName"
+              label="Nom de l'établissement"
+              value={infoForm.name}
+              placeholder="ex: Lycée Démonstration de Lomé"
+              onChange={(e) => setInfo('name', e.target.value)}
             />
             <div className="settings-row">
-              <Select
-                id="termType" label="Système de périodes"
-                value={form.termType}
-                options={TERM_TYPES}
-                onChange={(e) => set('termType', e.target.value)}
+              <Input
+                id="instEmail"
+                label="Email officiel"
+                type="email"
+                value={infoForm.email}
+                placeholder="contact@etablissement.tg"
+                onChange={(e) => setInfo('email', e.target.value)}
               />
-              <Select
-                id="currentTerm" label="Période en cours"
-                value={form.currentTerm}
-                options={termCountOptions}
-                onChange={(e) => set('currentTerm', e.target.value)}
+              <Input
+                id="instPhone"
+                label="Téléphone"
+                value={infoForm.phone}
+                placeholder="+228 XX XX XX XX"
+                onChange={(e) => setInfo('phone', e.target.value)}
+              />
+            </div>
+            <div className="settings-row">
+              <Input
+                id="instAddress"
+                label="Adresse"
+                value={infoForm.address}
+                placeholder="ex: Lomé, Togo"
+                onChange={(e) => setInfo('address', e.target.value)}
+              />
+              <Input
+                id="instWebsite"
+                label="Site web"
+                value={infoForm.website}
+                placeholder="https://…"
+                onChange={(e) => setInfo('website', e.target.value)}
+              />
+            </div>
+            <Input
+              id="instMotto"
+              label="Devise / Slogan"
+              value={infoForm.motto}
+              placeholder="ex: L'excellence au service de la nation"
+              onChange={(e) => setInfo('motto', e.target.value)}
+            />
+            <div className="settings-field">
+              <label className="settings-field__label" htmlFor="instMission">Déclaration de mission</label>
+              <textarea
+                id="instMission"
+                className="settings-field__textarea"
+                rows={3}
+                value={infoForm.missionStatement}
+                placeholder="Description courte de la mission de l'établissement…"
+                onChange={(e) => setInfo('missionStatement', e.target.value)}
               />
             </div>
           </div>
         </Card>
 
-        {/* Grading */}
+        {/* ── Année scolaire ── */}
         <Card className="settings-section">
-          <h3 className="settings-section__title">Notation</h3>
-          <div className="settings-row">
+          <div className="settings-section__header">
+            <div>
+              <h3 className="settings-section__title">Paramètres académiques</h3>
+              <p className="settings-section__desc">Année en cours, système de périodes et règles de notation.</p>
+            </div>
+            <Button
+              size="sm"
+              onClick={handleAcademicSave}
+              disabled={academicMutation.isPending}
+            >
+              {academicMutation.isPending ? 'Enregistrement…' : 'Enregistrer'}
+            </Button>
+          </div>
+
+          <div className="settings-section__body">
             <Input
-              id="maxScore" label="Note maximale"
-              type="number" min="10" max="100"
-              value={form.maxScore}
-              onChange={(e) => set('maxScore', e.target.value)}
-              hint="Généralement 20 (système français)"
+              id="academicYear" label="Année scolaire en cours"
+              value={academicForm.academicYear}
+              placeholder="ex: 2024-2025"
+              onChange={(e) => setAcademic('academicYear', e.target.value)}
             />
-            <Input
-              id="passMark" label="Moyenne de passage"
-              type="number" min="0"
-              value={form.passMark}
-              onChange={(e) => set('passMark', e.target.value)}
-              hint="Généralement 10/20"
-            />
+            <div className="settings-row">
+              <Select
+                id="termType" label="Système de périodes"
+                value={academicForm.termType}
+                options={TERM_TYPES}
+                onChange={(e) => setAcademic('termType', e.target.value)}
+              />
+              <Select
+                id="currentTerm" label="Période en cours"
+                value={academicForm.currentTerm}
+                options={termCountOptions}
+                onChange={(e) => setAcademic('currentTerm', e.target.value)}
+              />
+            </div>
+            <div className="settings-row">
+              <Input
+                id="maxScore" label="Note maximale"
+                type="number" min="10" max="100"
+                value={academicForm.maxScore}
+                onChange={(e) => setAcademic('maxScore', e.target.value)}
+                hint="Généralement 20 (système français)"
+              />
+              <Input
+                id="passMark" label="Moyenne de passage"
+                type="number" min="0"
+                value={academicForm.passMark}
+                onChange={(e) => setAcademic('passMark', e.target.value)}
+                hint="Généralement 10/20"
+              />
+            </div>
           </div>
         </Card>
 
-        {/* Fee gate */}
+        {/* ── Blocage des bulletins ── */}
         <Card className="settings-section">
           <h3 className="settings-section__title">Blocage des bulletins</h3>
           <p className="settings-section__desc">
@@ -155,15 +285,16 @@ function SettingsPage() {
             <input
               type="checkbox"
               className="settings-toggle__input"
-              checked={form.feeGateEnabled}
-              onChange={(e) => set('feeGateEnabled', e.target.checked)}
+              checked={academicForm.feeGateEnabled}
+              onChange={(e) => setAcademic('feeGateEnabled', e.target.checked)}
             />
             <span className="settings-toggle__track" />
             <span className="settings-toggle__label">
-              {form.feeGateEnabled ? 'Activé — PDF bloqué si frais impayés' : 'Désactivé — PDF envoyé sans condition'}
+              {academicForm.feeGateEnabled ? 'Activé — PDF bloqué si frais impayés' : 'Désactivé — PDF envoyé sans condition'}
             </span>
           </label>
         </Card>
+
       </div>
     </AppShell>
   );

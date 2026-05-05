@@ -63,14 +63,9 @@
   white-space: nowrap;
 }
 
-.branding-info-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-@media (max-width: 600px) {
-  .branding-info-grid {
-    grid-template-columns: 1fr;
-  }
+.branding-section__desc {
+  font-size: 0.8rem;
+  color: var(--color-text-muted, #6b7280);
+  margin: 0;
+  line-height: 1.4;
 }

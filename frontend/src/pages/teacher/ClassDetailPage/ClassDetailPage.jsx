@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { classesService } from '../../../services/classesService';
 import { gradesService } from '../../../services/gradesService';
+import { timetablesService } from '../../../services/timetablesService';
+import { AuthContext } from '../../../context/AuthContext';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Tabs from '../../../components/common/Tabs/Tabs';
@@ -17,8 +19,43 @@ const TERM_OPTIONS = [
   { value: 3, label: '3ème Trimestre' },
 ];
 
+const DAYS = ['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI'];
+const DAY_LABELS = { LUNDI: 'Lundi', MARDI: 'Mardi', MERCREDI: 'Mercredi', JEUDI: 'Jeudi', VENDREDI: 'Vendredi', SAMEDI: 'Samedi' };
+
+function TimetableView({ slots }) {
+  if (!slots.length) {
+    return <p className="class-detail__empty" style={{ padding: '1.5rem 0' }}>Aucun emploi du temps défini pour cette classe.</p>;
+  }
+
+  const byDay = {};
+  DAYS.forEach((d) => { byDay[d] = []; });
+  slots.forEach((s) => { if (byDay[s.dayOfWeek]) byDay[s.dayOfWeek].push(s); });
+  DAYS.forEach((d) => byDay[d].sort((a, b) => a.startTime.localeCompare(b.startTime)));
+
+  const activeDays = DAYS.filter((d) => byDay[d].length > 0);
+
+  return (
+    <div className="class-detail__tt-grid">
+      {activeDays.map((day) => (
+        <div key={day} className="class-detail__tt-day">
+          <div className="class-detail__tt-day-header">{DAY_LABELS[day]}</div>
+          {byDay[day].map((slot) => (
+            <div key={slot.id} className="class-detail__tt-slot">
+              <div className="class-detail__tt-time">{slot.startTime} – {slot.endTime}</div>
+              <div className="class-detail__tt-subject">{slot.subject?.nameFr ?? '—'}</div>
+              {slot.teacher && <div className="class-detail__tt-teacher">{slot.teacher.name}</div>}
+              {slot.room && <div className="class-detail__tt-room">🏫 {slot.room}</div>}
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function ClassDetailPage() {
   const { id } = useParams();
+  const { user } = useContext(AuthContext);
   const [selectedTerm, setSelectedTerm] = useState(1);
 
   const { data: cls, isLoading } = useQuery({
@@ -37,11 +74,20 @@ function ClassDetailPage() {
     enabled: !!id && !!academicYear,
   });
 
+  const { data: timetableSlots = [] } = useQuery({
+    queryKey: ['timetable', id, academicYear],
+    queryFn: () => timetablesService.list(id, academicYear).then((r) => r.data),
+    enabled: !!id && !!academicYear,
+  });
+
   if (isLoading) return <AppShell title="Classe"><Loading /></AppShell>;
   if (!cls) return <AppShell title="Classe"><p className="class-detail__error">Classe introuvable.</p></AppShell>;
 
   const students = cls.students ?? [];
   const subjects  = cls.subjects  ?? [];
+
+  // Teacher can access all subjects if they are the homeroom teacher
+  const isHomeroomTeacher = cls.teacher?.id === user?.id;
 
   // Build a map subjectId → fiche status
   const ficheMap = new Map(fichesStatus.map((f) => [f.subjectId, f]));
@@ -125,16 +171,33 @@ function ClassDetailPage() {
       },
     },
     {
+      key: 'program',
+      label: 'Programme',
+      render: (s) => {
+        const subjectId = s.subject?.id ?? s.subjectId ?? s.id;
+        return (
+          <Link
+            to={`/teacher/classes/${cls.id}/subjects/${subjectId}/program`}
+            className="class-detail__program-link"
+          >
+            📋 Programme
+          </Link>
+        );
+      },
+    },
+    {
       key: 'actions',
       label: '',
       render: (s) => {
         const subjectId = s.subject?.id ?? s.subjectId ?? s.id;
+        const canEnterGrades = isHomeroomTeacher || s.teacher?.id === user?.id;
+        if (!canEnterGrades) return null;
         return (
           <Link
             to={`/teacher/classes/${cls.id}/grades/${subjectId}?academicYear=${encodeURIComponent(academicYear)}&termNumber=${selectedTerm}&termName=${encodeURIComponent(termName)}`}
             className="class-detail__grade-link"
           >
-            ✏️ Saisir / voir les notes
+            ✏️ Notes
           </Link>
         );
       },
@@ -188,6 +251,11 @@ function ClassDetailPage() {
           emptyMessage="Aucun élève dans cette classe"
         />
       ),
+    },
+    {
+      key: 'timetable',
+      label: `Emploi du temps`,
+      content: <TimetableView slots={timetableSlots} />,
     },
   ];
 

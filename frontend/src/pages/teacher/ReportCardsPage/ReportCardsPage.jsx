@@ -48,6 +48,11 @@ function ReportCardsPage() {
       render: (r) => <span className="reports-table__class">{r.class?.name ?? '—'}</span>,
     },
     {
+      key: 'student',
+      label: 'Élève',
+      render: (r) => r.student?.user?.name ?? r.student?.admissionNumber ?? '—',
+    },
+    {
       key: 'term',
       label: 'Période',
       render: (r) => r.termName ?? `Trimestre ${r.termNumber}`,
@@ -56,11 +61,6 @@ function ReportCardsPage() {
       key: 'academicYear',
       label: 'Année scolaire',
       render: (r) => r.academicYear ?? '—',
-    },
-    {
-      key: 'studentsCount',
-      label: 'Élèves',
-      render: (r) => r._count?.grades ?? r.studentsCount ?? '—',
     },
     {
       key: 'status',
@@ -78,11 +78,18 @@ function ReportCardsPage() {
     {
       key: 'actions',
       label: '',
-      style: { width: '80px', textAlign: 'right' },
+      style: { width: '160px', textAlign: 'right' },
       render: (r) => (
-        <Link to={`/teacher/reports/${r.id}`}>
-          <Button size="sm" variant="ghost">Ouvrir</Button>
-        </Link>
+        <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end' }}>
+          <Link to={`/teacher/reports/${r.id}`}>
+            <Button size="sm" variant="ghost">Ouvrir</Button>
+          </Link>
+          {r.status === 'PUBLISHED' && (
+            <Link to={`/reports/${r.id}/print`} target="_blank" rel="noreferrer">
+              <Button size="sm" variant="ghost">🖨️ PDF</Button>
+            </Link>
+          )}
+        </div>
       ),
     },
   ];
@@ -91,7 +98,7 @@ function ReportCardsPage() {
     <AppShell title="Bulletins">
       <PageHeader
         title="Bulletins de notes"
-        subtitle={`${reports.length} bulletin${reports.length !== 1 ? 's' : ''}`}
+        subtitle={`${filtered.length} bulletin${filtered.length !== 1 ? 's' : ''}`}
         actions={
           <Link to="/teacher/reports/new">
             <Button icon="+">Nouveau bulletin</Button>

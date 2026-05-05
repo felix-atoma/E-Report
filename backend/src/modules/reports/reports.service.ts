@@ -80,7 +80,13 @@ export class ReportsService {
             parent: { select: { id: true, name: true } },
           },
         },
-        class: { select: { id: true, name: true, level: true, series: true } },
+        class: {
+          select: {
+            id: true, name: true, level: true, series: true,
+            teacher: { select: { id: true, name: true } },
+            subjects: { include: { subject: { select: { id: true, nameFr: true, code: true, passMark: true } } } },
+          },
+        },
         createdBy: { select: { id: true, name: true } },
         grades: {
           include: { subject: { select: { id: true, nameFr: true, nameEn: true, code: true, passMark: true } } },
@@ -93,27 +99,43 @@ export class ReportsService {
   }
 
   async create(dto: CreateReportDto, institutionId: string, createdById: string) {
-    const cls = await this.prisma.class.findFirst({ where: { id: dto.classId, institutionId } });
+    const cls = await this.prisma.class.findFirst({
+      where: { id: dto.classId, institutionId },
+      include: { students: { select: { studentId: true } } },
+    });
     if (!cls) throw new NotFoundException('Class not found');
 
-    const student = await this.prisma.student.findFirst({ where: { id: dto.studentId, institutionId } });
-    if (!student) throw new NotFoundException('Student not found');
+    const termName =
+      dto.termName ||
+      (dto.termType === 'SEMESTRE'
+        ? `Semestre ${dto.termNumber}`
+        : `Trimestre ${dto.termNumber}`);
 
-    return this.prisma.reportCard.create({
-      data: {
-        studentId: dto.studentId,
-        classId: dto.classId,
-        academicYear: dto.academicYear,
-        termType: dto.termType as any,
-        termNumber: dto.termNumber,
-        termName: dto.termName,
-        createdById,
-      },
-      include: {
-        student: { include: { user: { select: { name: true } } } },
-        class: { select: { id: true, name: true } },
-      },
-    });
+    const created = await this.prisma.$transaction(
+      cls.students.map((cs) =>
+        this.prisma.reportCard.upsert({
+          where: {
+            studentId_academicYear_termNumber: {
+              studentId: cs.studentId,
+              academicYear: dto.academicYear,
+              termNumber: dto.termNumber,
+            },
+          },
+          create: {
+            studentId: cs.studentId,
+            classId: dto.classId,
+            academicYear: dto.academicYear,
+            termType: dto.termType as any,
+            termNumber: dto.termNumber,
+            termName,
+            createdById,
+          },
+          update: {},
+        }),
+      ),
+    );
+
+    return { count: created.length, classId: dto.classId, termNumber: dto.termNumber };
   }
 
   async update(id: string, dto: UpdateReportDto, institutionId: string, userId: string, role: Role) {
@@ -271,7 +293,7 @@ export class ReportsService {
   private async generateAndSavePdf(published: any, reportWithGrades: any, institutionId: string) {
     const institution = await this.prisma.institution.findUnique({
       where: { id: institutionId },
-      select: { name: true, address: true, phone: true, motto: true, logo: true, crest: true, stamp: true },
+      select: { name: true, address: true, phone: true, motto: true, logo: true, crest: true, stamp: true, brandingSettings: true },
     });
     if (!institution) return;
 

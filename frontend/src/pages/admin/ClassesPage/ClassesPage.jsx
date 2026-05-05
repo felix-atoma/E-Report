@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { classesService } from '../../../services/classesService';
@@ -18,20 +19,28 @@ import Loading from '../../../components/common/Loading/Loading';
 import './ClassesPage.css';
 
 const LEVELS = [
-  { value: 'MATERNELLE', label: 'Maternelle' },
-  { value: 'PRIMAIRE',   label: 'Primaire' },
-  { value: 'COLLEGE',    label: 'Collège' },
-  { value: 'LYCEE',      label: 'Lycée' },
+  { value: 'CI',        label: 'CI' },
+  { value: 'CP',        label: 'CP' },
+  { value: 'CE1',       label: 'CE1' },
+  { value: 'CE2',       label: 'CE2' },
+  { value: 'CM1',       label: 'CM1' },
+  { value: 'CM2',       label: 'CM2' },
+  { value: '6eme',      label: '6ème' },
+  { value: '5eme',      label: '5ème' },
+  { value: '4eme',      label: '4ème' },
+  { value: '3eme',      label: '3ème' },
+  { value: '2nde',      label: '2nde' },
+  { value: '1ere',      label: '1ère' },
+  { value: 'Terminale', label: 'Terminale' },
 ];
 
 const LEVEL_VARIANT = {
-  MATERNELLE: 'info',
-  PRIMAIRE:   'success',
-  COLLEGE:    'warning',
-  LYCEE:      'danger',
+  CI: 'info', CP: 'info', CE1: 'info', CE2: 'info', CM1: 'info', CM2: 'info',
+  '6eme': 'success', '5eme': 'success', '4eme': 'success', '3eme': 'success',
+  '2nde': 'warning', '1ere': 'warning', 'Terminale': 'danger',
 };
 
-const EMPTY_FORM = { name: '', level: '', academicYear: '', capacity: '', teacherId: '' };
+const EMPTY_FORM = { name: '', level: '', academicYear: '', capacity: '', teacherId: '', subjects: [] };
 
 function validate(form) {
   const errors = {};
@@ -41,8 +50,35 @@ function validate(form) {
   return errors;
 }
 
-function ClassForm({ form, errors, onChange, teachers }) {
+function ClassForm({ form, errors, onChange, teachers, allSubjects = [], isCreate = false }) {
+  const [pendingSubjectId, setPendingSubjectId] = useState('');
+  const [pendingTeacherId, setPendingTeacherId] = useState('');
+
   const teacherOptions = teachers.map((t) => ({ value: t.id, label: t.name ?? t.email }));
+  const allTeacherOptions = [{ value: '', label: '— Aucun —' }, ...teacherOptions];
+
+  const assignedIds = new Set((form.subjects ?? []).map((s) => s.subjectId));
+  const available   = allSubjects.filter((s) => !assignedIds.has(s.id));
+  const subjectOptions = available.map((s) => ({
+    value: s.id,
+    label: s.nameFr + (s.code ? ` (${s.code})` : ''),
+  }));
+
+  function addSubject() {
+    if (!pendingSubjectId) return;
+    onChange('subjects', [...(form.subjects ?? []), { subjectId: pendingSubjectId, teacherId: pendingTeacherId || null }]);
+    setPendingSubjectId('');
+    setPendingTeacherId('');
+  }
+
+  function removeSubject(sid) {
+    onChange('subjects', (form.subjects ?? []).filter((s) => s.subjectId !== sid));
+  }
+
+  function updateSubjectTeacher(sid, tid) {
+    onChange('subjects', (form.subjects ?? []).map((s) => s.subjectId === sid ? { ...s, teacherId: tid || null } : s));
+  }
+
   return (
     <div className="class-form">
       <Input
@@ -81,6 +117,77 @@ function ClassForm({ form, errors, onChange, teachers }) {
           onChange={(e) => onChange('teacherId', e.target.value)}
         />
       </div>
+
+      {isCreate && (
+        <div className="class-form__subjects-wrap">
+          <div className="class-form__subjects-title">
+            Matières enseignées
+            {(form.subjects ?? []).length > 0 && (
+              <span className="class-form__subjects-count">{(form.subjects ?? []).length}</span>
+            )}
+          </div>
+
+          {/* List of already-added subjects */}
+          <div className="cls-subjects__list">
+            {(form.subjects ?? []).length === 0 ? (
+              <div className="cls-subjects__empty">Aucune matière ajoutée — utilisez le formulaire ci-dessous</div>
+            ) : (
+              <>
+                <div className="cls-subjects__header-row">
+                  <span>Matière</span><span>Enseignant</span><span />
+                </div>
+                {(form.subjects ?? []).map((s) => {
+                  const subj = allSubjects.find((sub) => sub.id === s.subjectId);
+                  return (
+                    <div key={s.subjectId} className="cls-subjects__row">
+                      <div>
+                        <div className="cls-subjects__name">{subj?.nameFr ?? s.subjectId}</div>
+                        {subj?.code && <div className="cls-subjects__code">{subj.code}</div>}
+                      </div>
+                      <select
+                        className="cls-subjects__teacher-select"
+                        value={s.teacherId ?? ''}
+                        onChange={(e) => updateSubjectTeacher(s.subjectId, e.target.value)}
+                      >
+                        {allTeacherOptions.map((t) => (
+                          <option key={t.value} value={t.value}>{t.label}</option>
+                        ))}
+                      </select>
+                      <button className="cls-subjects__remove" onClick={() => removeSubject(s.subjectId)}>✕</button>
+                    </div>
+                  );
+                })}
+              </>
+            )}
+          </div>
+
+          {/* Add a subject row */}
+          <div className="cls-subjects__add">
+            <Select
+              id="pending-subject" label="Matière"
+              value={pendingSubjectId}
+              placeholder="Sélectionner une matière…"
+              options={subjectOptions}
+              onChange={(e) => setPendingSubjectId(e.target.value)}
+            />
+            <Select
+              id="pending-teacher" label="Enseignant"
+              value={pendingTeacherId}
+              placeholder="— Aucun —"
+              options={teacherOptions}
+              onChange={(e) => setPendingTeacherId(e.target.value)}
+            />
+            <button
+              type="button"
+              className="cls-subjects__add-btn"
+              onClick={addSubject}
+              disabled={!pendingSubjectId}
+            >
+              + Ajouter
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -280,7 +387,17 @@ function ClassesPage() {
   }, [classes, search, levelFilter]);
 
   const createMutation = useMutation({
-    mutationFn: (data) => classesService.create(data),
+    mutationFn: async (data) => {
+      const { subjects, ...classPayload } = data;
+      const res = await classesService.create(classPayload);
+      const classId = res.data?.id;
+      if (classId && subjects?.length) {
+        await Promise.all(
+          subjects.map((s) => classesService.addSubject(classId, s.subjectId, s.teacherId || undefined))
+        );
+      }
+      return res;
+    },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['classes'] }); toast.success('Classe créée'); closeModal(); },
     onError:   (err) => toast.error(err?.response?.data?.message ?? 'Erreur de création'),
   });
@@ -311,6 +428,7 @@ function ClassesPage() {
       academicYear: cls.academicYear ?? '',
       capacity:     cls.capacity     ?? '',
       teacherId:    cls.teacher?.id  ?? '',
+      subjects:     [],
     });
     setErrors({});
     setModal('edit');
@@ -332,12 +450,15 @@ function ClassesPage() {
     const errs = validate(form);
     if (Object.keys(errs).length) { setErrors(errs); return; }
     const payload = {
-      ...form,
-      capacity:  form.capacity  ? Number(form.capacity) : undefined,
-      teacherId: form.teacherId || undefined,
+      name:         form.name,
+      level:        form.level,
+      academicYear: form.academicYear,
+      capacity:     form.capacity  ? Number(form.capacity) : undefined,
+      teacherId:    form.teacherId || undefined,
+      subjects:     form.subjects ?? [],
     };
     if (modal === 'create') createMutation.mutate(payload);
-    else updateMutation.mutate({ id: selected.id, data: payload });
+    else updateMutation.mutate({ id: selected.id, data: { ...payload, subjects: undefined } });
   }
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
@@ -346,7 +467,11 @@ function ClassesPage() {
     {
       key: 'name',
       label: 'Classe',
-      render: (c) => <span className="classes-table__name">{c.name}</span>,
+      render: (c) => (
+        <Link to={`/admin/classes/${c.id}`} className="classes-table__name-link">
+          {c.name}
+        </Link>
+      ),
     },
     {
       key: 'level',
@@ -446,7 +571,7 @@ function ClassesPage() {
         open={!!modal}
         onClose={closeModal}
         title={modal === 'create' ? 'Nouvelle classe' : 'Modifier la classe'}
-        size="md"
+        size={modal === 'create' ? 'lg' : 'md'}
         footer={
           <>
             <Button variant="ghost" onClick={closeModal} disabled={isSaving}>Annuler</Button>
@@ -456,7 +581,14 @@ function ClassesPage() {
           </>
         }
       >
-        <ClassForm form={form} errors={errors} onChange={handleChange} teachers={teachers} />
+        <ClassForm
+          form={form}
+          errors={errors}
+          onChange={handleChange}
+          teachers={teachers}
+          allSubjects={allSubjects}
+          isCreate={modal === 'create'}
+        />
       </Modal>
 
       {/* Manage subjects modal */}

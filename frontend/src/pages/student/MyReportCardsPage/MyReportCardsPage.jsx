@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { reportsService } from '../../../services/reportsService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
@@ -81,28 +82,25 @@ function ReportItem({ report }) {
             </table>
           )}
 
-          {report.pdfUrl && (
-            <div className="student-report-item__pdf-actions">
+          <div className="student-report-item__pdf-actions">
+            <Link
+              to={`/reports/${report.id}/print`}
+              target="_blank"
+              rel="noreferrer"
+              className="student-report-item__btn student-report-item__btn--download"
+            >
+              🖨️ Imprimer / PDF
+            </Link>
+            {report.pdfUrl && (
               <a
                 href={report.pdfUrl}
-                target="_blank"
-                rel="noreferrer"
                 download
-                className="student-report-item__btn student-report-item__btn--download"
-              >
-                Télécharger PDF ↓
-              </a>
-              <a
-                href={report.pdfUrl}
-                target="_blank"
-                rel="noreferrer"
                 className="student-report-item__btn student-report-item__btn--print"
-                onClick={(e) => { e.preventDefault(); const w = window.open(report.pdfUrl, '_blank'); w && w.focus(); }}
               >
-                Imprimer ⎙
+                ↓ Télécharger
               </a>
-            </div>
-          )}
+            )}
+          </div>
 
           {report.teacherComment && (
             <div className="student-report-item__comment">

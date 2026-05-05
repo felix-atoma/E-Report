@@ -7,7 +7,7 @@ function LoginForm({ onSuccess }) {
   const { login } = useAuth();
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -28,7 +28,7 @@ function LoginForm({ onSuccess }) {
   };
 
   return (
-    <form className="login-form" onSubmit={handleSubmit} noValidate>
+    <form className="login-form" onSubmit={handleSubmit} noValidate translate="no">
 
       {/* Dismissible alert — ZDesk style */}
       {error && (
@@ -137,7 +137,7 @@ function LoginForm({ onSuccess }) {
         {loading ? (
           <>
             <span className="login-form__spinner" />
-            Authentification…
+            <span>Authentification…</span>
           </>
         ) : (
           <>
@@ -146,7 +146,7 @@ function LoginForm({ onSuccess }) {
               <polyline points="10 17 15 12 10 7"/>
               <line x1="15" y1="12" x2="3" y2="12"/>
             </svg>
-            Se connecter
+            <span>Se connecter</span>
           </>
         )}
       </button>

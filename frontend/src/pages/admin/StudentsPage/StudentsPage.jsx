@@ -17,7 +17,7 @@ import SearchBar from '../../../components/common/SearchBar/SearchBar';
 import './StudentsPage.css';
 
 const EMPTY_FORM = {
-  name: '', dateOfBirth: '', classId: '', parentEmail: '',
+  name: '', dateOfBirth: '', sex: '', classId: '', parentEmail: '',
 };
 
 function validate(form) {
@@ -101,11 +101,20 @@ function StudentForm({ form, errors, onChange, classes, isCreate, existingAdmiss
         </div>
       )}
 
-      <Input
-        id="dateOfBirth" label="Date de naissance" type="date"
-        value={form.dateOfBirth} error={errors.dateOfBirth}
-        onChange={(e) => onChange('dateOfBirth', e.target.value)}
-      />
+      <div className="student-form__row">
+        <Input
+          id="dateOfBirth" label="Date de naissance" type="date"
+          value={form.dateOfBirth} error={errors.dateOfBirth}
+          onChange={(e) => onChange('dateOfBirth', e.target.value)}
+        />
+        <Select
+          id="sex" label="Sexe"
+          value={form.sex}
+          placeholder="Sélectionner"
+          options={[{ value: 'M', label: 'Masculin' }, { value: 'F', label: 'Féminin' }]}
+          onChange={(e) => onChange('sex', e.target.value)}
+        />
+      </div>
       <Select
         id="classId" label="Classe"
         value={form.classId} error={errors.classId}
@@ -224,6 +233,7 @@ function StudentsPage() {
     setForm({
       name:        student.user?.name ?? '',
       dateOfBirth: student.dateOfBirth ? student.dateOfBirth.slice(0, 10) : '',
+      sex:         student.sex ?? '',
       classId:     student.classes?.[0]?.classId ?? '',
       parentEmail: student.parent?.email ?? '',
     });
@@ -253,6 +263,7 @@ function StudentsPage() {
     const payload = {
       name:        form.name,
       dateOfBirth: form.dateOfBirth || undefined,
+      sex:         form.sex         || undefined,
       classId:     form.classId     || undefined,
       parentEmail: form.parentEmail || undefined,
     };

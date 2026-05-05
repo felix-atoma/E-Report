@@ -13,6 +13,7 @@ import ErrorPage              from '../pages/shared/ErrorPage/ErrorPage';
 import AdminDashboardPage     from '../pages/admin/AdminDashboardPage/AdminDashboardPage';
 import UsersPage              from '../pages/admin/UsersPage/UsersPage';
 import ClassesPage            from '../pages/admin/ClassesPage/ClassesPage';
+import AdminClassDetailPage   from '../pages/admin/ClassDetailPage/ClassDetailPage';
 import StudentsPage           from '../pages/admin/StudentsPage/StudentsPage';
 import SubjectsPage           from '../pages/admin/SubjectsPage/SubjectsPage';
 import FeesPage               from '../pages/admin/FeesPage/FeesPage';
@@ -26,12 +27,15 @@ import InstitutionsPage       from '../pages/admin/InstitutionsPage/Institutions
 import TeacherDashboardPage   from '../pages/teacher/TeacherDashboardPage/TeacherDashboardPage';
 import MyClassesPage          from '../pages/teacher/MyClassesPage/MyClassesPage';
 import ClassDetailPage        from '../pages/teacher/ClassDetailPage/ClassDetailPage';
+import FichesPage             from '../pages/teacher/FichesPage/FichesPage';
 import GradeEntryPage         from '../pages/teacher/GradeEntryPage/GradeEntryPage';
 import ReportCardsPage        from '../pages/teacher/ReportCardsPage/ReportCardsPage';
 import CreateReportCardPage   from '../pages/teacher/CreateReportCardPage/CreateReportCardPage';
 import EditReportCardPage     from '../pages/teacher/EditReportCardPage/EditReportCardPage';
 import TeacherBulletinsPage   from '../pages/teacher/BulletinsPage/BulletinsPage';
 import StudentProfilePage     from '../pages/teacher/StudentProfilePage/StudentProfilePage';
+import ProgramPage            from '../pages/teacher/ProgramPage/ProgramPage';
+import ClassStatsPage         from '../pages/teacher/ClassStatsPage/ClassStatsPage';
 
 import ParentDashboardPage    from '../pages/parent/ParentDashboardPage/ParentDashboardPage';
 import ChildrenPage           from '../pages/parent/ChildrenPage/ChildrenPage';
@@ -48,6 +52,7 @@ import ProgressPage           from '../pages/student/ProgressPage/ProgressPage';
 import StudentBulletinsPage   from '../pages/student/BulletinsPage/BulletinsPage';
 
 import ProfilePage            from '../pages/shared/ProfilePage/ProfilePage';
+import PrintReportCardPage   from '../pages/shared/PrintReportCardPage/PrintReportCardPage';
 
 function AppRouter() {
   return (
@@ -65,6 +70,7 @@ function AppRouter() {
       <Route path="/admin"               element={<ProtectedRoute roles={['ADMIN']}><AdminDashboardPage /></ProtectedRoute>} />
       <Route path="/admin/users"         element={<ProtectedRoute roles={['ADMIN']}><UsersPage /></ProtectedRoute>} />
       <Route path="/admin/classes"       element={<ProtectedRoute roles={['ADMIN']}><ClassesPage /></ProtectedRoute>} />
+      <Route path="/admin/classes/:id"  element={<ProtectedRoute roles={['ADMIN']}><AdminClassDetailPage /></ProtectedRoute>} />
       <Route path="/admin/students"      element={<ProtectedRoute roles={['ADMIN']}><StudentsPage /></ProtectedRoute>} />
       <Route path="/admin/subjects"      element={<ProtectedRoute roles={['ADMIN']}><SubjectsPage /></ProtectedRoute>} />
       <Route path="/admin/fees"          element={<ProtectedRoute roles={['ADMIN']}><FeesPage /></ProtectedRoute>} />
@@ -75,6 +81,7 @@ function AppRouter() {
       <Route path="/admin/settings"      element={<ProtectedRoute roles={['ADMIN']}><SettingsPage /></ProtectedRoute>} />
       <Route path="/admin/bulletins"     element={<ProtectedRoute roles={['ADMIN']}><TeacherBulletinsPage /></ProtectedRoute>} />
       <Route path="/admin/reports"       element={<ProtectedRoute roles={['ADMIN']}><ReportCardsPage /></ProtectedRoute>} />
+      <Route path="/admin/statistics"    element={<ProtectedRoute roles={['ADMIN']}><ClassStatsPage /></ProtectedRoute>} />
 
       {/* Bursar */}
       <Route path="/bursar"              element={<ProtectedRoute roles={['BURSAR']}><BursarDashboardPage /></ProtectedRoute>} />
@@ -84,14 +91,17 @@ function AppRouter() {
 
       {/* Teacher */}
       <Route path="/teacher"                    element={<ProtectedRoute roles={['TEACHER']}><TeacherDashboardPage /></ProtectedRoute>} />
+      <Route path="/teacher/fiches"                              element={<ProtectedRoute roles={['TEACHER']}><FichesPage /></ProtectedRoute>} />
       <Route path="/teacher/classes"                              element={<ProtectedRoute roles={['TEACHER']}><MyClassesPage /></ProtectedRoute>} />
       <Route path="/teacher/classes/:id"                         element={<ProtectedRoute roles={['TEACHER']}><ClassDetailPage /></ProtectedRoute>} />
       <Route path="/teacher/classes/:classId/grades/:subjectId"  element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><GradeEntryPage /></ProtectedRoute>} />
+      <Route path="/teacher/classes/:classId/subjects/:subjectId/program" element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><ProgramPage /></ProtectedRoute>} />
       <Route path="/teacher/students/:id"       element={<ProtectedRoute roles={['TEACHER']}><StudentProfilePage /></ProtectedRoute>} />
       <Route path="/teacher/reports"            element={<ProtectedRoute roles={['TEACHER']}><ReportCardsPage /></ProtectedRoute>} />
       <Route path="/teacher/reports/new"        element={<ProtectedRoute roles={['TEACHER']}><CreateReportCardPage /></ProtectedRoute>} />
       <Route path="/teacher/reports/:id"        element={<ProtectedRoute roles={['TEACHER']}><EditReportCardPage /></ProtectedRoute>} />
       <Route path="/teacher/bulletins"          element={<ProtectedRoute roles={['TEACHER']}><TeacherBulletinsPage /></ProtectedRoute>} />
+      <Route path="/teacher/statistics"         element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><ClassStatsPage /></ProtectedRoute>} />
 
       {/* Parent */}
       <Route path="/parent"                     element={<ProtectedRoute roles={['PARENT']}><ParentDashboardPage /></ProtectedRoute>} />
@@ -109,6 +119,7 @@ function AppRouter() {
 
       {/* Shared */}
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+      <Route path="/reports/:id/print" element={<ProtectedRoute><PrintReportCardPage /></ProtectedRoute>} />
 
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

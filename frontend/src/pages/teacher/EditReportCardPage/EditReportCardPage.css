@@ -10,6 +10,21 @@
   flex-wrap: wrap;
 }
 
+.edit-report__print-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 1rem;
+  background: #1e3a8a;
+  color: #fff;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+.edit-report__print-btn:hover { opacity: 0.85; }
+
 .edit-report__layout {
   display: grid;
   grid-template-columns: 1fr 280px;

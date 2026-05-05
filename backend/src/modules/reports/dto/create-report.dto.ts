@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsInt, IsNotEmpty, IsString, Min } from 'class-validator';
+import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
 
 enum TermSystemDto {
   TRIMESTRE = 'TRIMESTRE',
@@ -8,11 +8,6 @@ enum TermSystemDto {
 }
 
 export class CreateReportDto {
-  @ApiProperty({ description: 'UUID of the student' })
-  @IsString()
-  @IsNotEmpty()
-  studentId: string;
-
   @ApiProperty({ description: 'UUID of the class' })
   @IsString()
   @IsNotEmpty()
@@ -32,8 +27,8 @@ export class CreateReportDto {
   @Min(1)
   termNumber: number;
 
-  @ApiProperty({ example: 'Trimestre 1' })
+  @ApiPropertyOptional({ example: 'Trimestre 1' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  termName: string;
+  termName?: string;
 }

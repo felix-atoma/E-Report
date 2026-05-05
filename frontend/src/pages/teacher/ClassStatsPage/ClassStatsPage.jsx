@@ -1,0 +1,246 @@
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { analyticsService } from '../../../services/analyticsService';
+import { classesService } from '../../../services/classesService';
+import AppShell from '../../../components/layout/AppShell/AppShell';
+import PageHeader from '../../../components/layout/PageHeader/PageHeader';
+import Card from '../../../components/common/Card/Card';
+import Loading from '../../../components/common/Loading/Loading';
+import './ClassStatsPage.css';
+
+const TERM_LABELS = { 1: '1er trimestre', 2: '2e trimestre', 3: '3e trimestre' };
+
+function StatBadge({ label, count, pct, color }) {
+  return (
+    <div className="cstats-badge" style={{ '--badge-color': color }}>
+      <div className="cstats-badge__count">{count}</div>
+      <div className="cstats-badge__pct">{pct}%</div>
+      <div className="cstats-badge__label">{label}</div>
+    </div>
+  );
+}
+
+function HighlightCard({ title, data, icon, positive }) {
+  if (!data) return (
+    <div className="cstats-highlight cstats-highlight--empty">
+      <span className="cstats-highlight__icon">{icon}</span>
+      <span className="cstats-highlight__none">{title} : aucune donnée</span>
+    </div>
+  );
+  return (
+    <div className={`cstats-highlight ${positive ? 'cstats-highlight--up' : 'cstats-highlight--down'}`}>
+      <span className="cstats-highlight__icon">{icon}</span>
+      <div className="cstats-highlight__body">
+        <span className="cstats-highlight__title">{title}</span>
+        <span className="cstats-highlight__name">{data.studentName}</span>
+        <span className="cstats-highlight__detail">
+          {data.previousAvg?.toFixed(2).replace('.', ',')} → {data.currentAvg?.toFixed(2).replace('.', ',')}
+          <em className={`cstats-highlight__delta ${positive ? 'up' : 'down'}`}>
+            {positive ? '+' : ''}{data.delta?.toFixed(2).replace('.', ',')}
+          </em>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function ClassStatsPage() {
+  const [classId, setClassId] = useState('');
+  const [termNumber, setTermNumber] = useState('');
+  const [academicYear, setAcademicYear] = useState('');
+
+  const { data: classes, isLoading: loadingClasses } = useQuery({
+    queryKey: ['classes'],
+    queryFn: () => classesService.list().then((r) => r.data),
+  });
+
+  const canFetch = classId && termNumber && academicYear;
+
+  const { data: stats, isLoading: loadingStats, isError } = useQuery({
+    queryKey: ['class-stats', classId, academicYear, termNumber],
+    queryFn: () => analyticsService.classStats(classId, academicYear, Number(termNumber)).then((r) => r.data),
+    enabled: !!canFetch,
+  });
+
+  const selectedClass = classes?.find((c) => c.id === classId);
+
+  return (
+    <AppShell title="Statistiques de classe">
+      <PageHeader
+        title="Fiche de statistiques"
+        subtitle="Progression et régression des élèves entre deux trimestres"
+      />
+
+      <Card className="cstats-filters">
+        <div className="cstats-filters__row">
+          <div className="cstats-filters__field">
+            <label className="cstats-filters__label">Classe</label>
+            <select
+              className="cstats-filters__select"
+              value={classId}
+              onChange={(e) => setClassId(e.target.value)}
+            >
+              <option value="">— Choisir une classe —</option>
+              {(classes ?? []).map((c) => (
+                <option key={c.id} value={c.id}>{c.name} ({c.academicYear})</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="cstats-filters__field">
+            <label className="cstats-filters__label">Trimestre analysé</label>
+            <select
+              className="cstats-filters__select"
+              value={termNumber}
+              onChange={(e) => setTermNumber(e.target.value)}
+            >
+              <option value="">— Choisir —</option>
+              <option value="1">1er trimestre</option>
+              <option value="2">2e trimestre</option>
+              <option value="3">3e trimestre</option>
+            </select>
+          </div>
+
+          <div className="cstats-filters__field">
+            <label className="cstats-filters__label">Année scolaire</label>
+            <input
+              className="cstats-filters__input"
+              type="text"
+              placeholder="ex: 2024-2025"
+              value={academicYear}
+              onChange={(e) => setAcademicYear(e.target.value)}
+            />
+          </div>
+        </div>
+        {termNumber === '1' && (
+          <p className="cstats-filters__note">
+            Note : au 1er trimestre, il n'y a pas de trimestre précédent — les comparaisons ne seront pas disponibles.
+          </p>
+        )}
+      </Card>
+
+      {!canFetch && (
+        <div className="cstats-empty">
+          <div className="cstats-empty__icon">📊</div>
+          <p>Sélectionnez une classe, un trimestre et une année scolaire pour afficher les statistiques.</p>
+        </div>
+      )}
+
+      {canFetch && loadingStats && <Loading />}
+
+      {canFetch && isError && (
+        <div className="cstats-empty">
+          <div className="cstats-empty__icon">⚠️</div>
+          <p>Erreur lors du chargement des statistiques. Vérifiez les paramètres.</p>
+        </div>
+      )}
+
+      {stats && (
+        <>
+          <div className="cstats-header-info">
+            <span className="cstats-header-info__class">{selectedClass?.name ?? classId}</span>
+            <span className="cstats-header-info__sep">·</span>
+            <span>{TERM_LABELS[stats.termNumber] ?? `Trimestre ${stats.termNumber}`}</span>
+            <span className="cstats-header-info__sep">·</span>
+            <span>{stats.academicYear}</span>
+          </div>
+
+          {/* KPI row */}
+          <div className="cstats-kpis">
+            <Card className="cstats-kpi">
+              <div className="cstats-kpi__value">{stats.totalStudents}</div>
+              <div className="cstats-kpi__label">Élèves au total</div>
+            </Card>
+            <Card className="cstats-kpi">
+              <div className="cstats-kpi__value">{stats.withPreviousTerm}</div>
+              <div className="cstats-kpi__label">Avec trimestre précédent</div>
+            </Card>
+            {stats.noPreviousTerm > 0 && (
+              <Card className="cstats-kpi cstats-kpi--muted">
+                <div className="cstats-kpi__value">{stats.noPreviousTerm}</div>
+                <div className="cstats-kpi__label">Sans données précédentes</div>
+              </Card>
+            )}
+          </div>
+
+          {/* Progress / decline badges */}
+          {stats.withPreviousTerm > 0 && (
+            <Card className="cstats-badges-card">
+              <h3 className="cstats-section-title">Évolution par rapport au trimestre précédent</h3>
+              <div className="cstats-badges">
+                <StatBadge
+                  label="En progression"
+                  count={stats.progressed.count}
+                  pct={stats.progressed.percentage}
+                  color="#22c55e"
+                />
+                <StatBadge
+                  label="En régression"
+                  count={stats.declined.count}
+                  pct={stats.declined.percentage}
+                  color="#ef4444"
+                />
+                <StatBadge
+                  label="Stables"
+                  count={stats.stable.count}
+                  pct={stats.stable.percentage}
+                  color="#9ca3af"
+                />
+              </div>
+
+              {/* Progress bar */}
+              <div className="cstats-bar-wrap">
+                {stats.progressed.count > 0 && (
+                  <div
+                    className="cstats-bar cstats-bar--up"
+                    style={{ width: `${stats.progressed.percentage}%` }}
+                    title={`Progression : ${stats.progressed.percentage}%`}
+                  />
+                )}
+                {stats.stable.count > 0 && (
+                  <div
+                    className="cstats-bar cstats-bar--stable"
+                    style={{ width: `${stats.stable.percentage}%` }}
+                    title={`Stables : ${stats.stable.percentage}%`}
+                  />
+                )}
+                {stats.declined.count > 0 && (
+                  <div
+                    className="cstats-bar cstats-bar--down"
+                    style={{ width: `${stats.declined.percentage}%` }}
+                    title={`Régression : ${stats.declined.percentage}%`}
+                  />
+                )}
+              </div>
+            </Card>
+          )}
+
+          {/* Best / worst highlights */}
+          <div className="cstats-highlights">
+            <HighlightCard
+              title="Plus forte progression"
+              data={stats.bestProgress}
+              icon="🏆"
+              positive={true}
+            />
+            <HighlightCard
+              title="Plus forte régression"
+              data={stats.worstDecline}
+              icon="⚠️"
+              positive={false}
+            />
+          </div>
+
+          {stats.withPreviousTerm === 0 && (
+            <div className="cstats-empty">
+              <div className="cstats-empty__icon">📭</div>
+              <p>Aucun bulletin publié pour ce trimestre, ou aucun bulletin du trimestre précédent disponible pour comparaison.</p>
+            </div>
+          )}
+        </>
+      )}
+    </AppShell>
+  );
+}
+
+export default ClassStatsPage;

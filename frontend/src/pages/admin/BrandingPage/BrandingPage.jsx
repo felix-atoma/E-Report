@@ -6,28 +6,27 @@ import { uploadService } from '../../../services/uploadService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Card from '../../../components/common/Card/Card';
-import Input from '../../../components/common/Input/Input';
 import ColorPicker from '../../../components/common/ColorPicker/ColorPicker';
 import FileUpload from '../../../components/common/FileUpload/FileUpload';
 import Button from '../../../components/common/Button/Button';
 import './BrandingPage.css';
 
 const DEFAULT_FORM = {
-  primaryColor: '#1e40af',
+  primaryColor:   '#1e40af',
   secondaryColor: '#f59e0b',
-  logoUrl: '',
-  faviconUrl: '',
-  schoolMotto: '',
-  address: '',
-  phone: '',
-  website: '',
+  logoUrl:        '',
+  crestUrl:       '',
+  stampUrl:       '',
+  faviconUrl:     '',
 };
 
 function BrandingPage() {
   const qc = useQueryClient();
-  const [form, setForm]     = useState(DEFAULT_FORM);
-  const [logoFile, setLogo] = useState(null);
-  const [saving, setSaving] = useState(false);
+  const [form, setForm]         = useState(DEFAULT_FORM);
+  const [logoFile, setLogo]     = useState(null);
+  const [crestFile, setCrest]   = useState(null);
+  const [stampFile, setStamp]   = useState(null);
+  const [saving, setSaving]     = useState(false);
 
   const { data: institution, isLoading } = useQuery({
     queryKey: ['institution-me'],
@@ -36,15 +35,14 @@ function BrandingPage() {
 
   useEffect(() => {
     if (!institution) return;
+    const bs = institution.brandingSettings ?? {};
     setForm({
-      primaryColor:   institution.branding?.primaryColor   ?? DEFAULT_FORM.primaryColor,
-      secondaryColor: institution.branding?.secondaryColor ?? DEFAULT_FORM.secondaryColor,
-      logoUrl:        institution.branding?.logoUrl        ?? '',
-      faviconUrl:     institution.branding?.faviconUrl     ?? '',
-      schoolMotto:    institution.schoolMotto ?? '',
-      address:        institution.address     ?? '',
-      phone:          institution.phone       ?? '',
-      website:        institution.website     ?? '',
+      primaryColor:   bs.primaryColor   ?? DEFAULT_FORM.primaryColor,
+      secondaryColor: bs.secondaryColor ?? DEFAULT_FORM.secondaryColor,
+      logoUrl:        institution.logo  ?? bs.logoUrl ?? '',
+      crestUrl:       institution.crest ?? '',
+      stampUrl:       institution.stamp ?? '',
+      faviconUrl:     bs.faviconUrl     ?? '',
     });
   }, [institution]);
 
@@ -55,23 +53,32 @@ function BrandingPage() {
   async function handleSave() {
     setSaving(true);
     try {
-      let logoUrl = form.logoUrl;
-      if (logoFile) {
-        const res = await uploadService.upload(logoFile, 'logo');
-        logoUrl = res.data.url;
-      }
+      let logoUrl   = form.logoUrl;
+      let crestUrl  = form.crestUrl;
+      let stampUrl  = form.stampUrl;
+
+      const uploads = await Promise.all([
+        logoFile  ? uploadService.upload(logoFile,  'logo')  : null,
+        crestFile ? uploadService.upload(crestFile, 'crest') : null,
+        stampFile ? uploadService.upload(stampFile, 'stamp') : null,
+      ]);
+      if (uploads[0]) logoUrl  = uploads[0].data.url;
+      if (uploads[1]) crestUrl = uploads[1].data.url;
+      if (uploads[2]) stampUrl = uploads[2].data.url;
+
       await institutionsService.updateBranding({
         primaryColor:   form.primaryColor,
         secondaryColor: form.secondaryColor,
         logoUrl,
+        crest:          crestUrl  || undefined,
+        stamp:          stampUrl  || undefined,
         faviconUrl:     form.faviconUrl || undefined,
-        schoolMotto:    form.schoolMotto || undefined,
-        address:        form.address     || undefined,
-        phone:          form.phone       || undefined,
-        website:        form.website     || undefined,
       });
+
       qc.invalidateQueries({ queryKey: ['institution-me'] });
       setLogo(null);
+      setCrest(null);
+      setStamp(null);
       toast.success('Identité visuelle enregistrée');
     } catch (err) {
       toast.error(err?.response?.data?.message ?? 'Erreur de sauvegarde');
@@ -81,8 +88,6 @@ function BrandingPage() {
   }
 
   if (isLoading) return <AppShell title="Identité visuelle"><div className="branding-page__loading">Chargement…</div></AppShell>;
-
-  const previewLogo = logoFile ?? (form.logoUrl || null);
 
   return (
     <AppShell title="Identité visuelle">
@@ -97,23 +102,6 @@ function BrandingPage() {
       />
 
       <div className="branding-page__grid">
-        {/* Logo */}
-        <Card className="branding-section">
-          <h3 className="branding-section__title">Logo</h3>
-          <FileUpload
-            id="logo"
-            label="Logo de l'établissement"
-            value={previewLogo}
-            onChange={setLogo}
-            preview
-            hint="PNG ou SVG recommandé. Max 2 Mo."
-          />
-          {form.logoUrl && !logoFile && (
-            <p className="branding-section__current">
-              Logo actuel : <a href={form.logoUrl} target="_blank" rel="noreferrer">voir</a>
-            </p>
-          )}
-        </Card>
 
         {/* Colors */}
         <Card className="branding-section">
@@ -135,48 +123,69 @@ function BrandingPage() {
             />
           </div>
           <div className="branding-preview">
-            <div
-              className="branding-preview__bar"
-              style={{ background: form.primaryColor }}
-            />
-            <div
-              className="branding-preview__accent"
-              style={{ background: form.secondaryColor }}
-            />
+            <div className="branding-preview__bar"   style={{ background: form.primaryColor }} />
+            <div className="branding-preview__accent" style={{ background: form.secondaryColor }} />
             <span className="branding-preview__label">Aperçu</span>
           </div>
         </Card>
 
-        {/* Info */}
-        <Card className="branding-section branding-section--wide">
-          <h3 className="branding-section__title">Informations de l'établissement</h3>
-          <div className="branding-info-grid">
-            <Input
-              id="schoolMotto" label="Devise / Slogan"
-              value={form.schoolMotto}
-              placeholder="ex: L'excellence au service de la nation"
-              onChange={(e) => set('schoolMotto', e.target.value)}
-            />
-            <Input
-              id="address" label="Adresse"
-              value={form.address}
-              placeholder="ex: Lomé, Togo"
-              onChange={(e) => set('address', e.target.value)}
-            />
-            <Input
-              id="phone" label="Téléphone"
-              value={form.phone}
-              placeholder="+228 XX XX XX XX"
-              onChange={(e) => set('phone', e.target.value)}
-            />
-            <Input
-              id="website" label="Site web"
-              value={form.website}
-              placeholder="https://…"
-              onChange={(e) => set('website', e.target.value)}
-            />
-          </div>
+        {/* Logo */}
+        <Card className="branding-section">
+          <h3 className="branding-section__title">Logo</h3>
+          <p className="branding-section__desc">Affiché dans l'en-tête des bulletins et dans la barre latérale.</p>
+          <FileUpload
+            id="logo"
+            label="Logo de l'établissement"
+            value={logoFile ?? (form.logoUrl || null)}
+            onChange={setLogo}
+            preview
+            hint="PNG ou SVG recommandé · Max 2 Mo"
+          />
+          {form.logoUrl && !logoFile && (
+            <p className="branding-section__current">
+              Logo actuel : <a href={form.logoUrl} target="_blank" rel="noreferrer">voir</a>
+            </p>
+          )}
         </Card>
+
+        {/* Crest */}
+        <Card className="branding-section">
+          <h3 className="branding-section__title">Blason / Armoiries</h3>
+          <p className="branding-section__desc">Affiché à droite du logo sur les bulletins.</p>
+          <FileUpload
+            id="crest"
+            label="Blason de l'établissement"
+            value={crestFile ?? (form.crestUrl || null)}
+            onChange={setCrest}
+            preview
+            hint="PNG ou SVG recommandé · Max 2 Mo"
+          />
+          {form.crestUrl && !crestFile && (
+            <p className="branding-section__current">
+              Blason actuel : <a href={form.crestUrl} target="_blank" rel="noreferrer">voir</a>
+            </p>
+          )}
+        </Card>
+
+        {/* Stamp */}
+        <Card className="branding-section">
+          <h3 className="branding-section__title">Tampon officiel</h3>
+          <p className="branding-section__desc">Tampon ou cachet apposé en bas à droite du bulletin (semi-transparent).</p>
+          <FileUpload
+            id="stamp"
+            label="Tampon de l'établissement"
+            value={stampFile ?? (form.stampUrl || null)}
+            onChange={setStamp}
+            preview
+            hint="PNG avec fond transparent recommandé · Max 2 Mo"
+          />
+          {form.stampUrl && !stampFile && (
+            <p className="branding-section__current">
+              Tampon actuel : <a href={form.stampUrl} target="_blank" rel="noreferrer">voir</a>
+            </p>
+          )}
+        </Card>
+
       </div>
     </AppShell>
   );

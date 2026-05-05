@@ -1,0 +1,468 @@
+.acd__error {
+  padding: 2rem;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.acd__back-btn {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-muted, #6b7280);
+  text-decoration: none;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+.acd__back-btn:hover {
+  background: var(--color-surface-alt, #f9fafb);
+}
+
+/* Meta strip */
+.acd__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.75rem;
+}
+
+.acd__meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  background: var(--color-surface-alt, #f9fafb);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  min-width: 90px;
+}
+
+.acd__meta-label {
+  font-size: 0.72rem;
+  color: var(--color-text-muted, #9ca3af);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.acd__meta-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text, #1f2937);
+}
+
+.acd__meta-value--m { color: #2563eb; }
+.acd__meta-value--f { color: #db2777; }
+
+/* Sections */
+.acd__section {
+  margin-bottom: 2rem;
+}
+
+.acd__section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text, #1f2937);
+  margin: 0 0 0.75rem 0;
+}
+
+.acd__section-count {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--color-text-muted, #6b7280);
+  background: var(--color-border, #e5e7eb);
+  padding: 1px 7px;
+  border-radius: 10px;
+}
+
+/* Student cell */
+.acd__student-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.acd__student-name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-text, #1f2937);
+}
+
+.acd__student-sub {
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #9ca3af);
+  font-family: monospace;
+}
+
+/* Subject cell */
+.acd__subject-name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-text, #1f2937);
+}
+
+.acd__subject-code {
+  font-size: 0.72rem;
+  color: var(--color-text-muted, #9ca3af);
+  font-family: monospace;
+}
+
+.acd__teacher {
+  font-size: 0.875rem;
+  color: var(--color-text, #374151);
+}
+
+.acd__empty {
+  color: var(--color-text-muted, #9ca3af);
+  font-size: 0.85rem;
+}
+
+/* Section title with action button */
+.acd__section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+.acd__section-title-row .acd__section-title {
+  margin-bottom: 0;
+}
+
+/* Timetable edit button */
+.acd__tt-edit-btn {
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.35rem 0.8rem;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 6px;
+  background: var(--color-surface-alt, #f9fafb);
+  color: var(--color-text, #374151);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.acd__tt-edit-btn:hover { background: var(--color-border, #e5e7eb); }
+
+/* Timetable grid (view mode) */
+.acd__tt-grid {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.acd__tt-day {
+  flex: 1 1 140px;
+  min-width: 130px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.acd__tt-day-header {
+  background: var(--color-surface-alt, #f3f4f6);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted, #6b7280);
+  padding: 0.45rem 0.75rem;
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
+}
+
+.acd__tt-slot {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--color-border, #f3f4f6);
+}
+.acd__tt-slot:last-child { border-bottom: none; }
+
+.acd__tt-time {
+  font-size: 0.72rem;
+  color: var(--color-text-muted, #9ca3af);
+  font-family: monospace;
+  margin-bottom: 0.15rem;
+}
+
+.acd__tt-subject {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text, #1f2937);
+}
+
+.acd__tt-teacher {
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #6b7280);
+  margin-top: 0.1rem;
+}
+
+.acd__tt-room {
+  font-size: 0.72rem;
+  color: var(--color-text-muted, #9ca3af);
+  margin-top: 0.1rem;
+}
+
+/* Timetable editor (edit mode) */
+.acd__tt-editor {
+  background: var(--color-surface-alt, #f9fafb);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.acd__tt-header-row,
+.acd__tt-row {
+  display: grid;
+  grid-template-columns: 120px 90px 90px 1fr 1fr 100px 32px;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.4rem;
+}
+
+.acd__tt-col-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted, #9ca3af);
+}
+.acd__tt-col-label--wide { /* no extra style needed, handled by grid */ }
+
+.acd__tt-input {
+  font-size: 0.825rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--color-border, #d1d5db);
+  border-radius: 5px;
+  background: #fff;
+  color: var(--color-text, #1f2937);
+  width: 100%;
+  box-sizing: border-box;
+}
+.acd__tt-input:focus {
+  outline: none;
+  border-color: var(--color-primary, #6366f1);
+  box-shadow: 0 0 0 2px rgba(99,102,241,0.12);
+}
+
+.acd__tt-remove {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--color-danger, #ef4444);
+  font-size: 0.8rem;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.acd__tt-remove:hover { background: #fee2e2; }
+
+.acd__tt-actions {
+  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.acd__tt-add-btn {
+  font-size: 0.825rem;
+  padding: 0.4rem 0.85rem;
+  border: 1px dashed var(--color-border, #d1d5db);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-primary, #6366f1);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.acd__tt-add-btn:hover { background: rgba(99,102,241,0.06); }
+
+.acd__tt-error {
+  font-size: 0.825rem;
+  color: var(--color-danger, #ef4444);
+  margin-bottom: 0.5rem;
+}
+
+.acd__tt-save-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.acd__tt-save-btn {
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.5rem 1.2rem;
+  border: none;
+  border-radius: 7px;
+  background: var(--color-primary, #6366f1);
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.acd__tt-save-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.acd__tt-save-btn:not(:disabled):hover { opacity: 0.88; }
+
+.acd__tt-cancel-btn {
+  font-size: 0.875rem;
+  padding: 0.5rem 0.85rem;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--color-text-muted, #6b7280);
+  cursor: pointer;
+}
+.acd__tt-cancel-btn:hover { background: var(--color-surface-alt, #f3f4f6); }
+
+/* ── Fiches de notes ─────────────────────────────────────────────────── */
+.acd__fiche-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.acd__fiche-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.acd__term-tabs {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.acd__term-btn {
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 20px;
+  background: var(--color-surface-alt, #f9fafb);
+  color: var(--color-text-muted, #6b7280);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.acd__term-btn:hover { background: var(--color-border, #e5e7eb); }
+.acd__term-btn--active {
+  background: var(--color-primary, #6366f1);
+  border-color: var(--color-primary, #6366f1);
+  color: #fff;
+}
+
+.acd__fiche-summary {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-text-muted, #6b7280);
+}
+.acd__fiche-summary--done { color: #16a34a; }
+
+.acd__verify-all-btn {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.35rem 0.85rem;
+  border: none;
+  border-radius: 6px;
+  background: #16a34a;
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.acd__verify-all-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.acd__verify-all-btn:not(:disabled):hover { opacity: 0.88; }
+
+.acd__fiche-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.acd__fiche-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.65rem 0.9rem;
+  background: var(--color-surface, #fff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  transition: border-color 0.15s;
+}
+.acd__fiche-row--signed {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+.acd__fiche-subject {
+  flex: 1;
+  min-width: 0;
+}
+
+.acd__fiche-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text, #1f2937);
+}
+
+.acd__fiche-code {
+  display: inline-block;
+  font-size: 0.7rem;
+  color: var(--color-text-muted, #9ca3af);
+  font-family: monospace;
+  margin-left: 0.4rem;
+}
+
+.acd__fiche-status {
+  flex: 1;
+  min-width: 0;
+}
+
+.acd__fiche-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+}
+.acd__fiche-badge--signed {
+  background: #dcfce7;
+  color: #15803d;
+}
+.acd__fiche-badge--unsigned {
+  background: var(--color-surface-alt, #f3f4f6);
+  color: var(--color-text-muted, #9ca3af);
+}
+
+.acd__fiche-date {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.acd__fiche-actions {
+  flex-shrink: 0;
+}
+
+.acd__fiche-btn {
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.3rem 0.75rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.acd__fiche-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.acd__fiche-btn--verify {
+  background: #16a34a;
+  color: #fff;
+}
+.acd__fiche-btn--verify:not(:disabled):hover { opacity: 0.88; }
+
+.acd__fiche-btn--unsign {
+  background: var(--color-surface-alt, #f3f4f6);
+  border: 1px solid var(--color-border, #e5e7eb);
+  color: var(--color-text-muted, #6b7280);
+}
+.acd__fiche-btn--unsign:not(:disabled):hover { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }

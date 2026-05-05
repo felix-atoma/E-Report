@@ -29,7 +29,14 @@ api.interceptors.response.use(
   },
   async (err) => {
     const original = err.config;
-    if (err.response?.status === 401 && !original._retry) {
+
+    // Never intercept the login or logout endpoints — let them fail naturally
+    const isAuthEndpoint =
+      original.url?.includes('/auth/login') ||
+      original.url?.includes('/auth/logout') ||
+      original.url?.includes('/auth/refresh');
+
+    if (err.response?.status === 401 && !original._retry && !isAuthEndpoint) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -43,9 +50,21 @@ api.interceptors.response.use(
       try {
         const refreshToken = localStorage.getItem('refreshToken');
         if (!refreshToken) throw new Error('No refresh token');
-        const { data: raw } = await axios.post('/api/auth/refresh', { refreshToken });
+
+        // Send the refreshToken as the Bearer token — matches JwtRefreshStrategy
+        const { data: raw } = await axios.post(
+          '/api/auth/refresh',
+          {},
+          { headers: { Authorization: `Bearer ${refreshToken}` } },
+        );
         const data = raw?.data ?? raw;
+
         localStorage.setItem('accessToken', data.accessToken);
+        // Persist the rotated refresh token so the next refresh cycle works
+        if (data.refreshToken) {
+          localStorage.setItem('refreshToken', data.refreshToken);
+        }
+
         processQueue(null, data.accessToken);
         original.headers.Authorization = `Bearer ${data.accessToken}`;
         return api(original);

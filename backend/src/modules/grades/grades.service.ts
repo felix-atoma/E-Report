@@ -304,7 +304,11 @@ export class GradesService {
   // ─── List all fiche statuses for a class/term ────────────────────────────
 
   async listFiches(classId: string, academicYear: string, termNumber: number, userId: string, role: Role) {
-    await this.assertClassAccess(classId, userId, role);
+    // ADMIN/TEACHER get the full class-access check.
+    // STUDENT/PARENT/BURSAR can read fiche signatures for bulletin display (read-only).
+    if (role === Role.ADMIN || role === Role.TEACHER) {
+      await this.assertClassAccess(classId, userId, role);
+    }
 
     const classSubjects = await this.prisma.classSubject.findMany({
       where: { classId },
@@ -354,7 +358,11 @@ export class GradesService {
     if (!cls) throw new NotFoundException('Class not found');
 
     if (!signatureData) {
-      throw new BadRequestException('Une signature manuscrite est requise pour valider la fiche.');
+      if (role === Role.ADMIN) {
+        signatureData = 'ADMIN_VERIFIED';
+      } else {
+        throw new BadRequestException('Une signature manuscrite est requise pour valider la fiche.');
+      }
     }
 
     return this.prisma.gradeFiche.upsert({

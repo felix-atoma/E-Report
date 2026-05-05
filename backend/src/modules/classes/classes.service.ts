@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -13,9 +14,18 @@ import { AssignSubjectDto } from './dto/assign-subject.dto';
 export class ClassesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(institutionId: string) {
+  async findAll(institutionId: string, userId?: string, role?: string) {
+    const where: any = { institutionId, isActive: true };
+
+    if (role === 'TEACHER' && userId) {
+      where.OR = [
+        { teacherId: userId },
+        { subjects: { some: { teacherId: userId } } },
+      ];
+    }
+
     return this.prisma.class.findMany({
-      where: { institutionId, isActive: true },
+      where,
       include: {
         teacher: { select: { id: true, name: true, email: true } },
         _count: { select: { students: true, subjects: true } },
@@ -24,15 +34,23 @@ export class ClassesService {
     });
   }
 
-  async findOne(id: string, institutionId: string) {
+  async findOne(id: string, institutionId: string, userId?: string, role?: string) {
+    const where: any = { id, institutionId };
+    if (role === 'TEACHER' && userId) {
+      where.OR = [
+        { teacherId: userId },
+        { subjects: { some: { teacherId: userId } } },
+      ];
+    }
+
     const cls = await this.prisma.class.findFirst({
-      where: { id, institutionId },
+      where,
       include: {
         teacher: { select: { id: true, name: true, email: true } },
         students: {
           include: {
             student: {
-              select: { id: true, admissionNumber: true, user: { select: { name: true } } },
+              select: { id: true, admissionNumber: true, dateOfBirth: true, sex: true, user: { select: { name: true, profileImage: true } } },
             },
           },
         },
@@ -44,7 +62,10 @@ export class ClassesService {
         },
       },
     });
-    if (!cls) throw new NotFoundException('Class not found');
+    if (!cls) {
+      if (role === 'TEACHER') throw new ForbiddenException('You do not have access to this class');
+      throw new NotFoundException('Class not found');
+    }
     return cls;
   }
 

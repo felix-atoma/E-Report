@@ -23,14 +23,31 @@ export class InstitutionsService {
   }
 
   async updateBranding(institutionId: string, dto: UpdateBrandingDto) {
-    await this.ensureExists(institutionId);
+    const existing = await this.prisma.institution.findUnique({
+      where: { id: institutionId },
+      select: { brandingSettings: true },
+    });
+    if (!existing) throw new NotFoundException('Institution not found');
+
+    // Merge color/favicon fields into the brandingSettings JSON blob
+    const currentBranding = (existing.brandingSettings as Record<string, unknown>) ?? {};
+    const mergedBranding: Record<string, unknown> = { ...currentBranding, ...(dto.brandingSettings ?? {}) };
+    if (dto.primaryColor !== undefined)   mergedBranding.primaryColor   = dto.primaryColor;
+    if (dto.secondaryColor !== undefined) mergedBranding.secondaryColor = dto.secondaryColor;
+    if (dto.faviconUrl !== undefined)     mergedBranding.faviconUrl     = dto.faviconUrl;
+
     return this.prisma.institution.update({
       where: { id: institutionId },
       data: {
-        ...(dto.logo !== undefined && { logo: dto.logo }),
-        ...(dto.crest !== undefined && { crest: dto.crest }),
-        ...(dto.stamp !== undefined && { stamp: dto.stamp }),
-        ...(dto.brandingSettings !== undefined && { brandingSettings: dto.brandingSettings }),
+        ...(dto.logo    !== undefined && { logo:  dto.logo }),
+        ...(dto.logoUrl !== undefined && { logo:  dto.logoUrl }),
+        ...(dto.crest   !== undefined && { crest: dto.crest }),
+        ...(dto.stamp   !== undefined && { stamp: dto.stamp }),
+        ...(dto.schoolMotto !== undefined && { motto:    dto.schoolMotto }),
+        ...(dto.address     !== undefined && { address:  dto.address }),
+        ...(dto.phone       !== undefined && { phone:    dto.phone }),
+        ...(dto.website     !== undefined && { website:  dto.website }),
+        brandingSettings: mergedBranding as any,
       },
     });
   }

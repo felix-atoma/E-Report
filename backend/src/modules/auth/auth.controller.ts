@@ -16,6 +16,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { LocalAuthGuard } from '../../common/guards/local-auth.guard';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { JwtRefreshGuard } from '../../common/guards/jwt-refresh.guard';
+import { JwtLogoutGuard } from '../../common/guards/jwt-logout.guard';
 import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
@@ -48,13 +49,13 @@ export class AuthController {
     return this.authService.getMe(user.id);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtLogoutGuard)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Logout and revoke refresh token' })
+  @ApiOperation({ summary: 'Logout and revoke all refresh tokens (accepts expired access tokens)' })
   logout(@CurrentUser() user: any) {
-    return this.authService.logout(user.id, '');
+    return this.authService.logout(user.id);
   }
 
   @UseGuards(JwtRefreshGuard)

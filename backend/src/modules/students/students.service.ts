@@ -161,6 +161,7 @@ export class StudentsService {
         admissionNumber,
         dateOfBirth: new Date(dto.dateOfBirth),
         enrollmentDate: dto.enrollmentDate ? new Date(dto.enrollmentDate) : undefined,
+        sex: dto.sex,
         parentId,
         institutionId,
         userId: userRecord.id,

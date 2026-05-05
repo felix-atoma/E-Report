@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { reportsService } from '../../../services/reportsService';
@@ -117,12 +117,13 @@ function EditReportCardPage() {
 
   useEffect(() => {
     if (!report || !grades) return;
-    const subjects = report.class?.subjects ?? [];
-    const rows = subjects.map((subj) => {
+    const classSubjects = report.class?.subjects ?? [];
+    const rows = classSubjects.map((cs) => {
+      const subj = cs.subject;
       const existing = grades.find((g) => g.subjectId === subj.id);
       return {
         subjectId:   subj.id,
-        subjectName: subj.name,
+        subjectName: subj.nameFr,
         subjectCode: subj.code ?? '',
         coefficient: existing?.coefficient ?? 1,
         score:       existing?.score != null ? String(existing.score) : '',
@@ -220,6 +221,16 @@ function EditReportCardPage() {
         actions={
           <div className="edit-report__header-actions">
             <StatusPill status={report.status} />
+            {locked && (
+              <Link
+                to={`/reports/${id}/print`}
+                target="_blank"
+                rel="noreferrer"
+                className="edit-report__print-btn"
+              >
+                🖨️ Imprimer / PDF
+              </Link>
+            )}
             {!locked && (
               <Button
                 variant="ghost"

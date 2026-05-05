@@ -27,6 +27,8 @@ import { BrandingModule } from './modules/branding/branding.module';
 import { MailModule } from './modules/mail/mail.module';
 import { WhatsAppModule } from './modules/whatsapp/whatsapp.module';
 import { PdfModule } from './modules/pdf/pdf.module';
+import { ProgramsModule } from './modules/programs/programs.module';
+import { TimetablesModule } from './modules/timetables/timetables.module';
 import { HealthModule } from './health/health.module';
 
 @Module({
@@ -63,6 +65,8 @@ import { HealthModule } from './health/health.module';
     MailModule,
     WhatsAppModule,
     PdfModule,
+    ProgramsModule,
+    TimetablesModule,
     HealthModule,
   ],
   providers: [

@@ -68,7 +68,7 @@ export class GradesController {
   }
 
   @Get('class/:classId/fiches')
-  @Roles(Role.ADMIN, Role.TEACHER)
+  @Roles(Role.ADMIN, Role.TEACHER, Role.STUDENT, Role.PARENT, Role.BURSAR)
   @ApiOperation({ summary: 'Get all fiche signature statuses for a class/term' })
   listFiches(
     @Param('classId') classId: string,
