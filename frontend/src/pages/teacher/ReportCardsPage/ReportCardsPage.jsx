@@ -113,30 +113,26 @@ function ReportCardsPage() {
           <Link to={`/teacher/reports/${r.id}`}>
             <Button size="sm" variant="ghost">Ouvrir</Button>
           </Link>
+          {(r.status === 'REVIEW' || r.status === 'PUBLISHED') && (
+            <Link to={`/reports/${r.id}/print`} target="_blank" rel="noreferrer">
+              <Button size="sm" variant="ghost">🖨️ Imprimer</Button>
+            </Link>
+          )}
           {isAdmin && r.status === 'REVIEW' && (
             <Button size="sm" variant="primary" onClick={() => setConfirmPublish(r)}>
               Publier
             </Button>
           )}
           {r.status === 'PUBLISHED' && (
-            <>
-              <Link to={`/reports/${r.id}/print`} target="_blank" rel="noreferrer">
-                <Button size="sm" variant="ghost">🖨️ Aperçu</Button>
-              </Link>
-              {r.pdfUrl ? (
-                <a href={r.pdfUrl} download target="_blank" rel="noreferrer">
-                  <Button size="sm" variant="ghost">📥 PDF</Button>
-                </a>
-              ) : isAdmin ? (
-                <Button size="sm" variant="ghost" onClick={() => pdfMut.mutate(r.id)} disabled={pdfMut.isPending}>
-                  {pdfMut.isPending ? '⏳…' : '🔄 Générer PDF'}
-                </Button>
-              ) : (
-                <Button size="sm" variant="ghost" disabled title="PDF en cours de génération…">
-                  ⏳ PDF
-                </Button>
-              )}
-            </>
+            r.pdfUrl ? (
+              <a href={r.pdfUrl} download target="_blank" rel="noreferrer">
+                <Button size="sm" variant="ghost">📥 PDF</Button>
+              </a>
+            ) : isAdmin ? (
+              <Button size="sm" variant="ghost" onClick={() => pdfMut.mutate(r.id)} disabled={pdfMut.isPending}>
+                {pdfMut.isPending ? '⏳…' : '🔄 Générer PDF'}
+              </Button>
+            ) : null
           )}
         </div>
       ),
