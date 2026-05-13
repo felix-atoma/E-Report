@@ -220,11 +220,17 @@ export class ReportsService {
     const rankMap = new Map<string, number>();
     allAverages.forEach((r, i) => rankMap.set(r.id, i + 1));
 
+    const classHighest = Math.round(Math.max(...allAverages.map((r) => r.avg)) * 100) / 100;
+    const classLowest  = Math.round(Math.min(...allAverages.map((r) => r.avg)) * 100) / 100;
+    const classAverage = Math.round(
+      (allAverages.reduce((sum, r) => sum + r.avg, 0) / allAverages.length) * 100,
+    ) / 100;
+
     await this.prisma.$transaction(
       allAverages.map((r) =>
         this.prisma.reportCard.update({
           where: { id: r.id },
-          data: { classRank: rankMap.get(r.id), classSize },
+          data: { classRank: rankMap.get(r.id), classSize, classHighest, classLowest, classAverage },
         }),
       ),
     );
@@ -239,6 +245,9 @@ export class ReportsService {
         overallAverage,
         classRank: rankMap.get(id),
         classSize,
+        classHighest,
+        classLowest,
+        classAverage,
         mention,
       },
       include: {
