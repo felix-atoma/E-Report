@@ -22,6 +22,7 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:11px; color:#111; ba
 .header .logo  { width:70px; height:70px; object-fit:contain; margin-right:14px; flex-shrink:0; }
 .header .crest { width:70px; height:70px; object-fit:contain; margin-left:14px;  flex-shrink:0; }
 .header .center { flex:1; text-align:center; }
+.header .center .country { font-size:8.5px; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:3px; }
 .header .center h1 {
   font-size:17px; font-weight:bold;
   color:var(--c-primary); text-transform:uppercase; letter-spacing:1.5px;
@@ -203,6 +204,7 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:11px; color:#111; ba
   <div class="header">
     {{#if institution.logo}}<img class="logo" src="{{institution.logo}}" alt="Logo" />{{/if}}
     <div class="center">
+      {{#if institution.countryLine}}<div class="country">{{institution.countryLine}}</div>{{/if}}
       <h1>{{institution.name}}</h1>
       {{#if institution.address}}<div class="subtitle">{{institution.address}}{{#if institution.phone}} &nbsp;|&nbsp; Tél : {{institution.phone}}{{/if}}</div>{{/if}}
       {{#if institution.motto}}<div class="motto">« {{institution.motto}} »</div>{{/if}}

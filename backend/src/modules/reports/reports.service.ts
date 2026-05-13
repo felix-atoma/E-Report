@@ -303,7 +303,7 @@ export class ReportsService {
   private async generateAndSavePdf(published: any, reportWithGrades: any, institutionId: string) {
     const institution = await this.prisma.institution.findUnique({
       where: { id: institutionId },
-      select: { name: true, address: true, phone: true, motto: true, logo: true, crest: true, stamp: true, brandingSettings: true },
+      select: { name: true, country: true, countryMotto: true, address: true, phone: true, motto: true, logo: true, crest: true, stamp: true, brandingSettings: true },
     });
     if (!institution) return;
 

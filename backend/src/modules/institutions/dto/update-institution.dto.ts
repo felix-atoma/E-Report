@@ -7,6 +7,16 @@ export class UpdateInstitutionDto {
   @IsString()
   name?: string;
 
+  @ApiPropertyOptional({ example: 'République Togolaise' })
+  @IsOptional()
+  @IsString()
+  country?: string;
+
+  @ApiPropertyOptional({ example: 'Travail · Liberté · Patrie' })
+  @IsOptional()
+  @IsString()
+  countryMotto?: string;
+
   @ApiPropertyOptional({ example: '12 Rue des Écoles, Lomé' })
   @IsOptional()
   @IsString()

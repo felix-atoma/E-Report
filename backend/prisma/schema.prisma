@@ -137,6 +137,8 @@ enum QuestionType {
 model Institution {
   id                String   @id @default(uuid())
   name              String
+  country           String?
+  countryMotto      String?
   address           String?
   phone             String?
   email             String?

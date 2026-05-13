@@ -19,6 +19,8 @@ const TERM_TYPES = [
 
 const DEFAULT_INFO = {
   name: '',
+  country: '',
+  countryMotto: '',
   email: '',
   phone: '',
   address: '',
@@ -52,6 +54,8 @@ function SettingsPage() {
     if (!institution) return;
     setInfoForm({
       name:             institution.name             ?? '',
+      country:          institution.country          ?? '',
+      countryMotto:     institution.countryMotto     ?? '',
       email:            institution.email            ?? '',
       phone:            institution.phone            ?? '',
       address:          institution.address          ?? '',
@@ -99,6 +103,8 @@ function SettingsPage() {
   function handleInfoSave() {
     infoMutation.mutate({
       name:             infoForm.name             || undefined,
+      country:          infoForm.country          || undefined,
+      countryMotto:     infoForm.countryMotto     || undefined,
       email:            infoForm.email            || undefined,
       phone:            infoForm.phone            || undefined,
       address:          infoForm.address          || undefined,
@@ -163,6 +169,24 @@ function SettingsPage() {
               placeholder="ex: Lycée Démonstration de Lomé"
               onChange={(e) => setInfo('name', e.target.value)}
             />
+            <div className="settings-row">
+              <Input
+                id="instCountry"
+                label="Pays / République"
+                value={infoForm.country}
+                placeholder="ex: République Togolaise"
+                onChange={(e) => setInfo('country', e.target.value)}
+                hint="Affiché en en-tête du bulletin"
+              />
+              <Input
+                id="instCountryMotto"
+                label="Devise nationale"
+                value={infoForm.countryMotto}
+                placeholder="ex: Travail · Liberté · Patrie"
+                onChange={(e) => setInfo('countryMotto', e.target.value)}
+                hint="Affiché après le nom du pays sur le bulletin"
+              />
+            </div>
             <div className="settings-row">
               <Input
                 id="instEmail"

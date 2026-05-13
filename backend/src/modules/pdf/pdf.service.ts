@@ -116,8 +116,11 @@ export class PdfService {
         ? Math.round((report.attendancePresent / report.attendanceDays) * 100)
         : null;
 
+    const inst = institution as any;
+    const countryLine = [inst.country, inst.countryMotto].filter(Boolean).join(' — ') || null;
+
     const ctx = {
-      institution: { ...institution, primaryColor, secondaryColor },
+      institution: { ...institution, primaryColor, secondaryColor, countryLine },
       student: {
         name: student.user?.name ?? '—',
         admissionNumber: student.admissionNumber,

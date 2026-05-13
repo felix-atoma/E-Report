@@ -100,7 +100,13 @@ export default function PrintReportCardPage() {
             ? <img src={institution.logo} alt="Logo" className="pr-header__logo" />
             : <div className="pr-header__logo-placeholder" />}
           <div className="pr-header__center">
-            <div className="pr-header__country">République Togolaise — Travail · Liberté · Patrie</div>
+            {(institution?.country || institution?.countryMotto) && (
+              <div className="pr-header__country">
+                {institution.country ?? ''}
+                {institution.country && institution.countryMotto ? ' — ' : ''}
+                {institution.countryMotto ?? ''}
+              </div>
+            )}
             <div className="pr-header__school">{institution?.name ?? 'Établissement scolaire'}</div>
             {institution?.address && <div className="pr-header__sub">{institution.address}</div>}
             {institution?.motto && <div className="pr-header__motto">« {institution.motto} »</div>}
