@@ -61,7 +61,7 @@ export default function PrintReportCardPage() {
     return <div className="print-page__loading">Bulletin introuvable.</div>;
   }
 
-  const grades = report.grades ?? [];
+  const grades = [...(report.grades ?? [])].sort((a, b) => (b.coefficient ?? 0) - (a.coefficient ?? 0));
   const totalCoef   = grades.reduce((s, g) => s + (g.coefficient ?? 0), 0);
   const totalPoints = grades.reduce((s, g) => s + (g.weightedScore ?? 0), 0);
   const absences = report.attendanceDays != null && report.attendancePresent != null

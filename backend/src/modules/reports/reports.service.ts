@@ -91,7 +91,7 @@ export class ReportsService {
         createdBy: { select: { id: true, name: true } },
         grades: {
           include: { subject: { select: { id: true, nameFr: true, nameEn: true, code: true, passMark: true } } },
-          orderBy: { subject: { nameFr: 'asc' } },
+          orderBy: { coefficient: 'desc' },
         },
       },
     });
@@ -266,7 +266,7 @@ export class ReportsService {
       include: {
         grades: {
           include: { subject: { select: { nameFr: true, passMark: true } } },
-          orderBy: { subject: { nameFr: 'asc' } },
+          orderBy: { coefficient: 'desc' },
         },
         student: {
           include: {
@@ -428,7 +428,7 @@ export class ReportsService {
       include: {
         grades: {
           include: { subject: { select: { nameFr: true, passMark: true } } },
-          orderBy: { subject: { nameFr: 'asc' } },
+          orderBy: { coefficient: 'desc' },
         },
         student: {
           include: {
