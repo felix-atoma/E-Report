@@ -1,63 +1,66 @@
 import { NavLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../context/AuthContext';
 import { useInstitution } from '../../../context/InstitutionContext';
 import Avatar from '../../common/Avatar/Avatar';
+import LanguageSwitcher from '../../common/LanguageSwitcher/LanguageSwitcher';
+import logoDark from '../../../assets/images/novaBulletin-logo-dark.svg';
+import logoIcon from '../../../assets/images/novaBulletin-icon.svg';
 import './Sidebar.css';
-
-const ROLE_LABEL = {
-  ADMIN: 'Administrateur', TEACHER: 'Enseignant',
-  BURSAR: 'Économe', PARENT: 'Parent', STUDENT: 'Élève',
-};
 
 const NAV = {
   ADMIN: [
-    { to: '/admin',                icon: 'grid',       label: 'Tableau de bord' },
-    { divider: true, label: 'ÉCOLE' },
-    { to: '/admin/users',          icon: 'users',      label: 'Utilisateurs' },
-    { to: '/admin/classes',        icon: 'school',     label: 'Classes' },
-    { to: '/admin/students',       icon: 'backpack',   label: 'Élèves' },
-    { to: '/admin/subjects',       icon: 'book',       label: 'Matières' },
-    { divider: true, label: 'PÉDAGOGIE' },
-    { to: '/admin/reports',        icon: 'clipboard',  label: 'Bulletins' },
-    { to: '/admin/statistics',     icon: 'stats',      label: 'Statistiques' },
-    { to: '/admin/bulletins',      icon: 'megaphone',  label: 'Annonces' },
-    { divider: true, label: 'FINANCES' },
-    { to: '/admin/fees',           icon: 'coins',      label: 'Frais' },
-    { to: '/admin/payments',       icon: 'card',       label: 'Paiements' },
-    { divider: true, label: 'SYSTÈME' },
-    { to: '/admin/notifications',  icon: 'bell',       label: 'Notifications' },
-    { to: '/admin/analytics',      icon: 'chart',      label: 'Analytiques' },
-    { to: '/admin/branding',       icon: 'palette',    label: 'Apparence' },
-    { to: '/admin/settings',       icon: 'settings',   label: 'Paramètres' },
+    { to: '/admin',               icon: 'grid',      labelKey: 'nav.dashboard' },
+    { divider: true,              sectionKey: 'section.school' },
+    { to: '/admin/users',         icon: 'users',     labelKey: 'nav.users' },
+    { to: '/admin/classes',       icon: 'school',    labelKey: 'nav.classes' },
+    { to: '/admin/students',      icon: 'backpack',  labelKey: 'nav.students' },
+    { to: '/admin/subjects',      icon: 'book',      labelKey: 'nav.subjects' },
+    { divider: true,              sectionKey: 'section.pedagogy' },
+    { to: '/admin/reports',       icon: 'clipboard', labelKey: 'nav.reports' },
+    { to: '/admin/statistics',    icon: 'stats',     labelKey: 'nav.statistics' },
+    { to: '/admin/bulletins',     icon: 'megaphone', labelKey: 'nav.bulletins' },
+    { to: '/teacher/lms',         icon: 'lms',       labelKey: 'nav.lms' },
+    { divider: true,              sectionKey: 'section.finance' },
+    { to: '/admin/fees',          icon: 'coins',     labelKey: 'nav.fees' },
+    { to: '/admin/payments',      icon: 'card',      labelKey: 'nav.payments' },
+    { divider: true,              sectionKey: 'section.system' },
+    { to: '/admin/notifications', icon: 'bell',      labelKey: 'nav.notifications' },
+    { to: '/admin/analytics',     icon: 'chart',     labelKey: 'nav.analytics' },
+    { to: '/admin/branding',      icon: 'palette',   labelKey: 'nav.branding' },
+    { to: '/admin/settings',      icon: 'settings',  labelKey: 'nav.settings' },
   ],
   TEACHER: [
-    { to: '/teacher',              icon: 'grid',       label: 'Tableau de bord' },
-    { divider: true, label: 'CLASSES' },
-    { to: '/teacher/classes',      icon: 'school',     label: 'Mes classes' },
-    { divider: true, label: 'PÉDAGOGIE' },
-    { to: '/teacher/fiches',       icon: 'notes',      label: 'Fiches de notes' },
-    { to: '/teacher/reports',      icon: 'clipboard',  label: 'Bulletins' },
-    { to: '/teacher/statistics',   icon: 'stats',      label: 'Statistiques' },
-    { to: '/teacher/bulletins',    icon: 'megaphone',  label: 'Annonces' },
+    { to: '/teacher',             icon: 'grid',      labelKey: 'nav.dashboard' },
+    { divider: true,              sectionKey: 'section.classes' },
+    { to: '/teacher/classes',     icon: 'school',    labelKey: 'nav.myClasses' },
+    { divider: true,              sectionKey: 'section.pedagogy' },
+    { to: '/teacher/fiches',      icon: 'notes',     labelKey: 'nav.gradeSheets' },
+    { to: '/teacher/reports',     icon: 'clipboard', labelKey: 'nav.reports' },
+    { to: '/teacher/statistics',  icon: 'stats',     labelKey: 'nav.statistics' },
+    { to: '/teacher/bulletins',   icon: 'megaphone', labelKey: 'nav.bulletins' },
+    { to: '/teacher/lms',         icon: 'lms',       labelKey: 'nav.lms' },
   ],
   BURSAR: [
-    { to: '/bursar',               icon: 'grid',       label: 'Tableau de bord' },
-    { to: '/bursar/fees',          icon: 'coins',      label: 'Frais' },
-    { to: '/bursar/payments',      icon: 'card',       label: 'Paiements' },
-    { to: '/bursar/notifications', icon: 'bell',       label: 'Bulletins retenus' },
+    { to: '/bursar',               icon: 'grid',      labelKey: 'nav.dashboard' },
+    { to: '/bursar/fees',          icon: 'coins',     labelKey: 'nav.fees' },
+    { to: '/bursar/payments',      icon: 'card',      labelKey: 'nav.payments' },
+    { to: '/bursar/notifications', icon: 'bell',      labelKey: 'nav.heldBulletins' },
   ],
   PARENT: [
-    { to: '/parent',                  icon: 'grid',       label: 'Tableau de bord' },
-    { to: '/parent/children',         icon: 'backpack',   label: 'Mes enfants' },
-    { to: '/parent/bulletins',        icon: 'megaphone',  label: 'Annonces' },
-    { to: '/parent/payments',         icon: 'card',       label: 'Historique paiements' },
-    { to: '/parent/notifications',    icon: 'bell',       label: 'Notifications' },
+    { to: '/parent',                 icon: 'grid',      labelKey: 'nav.dashboard' },
+    { to: '/parent/children',        icon: 'backpack',  labelKey: 'nav.myChildren' },
+    { to: '/parent/bulletins',       icon: 'megaphone', labelKey: 'nav.bulletins' },
+    { to: '/parent/lms',             icon: 'lms',       labelKey: 'nav.lms' },
+    { to: '/parent/payments',        icon: 'card',      labelKey: 'nav.paymentHistory' },
+    { to: '/parent/notifications',   icon: 'bell',      labelKey: 'nav.notifications' },
   ],
   STUDENT: [
-    { to: '/student',              icon: 'grid',       label: 'Tableau de bord' },
-    { to: '/student/reports',      icon: 'clipboard',  label: 'Mes bulletins' },
-    { to: '/student/progress',     icon: 'chart',      label: 'Ma progression' },
-    { to: '/student/bulletins',    icon: 'megaphone',  label: 'Annonces' },
+    { to: '/student',           icon: 'grid',      labelKey: 'nav.dashboard' },
+    { to: '/student/reports',   icon: 'clipboard', labelKey: 'nav.myReports' },
+    { to: '/student/progress',  icon: 'chart',     labelKey: 'nav.myProgress' },
+    { to: '/student/bulletins', icon: 'megaphone', labelKey: 'nav.bulletins' },
+    { to: '/student/lms',       icon: 'lms',       labelKey: 'nav.lms' },
   ],
 };
 
@@ -128,6 +131,11 @@ const ICONS = {
       <path d="M3 11l19-9-9 19-2-8-8-2z"/>
     </svg>
   ),
+  lms: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+    </svg>
+  ),
   palette: (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/>
@@ -172,11 +180,11 @@ const ICONS = {
 function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
   const { user } = useAuth();
   const { institution } = useInstitution();
+  const { t } = useTranslation();
   const items = NAV[user?.role] ?? [];
 
   return (
     <>
-      {/* Mobile backdrop */}
       {mobileOpen && (
         <div className="sidebar-backdrop" onClick={onMobileClose} aria-hidden="true" />
       )}
@@ -187,45 +195,45 @@ function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
         mobileOpen ? 'sidebar--mobile-open' : '',
       ].join(' ')}>
 
-        {/* Brand / Logo row */}
+        {/* Brand */}
         <div className="sidebar__brand">
           <div className="sidebar__logo-wrap">
             {institution?.logo
               ? <img src={institution.logo} alt={institution.name} className="sidebar__logo" />
-              : <span className="sidebar__logo-mark">NB</span>}
+              : <img src={logoIcon} alt="NovaBulletin" className="sidebar__logo sidebar__logo--icon" />}
           </div>
           {!collapsed && (
-            <span className="sidebar__school-name">{institution?.name ?? 'NovaBulletin'}</span>
+            institution?.name
+              ? <span className="sidebar__school-name">{institution.name}</span>
+              : <img src={logoDark} alt="NovaBulletin" className="sidebar__logo-wordmark" />
           )}
-          {/* Desktop collapse toggle */}
           <button
             className="sidebar__collapse-btn"
             onClick={onToggle}
-            aria-label={collapsed ? 'Développer le menu' : 'Réduire le menu'}
+            aria-label={collapsed ? 'Expand menu' : 'Collapse menu'}
           >
             {collapsed
               ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
               : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
             }
           </button>
-          {/* Mobile close button */}
           <button
             className="sidebar__close-btn"
             onClick={onMobileClose}
-            aria-label="Fermer le menu"
+            aria-label="Close menu"
           >
             {ICONS.close}
           </button>
         </div>
 
-        {/* ZDesk-style user profile section */}
+        {/* User profile */}
         {!collapsed && (
           <div className="sidebar__user">
             <NavLink to="/profile" className="sidebar__user-link" onClick={onMobileClose}>
               <Avatar name={user?.name ?? 'Utilisateur'} src={user?.profileImage} size="sm" />
               <div className="sidebar__user-info">
                 <span className="sidebar__user-name">{user?.name ?? 'Utilisateur'}</span>
-                <span className="sidebar__user-role">{ROLE_LABEL[user?.role] ?? user?.role}</span>
+                <span className="sidebar__user-role">{t(`role.${user?.role}`, user?.role)}</span>
               </div>
             </NavLink>
           </div>
@@ -243,7 +251,7 @@ function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
           {items.map((item, idx) => {
             if (item.divider) {
               return !collapsed ? (
-                <div key={`div-${idx}`} className="sidebar__group-label">{item.label}</div>
+                <div key={`div-${idx}`} className="sidebar__group-label">{t(item.sectionKey)}</div>
               ) : (
                 <div key={`div-${idx}`} className="sidebar__group-divider" />
               );
@@ -259,30 +267,37 @@ function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
                 }
               >
                 <span className="sidebar__link-icon" aria-hidden="true">{ICONS[item.icon]}</span>
-                {!collapsed && <span className="sidebar__link-label">{item.label}</span>}
+                {!collapsed && <span className="sidebar__link-label">{t(item.labelKey)}</span>}
               </NavLink>
             );
           })}
         </nav>
 
-        {/* ZDesk-style help box + logout */}
+        {/* Footer */}
         <div className="sidebar__footer">
           {!collapsed && (
             <div className="sidebar__help-box">
-              <p className="sidebar__help-title">Besoin d'aide ?</p>
-              <p className="sidebar__help-text">Contactez le support NovaBulletin</p>
+              <p className="sidebar__help-title">{t('help.title')}</p>
+              <p className="sidebar__help-text">{t('help.text')}</p>
             </div>
           )}
-          <NavLink
-            to="/profile"
-            onClick={onMobileClose}
-            className={({ isActive }) =>
-              `sidebar__link${isActive ? ' sidebar__link--active' : ''}`
-            }
-          >
-            <span className="sidebar__link-icon" aria-hidden="true">{ICONS.user}</span>
-            {!collapsed && <span className="sidebar__link-label">Mon profil</span>}
-          </NavLink>
+
+          <div className="sidebar__footer-actions">
+            <NavLink
+              to="/profile"
+              onClick={onMobileClose}
+              className={({ isActive }) =>
+                `sidebar__link${isActive ? ' sidebar__link--active' : ''}`
+              }
+            >
+              <span className="sidebar__link-icon" aria-hidden="true">{ICONS.user}</span>
+              {!collapsed && <span className="sidebar__link-label">{t('nav.myProfile')}</span>}
+            </NavLink>
+
+            <div className={`sidebar__lang-wrap${collapsed ? ' sidebar__lang-wrap--collapsed' : ''}`}>
+              <LanguageSwitcher collapsed={collapsed} />
+            </div>
+          </div>
         </div>
       </aside>
     </>

@@ -9,6 +9,13 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import { IsArray, IsString } from 'class-validator';
+
+class BulkDeleteDto {
+  @IsArray()
+  @IsString({ each: true })
+  ids: string[];
+}
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ClassesService } from './classes.service';
 import { CreateClassDto } from './dto/create-class.dto';
@@ -59,6 +66,22 @@ export class ClassesController {
   @ApiOperation({ summary: 'Deactivate a class (Admin only)' })
   deactivate(@Param('id') id: string, @CurrentUser() user: any) {
     return this.service.deactivate(id, user.institutionId);
+  }
+
+  @Delete(':id')
+  @Roles(Role.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Permanently delete a class (Admin only)' })
+  remove(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.service.remove(id, user.institutionId);
+  }
+
+  @Post('bulk-delete')
+  @Roles(Role.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Bulk delete classes (Admin only)' })
+  bulkRemove(@Body() dto: BulkDeleteDto, @CurrentUser() user: any) {
+    return this.service.bulkRemove(dto.ids, user.institutionId);
   }
 
   @Post(':id/enroll')

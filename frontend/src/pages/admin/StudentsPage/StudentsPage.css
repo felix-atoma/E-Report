@@ -16,6 +16,18 @@
   margin-bottom: 0;
 }
 
+.students-table__profile-link {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  text-decoration: none;
+  color: inherit;
+}
+.students-table__profile-link:hover .students-table__name {
+  color: var(--color-primary, #1e40af);
+  text-decoration: underline;
+}
+
 .students-table__student {
   display: flex;
   align-items: center;
@@ -35,6 +47,13 @@
 
 .students-table__empty {
   color: var(--color-text-muted, #6b7280);
+}
+
+.students-table__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.25rem;
 }
 
 .student-form {

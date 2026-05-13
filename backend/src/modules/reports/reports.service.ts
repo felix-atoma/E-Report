@@ -11,6 +11,7 @@ import { PdfService } from '../pdf/pdf.service';
 import { Role } from '../../common/enums/role.enum';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
+import { TitulaireEntryDto } from './dto/titulaire-entry.dto';
 
 function computeMention(avg: number): string {
   if (avg >= 18) return 'Excellent';
@@ -354,6 +355,62 @@ export class ReportsService {
     });
 
     this.logger.log(`PDF generated for report ${published.id}: ${pdfUrl}`);
+  }
+
+  async bulkTitulaireUpsert(dto: TitulaireEntryDto, institutionId: string, userId: string, role: Role) {
+    const cls = await this.prisma.class.findFirst({
+      where: { id: dto.classId, institutionId },
+    });
+    if (!cls) throw new NotFoundException('Class not found');
+
+    if (role !== Role.ADMIN && cls.teacherId !== userId) {
+      throw new ForbiddenException('Only the homeroom teacher or admin can update titulaire fields');
+    }
+
+    const termName =
+      dto.termName ||
+      (dto.termType === 'SEMESTRE'
+        ? `Semestre ${dto.termNumber}`
+        : `Trimestre ${dto.termNumber}`);
+
+    const results = await this.prisma.$transaction(
+      dto.entries.map((entry) => {
+        const {
+          studentId, attendanceDays, attendancePresent, attendanceLate,
+          attendanceAbsent, attendanceExcluded, warnings, commendations,
+          honorCouncil, conductRating, teacherComment,
+        } = entry;
+
+        const fields = {
+          attendanceDays, attendancePresent, attendanceLate,
+          attendanceAbsent, attendanceExcluded, warnings, commendations,
+          honorCouncil, conductRating: conductRating as any, teacherComment,
+        };
+
+        return this.prisma.reportCard.upsert({
+          where: {
+            studentId_academicYear_termNumber: {
+              studentId,
+              academicYear: dto.academicYear,
+              termNumber: dto.termNumber,
+            },
+          },
+          create: {
+            studentId,
+            classId: dto.classId,
+            academicYear: dto.academicYear,
+            termType: dto.termType as any,
+            termNumber: dto.termNumber,
+            termName,
+            createdById: userId,
+            ...fields,
+          },
+          update: fields,
+        });
+      }),
+    );
+
+    return { count: results.length };
   }
 
   private async ensureEditable(id: string, institutionId: string, userId: string, role: Role) {

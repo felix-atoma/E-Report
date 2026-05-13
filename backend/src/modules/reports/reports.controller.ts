@@ -7,12 +7,14 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ReportsService } from './reports.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
+import { TitulaireEntryDto } from './dto/titulaire-entry.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Role } from '../../common/enums/role.enum';
@@ -72,6 +74,13 @@ export class ReportsController {
   @ApiOperation({ summary: 'Submit report for review (DRAFT → REVIEW)' })
   submit(@Param('id') id: string, @CurrentUser() user: any) {
     return this.service.submit(id, user.institutionId, user.id, user.role);
+  }
+
+  @Put('titulaire')
+  @Roles(Role.ADMIN, Role.TEACHER)
+  @ApiOperation({ summary: 'Bulk upsert titulaire fields (attendance, conduct, discipline) for a class term' })
+  bulkTitulaireUpsert(@Body() dto: TitulaireEntryDto, @CurrentUser() user: any) {
+    return this.service.bulkTitulaireUpsert(dto, user.institutionId, user.id, user.role);
   }
 
   @Patch(':id/publish')

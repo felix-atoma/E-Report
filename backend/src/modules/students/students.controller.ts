@@ -1,4 +1,11 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { IsArray, IsString } from 'class-validator';
+
+class BulkDeleteDto {
+  @IsArray()
+  @IsString({ each: true })
+  ids: string[];
+}
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { StudentsService } from './students.service';
 import { CreateStudentDto } from './dto/create-student.dto';
@@ -40,5 +47,21 @@ export class StudentsController {
   @ApiOperation({ summary: 'Update student details (Admin only)' })
   update(@Param('id') id: string, @Body() dto: UpdateStudentDto, @CurrentUser() user: any) {
     return this.service.update(id, dto, user.institutionId);
+  }
+
+  @Delete(':id')
+  @Roles(Role.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Permanently delete a student (Admin only)' })
+  remove(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.service.remove(id, user.institutionId);
+  }
+
+  @Post('bulk-delete')
+  @Roles(Role.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Bulk delete students (Admin only)' })
+  bulkRemove(@Body() dto: BulkDeleteDto, @CurrentUser() user: any) {
+    return this.service.bulkRemove(dto.ids, user.institutionId);
   }
 }

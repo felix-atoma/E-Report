@@ -19,6 +19,22 @@
   color: var(--color-text, #1f2937);
 }
 
+.class-detail__titulaire-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--color-primary, #1e40af);
+  color: #fff;
+  border-radius: 6px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.class-detail__titulaire-btn:hover { background: #1d4ed8; }
+
 .class-detail__student {
   display: flex;
   align-items: center;

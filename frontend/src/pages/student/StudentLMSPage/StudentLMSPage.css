@@ -1,0 +1,52 @@
+.slms { display: flex; flex-direction: column; gap: 1.5rem; }
+.slms__tabs { display: flex; gap: 0; border-bottom: 2px solid #e5e7eb; }
+.slms__tab {
+  padding: 0.6rem 1.25rem; font-size: 0.875rem; font-weight: 600;
+  color: #6b7280; border: none; background: none; cursor: pointer;
+  border-bottom: 2px solid transparent; margin-bottom: -2px;
+}
+.slms__tab--active { color: #2563eb; border-bottom-color: #2563eb; }
+.slms__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+.slms__card {
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 10px;
+  padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+}
+.slms__card-title { font-size: 0.95rem; font-weight: 700; color: #111; }
+.slms__card-meta { font-size: 0.78rem; color: #6b7280; display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.slms__card-body { font-size: 0.85rem; color: #374151; line-height: 1.55; }
+.slms__card-actions { display: flex; gap: 0.5rem; margin-top: 0.25rem; }
+.slms__badge {
+  display: inline-block; padding: 0.15rem 0.6rem; border-radius: 12px;
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.4px;
+}
+.slms__badge--submitted { background: #dbeafe; color: #1d4ed8; }
+.slms__badge--late      { background: #fef9c3; color: #92400e; }
+.slms__badge--graded    { background: #dcfce7; color: #15803d; }
+.slms__badge--open      { background: #dcfce7; color: #15803d; }
+.slms__badge--done      { background: #e0e7ff; color: #3730a3; }
+.slms__empty { text-align: center; color: #9ca3af; font-size: 0.9rem; padding: 2.5rem; }
+
+/* Quiz taking */
+.slms__quiz-wrap { display: flex; flex-direction: column; gap: 1.25rem; max-width: 680px; }
+.slms__question { border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem 1.25rem; background: #fff; }
+.slms__question-text { font-weight: 700; font-size: 0.9rem; margin-bottom: 0.75rem; line-height: 1.4; }
+.slms__options { display: flex; flex-direction: column; gap: 0.5rem; }
+.slms__option {
+  display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.75rem;
+  border: 1.5px solid #e5e7eb; border-radius: 6px; cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.slms__option:hover { border-color: #93c5fd; background: #eff6ff; }
+.slms__option--selected { border-color: #2563eb; background: #eff6ff; }
+.slms__option--correct  { border-color: #16a34a; background: #dcfce7; }
+.slms__option--wrong    { border-color: #dc2626; background: #fee2e2; }
+.slms__option input[type="radio"] { accent-color: #2563eb; }
+.slms__textarea { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.875rem; resize: vertical; min-height: 80px; }
+.slms__result { padding: 1.25rem; background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; text-align: center; }
+.slms__result-score { font-size: 2rem; font-weight: 800; color: #15803d; }
+.slms__result-label { font-size: 0.9rem; color: #374151; margin-top: 0.25rem; }
+
+/* Assignment submit */
+.slms__submit-form { display: flex; flex-direction: column; gap: 1rem; max-width: 640px; }
+.slms__label { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.85rem; font-weight: 600; color: #374151; }

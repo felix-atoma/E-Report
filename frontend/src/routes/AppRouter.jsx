@@ -13,9 +13,11 @@ import ErrorPage              from '../pages/shared/ErrorPage/ErrorPage';
 import AdminDashboardPage     from '../pages/admin/AdminDashboardPage/AdminDashboardPage';
 import UsersPage              from '../pages/admin/UsersPage/UsersPage';
 import ClassesPage            from '../pages/admin/ClassesPage/ClassesPage';
-import AdminClassDetailPage   from '../pages/admin/ClassDetailPage/ClassDetailPage';
+import AdminClassDetailPage      from '../pages/admin/ClassDetailPage/ClassDetailPage';
+import AdminStudentProfilePage  from '../pages/admin/StudentProfilePage/StudentProfilePage';
 import StudentsPage           from '../pages/admin/StudentsPage/StudentsPage';
 import SubjectsPage           from '../pages/admin/SubjectsPage/SubjectsPage';
+import AdminSubjectProfilePage from '../pages/admin/SubjectProfilePage/SubjectProfilePage';
 import FeesPage               from '../pages/admin/FeesPage/FeesPage';
 import PaymentsPage           from '../pages/admin/PaymentsPage/PaymentsPage';
 import AnalyticsPage          from '../pages/admin/AnalyticsPage/AnalyticsPage';
@@ -25,6 +27,7 @@ import SettingsPage           from '../pages/admin/SettingsPage/SettingsPage';
 import InstitutionsPage       from '../pages/admin/InstitutionsPage/InstitutionsPage';
 
 import TeacherDashboardPage   from '../pages/teacher/TeacherDashboardPage/TeacherDashboardPage';
+import LMSPage                from '../pages/teacher/LMSPage/LMSPage';
 import MyClassesPage          from '../pages/teacher/MyClassesPage/MyClassesPage';
 import ClassDetailPage        from '../pages/teacher/ClassDetailPage/ClassDetailPage';
 import FichesPage             from '../pages/teacher/FichesPage/FichesPage';
@@ -36,6 +39,7 @@ import TeacherBulletinsPage   from '../pages/teacher/BulletinsPage/BulletinsPage
 import StudentProfilePage     from '../pages/teacher/StudentProfilePage/StudentProfilePage';
 import ProgramPage            from '../pages/teacher/ProgramPage/ProgramPage';
 import ClassStatsPage         from '../pages/teacher/ClassStatsPage/ClassStatsPage';
+import TitulaireEntryPage     from '../pages/teacher/TitulaireEntryPage/TitulaireEntryPage';
 
 import ParentDashboardPage    from '../pages/parent/ParentDashboardPage/ParentDashboardPage';
 import ChildrenPage           from '../pages/parent/ChildrenPage/ChildrenPage';
@@ -43,6 +47,7 @@ import ChildReportCardsPage   from '../pages/parent/ChildReportCardsPage/ChildRe
 import ParentBulletinsPage    from '../pages/parent/ChildBulletinsPage/ChildBulletinsPage';
 import PaymentHistoryPage     from '../pages/parent/PaymentHistoryPage/PaymentHistoryPage';
 import NotificationPreferencesPage from '../pages/parent/NotificationPreferencesPage/NotificationPreferencesPage';
+import ParentLMSPage          from '../pages/parent/ParentLMSPage/ParentLMSPage';
 
 import BursarDashboardPage    from '../pages/bursar/BursarDashboardPage/BursarDashboardPage';
 
@@ -50,6 +55,7 @@ import StudentDashboardPage   from '../pages/student/StudentDashboardPage/Studen
 import MyReportCardsPage      from '../pages/student/MyReportCardsPage/MyReportCardsPage';
 import ProgressPage           from '../pages/student/ProgressPage/ProgressPage';
 import StudentBulletinsPage   from '../pages/student/BulletinsPage/BulletinsPage';
+import StudentLMSPage         from '../pages/student/StudentLMSPage/StudentLMSPage';
 
 import ProfilePage            from '../pages/shared/ProfilePage/ProfilePage';
 import PrintReportCardPage   from '../pages/shared/PrintReportCardPage/PrintReportCardPage';
@@ -72,7 +78,9 @@ function AppRouter() {
       <Route path="/admin/classes"       element={<ProtectedRoute roles={['ADMIN']}><ClassesPage /></ProtectedRoute>} />
       <Route path="/admin/classes/:id"  element={<ProtectedRoute roles={['ADMIN']}><AdminClassDetailPage /></ProtectedRoute>} />
       <Route path="/admin/students"      element={<ProtectedRoute roles={['ADMIN']}><StudentsPage /></ProtectedRoute>} />
+      <Route path="/admin/students/:id"  element={<ProtectedRoute roles={['ADMIN']}><AdminStudentProfilePage /></ProtectedRoute>} />
       <Route path="/admin/subjects"      element={<ProtectedRoute roles={['ADMIN']}><SubjectsPage /></ProtectedRoute>} />
+      <Route path="/admin/subjects/:id"  element={<ProtectedRoute roles={['ADMIN']}><AdminSubjectProfilePage /></ProtectedRoute>} />
       <Route path="/admin/fees"          element={<ProtectedRoute roles={['ADMIN']}><FeesPage /></ProtectedRoute>} />
       <Route path="/admin/payments"      element={<ProtectedRoute roles={['ADMIN', 'BURSAR']}><PaymentsPage /></ProtectedRoute>} />
       <Route path="/admin/notifications" element={<ProtectedRoute roles={['ADMIN', 'BURSAR']}><NotificationLogsPage /></ProtectedRoute>} />
@@ -95,6 +103,7 @@ function AppRouter() {
       <Route path="/teacher/classes"                              element={<ProtectedRoute roles={['TEACHER']}><MyClassesPage /></ProtectedRoute>} />
       <Route path="/teacher/classes/:id"                         element={<ProtectedRoute roles={['TEACHER']}><ClassDetailPage /></ProtectedRoute>} />
       <Route path="/teacher/classes/:classId/grades/:subjectId"  element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><GradeEntryPage /></ProtectedRoute>} />
+      <Route path="/teacher/classes/:classId/titulaire"          element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><TitulaireEntryPage /></ProtectedRoute>} />
       <Route path="/teacher/classes/:classId/subjects/:subjectId/program" element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><ProgramPage /></ProtectedRoute>} />
       <Route path="/teacher/students/:id"       element={<ProtectedRoute roles={['TEACHER']}><StudentProfilePage /></ProtectedRoute>} />
       <Route path="/teacher/reports"            element={<ProtectedRoute roles={['TEACHER']}><ReportCardsPage /></ProtectedRoute>} />
@@ -102,6 +111,7 @@ function AppRouter() {
       <Route path="/teacher/reports/:id"        element={<ProtectedRoute roles={['TEACHER']}><EditReportCardPage /></ProtectedRoute>} />
       <Route path="/teacher/bulletins"          element={<ProtectedRoute roles={['TEACHER']}><TeacherBulletinsPage /></ProtectedRoute>} />
       <Route path="/teacher/statistics"         element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><ClassStatsPage /></ProtectedRoute>} />
+      <Route path="/teacher/lms"                element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><LMSPage /></ProtectedRoute>} />
 
       {/* Parent */}
       <Route path="/parent"                     element={<ProtectedRoute roles={['PARENT']}><ParentDashboardPage /></ProtectedRoute>} />
@@ -110,12 +120,14 @@ function AppRouter() {
       <Route path="/parent/bulletins"           element={<ProtectedRoute roles={['PARENT']}><ParentBulletinsPage /></ProtectedRoute>} />
       <Route path="/parent/payments"            element={<ProtectedRoute roles={['PARENT']}><PaymentHistoryPage /></ProtectedRoute>} />
       <Route path="/parent/notifications"       element={<ProtectedRoute roles={['PARENT']}><NotificationPreferencesPage /></ProtectedRoute>} />
+      <Route path="/parent/lms"                 element={<ProtectedRoute roles={['PARENT']}><ParentLMSPage /></ProtectedRoute>} />
 
       {/* Student */}
       <Route path="/student"             element={<ProtectedRoute roles={['STUDENT']}><StudentDashboardPage /></ProtectedRoute>} />
       <Route path="/student/reports"     element={<ProtectedRoute roles={['STUDENT']}><MyReportCardsPage /></ProtectedRoute>} />
       <Route path="/student/progress"    element={<ProtectedRoute roles={['STUDENT']}><ProgressPage /></ProtectedRoute>} />
       <Route path="/student/bulletins"   element={<ProtectedRoute roles={['STUDENT']}><StudentBulletinsPage /></ProtectedRoute>} />
+      <Route path="/student/lms"         element={<ProtectedRoute roles={['STUDENT']}><StudentLMSPage /></ProtectedRoute>} />
 
       {/* Shared */}
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />

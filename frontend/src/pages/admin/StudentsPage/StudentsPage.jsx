@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { studentsService } from '../../../services/studentsService';
@@ -7,7 +8,9 @@ import { usersService } from '../../../services/usersService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Table from '../../../components/common/Table/Table';
-import Modal from '../../../components/common/Modal/Modal';
+import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
+import ConfirmDialog from '../../../components/common/ConfirmDialog/ConfirmDialog';
+import BulkBar from '../../../components/common/BulkBar/BulkBar';
 import Input from '../../../components/common/Input/Input';
 import Select from '../../../components/common/Select/Select';
 import Button from '../../../components/common/Button/Button';
@@ -140,6 +143,9 @@ function StudentsPage() {
   const [classFilter, setClass]   = useState('');
   const [modal, setModal]         = useState(null);
   const [selected, setSelected]   = useState(null);
+  const [confirm, setConfirm]     = useState(null);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [bulkConfirm, setBulkConfirm] = useState(false);
   const [form, setForm]           = useState(EMPTY_FORM);
   const [errors, setErrors]       = useState({});
   const [photoFile, setPhotoFile] = useState(null);
@@ -183,6 +189,23 @@ function StudentsPage() {
       closeModal();
     },
     onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur de création'),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => studentsService.delete(id),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['students'] }); toast.success('Élève supprimé'); setConfirm(null); },
+    onError:   (err) => toast.error(err?.response?.data?.message ?? 'Erreur de suppression'),
+  });
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: (ids) => studentsService.bulkDelete(ids),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['students'] });
+      toast.success(`${selectedIds.size} élève${selectedIds.size > 1 ? 's' : ''} supprimé${selectedIds.size > 1 ? 's' : ''}`);
+      setSelectedIds(new Set());
+      setBulkConfirm(false);
+    },
+    onError: () => { qc.invalidateQueries({ queryKey: ['students'] }); toast.error('Certaines suppressions ont échoué'); setBulkConfirm(false); setSelectedIds(new Set()); },
   });
 
   const updateMutation = useMutation({
@@ -284,13 +307,13 @@ function StudentsPage() {
       render: (s) => {
         const displayName = s.user?.name ?? s.admissionNumber ?? '—';
         return (
-          <div className="students-table__student">
+          <Link to={`/admin/students/${s.id}`} className="students-table__profile-link">
             <Avatar name={displayName} src={s.user?.profileImage} size="sm" />
             <div>
               <div className="students-table__name">{displayName}</div>
               <div className="students-table__sub">{s.admissionNumber}</div>
             </div>
-          </div>
+          </Link>
         );
       },
     },
@@ -316,9 +339,12 @@ function StudentsPage() {
     {
       key: 'actions',
       label: '',
-      style: { width: '80px', textAlign: 'right' },
+      style: { width: '160px', textAlign: 'right' },
       render: (s) => (
-        <Button size="sm" variant="ghost" onClick={() => openEdit(s)}>Modifier</Button>
+        <div className="students-table__actions">
+          <Button size="sm" variant="ghost" onClick={() => openEdit(s)}>Modifier</Button>
+          <Button size="sm" variant="ghost" onClick={() => setConfirm(s)}>Supprimer</Button>
+        </div>
       ),
     },
   ];
@@ -348,11 +374,21 @@ function StudentsPage() {
         />
       </div>
 
+      <BulkBar
+        count={selectedIds.size}
+        onClear={() => setSelectedIds(new Set())}
+        onDelete={() => setBulkConfirm(true)}
+        loading={bulkDeleteMutation.isPending}
+      />
+
       <Table
         columns={columns}
         rows={filtered}
         loading={isLoading}
         emptyMessage="Aucun élève trouvé"
+        selectable
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
       />
 
       {/* Hidden file input — lives outside the modal so ref is always mounted */}
@@ -364,7 +400,7 @@ function StudentsPage() {
         onChange={handleFileChange}
       />
 
-      <Modal
+      <OffCanvas
         open={!!modal}
         onClose={closeModal}
         title={modal === 'create' ? 'Nouvel élève' : "Modifier l'élève"}
@@ -390,7 +426,29 @@ function StudentsPage() {
           fileInputRef={fileInputRef}
           onPhotoClick={handlePhotoClick}
         />
-      </Modal>
+      </OffCanvas>
+
+      <ConfirmDialog
+        open={!!confirm}
+        onClose={() => setConfirm(null)}
+        onConfirm={() => deleteMutation.mutate(confirm.id)}
+        loading={deleteMutation.isPending}
+        title="Supprimer définitivement"
+        message={`Supprimer l'élève "${confirm?.user?.name ?? confirm?.admissionNumber}" ? Toutes ses notes, bulletins et données seront définitivement effacés.`}
+        confirmLabel="Supprimer définitivement"
+        variant="danger"
+      />
+
+      <ConfirmDialog
+        open={bulkConfirm}
+        onClose={() => setBulkConfirm(false)}
+        onConfirm={() => bulkDeleteMutation.mutate([...selectedIds])}
+        loading={bulkDeleteMutation.isPending}
+        title={`Supprimer ${selectedIds.size} élève${selectedIds.size > 1 ? 's' : ''}`}
+        message={`Supprimer définitivement ${selectedIds.size} élève${selectedIds.size > 1 ? 's' : ''} ? Toutes leurs notes, bulletins et données seront effacés. Cette action est irréversible.`}
+        confirmLabel={`Supprimer ${selectedIds.size} élève${selectedIds.size > 1 ? 's' : ''}`}
+        variant="danger"
+      />
     </AppShell>
   );
 }

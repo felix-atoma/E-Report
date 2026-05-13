@@ -16,6 +16,15 @@
   margin-bottom: 0;
 }
 
+.subjects-table__profile-link {
+  text-decoration: none;
+  display: block;
+}
+.subjects-table__profile-link:hover .subjects-table__name {
+  color: var(--color-primary, #1e40af);
+  text-decoration: underline;
+}
+
 .subjects-table__name {
   font-weight: 600;
   font-size: 0.875rem;

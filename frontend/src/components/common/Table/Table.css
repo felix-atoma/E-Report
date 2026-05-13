@@ -23,7 +23,23 @@
   vertical-align: middle;
 }
 .table__row:hover { background: var(--color-bg-subtle, #f9fafb); }
+.table__row--selected { background: rgba(249, 115, 22, 0.05); }
+.table__row--selected:hover { background: rgba(249, 115, 22, 0.09); }
 .table__empty-cell { padding: 0; border: none; }
+
+.table__th--check,
+.table__td--check {
+  width: 40px;
+  padding: 0.65rem 0.5rem 0.65rem 1rem;
+}
+.table__td--check { padding: 0.75rem 0.5rem 0.75rem 1rem; }
+
+.table__checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--color-primary, #f97316);
+}
 .table-skeleton {
   height: 12rem;
   background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);

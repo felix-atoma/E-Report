@@ -15,4 +15,5 @@ export const usersService = {
   },
   deactivate: (id) => api.patch(`/users/${id}/deactivate`),
   activate: (id) => api.patch(`/users/${id}/activate`),
+  delete: (id) => api.delete(`/users/${id}`),
 };

@@ -29,7 +29,12 @@ import { WhatsAppModule } from './modules/whatsapp/whatsapp.module';
 import { PdfModule } from './modules/pdf/pdf.module';
 import { ProgramsModule } from './modules/programs/programs.module';
 import { TimetablesModule } from './modules/timetables/timetables.module';
+import { SubjectHoursModule } from './modules/subject-hours/subject-hours.module';
 import { HealthModule } from './health/health.module';
+import { AnnouncementsModule } from './modules/announcements/announcements.module';
+import { MaterialsModule } from './modules/materials/materials.module';
+import { AssignmentsModule } from './modules/assignments/assignments.module';
+import { QuizzesModule } from './modules/quizzes/quizzes.module';
 
 @Module({
   imports: [
@@ -67,7 +72,12 @@ import { HealthModule } from './health/health.module';
     PdfModule,
     ProgramsModule,
     TimetablesModule,
+    SubjectHoursModule,
     HealthModule,
+    AnnouncementsModule,
+    MaterialsModule,
+    AssignmentsModule,
+    QuizzesModule,
   ],
   providers: [
     // JWT guard applied globally — use @Public() to opt out

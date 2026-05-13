@@ -278,6 +278,14 @@ function ClassDetailPage() {
             👩‍🏫 Prof titulaire : <strong>{cls.teacher.name}</strong>
           </span>
         )}
+        {isHomeroomTeacher && (
+          <Link
+            to={`/teacher/classes/${cls.id}/titulaire`}
+            className="class-detail__titulaire-btn"
+          >
+            📋 Saisie titulaire
+          </Link>
+        )}
         {cls.room && (
           <span className="class-detail__meta-item">🏫 Salle : <strong>{cls.room}</strong></span>
         )}

@@ -8,6 +8,7 @@ import Loading from '../../../components/common/Loading/Loading';
 import Modal from '../../../components/common/Modal/Modal';
 import SignaturePad from '../../../components/common/SignaturePad/SignaturePad';
 import { gradesService } from '../../../services/gradesService';
+import { subjectHoursService } from '../../../services/subjectHoursService';
 import './GradeEntryPage.css';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -48,13 +49,32 @@ function computeRanks(rows) {
   return out;
 }
 
-function appreciation(moy) {
+const APPRECIATION_LABELS = {
+  fr: ['Très Bien',  'Bien',  'Assez Bien',   'Passable',    'Insuffisant'],
+  en: ['Very Good',  'Good',  'Fairly Good',  'Satisfactory','Insufficient'],
+  de: ['Sehr gut',   'Gut',   'Befriedigend', 'Ausreichend', 'Ungenügend'],
+  es: ['Muy bien',   'Bien',  'Bastante bien','Suficiente',  'Insuficiente'],
+  ar: ['ممتاز',      'جيد جداً', 'جيد',       'مقبول',       'ضعيف'],
+};
+
+function detectAppreciationLang(subjectName) {
+  if (!subjectName) return 'fr';
+  const n = subjectName.toLowerCase();
+  if (n.includes('anglais')  || n.includes('english')) return 'en';
+  if (n.includes('allemand') || n.includes('deutsch'))  return 'de';
+  if (n.includes('espagnol') || n.includes('español'))  return 'es';
+  if (n.includes('arabe')    || n.includes('arabic'))   return 'ar';
+  return 'fr';
+}
+
+function appreciation(moy, subjectName) {
   if (moy === null) return '';
-  if (moy >= 16) return 'Très Bien';
-  if (moy >= 14) return 'Bien';
-  if (moy >= 12) return 'Assez Bien';
-  if (moy >= 10) return 'Passable';
-  return 'Insuffisant';
+  const [vg, g, fg, p, f] = APPRECIATION_LABELS[detectAppreciationLang(subjectName)];
+  if (moy >= 16) return vg;
+  if (moy >= 14) return g;
+  if (moy >= 12) return fg;
+  if (moy >= 10) return p;
+  return f;
 }
 
 function apprCls(moy) {
@@ -101,6 +121,10 @@ export default function GradeEntryPage() {
   const [signModal, setSignModal] = useState(false);
   const [sigData, setSigData] = useState(null);
 
+  // Hours panel state
+  const [hoursForm, setHoursForm] = useState({ heuresPrevues: '', heuresEffectuees: '', absences: '', retards: '', notes: '' });
+  const [hoursInitialized, setHoursInitialized] = useState(false);
+
   const ficheKey = ['fiche', classId, subjectId, academicYear, termNumber];
 
   const { data, isLoading, error } = useQuery({
@@ -117,6 +141,47 @@ export default function GradeEntryPage() {
     queryFn: () =>
       gradesService.getForClassSubject(classId, subjectId, academicYear, prevTerm).then((r) => r.data),
     enabled: !!classId && !!subjectId && !!academicYear && prevTerm !== null,
+  });
+
+  // Hours log for this subject+class+term
+  const { data: hoursLogs = [] } = useQuery({
+    queryKey: ['subject-hours', subjectId],
+    queryFn: () => subjectHoursService.list(subjectId).then((r) => r.data),
+    enabled: !!subjectId,
+  });
+
+  const existingHoursLog = hoursLogs.find(
+    (h) => h.classId === classId && h.academicYear === academicYear && h.termNumber === termNumber,
+  );
+
+  if (existingHoursLog && !hoursInitialized) {
+    setHoursInitialized(true);
+    setHoursForm({
+      heuresPrevues:    existingHoursLog.heuresPrevues    != null ? String(existingHoursLog.heuresPrevues)    : '',
+      heuresEffectuees: existingHoursLog.heuresEffectuees != null ? String(existingHoursLog.heuresEffectuees) : '',
+      absences:         existingHoursLog.absences         != null ? String(existingHoursLog.absences)         : '',
+      retards:          existingHoursLog.retards          != null ? String(existingHoursLog.retards)          : '',
+      notes:            existingHoursLog.notes ?? '',
+    });
+  }
+
+  const hoursMutation = useMutation({
+    mutationFn: () => subjectHoursService.upsert(subjectId, {
+      classId,
+      academicYear,
+      termNumber,
+      termName,
+      heuresPrevues:    hoursForm.heuresPrevues    !== '' ? Number(hoursForm.heuresPrevues)    : undefined,
+      heuresEffectuees: hoursForm.heuresEffectuees !== '' ? Number(hoursForm.heuresEffectuees) : undefined,
+      absences:         hoursForm.absences         !== '' ? Number(hoursForm.absences)         : undefined,
+      retards:          hoursForm.retards          !== '' ? Number(hoursForm.retards)          : undefined,
+      notes:            hoursForm.notes || undefined,
+    }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['subject-hours', subjectId] });
+      toast.success('Suivi des heures enregistré.');
+    },
+    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur'),
   });
 
   // Initialise rows from server data (only once)
@@ -232,11 +297,15 @@ export default function GradeEntryPage() {
     if (declined.length > 0) mostDeclined = declined.reduce((a, b) => b.delta < a.delta ? b : a);
   }
 
+  const teacherLabel = data?.teacher?.name
+    ? `Prof : ${data.teacher.name}`
+    : null;
+
   return (
     <AppShell title={`Fiche de notes — ${data?.subject?.nameFr ?? ''}`}>
       <PageHeader
         title={`Fiche de notes — ${data?.subject?.nameFr ?? ''}`}
-        subtitle={`${termName} · ${academicYear}`}
+        subtitle={[termName, academicYear, teacherLabel].filter(Boolean).join(' · ')}
         actions={
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
             <label className="fdn__coef-label">
@@ -299,6 +368,48 @@ export default function GradeEntryPage() {
         </div>
       )}
 
+      {/* ── Hours panel ── */}
+      <div className="fdn__hours-panel">
+        <div className="fdn__hours-title">Suivi des heures &amp; absences</div>
+        <div className="fdn__hours-fields">
+          {[
+            { key: 'heuresPrevues',    label: 'H. prévues' },
+            { key: 'heuresEffectuees', label: 'H. effectuées' },
+            { key: 'absences',         label: 'Absences' },
+            { key: 'retards',          label: 'Retards' },
+          ].map(({ key, label }) => (
+            <label key={key} className="fdn__hours-field">
+              <span className="fdn__hours-field-label">{label}</span>
+              <input
+                type="number"
+                min="0"
+                className="fdn__hours-input"
+                placeholder="—"
+                value={hoursForm[key]}
+                onChange={(e) => setHoursForm((f) => ({ ...f, [key]: e.target.value }))}
+              />
+            </label>
+          ))}
+          <label className="fdn__hours-field fdn__hours-field--notes">
+            <span className="fdn__hours-field-label">Observations</span>
+            <input
+              type="text"
+              className="fdn__hours-input"
+              placeholder="Optionnel…"
+              value={hoursForm.notes}
+              onChange={(e) => setHoursForm((f) => ({ ...f, notes: e.target.value }))}
+            />
+          </label>
+          <button
+            className="fdn__hours-save-btn"
+            onClick={() => hoursMutation.mutate()}
+            disabled={hoursMutation.isPending}
+          >
+            {hoursMutation.isPending ? '…' : '💾 Enregistrer'}
+          </button>
+        </div>
+      </div>
+
       <div className="fdn__table-wrap">
         <table className="fdn__table">
           <thead>
@@ -355,7 +466,7 @@ export default function GradeEntryPage() {
                     {ranks[idx] !== null ? `${ranks[idx]}e` : '—'}
                   </td>
                   <td className={`fdn__td fdn__td--appr ${apprCls(moy)}`}>
-                    {appreciation(moy) || '—'}
+                    {appreciation(moy, data?.subject?.nameFr) || '—'}
                   </td>
                   <td className="fdn__td fdn__td--teacher">
                     <input

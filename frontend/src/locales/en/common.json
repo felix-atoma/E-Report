@@ -1,0 +1,80 @@
+{
+  "appName": "NovaBulletin",
+
+  "nav": {
+    "dashboard":      "Dashboard",
+    "users":          "Users",
+    "classes":        "Classes",
+    "students":       "Students",
+    "subjects":       "Subjects",
+    "reports":        "Report Cards",
+    "statistics":     "Statistics",
+    "bulletins":      "Announcements",
+    "fees":           "Fees",
+    "payments":       "Payments",
+    "notifications":  "Notifications",
+    "analytics":      "Analytics",
+    "branding":       "Branding",
+    "settings":       "Settings",
+    "myProfile":      "My Profile",
+    "myClasses":      "My Classes",
+    "gradeSheets":    "Grade Sheets",
+    "myChildren":     "My Children",
+    "paymentHistory": "Payment History",
+    "heldBulletins":  "Held Reports",
+    "myReports":      "My Reports",
+    "myProgress":     "My Progress",
+    "lms":            "Learning"
+  },
+
+  "section": {
+    "school":    "SCHOOL",
+    "pedagogy":  "PEDAGOGY",
+    "finance":   "FINANCE",
+    "system":    "SYSTEM",
+    "classes":   "CLASSES"
+  },
+
+  "role": {
+    "ADMIN":   "Administrator",
+    "TEACHER": "Teacher",
+    "BURSAR":  "Bursar",
+    "PARENT":  "Parent",
+    "STUDENT": "Student"
+  },
+
+  "action": {
+    "save":       "Save",
+    "saving":     "Saving…",
+    "cancel":     "Cancel",
+    "edit":       "Edit",
+    "delete":     "Delete",
+    "add":        "Add",
+    "close":      "Close",
+    "back":       "Back",
+    "confirm":    "Confirm",
+    "search":     "Search",
+    "create":     "Create",
+    "update":     "Update",
+    "deactivate": "Deactivate",
+    "activate":   "Activate",
+    "publish":    "Publish",
+    "download":   "Download",
+    "logout":     "Log out"
+  },
+
+  "help": {
+    "title": "Need help?",
+    "text":  "Contact NovaBulletin support"
+  },
+
+  "lang": {
+    "fr": "Français",
+    "en": "English",
+    "switch": "Switch language"
+  },
+
+  "welcome": "Welcome",
+  "login":   "Log in",
+  "logout":  "Log out"
+}

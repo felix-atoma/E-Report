@@ -102,6 +102,27 @@ export class SubjectsService {
     return this.prisma.subject.update({ where: { id }, data: { isActive: false } });
   }
 
+  async bulkRemove(ids: string[], institutionId: string) {
+    for (const id of ids) {
+      try { await this.remove(id, institutionId); } catch { /* skip already-deleted or not-found */ }
+    }
+    return { deleted: ids.length };
+  }
+
+  async remove(id: string, institutionId: string) {
+    await this.ensureExists(id, institutionId);
+    await this.prisma.$transaction([
+      this.prisma.timetableSlot.deleteMany({ where: { subjectId: id } }),
+      this.prisma.subjectHoursLog.deleteMany({ where: { subjectId: id } }),
+      this.prisma.subjectProgram.deleteMany({ where: { subjectId: id } }),
+      this.prisma.gradeFiche.deleteMany({ where: { subjectId: id } }),
+      this.prisma.grade.deleteMany({ where: { subjectId: id } }),
+      this.prisma.classSubject.deleteMany({ where: { subjectId: id } }),
+      this.prisma.subject.delete({ where: { id } }),
+    ]);
+    return { message: 'Subject deleted' };
+  }
+
   private async ensureExists(id: string, institutionId: string) {
     const s = await this.prisma.subject.findFirst({ where: { id, institutionId } });
     if (!s) throw new NotFoundException('Subject not found');

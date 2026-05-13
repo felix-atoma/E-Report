@@ -4,13 +4,34 @@ import { Role } from '../../common/enums/role.enum';
 import { BulkGradesDto } from './dto/bulk-grades.dto';
 import { SaveClassGradesDto } from './dto/save-class-grades.dto';
 
-function computeAppreciation(moy: number | null): string | null {
+type AppreciationLang = 'fr' | 'en' | 'de' | 'es' | 'ar';
+
+const APPRECIATION_LABELS: Record<AppreciationLang, [string, string, string, string, string]> = {
+  fr: ['Très Bien',  'Bien',  'Assez Bien',   'Passable',    'Insuffisant'],
+  en: ['Very Good',  'Good',  'Fairly Good',  'Satisfactory','Insufficient'],
+  de: ['Sehr gut',   'Gut',   'Befriedigend', 'Ausreichend', 'Ungenügend'],
+  es: ['Muy bien',   'Bien',  'Bastante bien','Suficiente',  'Insuficiente'],
+  ar: ['ممتاز',      'جيد جداً', 'جيد',       'مقبول',       'ضعيف'],
+};
+
+function detectAppreciationLang(subjectName: string): AppreciationLang {
+  const n = subjectName.toLowerCase();
+  if (n.includes('anglais')  || n.includes('english')) return 'en';
+  if (n.includes('allemand') || n.includes('deutsch'))  return 'de';
+  if (n.includes('espagnol') || n.includes('español'))  return 'es';
+  if (n.includes('arabe')    || n.includes('arabic'))   return 'ar';
+  return 'fr';
+}
+
+function computeAppreciation(moy: number | null, subjectName?: string): string | null {
   if (moy === null) return null;
-  if (moy >= 16) return 'Très Bien';
-  if (moy >= 14) return 'Bien';
-  if (moy >= 12) return 'Assez Bien';
-  if (moy >= 10) return 'Passable';
-  return 'Insuffisant';
+  const lang = subjectName ? detectAppreciationLang(subjectName) : 'fr';
+  const [vg, g, fg, p, f] = APPRECIATION_LABELS[lang];
+  if (moy >= 16) return vg;
+  if (moy >= 14) return g;
+  if (moy >= 12) return fg;
+  if (moy >= 10) return p;
+  return f;
 }
 
 function computeMoyenneMatiere(
@@ -127,6 +148,13 @@ export class GradesService {
     });
     if (!subject) throw new NotFoundException('Subject not found');
 
+    // Get the teacher assigned to this class/subject for name pre-fill
+    const classSubject = await this.prisma.classSubject.findUnique({
+      where: { classId_subjectId: { classId, subjectId } },
+      include: { teacher: { select: { id: true, name: true } } },
+    });
+    const defaultTeacherName = classSubject?.teacher?.name ?? null;
+
     // Get fiche signature status
     const fiche = await this.prisma.gradeFiche.findUnique({
       where: { classId_subjectId_academicYear_termNumber: { classId, subjectId, academicYear, termNumber } },
@@ -169,7 +197,7 @@ export class GradesService {
           rangMatiere: grade?.rangMatiere ?? null,
           appreciation: grade?.appreciation ?? null,
           teacherComment: grade?.teacherComment ?? null,
-          teacherName: grade?.teacherName ?? null,
+          teacherName: grade?.teacherName ?? defaultTeacherName,
         };
       }),
     );
@@ -178,6 +206,7 @@ export class GradesService {
       classId,
       subjectId,
       subject,
+      teacher: classSubject?.teacher ?? null,
       academicYear,
       termNumber,
       students: results,
@@ -267,7 +296,7 @@ export class GradesService {
           coefficient: coef,
           weightedScore: moy !== null ? moy * coef : 0,
           score: moy ?? 0,
-          appreciation: computeAppreciation(moy),
+          appreciation: computeAppreciation(moy, subject.nameFr),
           teacherComment: row.teacherComment,
           teacherName: row.teacherName,
         };

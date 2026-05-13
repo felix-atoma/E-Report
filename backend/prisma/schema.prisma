@@ -95,6 +95,45 @@ enum ConductRating {
   MEDIOCRE
 }
 
+enum AnnouncementAudience {
+  ALL
+  CLASS
+  TEACHERS
+  STUDENTS
+  PARENTS
+}
+
+enum MaterialType {
+  DOCUMENT
+  VIDEO
+  LINK
+  IMAGE
+}
+
+enum AssignmentStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}
+
+enum SubmissionStatus {
+  SUBMITTED
+  LATE
+  GRADED
+}
+
+enum QuizStatus {
+  DRAFT
+  OPEN
+  CLOSED
+}
+
+enum QuestionType {
+  MCQ
+  TRUE_FALSE
+  SHORT_ANSWER
+}
+
 model Institution {
   id                String   @id @default(uuid())
   name              String
@@ -123,6 +162,10 @@ model Institution {
   brandingAssets    BrandingAsset[]
   reportCardTemplates ReportCardTemplate[]
   timetableSlots    TimetableSlot[]
+  announcements     Announcement[]
+  materials         CourseMaterial[]
+  assignments       Assignment[]
+  quizzes           Quiz[]
 }
 
 model User {
@@ -155,6 +198,11 @@ model User {
   passwordResetTokens PasswordResetToken[]
   whatsappVerifications WhatsappVerification[]
   auditLogs       AuditLog[]
+  announcementsAuthored Announcement[] @relation("AnnouncementAuthor")
+  materialsUploaded     CourseMaterial[] @relation("MaterialUploader")
+  assignmentsCreated    Assignment[]     @relation("AssignmentCreator")
+  submissionsGraded     AssignmentSubmission[] @relation("SubmissionGrader")
+  quizzesCreated        Quiz[]           @relation("QuizCreator")
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -183,6 +231,10 @@ model Class {
   gradeFiches     GradeFiche[]
   programs        SubjectProgram[]
   timetableSlots  TimetableSlot[]
+  hoursLogs       SubjectHoursLog[]
+  materials       CourseMaterial[]
+  assignments     Assignment[]
+  quizzes         Quiz[]
 
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
@@ -207,6 +259,10 @@ model Subject {
   gradeFiches     GradeFiche[]
   programs        SubjectProgram[]
   timetableSlots  TimetableSlot[]
+  hoursLogs       SubjectHoursLog[]
+  materials       CourseMaterial[]
+  assignments     Assignment[]
+  quizzes         Quiz[]
 
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
@@ -262,6 +318,8 @@ model Student {
   studentFees     StudentFee[]
   payments        Payment[]
   notificationLogs NotificationLog[]
+  assignmentSubmissions AssignmentSubmission[]
+  quizAttempts    QuizAttempt[]
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -592,6 +650,29 @@ model AuditLog {
   createdAt       DateTime @default(now())
 }
 
+model SubjectHoursLog {
+  id           String  @id @default(uuid())
+  subjectId    String
+  classId      String
+  academicYear String
+  termNumber   Int
+  termName     String?
+
+  heuresPrevues    Int?    // Heures de cours prévues
+  heuresEffectuees Int?    // Heures effectivement dispensées
+  absences         Int?    // Total absences élèves (demi-journées)
+  retards          Int?    // Total retards élèves
+  notes            String? // Observations libres du professeur
+
+  subject  Subject @relation(fields: [subjectId], references: [id])
+  class    Class   @relation(fields: [classId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([subjectId, classId, academicYear, termNumber])
+}
+
 model TimetableSlot {
   id           String     @id @default(uuid())
   classId      String
@@ -611,4 +692,187 @@ model TimetableSlot {
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+// ── LMS ──────────────────────────────────────────────────────────────────────
+
+model Announcement {
+  id          String               @id @default(uuid())
+  title       String
+  body        String               @db.Text
+  audience    AnnouncementAudience @default(ALL)
+  classId     String?
+  isPinned    Boolean              @default(false)
+  publishedAt DateTime?
+  expiresAt   DateTime?
+
+  authorId      String
+  author        User        @relation("AnnouncementAuthor", fields: [authorId], references: [id])
+  institutionId String
+  institution   Institution @relation(fields: [institutionId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CourseMaterial {
+  id           String       @id @default(uuid())
+  title        String
+  description  String?
+  type         MaterialType
+  url          String
+  classId      String
+  subjectId    String
+  academicYear String
+  termNumber   Int?
+
+  uploadedById  String
+  uploadedBy    User        @relation("MaterialUploader", fields: [uploadedById], references: [id])
+  class         Class       @relation(fields: [classId], references: [id])
+  subject       Subject     @relation(fields: [subjectId], references: [id])
+  institutionId String
+  institution   Institution @relation(fields: [institutionId], references: [id])
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Assignment {
+  id            String           @id @default(uuid())
+  title         String
+  instructions  String?          @db.Text
+  dueDate       DateTime?
+  maxScore      Float            @default(20)
+  status        AssignmentStatus @default(DRAFT)
+  attachmentUrl String?
+  classId       String
+  subjectId     String
+  academicYear  String
+  termNumber    Int?
+
+  createdById   String
+  createdBy     User             @relation("AssignmentCreator", fields: [createdById], references: [id])
+  class         Class            @relation(fields: [classId], references: [id])
+  subject       Subject          @relation(fields: [subjectId], references: [id])
+  submissions   AssignmentSubmission[]
+  institutionId String
+  institution   Institution      @relation(fields: [institutionId], references: [id])
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model AssignmentSubmission {
+  id            String           @id @default(uuid())
+  assignmentId  String
+  studentId     String
+  content       String?          @db.Text
+  attachmentUrl String?
+  status        SubmissionStatus @default(SUBMITTED)
+  score         Float?
+  feedback      String?          @db.Text
+  submittedAt   DateTime         @default(now())
+  gradedAt      DateTime?
+  gradedById    String?
+
+  assignment    Assignment       @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  student       Student          @relation(fields: [studentId], references: [id])
+  gradedBy      User?            @relation("SubmissionGrader", fields: [gradedById], references: [id])
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([assignmentId, studentId])
+}
+
+model Quiz {
+  id              String     @id @default(uuid())
+  title           String
+  description     String?
+  status          QuizStatus @default(DRAFT)
+  durationMinutes Int?
+  maxAttempts     Int        @default(1)
+  openAt          DateTime?
+  closeAt         DateTime?
+  showResults     Boolean    @default(true)
+  classId         String
+  subjectId       String
+  academicYear    String
+  termNumber      Int?
+
+  createdById   String
+  createdBy     User        @relation("QuizCreator", fields: [createdById], references: [id])
+  class         Class       @relation(fields: [classId], references: [id])
+  subject       Subject     @relation(fields: [subjectId], references: [id])
+  questions     QuizQuestion[]
+  attempts      QuizAttempt[]
+  institutionId String
+  institution   Institution @relation(fields: [institutionId], references: [id])
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model QuizQuestion {
+  id       String       @id @default(uuid())
+  quizId   String
+  text     String       @db.Text
+  type     QuestionType
+  points   Float        @default(1)
+  order    Int
+
+  quiz     Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  options  QuizOption[]
+  answers  QuizAnswer[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([quizId, order])
+}
+
+model QuizOption {
+  id         String       @id @default(uuid())
+  questionId String
+  text       String
+  isCorrect  Boolean      @default(false)
+  order      Int
+
+  question   QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answers    QuizAnswer[]
+
+  @@unique([questionId, order])
+}
+
+model QuizAttempt {
+  id          String      @id @default(uuid())
+  quizId      String
+  studentId   String
+  startedAt   DateTime    @default(now())
+  submittedAt DateTime?
+  score       Float?
+  maxScore    Float?
+
+  quiz        Quiz        @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  student     Student     @relation(fields: [studentId], references: [id])
+  answers     QuizAnswer[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model QuizAnswer {
+  id               String       @id @default(uuid())
+  attemptId        String
+  questionId       String
+  selectedOptionId String?
+  textAnswer       String?
+  isCorrect        Boolean?
+  pointsEarned     Float?
+
+  attempt          QuizAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question         QuizQuestion @relation(fields: [questionId], references: [id])
+  selectedOption   QuizOption?  @relation(fields: [selectedOptionId], references: [id])
+
+  @@unique([attemptId, questionId])
 }

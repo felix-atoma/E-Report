@@ -4,110 +4,190 @@
 <meta charset="UTF-8" />
 <style>
 :root {
-  --c-primary: {{institution.primaryColor}};
+  --c-primary:   {{institution.primaryColor}};
   --c-secondary: {{institution.secondaryColor}};
-  --c-primary-light: color-mix(in srgb, var(--c-primary) 12%, white);
-  --c-primary-text: color-mix(in srgb, var(--c-primary) 80%, black);
+  --c-primary-light: color-mix(in srgb, var(--c-primary) 10%, white);
+  --c-primary-text:  color-mix(in srgb, var(--c-primary) 85%, black);
 }
 * { margin:0; padding:0; box-sizing:border-box; }
-body { font-family: Arial, Helvetica, sans-serif; font-size:10px; color:#1a1a1a; background:#fff; }
-.page { width:210mm; min-height:297mm; padding:12mm 10mm; position:relative; }
+body { font-family: Arial, Helvetica, sans-serif; font-size:11px; color:#111; background:#fff; }
+.page { width:210mm; min-height:297mm; padding:10mm 10mm 20mm; position:relative; }
 
 /* ── Header ── */
-.header { display:flex; align-items:center; border-bottom:3px double var(--c-primary); padding-bottom:8px; margin-bottom:8px; }
-.header .logo  { width:60px; height:60px; object-fit:contain; margin-right:12px; }
-.header .crest { width:60px; height:60px; object-fit:contain; margin-left:12px; }
+.header {
+  display:flex; align-items:center;
+  border-bottom:3px solid var(--c-primary);
+  padding-bottom:10px; margin-bottom:10px;
+}
+.header .logo  { width:70px; height:70px; object-fit:contain; margin-right:14px; flex-shrink:0; }
+.header .crest { width:70px; height:70px; object-fit:contain; margin-left:14px;  flex-shrink:0; }
 .header .center { flex:1; text-align:center; }
-.header .center h1 { font-size:14px; font-weight:bold; color:var(--c-primary); text-transform:uppercase; letter-spacing:1px; }
-.header .center .subtitle { font-size:9px; color:#555; margin-top:2px; }
-.header .center .motto { font-size:9px; font-style:italic; color:#374151; margin-top:2px; }
+.header .center h1 {
+  font-size:17px; font-weight:bold;
+  color:var(--c-primary); text-transform:uppercase; letter-spacing:1.5px;
+  line-height:1.2;
+}
+.header .center .subtitle { font-size:11px; color:#444; margin-top:3px; }
+.header .center .motto    { font-size:11px; font-style:italic; color:#374151; margin-top:3px; }
 
 /* ── Title bar ── */
-.title-bar { background:var(--c-primary); color:#fff; text-align:center; padding:5px; font-size:12px; font-weight:bold; letter-spacing:1px; margin-bottom:8px; }
+.title-bar {
+  background:var(--c-primary); color:#fff;
+  text-align:center; padding:7px 10px;
+  font-size:14px; font-weight:bold; letter-spacing:1.5px;
+  margin-bottom:10px;
+}
 
 /* ── Student band ── */
-.student-band { display:flex; gap:0; border:1px solid var(--c-primary); margin-bottom:8px; }
-.student-band .field { flex:1; padding:4px 8px; border-right:1px solid #9ca3af; }
+.student-band {
+  display:flex; border:2px solid var(--c-primary);
+  border-radius:4px; margin-bottom:10px; overflow:hidden;
+}
+.student-band .photo-cell {
+  display:flex; align-items:center; padding:6px 8px;
+  border-right:1px solid #9ca3af; flex-shrink:0;
+}
+.student-band .photo-cell img {
+  width:56px; height:68px; object-fit:cover;
+  border-radius:2px; border:1px solid #d1d5db;
+}
+.student-band .fields { display:flex; flex:1; flex-wrap:wrap; }
+.student-band .field {
+  flex:1; min-width:110px;
+  padding:6px 10px; border-right:1px solid #c7d0da;
+}
 .student-band .field:last-child { border-right:none; }
-.student-band .field label { display:block; font-size:7.5px; font-weight:bold; color:var(--c-primary); text-transform:uppercase; margin-bottom:1px; }
-.student-band .field span { font-size:10px; font-weight:bold; }
+.student-band .field label {
+  display:block; font-size:8.5px; font-weight:bold;
+  color:var(--c-primary); text-transform:uppercase; margin-bottom:3px;
+  letter-spacing:0.4px;
+}
+.student-band .field span { font-size:12px; font-weight:700; color:#111; }
 
 /* ── Grades table ── */
-.grades-table { width:100%; border-collapse:collapse; margin-bottom:8px; font-size:8.5px; }
-.grades-table th, .grades-table td { border:1px solid #d1d5db; padding:2px 3px; text-align:center; vertical-align:middle; }
-.grades-table thead tr:first-child th { background:var(--c-primary); color:#fff; font-size:8px; font-weight:bold; padding:3px 3px; }
-.grades-table thead tr:last-child th  { background:var(--c-primary-light); color:var(--c-primary-text); font-size:7.5px; }
-.grades-table .col-matiere { text-align:left; min-width:90px; font-weight:600; padding-left:5px; }
-.grades-table .col-num  { min-width:28px; }
-.grades-table .col-moy  { background:#dcfce7; font-weight:700; min-width:30px; }
-.grades-table .col-moy-i { background:#dbeafe; font-style:italic; }
-.grades-table .col-dev  { background:rgba(254,252,193,0.6); }
-.grades-table .col-cmp  { background:rgba(250,232,255,0.6); }
-.grades-table .col-coef { min-width:28px; }
-.grades-table .col-pts  { background:#f0fdf4; font-weight:600; }
-.grades-table .col-rang { color:#0f766e; font-weight:700; min-width:28px; }
-.grades-table .col-appr { text-align:left; min-width:70px; font-size:8px; }
-.grades-table .col-prof { text-align:left; min-width:80px; }
-.grades-table tbody tr:nth-child(even) { background:#f9fafb; }
+.grades-table { width:100%; border-collapse:collapse; margin-bottom:10px; font-size:10px; }
+.grades-table th, .grades-table td {
+  border:1px solid #c4c9d4; padding:4px 4px;
+  text-align:center; vertical-align:middle;
+}
+.grades-table thead tr:first-child th {
+  background:var(--c-primary); color:#fff;
+  font-size:10px; font-weight:bold; padding:5px 4px;
+}
+.grades-table thead tr:last-child th {
+  background:var(--c-primary-light); color:var(--c-primary-text);
+  font-size:9.5px; font-weight:700;
+}
+.grades-table .col-matiere {
+  text-align:left; min-width:100px; font-weight:700; font-size:10.5px;
+  padding-left:7px; background:#f8f9fb;
+}
+.grades-table .col-num    { min-width:30px; }
+.grades-table .col-moy    { background:#dcfce7; font-weight:700; min-width:34px; font-size:11px; }
+.grades-table .col-moy-i  { background:#dbeafe; font-style:italic; }
+.grades-table .col-dev    { background:rgba(254,252,193,0.55); }
+.grades-table .col-cmp    { background:rgba(250,232,255,0.55); }
+.grades-table .col-coef   { min-width:30px; }
+.grades-table .col-pts    { background:#f0fdf4; font-weight:700; }
+.grades-table .col-rang   { color:#0f766e; font-weight:700; min-width:30px; font-size:11px; }
+.grades-table .col-appr   { text-align:left; min-width:80px; font-size:10px; }
+.grades-table .col-prof   { text-align:left; min-width:90px; font-size:9.5px; }
+.grades-table tbody tr:nth-child(even) { background:#f8fafb; }
 .grades-table tbody td.fail { color:#dc2626; font-weight:bold; }
-.grades-table tbody td.pass { color:#15803d; }
-.grades-table tfoot td { background:var(--c-primary); color:#fff; font-weight:bold; font-size:9px; padding:3px; }
-.grades-table .col-sig { min-width:70px; border-bottom:1px dotted #9ca3af; }
+.grades-table tbody td.pass { color:#15803d; font-weight:600; }
+.grades-table tfoot td {
+  background:var(--c-primary); color:#fff;
+  font-weight:bold; font-size:11px; padding:5px 4px;
+}
 
-/* ── Summary row ── */
-.summary { display:flex; gap:0; border:1px solid var(--c-primary); margin-bottom:8px; }
-.sum-card { flex:1; padding:5px 8px; text-align:center; border-right:1px solid #9ca3af; }
+/* ── Summary strip ── */
+.summary {
+  display:flex; border:2px solid var(--c-primary);
+  border-radius:4px; margin-bottom:10px; overflow:hidden;
+}
+.sum-card {
+  flex:1; padding:8px 6px; text-align:center;
+  border-right:1px solid #c7d0da;
+}
 .sum-card:last-child { border-right:none; }
-.sum-card .label { font-size:7.5px; color:#6b7280; text-transform:uppercase; font-weight:bold; }
-.sum-card .value { font-size:16px; font-weight:bold; color:var(--c-primary); line-height:1.2; }
-.sum-card .value.fail { color:#dc2626; }
-.sum-card .value.pass { color:#15803d; }
-.sum-card .mention { font-size:10px; font-weight:bold; }
+.sum-card .label { font-size:8.5px; color:#555; text-transform:uppercase; font-weight:700; margin-bottom:4px; letter-spacing:0.3px; }
+.sum-card .value { font-size:22px; font-weight:bold; color:var(--c-primary); line-height:1.1; }
+.sum-card .value.fail    { color:#dc2626; }
+.sum-card .value.pass    { color:#15803d; }
+.sum-card .value--lg     { font-size:18px; }
+.sum-card .mention       { font-size:14px; font-weight:bold; }
+.sum-card .mention.fail  { color:#dc2626; }
+.sum-card .mention.pass  { color:#15803d; }
 
-/* ── Two-column section ── */
-.two-col { display:flex; gap:8px; margin-bottom:8px; }
+/* ── Two-col section ── */
+.two-col { display:flex; gap:8px; margin-bottom:10px; }
 .two-col > * { flex:1; }
 
 /* ── Attendance box ── */
-.attendance-box { border:1px solid #d1d5db; border-radius:3px; }
-.attendance-box .box-title { background:#f1f5f9; padding:3px 8px; font-size:8px; font-weight:bold; color:var(--c-primary); text-transform:uppercase; border-bottom:1px solid #d1d5db; }
+.box {
+  border:1px solid #d1d5db; border-radius:4px; overflow:hidden;
+}
+.box .box-title {
+  background:var(--c-primary-light); padding:5px 10px;
+  font-size:10px; font-weight:bold; color:var(--c-primary);
+  text-transform:uppercase; letter-spacing:0.5px;
+  border-bottom:1px solid #d1d5db;
+}
 .att-row { display:flex; }
-.att-cell { flex:1; padding:4px 6px; text-align:center; border-right:1px solid #e5e7eb; }
+.att-cell { flex:1; padding:6px 4px; text-align:center; border-right:1px solid #e5e7eb; }
 .att-cell:last-child { border-right:none; }
-.att-cell .att-label { font-size:7px; color:#6b7280; }
-.att-cell .att-val   { font-size:12px; font-weight:bold; color:var(--c-primary); }
+.att-cell .att-label { font-size:8.5px; color:#6b7280; font-weight:600; }
+.att-cell .att-val   { font-size:15px; font-weight:bold; color:var(--c-primary); margin-top:2px; }
 
 /* ── Comment box ── */
-.comment-box { border:1px solid #d1d5db; border-radius:3px; }
-.comment-box .box-title { background:#f1f5f9; padding:3px 8px; font-size:8px; font-weight:bold; color:var(--c-primary); text-transform:uppercase; border-bottom:1px solid #d1d5db; }
-.comment-box .content { padding:5px 8px; font-size:9px; min-height:32px; color:#374151; }
-.comment-box .honor-badge { display:inline-block; background:#fef9c3; border:1px solid #fbbf24; color:#92400e; font-size:8px; font-weight:bold; padding:1px 6px; border-radius:10px; margin-top:3px; }
+.box .content { padding:7px 10px; font-size:11px; min-height:36px; color:#222; line-height:1.5; }
+.box .honor-badge {
+  display:inline-block; background:#fef9c3;
+  border:1px solid #fbbf24; color:#92400e;
+  font-size:10px; font-weight:bold;
+  padding:2px 8px; border-radius:10px; margin-top:4px;
+}
 
 /* ── Class stats ── */
-.class-stats { border:1px solid #d1d5db; border-radius:3px; margin-bottom:8px; }
-.class-stats .box-title { background:#f1f5f9; padding:3px 8px; font-size:8px; font-weight:bold; color:var(--c-primary); text-transform:uppercase; border-bottom:1px solid #d1d5db; }
-.stats-row { display:flex; }
-.stats-cell { flex:1; padding:4px 6px; text-align:center; border-right:1px solid #e5e7eb; }
+.class-stats-bar {
+  display:flex; border:1px solid #d1d5db; border-radius:4px;
+  margin-bottom:10px; overflow:hidden;
+}
+.stats-cell { flex:1; padding:6px 6px; text-align:center; border-right:1px solid #e5e7eb; }
 .stats-cell:last-child { border-right:none; }
-.stats-cell .stats-label { font-size:7px; color:#6b7280; }
-.stats-cell .stats-val   { font-size:12px; font-weight:bold; color:var(--c-primary); }
+.stats-cell .stats-label { font-size:8.5px; color:#6b7280; font-weight:600; }
+.stats-cell .stats-val   { font-size:15px; font-weight:bold; color:var(--c-primary); margin-top:2px; }
+
+/* ── Honour / remarks ── */
+.remark {
+  padding:5px 10px; border-radius:4px; font-size:10.5px; font-weight:700;
+  margin-bottom:5px;
+}
+.remark--honor   { background:#fef9c3; border:1px solid #fbbf24; color:#92400e; text-align:center; }
+.remark--commend { background:#dcfce7; border:1px solid #86efac; color:#166534; }
+.remark--warn    { background:#fef2f2; border:1px solid #fca5a5; color:#991b1b; }
 
 /* ── Signatures ── */
-.signatures { display:flex; gap:0; margin-top:12px; border-top:2px solid var(--c-primary); padding-top:8px; }
-.sig-box { flex:1; text-align:center; border-right:1px solid #d1d5db; padding:0 8px; }
+.signatures {
+  display:flex; border-top:2px solid var(--c-primary);
+  padding-top:10px; margin-top:14px;
+}
+.sig-box { flex:1; text-align:center; border-right:1px solid #d1d5db; padding:0 10px; }
 .sig-box:last-child { border-right:none; }
-.sig-box .sig-title { font-size:8px; font-weight:bold; text-transform:uppercase; color:var(--c-primary); margin-bottom:24px; }
-.sig-box .sig-line  { border-bottom:1px solid #374151; margin:0 8px; margin-bottom:3px; }
-.sig-box .sig-name  { font-size:7.5px; color:#6b7280; }
+.sig-box .sig-title { font-size:10px; font-weight:bold; text-transform:uppercase; color:var(--c-primary); margin-bottom:28px; }
+.sig-box .sig-line  { border-bottom:1px solid #374151; margin:0 10px 4px; }
+.sig-box .sig-name  { font-size:9px; color:#6b7280; }
 
 /* ── Stamp ── */
-.stamp-area { position:absolute; bottom:18mm; right:12mm; opacity:0.55; }
-.stamp-area img { width:75px; height:75px; object-fit:contain; }
+.stamp-area { position:absolute; bottom:22mm; right:12mm; opacity:0.5; }
+.stamp-area img { width:80px; height:80px; object-fit:contain; }
 
 /* ── Footer ── */
-.footer { border-top:1px solid #d1d5db; padding-top:4px; text-align:center; font-size:7.5px; color:#9ca3af; margin-top:8px; }
+.footer {
+  border-top:1px solid #d1d5db; padding-top:5px;
+  text-align:center; font-size:9px; color:#9ca3af; margin-top:10px;
+}
 
-/* ── Print styles ── */
 @media print {
   @page { size:A4; margin:10mm; }
   body { background:#fff; }
@@ -136,15 +216,17 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:10px; color:#1a1a1a;
   <!-- Student band -->
   <div class="student-band">
     {{#if student.photo}}
-    <div class="field" style="flex:0;padding:4px 6px;display:flex;align-items:center;">
-      <img src="{{student.photo}}" alt="Photo" style="width:50px;height:60px;object-fit:cover;border-radius:2px;border:1px solid #d1d5db;" />
+    <div class="photo-cell">
+      <img src="{{student.photo}}" alt="Photo" />
     </div>
     {{/if}}
-    <div class="field"><label>Nom &amp; Prénom</label><span>{{student.name}}</span></div>
-    <div class="field"><label>N° Admission</label><span>{{student.admissionNumber}}</span></div>
-    <div class="field"><label>Date de naissance</label><span>{{student.dateOfBirth}}</span></div>
-    <div class="field"><label>Classe</label><span>{{class.name}}</span></div>
-    <div class="field"><label>Année scolaire</label><span>{{report.academicYear}}</span></div>
+    <div class="fields">
+      <div class="field"><label>Nom &amp; Prénom</label><span>{{student.name}}</span></div>
+      <div class="field"><label>N° Matricule</label><span>{{student.admissionNumber}}</span></div>
+      <div class="field"><label>Date de naissance</label><span>{{student.dateOfBirth}}</span></div>
+      <div class="field"><label>Classe</label><span>{{class.name}}</span></div>
+      <div class="field"><label>Année scolaire</label><span>{{report.academicYear}}</span></div>
+    </div>
   </div>
 
   <!-- Grades table -->
@@ -155,7 +237,7 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:10px; color:#1a1a1a;
         <th colspan="5">Notes de classe</th>
         <th class="col-dev"  rowspan="2">Devoir<br>/20</th>
         <th class="col-cmp"  rowspan="2">Examen<br>/20</th>
-        <th class="col-moy"  rowspan="2">Moy.<br>Tri.</th>
+        <th class="col-moy"  rowspan="2">Moy.<br>Trim.</th>
         <th class="col-coef" rowspan="2">Coef.</th>
         <th class="col-pts"  rowspan="2">Points</th>
         <th class="col-rang" rowspan="2">Rang</th>
@@ -190,10 +272,10 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:10px; color:#1a1a1a;
           {{this.teacherName}}
           {{#if this.signatureData}}
             <br>
-            <img src="{{this.signatureData}}" alt="sig" style="max-height:32px;max-width:80px;object-fit:contain;display:block;margin:2px auto 0;" />
-            {{#if this.ficheSignedAt}}<span style="font-size:6.5px;color:#0f766e;display:block;">✔ {{this.ficheSignedAt}}</span>{{/if}}
+            <img src="{{this.signatureData}}" alt="sig" style="max-height:34px;max-width:85px;object-fit:contain;display:block;margin:3px auto 0;" />
+            {{#if this.ficheSignedAt}}<span style="font-size:7.5px;color:#0f766e;display:block;">✔ {{this.ficheSignedAt}}</span>{{/if}}
           {{else}}
-            <div style="border-bottom:1px dotted #9ca3af;margin:6px 4px 0;"></div>
+            <div style="border-bottom:1px dotted #9ca3af;margin:8px 4px 0;"></div>
           {{/if}}
         </td>
       </tr>
@@ -201,7 +283,7 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:10px; color:#1a1a1a;
     </tbody>
     <tfoot>
       <tr>
-        <td class="col-matiere" colspan="8" style="text-align:right;padding-right:8px;">TOTAUX</td>
+        <td class="col-matiere" colspan="8" style="text-align:right;padding-right:10px;font-size:12px;">TOTAUX</td>
         <td class="col-moy">{{fmtScore report.overallAverage}}</td>
         <td class="col-coef">{{report.totalCoef}}</td>
         <td class="col-pts">{{fmtScore report.totalPoints}}</td>
@@ -210,11 +292,11 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:10px; color:#1a1a1a;
     </tfoot>
   </table>
 
-  <!-- Summary + class stats -->
+  <!-- Summary strip -->
   <div class="summary">
     <div class="sum-card">
       <div class="label">Moyenne générale</div>
-      <div class="value {{#if report.isPassing}}pass{{else}}fail{{/if}}">{{fmtScore report.overallAverage}}<small style="font-size:9px;">/20</small></div>
+      <div class="value {{#if report.isPassing}}pass{{else}}fail{{/if}}">{{fmtScore report.overallAverage}}<small style="font-size:11px;">/20</small></div>
     </div>
     <div class="sum-card">
       <div class="label">Mention</div>
@@ -222,19 +304,19 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:10px; color:#1a1a1a;
     </div>
     <div class="sum-card">
       <div class="label">Rang dans la classe</div>
-      <div class="value">{{report.classRank}}<small style="font-size:9px;">/{{report.classSize}}</small></div>
+      <div class="value">{{report.classRank}}<small style="font-size:11px;">/{{report.classSize}}</small></div>
     </div>
     <div class="sum-card">
       <div class="label">Moy. la plus forte</div>
-      <div class="value" style="font-size:13px;">{{fmtScore report.classHighest}}</div>
+      <div class="value value--lg">{{fmtScore report.classHighest}}</div>
     </div>
     <div class="sum-card">
       <div class="label">Moy. la plus faible</div>
-      <div class="value" style="font-size:13px;">{{fmtScore report.classLowest}}</div>
+      <div class="value value--lg">{{fmtScore report.classLowest}}</div>
     </div>
     <div class="sum-card">
       <div class="label">Moy. de la classe</div>
-      <div class="value" style="font-size:13px;">{{fmtScore report.classAverage}}</div>
+      <div class="value value--lg">{{fmtScore report.classAverage}}</div>
     </div>
     <div class="sum-card">
       <div class="label">Conduite</div>
@@ -242,10 +324,10 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:10px; color:#1a1a1a;
     </div>
   </div>
 
-  <!-- Attendance + comments -->
+  <!-- Attendance + remarks -->
   <div class="two-col">
     {{#if report.attendanceDays}}
-    <div class="attendance-box">
+    <div class="box">
       <div class="box-title">Assiduité</div>
       <div class="att-row">
         <div class="att-cell"><div class="att-label">Jours de cours</div><div class="att-val">{{report.attendanceDays}}</div></div>
@@ -256,28 +338,26 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:10px; color:#1a1a1a;
       </div>
     </div>
     {{/if}}
-    <div style="display:flex;flex-direction:column;gap:6px;">
+    <div style="display:flex;flex-direction:column;gap:6px;justify-content:center;">
       {{#if report.honorCouncil}}
-      <div style="background:#fef9c3;border:1px solid #fbbf24;color:#92400e;padding:4px 8px;border-radius:3px;font-size:8.5px;font-weight:bold;text-align:center;">
-        ⭐ TABLEAU D'HONNEUR — Félicitations du Conseil des Professeurs
-      </div>
+      <div class="remark remark--honor">⭐ TABLEAU D'HONNEUR — Félicitations du Conseil des Professeurs</div>
       {{/if}}
       {{#if report.commendations}}
-      <div style="background:#dcfce7;border:1px solid #86efac;color:#166534;padding:3px 8px;border-radius:3px;font-size:8px;">Félicitations : {{report.commendations}}</div>
+      <div class="remark remark--commend">Félicitations : {{report.commendations}}</div>
       {{/if}}
       {{#if report.warnings}}
-      <div style="background:#fef2f2;border:1px solid #fca5a5;color:#991b1b;padding:3px 8px;border-radius:3px;font-size:8px;">Avertissement(s) : {{report.warnings}}</div>
+      <div class="remark remark--warn">Avertissement(s) : {{report.warnings}}</div>
       {{/if}}
     </div>
   </div>
 
-  <!-- Teacher comment / Principal -->
+  <!-- Comments -->
   <div class="two-col">
-    <div class="comment-box">
+    <div class="box">
       <div class="box-title">Observation du Professeur Principal</div>
       <div class="content">{{report.teacherComment}}</div>
     </div>
-    <div class="comment-box">
+    <div class="box">
       <div class="box-title">Observation Générale du Conseil des Professeurs</div>
       <div class="content">{{report.principalComment}}</div>
     </div>
@@ -298,7 +378,7 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:10px; color:#1a1a1a;
     <div class="sig-box">
       <div class="sig-title">Cachet et Signature du Directeur</div>
       <div class="sig-line"></div>
-      <div class="sig-name">Accra le _____ / _____ / _____</div>
+      <div class="sig-name">Le _____ / _____ / _____</div>
     </div>
   </div>
 
@@ -307,7 +387,7 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:10px; color:#1a1a1a;
   {{/if}}
 
   <div class="footer">
-    Généré le {{generatedAt}} &mdash; {{institution.name}} &mdash; Powered by NovaBulletin
+    Généré le {{generatedAt}} &nbsp;|&nbsp; {{institution.name}} &nbsp;|&nbsp; Powered by NovaBulletin
   </div>
 
 </div>

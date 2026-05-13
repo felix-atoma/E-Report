@@ -90,6 +90,27 @@ export class ClassesService {
     return this.prisma.class.update({ where: { id }, data: { isActive: false } });
   }
 
+  async bulkRemove(ids: string[], institutionId: string) {
+    for (const id of ids) {
+      try { await this.remove(id, institutionId); } catch { /* skip already-deleted or not-found */ }
+    }
+    return { deleted: ids.length };
+  }
+
+  async remove(id: string, institutionId: string) {
+    await this.ensureExists(id, institutionId);
+    await this.prisma.$transaction([
+      this.prisma.subjectHoursLog.deleteMany({ where: { classId: id } }),
+      this.prisma.subjectProgram.deleteMany({ where: { classId: id } }),
+      this.prisma.gradeFiche.deleteMany({ where: { classId: id } }),
+      this.prisma.classSubject.deleteMany({ where: { classId: id } }),
+      this.prisma.classStudent.deleteMany({ where: { classId: id } }),
+      this.prisma.reportCard.deleteMany({ where: { classId: id } }),
+      this.prisma.class.delete({ where: { id } }),
+    ]);
+    return { message: 'Class deleted' };
+  }
+
   async enrollStudent(classId: string, dto: EnrollStudentDto, institutionId: string) {
     await this.ensureExists(classId, institutionId);
 

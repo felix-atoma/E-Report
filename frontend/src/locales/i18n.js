@@ -1,18 +1,22 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import HttpBackend from 'i18next-http-backend';
-import LanguageDetector from 'i18next-browser-languagedetector';
+import fr from './fr/common.json';
+import en from './en/common.json';
+
+const stored = localStorage.getItem('lang');
+const lng = ['fr', 'en'].includes(stored) ? stored : 'fr';
 
 i18n
-  .use(HttpBackend)
-  .use(LanguageDetector)
   .use(initReactI18next)
   .init({
+    lng,
     fallbackLng: 'fr',
-    supportedLngs: ['fr', 'en'],
+    resources: {
+      fr: { common: fr },
+      en: { common: en },
+    },
     ns: ['common'],
     defaultNS: 'common',
-    backend: { loadPath: '/locales/{{lng}}/{{ns}}.json' },
     interpolation: { escapeValue: false },
   });
 

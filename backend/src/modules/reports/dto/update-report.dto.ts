@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 enum ConductRatingDto {
   TRES_BIEN = 'TRES_BIEN',
@@ -24,15 +24,50 @@ export class UpdateReportDto {
   @IsEnum(ConductRatingDto)
   conductRating?: ConductRatingDto;
 
-  @ApiPropertyOptional({ example: 90 })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsInt()
   @Min(0)
   attendanceDays?: number;
 
-  @ApiPropertyOptional({ example: 85 })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsInt()
   @Min(0)
   attendancePresent?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  attendanceLate?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  attendanceAbsent?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  attendanceExcluded?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  warnings?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  commendations?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  honorCouncil?: boolean;
 }

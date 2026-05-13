@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -112,5 +113,13 @@ export class UsersController {
   @ApiOperation({ summary: 'Activate a user (Admin only)' })
   activate(@Param('id') id: string, @CurrentUser() user: any) {
     return this.service.setActive(id, true, user.institutionId);
+  }
+
+  @Delete(':id')
+  @Roles(Role.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Permanently delete a user (Admin only)' })
+  remove(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.service.remove(id, user.id, user.institutionId);
   }
 }

@@ -1,0 +1,186 @@
+/* ── Toolbar ── */
+.tit__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.tit__term-tabs {
+  display: flex;
+  gap: 0.25rem;
+  background: var(--color-bg-subtle, #f9fafb);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.tit__term-btn {
+  background: none;
+  border: none;
+  border-radius: 6px;
+  padding: 0.35rem 0.875rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--color-text-secondary, #6b7280);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.tit__term-btn--active {
+  background: #fff;
+  color: var(--color-primary, #1e40af);
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.tit__save-btn {
+  background: var(--color-primary, #1e40af);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 0.45rem 1.1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.tit__save-btn:hover { background: #1d4ed8; }
+.tit__save-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.tit__back-btn {
+  background: none;
+  border: 1px solid var(--color-border, #d1d5db);
+  border-radius: 6px;
+  padding: 0.4rem 0.875rem;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary, #374151);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.tit__back-btn:hover { background: var(--color-bg-subtle, #f9fafb); }
+
+/* ── Table ── */
+.tit__table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 10px;
+}
+
+.tit__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.tit__th {
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-text-secondary, #6b7280);
+  padding: 0.55rem 0.5rem;
+  border-bottom: 2px solid var(--color-border, #e5e7eb);
+  background: var(--color-bg-subtle, #f9fafb);
+  white-space: nowrap;
+}
+
+.tit__th--name    { text-align: left; min-width: 160px; padding-left: 1rem; }
+.tit__th--conduct { min-width: 110px; }
+.tit__th--comment { min-width: 180px; text-align: left; }
+
+.tit__td {
+  padding: 0.45rem 0.375rem;
+  border-bottom: 1px solid var(--color-border, #f3f4f6);
+  text-align: center;
+  vertical-align: middle;
+}
+.tit__td--name    { text-align: left; padding-left: 1rem; }
+.tit__td--center  { text-align: center; }
+.tit__td--comment { text-align: left; }
+
+.tit__table tbody tr:last-child .tit__td { border-bottom: none; }
+.tit__table tbody tr:hover { background: #fafafa; }
+.tit__tr--new { background: #fffbeb; }
+
+/* ── Student name ── */
+.tit__student-name {
+  font-weight: 600;
+  color: var(--color-text, #111827);
+  font-size: 0.83rem;
+}
+
+.tit__new-badge {
+  font-size: 0.65rem;
+  background: #fef3c7;
+  color: #92400e;
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+/* ── Inputs ── */
+.tit__input {
+  border: 1px solid var(--color-border, #d1d5db);
+  border-radius: 5px;
+  padding: 0.25rem 0.375rem;
+  font-size: 0.8rem;
+  text-align: center;
+  background: #fff;
+  color: var(--color-text, #111827);
+}
+.tit__input:focus {
+  outline: none;
+  border-color: var(--color-primary, #3b82f6);
+  box-shadow: 0 0 0 2px #dbeafe;
+}
+
+.tit__checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--color-primary, #1e40af);
+}
+
+.tit__conduct-select {
+  border: 1px solid var(--color-border, #d1d5db);
+  border-radius: 5px;
+  padding: 0.25rem 0.375rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: #fff;
+  cursor: pointer;
+  width: 108px;
+}
+.tit__conduct-select:focus {
+  outline: none;
+  border-color: var(--color-primary, #3b82f6);
+}
+
+.tit__comment-input {
+  border: 1px solid var(--color-border, #d1d5db);
+  border-radius: 5px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.78rem;
+  width: 100%;
+  min-width: 160px;
+  background: #fff;
+}
+.tit__comment-input:focus {
+  outline: none;
+  border-color: var(--color-primary, #3b82f6);
+  box-shadow: 0 0 0 2px #dbeafe;
+}
+
+/* ── States ── */
+.tit__empty, .tit__error {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary, #9ca3af);
+  text-align: center;
+  padding: 2rem 0;
+}
+.tit__error { color: #dc2626; }

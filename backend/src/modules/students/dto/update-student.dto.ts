@@ -1,5 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsOptional, IsString } from 'class-validator';
+import { IsDateString, IsEnum, IsOptional, IsString } from 'class-validator';
+import { Sex } from '@prisma/client';
 
 export class UpdateStudentDto {
   @ApiPropertyOptional({ example: 'LYC-2024-001' })
@@ -11,6 +12,11 @@ export class UpdateStudentDto {
   @IsOptional()
   @IsDateString()
   dateOfBirth?: string;
+
+  @ApiPropertyOptional({ enum: Sex })
+  @IsOptional()
+  @IsEnum(Sex)
+  sex?: Sex;
 
   @ApiPropertyOptional({ description: 'UUID of parent User account' })
   @IsOptional()

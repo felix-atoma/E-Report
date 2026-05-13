@@ -9,6 +9,13 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import { IsArray, IsString } from 'class-validator';
+
+class BulkDeleteDto {
+  @IsArray()
+  @IsString({ each: true })
+  ids: string[];
+}
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SubjectsService } from './subjects.service';
 import { CreateSubjectDto } from './dto/create-subject.dto';
@@ -54,8 +61,16 @@ export class SubjectsController {
   @Delete(':id')
   @Roles(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Deactivate a subject (Admin only)' })
-  deactivate(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.service.deactivate(id, user.institutionId);
+  @ApiOperation({ summary: 'Permanently delete a subject (Admin only)' })
+  remove(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.service.remove(id, user.institutionId);
+  }
+
+  @Post('bulk-delete')
+  @Roles(Role.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Bulk delete subjects (Admin only)' })
+  bulkRemove(@Body() dto: BulkDeleteDto, @CurrentUser() user: any) {
+    return this.service.bulkRemove(dto.ids, user.institutionId);
   }
 }

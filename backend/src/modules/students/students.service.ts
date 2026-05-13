@@ -57,7 +57,12 @@ export class StudentsService {
         reportCards: {
           select: {
             id: true, academicYear: true, termNumber: true, termName: true,
-            status: true, overallAverage: true, classRank: true, mention: true,
+            status: true, overallAverage: true, classRank: true, classSize: true,
+            classHighest: true, classLowest: true, classAverage: true,
+            mention: true, conductRating: true,
+            warnings: true, commendations: true, honorCouncil: true,
+            attendanceDays: true, attendancePresent: true,
+            attendanceLate: true, attendanceAbsent: true,
           },
           orderBy: [{ academicYear: 'desc' }, { termNumber: 'desc' }],
         },
@@ -196,6 +201,7 @@ export class StudentsService {
       data: {
         ...(dto.admissionNumber && { admissionNumber: dto.admissionNumber }),
         ...(dto.dateOfBirth && { dateOfBirth: new Date(dto.dateOfBirth) }),
+        ...(dto.sex !== undefined && { sex: dto.sex }),
         ...(dto.parentId !== undefined && { parentId: dto.parentId }),
       },
       include: {
@@ -203,6 +209,36 @@ export class StudentsService {
         parent: { select: { id: true, name: true, whatsappNumber: true } },
       },
     });
+  }
+
+  async bulkRemove(ids: string[], institutionId: string) {
+    for (const id of ids) {
+      try { await this.remove(id, institutionId); } catch { /* skip already-deleted or not-found */ }
+    }
+    return { deleted: ids.length };
+  }
+
+  async remove(id: string, institutionId: string) {
+    const student = await this.prisma.student.findFirst({
+      where: { id, institutionId },
+      select: { id: true, userId: true },
+    });
+    if (!student) throw new NotFoundException('Student not found');
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.notificationLog.deleteMany({ where: { studentId: id } });
+      await tx.payment.deleteMany({ where: { studentId: id } });
+      await tx.studentFee.deleteMany({ where: { studentId: id } });
+      await tx.classStudent.deleteMany({ where: { studentId: id } });
+      await tx.reportCard.deleteMany({ where: { studentId: id } });
+      await tx.student.delete({ where: { id } });
+      if (student.userId) {
+        await tx.notificationLog.deleteMany({ where: { recipientUserId: student.userId } });
+        await tx.user.delete({ where: { id: student.userId } });
+      }
+    });
+
+    return { message: 'Student deleted' };
   }
 
   private async ensureExists(id: string, institutionId: string) {

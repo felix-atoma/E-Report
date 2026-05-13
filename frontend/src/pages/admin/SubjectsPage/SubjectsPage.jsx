@@ -1,12 +1,14 @@
 import { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { subjectsService } from '../../../services/subjectsService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Table from '../../../components/common/Table/Table';
-import Modal from '../../../components/common/Modal/Modal';
+import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
 import ConfirmDialog from '../../../components/common/ConfirmDialog/ConfirmDialog';
+import BulkBar from '../../../components/common/BulkBar/BulkBar';
 import Input from '../../../components/common/Input/Input';
 import Select from '../../../components/common/Select/Select';
 import Button from '../../../components/common/Button/Button';
@@ -82,6 +84,8 @@ function SubjectsPage() {
   const [confirm, setConfirm]   = useState(null);
   const [form, setForm]         = useState(EMPTY_FORM);
   const [errors, setErrors]     = useState({});
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [bulkConfirm, setBulkConfirm] = useState(false);
 
   const { data: subjects = [], isLoading } = useQuery({
     queryKey: ['subjects'],
@@ -112,9 +116,20 @@ function SubjectsPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => subjectsService.deactivate(id),
+    mutationFn: (id) => subjectsService.delete(id),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['subjects'] }); toast.success('Matière supprimée'); setConfirm(null); },
     onError:   (err) => toast.error(err?.response?.data?.message ?? 'Erreur de suppression'),
+  });
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: (ids) => subjectsService.bulkDelete(ids),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['subjects'] });
+      toast.success(`${selectedIds.size} matière${selectedIds.size > 1 ? 's' : ''} supprimée${selectedIds.size > 1 ? 's' : ''}`);
+      setSelectedIds(new Set());
+      setBulkConfirm(false);
+    },
+    onError: () => { qc.invalidateQueries({ queryKey: ['subjects'] }); toast.error('Certaines suppressions ont échoué'); setBulkConfirm(false); setSelectedIds(new Set()); },
   });
 
   function openCreate() {
@@ -170,10 +185,10 @@ function SubjectsPage() {
       key: 'nameFr',
       label: 'Matière',
       render: (s) => (
-        <div>
+        <Link to={`/admin/subjects/${s.id}`} className="subjects-table__profile-link">
           <div className="subjects-table__name">{s.nameFr}</div>
           {s.code && <div className="subjects-table__code">{s.code}</div>}
-        </div>
+        </Link>
       ),
     },
     {
@@ -229,14 +244,24 @@ function SubjectsPage() {
         />
       </div>
 
+      <BulkBar
+        count={selectedIds.size}
+        onClear={() => setSelectedIds(new Set())}
+        onDelete={() => setBulkConfirm(true)}
+        loading={bulkDeleteMutation.isPending}
+      />
+
       <Table
         columns={columns}
         rows={filtered}
         loading={isLoading}
         emptyMessage="Aucune matière trouvée"
+        selectable
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
       />
 
-      <Modal
+      <OffCanvas
         open={!!modal}
         onClose={closeModal}
         title={modal === 'create' ? 'Nouvelle matière' : 'Modifier la matière'}
@@ -251,7 +276,7 @@ function SubjectsPage() {
         }
       >
         <SubjectForm form={form} errors={errors} onChange={handleChange} />
-      </Modal>
+      </OffCanvas>
 
       <ConfirmDialog
         open={!!confirm}
@@ -261,6 +286,17 @@ function SubjectsPage() {
         title="Supprimer la matière"
         message={`Supprimer "${confirm?.nameFr}" ? Cette action est irréversible.`}
         confirmLabel="Supprimer"
+        variant="danger"
+      />
+
+      <ConfirmDialog
+        open={bulkConfirm}
+        onClose={() => setBulkConfirm(false)}
+        onConfirm={() => bulkDeleteMutation.mutate([...selectedIds])}
+        loading={bulkDeleteMutation.isPending}
+        title={`Supprimer ${selectedIds.size} matière${selectedIds.size > 1 ? 's' : ''}`}
+        message={`Supprimer définitivement ${selectedIds.size} matière${selectedIds.size > 1 ? 's' : ''} ? Tous les cours, fiches de notes et données associées seront effacés. Cette action est irréversible.`}
+        confirmLabel={`Supprimer ${selectedIds.size} matière${selectedIds.size > 1 ? 's' : ''}`}
         variant="danger"
       />
     </AppShell>

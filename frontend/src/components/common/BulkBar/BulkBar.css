@@ -1,0 +1,32 @@
+.bulk-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 1rem;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  animation: bulkBarIn 0.15s ease;
+}
+
+@keyframes bulkBarIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.bulk-bar__count {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #c2410c;
+}
+
+.bulk-bar__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}

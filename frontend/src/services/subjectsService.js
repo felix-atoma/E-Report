@@ -6,4 +6,6 @@ export const subjectsService = {
   create: (data) => api.post('/subjects', data),
   update: (id, data) => api.patch(`/subjects/${id}`, data),
   deactivate: (id) => api.delete(`/subjects/${id}`),
+  delete: (id) => api.delete(`/subjects/${id}`),
+  bulkDelete: (ids) => api.post('/subjects/bulk-delete', { ids }),
 };

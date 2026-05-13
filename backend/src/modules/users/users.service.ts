@@ -166,4 +166,12 @@ export class UsersService {
       select: USER_SELECT,
     });
   }
+
+  async remove(id: string, requestingUserId: string, institutionId: string) {
+    const user = await this.prisma.user.findFirst({ where: { id, institutionId } });
+    if (!user) throw new NotFoundException('User not found');
+    if (id === requestingUserId) throw new BadRequestException('You cannot delete your own account');
+
+    return this.prisma.user.delete({ where: { id } });
+  }
 }

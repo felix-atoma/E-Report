@@ -1,0 +1,80 @@
+{
+  "appName": "NovaBulletin",
+
+  "nav": {
+    "dashboard":      "Tableau de bord",
+    "users":          "Utilisateurs",
+    "classes":        "Classes",
+    "students":       "Élèves",
+    "subjects":       "Matières",
+    "reports":        "Bulletins",
+    "statistics":     "Statistiques",
+    "bulletins":      "Annonces",
+    "fees":           "Frais",
+    "payments":       "Paiements",
+    "notifications":  "Notifications",
+    "analytics":      "Analytiques",
+    "branding":       "Apparence",
+    "settings":       "Paramètres",
+    "myProfile":      "Mon profil",
+    "myClasses":      "Mes classes",
+    "gradeSheets":    "Fiches de notes",
+    "myChildren":     "Mes enfants",
+    "paymentHistory": "Historique paiements",
+    "heldBulletins":  "Bulletins retenus",
+    "myReports":      "Mes bulletins",
+    "myProgress":     "Ma progression",
+    "lms":            "Apprentissage"
+  },
+
+  "section": {
+    "school":    "ÉCOLE",
+    "pedagogy":  "PÉDAGOGIE",
+    "finance":   "FINANCES",
+    "system":    "SYSTÈME",
+    "classes":   "CLASSES"
+  },
+
+  "role": {
+    "ADMIN":   "Administrateur",
+    "TEACHER": "Enseignant",
+    "BURSAR":  "Économe",
+    "PARENT":  "Parent",
+    "STUDENT": "Élève"
+  },
+
+  "action": {
+    "save":       "Enregistrer",
+    "saving":     "Enregistrement…",
+    "cancel":     "Annuler",
+    "edit":       "Modifier",
+    "delete":     "Supprimer",
+    "add":        "Ajouter",
+    "close":      "Fermer",
+    "back":       "Retour",
+    "confirm":    "Confirmer",
+    "search":     "Rechercher",
+    "create":     "Créer",
+    "update":     "Mettre à jour",
+    "deactivate": "Désactiver",
+    "activate":   "Activer",
+    "publish":    "Publier",
+    "download":   "Télécharger",
+    "logout":     "Se déconnecter"
+  },
+
+  "help": {
+    "title": "Besoin d'aide ?",
+    "text":  "Contactez le support NovaBulletin"
+  },
+
+  "lang": {
+    "fr": "Français",
+    "en": "English",
+    "switch": "Changer de langue"
+  },
+
+  "welcome": "Bienvenue",
+  "login":   "Se connecter",
+  "logout":  "Déconnexion"
+}

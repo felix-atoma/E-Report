@@ -8,8 +8,9 @@ import { subjectsService } from '../../../services/subjectsService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Table from '../../../components/common/Table/Table';
-import Modal from '../../../components/common/Modal/Modal';
+import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
 import ConfirmDialog from '../../../components/common/ConfirmDialog/ConfirmDialog';
+import BulkBar from '../../../components/common/BulkBar/BulkBar';
 import Input from '../../../components/common/Input/Input';
 import Select from '../../../components/common/Select/Select';
 import Button from '../../../components/common/Button/Button';
@@ -253,7 +254,7 @@ function ManageSubjectsModal({ cls, teachers, allSubjects, onClose, qc }) {
   const subjects = detail?.subjects ?? [];
 
   return (
-    <Modal
+    <OffCanvas
       open
       onClose={onClose}
       title={`Matières — ${cls.name}`}
@@ -346,7 +347,7 @@ function ManageSubjectsModal({ cls, teachers, allSubjects, onClose, qc }) {
           </div>
         </>
       )}
-    </Modal>
+    </OffCanvas>
   );
 }
 
@@ -361,6 +362,8 @@ function ClassesPage() {
   const [confirm, setConfirm]       = useState(null);
   const [form, setForm]             = useState(EMPTY_FORM);
   const [errors, setErrors]         = useState({});
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [bulkConfirm, setBulkConfirm] = useState(false);
 
   const { data: classes = [], isLoading } = useQuery({
     queryKey: ['classes'],
@@ -412,6 +415,23 @@ function ClassesPage() {
     mutationFn: (id) => classesService.deactivate(id),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['classes'] }); toast.success('Classe désactivée'); setConfirm(null); },
     onError:   (err) => toast.error(err?.response?.data?.message ?? 'Erreur'),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => classesService.delete(id),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['classes'] }); toast.success('Classe supprimée'); setConfirm(null); },
+    onError:   (err) => toast.error(err?.response?.data?.message ?? 'Erreur de suppression'),
+  });
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: (ids) => classesService.bulkDelete(ids),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['classes'] });
+      toast.success(`${selectedIds.size} classe${selectedIds.size > 1 ? 's' : ''} supprimée${selectedIds.size > 1 ? 's' : ''}`);
+      setSelectedIds(new Set());
+      setBulkConfirm(false);
+    },
+    onError: () => { qc.invalidateQueries({ queryKey: ['classes'] }); toast.error('Certaines suppressions ont échoué'); setBulkConfirm(false); setSelectedIds(new Set()); },
   });
 
   function openCreate() {
@@ -521,14 +541,15 @@ function ClassesPage() {
     {
       key: 'actions',
       label: '',
-      style: { width: '180px', textAlign: 'right' },
+      style: { width: '220px', textAlign: 'right' },
       render: (c) => (
         <div className="classes-table__actions">
           <Button size="sm" variant="ghost" onClick={() => setManage(c)}>Matières</Button>
           <Button size="sm" variant="ghost" onClick={() => openEdit(c)}>Modifier</Button>
           {c.isActive !== false && (
-            <Button size="sm" variant="ghost" onClick={() => setConfirm(c)}>Désactiver</Button>
+            <Button size="sm" variant="ghost" onClick={() => setConfirm({ action: 'deactivate', cls: c })}>Désactiver</Button>
           )}
+          <Button size="sm" variant="ghost" onClick={() => setConfirm({ action: 'delete', cls: c })}>Supprimer</Button>
         </div>
       ),
     },
@@ -559,15 +580,25 @@ function ClassesPage() {
         />
       </div>
 
+      <BulkBar
+        count={selectedIds.size}
+        onClear={() => setSelectedIds(new Set())}
+        onDelete={() => setBulkConfirm(true)}
+        loading={bulkDeleteMutation.isPending}
+      />
+
       <Table
         columns={columns}
         rows={filtered}
         loading={isLoading}
         emptyMessage="Aucune classe trouvée"
+        selectable
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
       />
 
-      {/* Create / Edit modal */}
-      <Modal
+      {/* Create / Edit off-canvas */}
+      <OffCanvas
         open={!!modal}
         onClose={closeModal}
         title={modal === 'create' ? 'Nouvelle classe' : 'Modifier la classe'}
@@ -589,7 +620,7 @@ function ClassesPage() {
           allSubjects={allSubjects}
           isCreate={modal === 'create'}
         />
-      </Modal>
+      </OffCanvas>
 
       {/* Manage subjects modal */}
       {manageClass && (
@@ -603,13 +634,35 @@ function ClassesPage() {
       )}
 
       <ConfirmDialog
-        open={!!confirm}
+        open={!!confirm && confirm.action === 'deactivate'}
         onClose={() => setConfirm(null)}
-        onConfirm={() => deactivateMutation.mutate(confirm.id)}
+        onConfirm={() => deactivateMutation.mutate(confirm.cls.id)}
         loading={deactivateMutation.isPending}
         title="Désactiver la classe"
-        message={`Désactiver la classe "${confirm?.name}" ? Les données seront conservées.`}
+        message={`Désactiver la classe "${confirm?.cls?.name}" ? Les données seront conservées.`}
         confirmLabel="Désactiver"
+        variant="danger"
+      />
+
+      <ConfirmDialog
+        open={!!confirm && confirm.action === 'delete'}
+        onClose={() => setConfirm(null)}
+        onConfirm={() => deleteMutation.mutate(confirm.cls.id)}
+        loading={deleteMutation.isPending}
+        title="Supprimer définitivement"
+        message={`Supprimer la classe "${confirm?.cls?.name}" ? Toutes les notes, bulletins et données associées seront définitivement effacés.`}
+        confirmLabel="Supprimer définitivement"
+        variant="danger"
+      />
+
+      <ConfirmDialog
+        open={bulkConfirm}
+        onClose={() => setBulkConfirm(false)}
+        onConfirm={() => bulkDeleteMutation.mutate([...selectedIds])}
+        loading={bulkDeleteMutation.isPending}
+        title={`Supprimer ${selectedIds.size} classe${selectedIds.size > 1 ? 's' : ''}`}
+        message={`Supprimer définitivement ${selectedIds.size} classe${selectedIds.size > 1 ? 's' : ''} ? Toutes les notes, bulletins et données associées seront effacés. Cette action est irréversible.`}
+        confirmLabel={`Supprimer ${selectedIds.size} classe${selectedIds.size > 1 ? 's' : ''}`}
         variant="danger"
       />
     </AppShell>
