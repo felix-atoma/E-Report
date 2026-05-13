@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Button from '../../../components/common/Button/Button';
 import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
-import { lmsService } from '../../../services/lmsService';
+import { lmsService, uploadLmsFile } from '../../../services/lmsService';
 import './StudentLMSPage.css';
 
 const TABS = [
@@ -22,6 +22,44 @@ function fmt(d) {
 
 function Badge({ status }) {
   return <span className={`slms__badge slms__badge--${status?.toLowerCase()}`}>{status}</span>;
+}
+
+function FilePickerField({ value, onChange }) {
+  const ref = useRef(null);
+  const [uploading, setUploading] = useState(false);
+
+  async function handlePick(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const res = await uploadLmsFile(file);
+      onChange(res.data.url);
+      toast.success('Fichier téléversé');
+    } catch (err) {
+      toast.error(err?.response?.data?.message ?? 'Erreur lors du téléversement');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  }
+
+  const name = value ? decodeURIComponent(value.split('/').pop()) : null;
+  return (
+    <div>
+      {name ? (
+        <div className="slms__file-chip">
+          <span className="slms__file-chip-name" title={name}>📎 {name}</span>
+          <button type="button" className="slms__file-chip-remove" onClick={() => onChange('')}>✕</button>
+        </div>
+      ) : (
+        <button type="button" className="slms__file-btn" disabled={uploading} onClick={() => ref.current?.click()}>
+          {uploading ? 'Téléversement…' : '📎 Joindre un fichier'}
+        </button>
+      )}
+      <input ref={ref} type="file" style={{ display: 'none' }} onChange={handlePick} />
+    </div>
+  );
 }
 
 // ── Announcements ─────────────────────────────────────────────────────────────
@@ -129,6 +167,11 @@ function AssignmentsSection() {
                 · <span>Note sur {a.maxScore}</span>
               </div>
               {a.instructions && <div className="slms__card-body" style={{ WebkitLineClamp: 2, overflow: 'hidden', display: '-webkit-box', WebkitBoxOrient: 'vertical' }}>{a.instructions}</div>}
+              {a.attachmentUrl && (
+                <a href={a.attachmentUrl} target="_blank" rel="noreferrer" className="slms__attach-link">
+                  📎 Document du professeur
+                </a>
+              )}
               <div className="slms__card-actions">
                 <Button size="sm" onClick={() => openAssignment(a)}>Voir / Soumettre</Button>
               </div>
@@ -162,6 +205,11 @@ function AssignmentsSection() {
                 {active.instructions}
               </div>
             )}
+            {active.attachmentUrl && (
+              <a href={active.attachmentUrl} target="_blank" rel="noreferrer" className="slms__attach-link">
+                📎 Télécharger le document du professeur
+              </a>
+            )}
             {mySubmission ? (
               <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 8, padding: '1rem' }}>
                 <strong style={{ color: '#15803d' }}>✔ Devoir soumis le {fmt(mySubmission.submittedAt)}</strong>
@@ -179,9 +227,9 @@ function AssignmentsSection() {
                 <label className="slms__label">Votre réponse
                   <textarea className="slms__textarea" rows={6} value={content} onChange={(e) => setContent(e.target.value)} placeholder="Écrivez votre réponse ici…" />
                 </label>
-                <label className="slms__label">Lien de pièce jointe (optionnel)
-                  <input style={{ padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: 6, fontSize: '0.875rem' }}
-                    value={attachmentUrl} onChange={(e) => setAttachmentUrl(e.target.value)} placeholder="https://…" />
+                <label className="slms__label" style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                  Pièce jointe (optionnel)
+                  <FilePickerField value={attachmentUrl} onChange={setAttachmentUrl} />
                 </label>
               </>
             )}
@@ -257,6 +305,11 @@ function QuizzesSection() {
                 {q.durationMinutes && <span>· {q.durationMinutes} min</span>}
               </div>
               {q.description && <div className="slms__card-body">{q.description}</div>}
+              {q.attachmentUrl && (
+                <a href={q.attachmentUrl} target="_blank" rel="noreferrer" className="slms__attach-link">
+                  📎 Document joint
+                </a>
+              )}
               <div className="slms__card-actions">
                 <Button size="sm" onClick={() => { setActive(q); setAttempt(null); setResult(null); setAnswers({}); }}>
                   Ouvrir le quiz

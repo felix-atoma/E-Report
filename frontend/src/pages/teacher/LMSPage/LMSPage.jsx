@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import AppShell from '../../../components/layout/AppShell/AppShell';
@@ -6,7 +6,7 @@ import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
 import ConfirmDialog from '../../../components/common/ConfirmDialog/ConfirmDialog';
 import Button from '../../../components/common/Button/Button';
-import { lmsService } from '../../../services/lmsService';
+import { lmsService, uploadLmsFile } from '../../../services/lmsService';
 import { classesService } from '../../../services/classesService';
 import { subjectsService } from '../../../services/subjectsService';
 import './LMSPage.css';
@@ -40,6 +40,48 @@ function Badge({ variant, children }) {
 function fmt(d) {
   if (!d) return null;
   return new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+// ── File picker field ────────────────────────────────────────────────────────
+
+function FilePickerField({ label = 'Pièce jointe', value, onChange }) {
+  const inputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+
+  async function handlePick(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const res = await uploadLmsFile(file);
+      onChange(res.data.url, res.data.filename);
+      toast.success('Fichier téléversé');
+    } catch (err) {
+      toast.error(err?.response?.data?.message ?? 'Erreur lors du téléversement');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  }
+
+  const name = value ? decodeURIComponent(value.split('/').pop()) : null;
+
+  return (
+    <div className="lms__file-field">
+      <span className="lms__label" style={{ marginBottom: '0.35rem', display: 'block' }}>{label}</span>
+      {name ? (
+        <div className="lms__file-chip">
+          <span className="lms__file-chip-name" title={name}>📎 {name}</span>
+          <button type="button" className="lms__file-chip-remove" onClick={() => onChange('', '')}>✕</button>
+        </div>
+      ) : (
+        <button type="button" className="lms__file-btn" disabled={uploading} onClick={() => inputRef.current?.click()}>
+          {uploading ? 'Téléversement…' : '📎 Joindre un fichier'}
+        </button>
+      )}
+      <input ref={inputRef} type="file" style={{ display: 'none' }} onChange={handlePick} />
+    </div>
+  );
 }
 
 // ── Announcements tab ─────────────────────────────────────────────────────────
@@ -235,7 +277,13 @@ function MaterialsTab({ classes, subjects }) {
             </label>
             <label className="lms__label">Année scolaire<input className="lms__input" value={form.academicYear} onChange={(e) => setForm(f => ({ ...f, academicYear: e.target.value }))} /></label>
           </div>
-          <label className="lms__label">URL / Lien *<input className="lms__input" placeholder="https://…" value={form.url} onChange={(e) => setForm(f => ({ ...f, url: e.target.value }))} /></label>
+          <label className="lms__label">URL / Lien<input className="lms__input" placeholder="https://…" value={form.url} onChange={(e) => setForm(f => ({ ...f, url: e.target.value }))} /></label>
+          <div className="lms__url-or">ou</div>
+          <FilePickerField
+            label="Téléverser un fichier"
+            value={form.url?.startsWith('http://localhost') || form.url?.includes('/uploads/lms') ? form.url : ''}
+            onChange={(url) => setForm(f => ({ ...f, url }))}
+          />
           <div className="lms__form-row">
             <label className="lms__label">Classe *
               <select className="lms__select" value={form.classId} onChange={(e) => setForm(f => ({ ...f, classId: e.target.value }))}>
@@ -271,7 +319,7 @@ function AssignmentsTab({ classes, subjects }) {
   const [classId, setClassId] = useState('');
   const [grades, setGrades]   = useState({}); // submissionId -> score
   const [feedback, setFeedback] = useState({});
-  const EMPTY = { title: '', instructions: '', dueDate: '', maxScore: 20, classId: '', subjectId: '', academicYear: String(new Date().getFullYear()), termNumber: '' };
+  const EMPTY = { title: '', instructions: '', dueDate: '', maxScore: 20, classId: '', subjectId: '', academicYear: String(new Date().getFullYear()), termNumber: '', attachmentUrl: '', attachmentName: '' };
   const [form, setForm]       = useState(EMPTY);
 
   const { data: items = [] } = useQuery({
@@ -332,9 +380,14 @@ function AssignmentsTab({ classes, subjects }) {
                 <span>· {a._count?.submissions ?? 0} soumission{a._count?.submissions !== 1 ? 's' : ''}</span>
               </div>
               {a.instructions && <div className="lms__card-body" style={{ WebkitLineClamp: 2, overflow: 'hidden', display: '-webkit-box', WebkitBoxOrient: 'vertical' }}>{a.instructions}</div>}
+              {a.attachmentUrl && (
+                <a href={a.attachmentUrl} target="_blank" rel="noreferrer" className="lms__attach-link">
+                  📎 {decodeURIComponent(a.attachmentUrl.split('/').pop())}
+                </a>
+              )}
               <div className="lms__card-actions">
                 <Button size="sm" variant="ghost" onClick={() => {
-                  setForm({ title: a.title, instructions: a.instructions ?? '', dueDate: a.dueDate ? a.dueDate.slice(0,10) : '', maxScore: a.maxScore, classId: a.classId, subjectId: a.subjectId, academicYear: a.academicYear, termNumber: a.termNumber ?? '' });
+                  setForm({ title: a.title, instructions: a.instructions ?? '', dueDate: a.dueDate ? a.dueDate.slice(0,10) : '', maxScore: a.maxScore, classId: a.classId, subjectId: a.subjectId, academicYear: a.academicYear, termNumber: a.termNumber ?? '', attachmentUrl: a.attachmentUrl ?? '', attachmentName: '' });
                   setPanel(a);
                 }}>Modifier</Button>
                 <Button size="sm" variant="ghost" onClick={() => publishMut.mutate(a.id)}>
@@ -351,13 +404,18 @@ function AssignmentsTab({ classes, subjects }) {
       {/* Create/edit panel */}
       <OffCanvas open={!!panel} onClose={() => setPanel(null)} title={panel?.id ? 'Modifier le devoir' : 'Nouveau devoir'} size="md"
         footer={<><Button variant="ghost" onClick={() => setPanel(null)}>Annuler</Button>
-          <Button onClick={() => upsert.mutate({ ...form, termNumber: form.termNumber ? Number(form.termNumber) : undefined, maxScore: Number(form.maxScore) })} disabled={upsert.isPending}>
+          <Button onClick={() => upsert.mutate({ ...form, termNumber: form.termNumber ? Number(form.termNumber) : undefined, maxScore: Number(form.maxScore), attachmentUrl: form.attachmentUrl || undefined })} disabled={upsert.isPending}>
             {upsert.isPending ? '…' : 'Enregistrer'}
           </Button></>}
       >
         <div className="lms__form">
           <label className="lms__label">Titre *<input className="lms__input" value={form.title} onChange={(e) => setForm(f => ({ ...f, title: e.target.value }))} /></label>
           <label className="lms__label">Consignes<textarea className="lms__textarea" rows={4} value={form.instructions} onChange={(e) => setForm(f => ({ ...f, instructions: e.target.value }))} /></label>
+          <FilePickerField
+            label="Document joint (optionnel)"
+            value={form.attachmentUrl}
+            onChange={(url, name) => setForm(f => ({ ...f, attachmentUrl: url, attachmentName: name }))}
+          />
           <div className="lms__form-row">
             <label className="lms__label">Date limite<input type="date" className="lms__input" value={form.dueDate} onChange={(e) => setForm(f => ({ ...f, dueDate: e.target.value }))} /></label>
             <label className="lms__label">Note max<input type="number" className="lms__input" value={form.maxScore} onChange={(e) => setForm(f => ({ ...f, maxScore: e.target.value }))} /></label>
@@ -436,7 +494,7 @@ function QuizzesTab({ classes, subjects }) {
   const [builderQuiz, setBuilderQuiz] = useState(null);
   const [resultsQuiz, setResultsQuiz] = useState(null);
   const [classId, setClassId]   = useState('');
-  const EMPTY = { title: '', description: '', durationMinutes: '', maxAttempts: 1, classId: '', subjectId: '', academicYear: String(new Date().getFullYear()), termNumber: '', showResults: true };
+  const EMPTY = { title: '', description: '', durationMinutes: '', maxAttempts: 1, classId: '', subjectId: '', academicYear: String(new Date().getFullYear()), termNumber: '', showResults: true, attachmentUrl: '' };
   const [form, setForm]         = useState(EMPTY);
   const [qForm, setQForm]       = useState({ text: '', type: 'MCQ', points: 1, options: [{ text: '', isCorrect: false }, { text: '', isCorrect: false }] });
 
@@ -512,9 +570,14 @@ function QuizzesTab({ classes, subjects }) {
                 <span>· {q._count?.attempts ?? 0} tentative{q._count?.attempts !== 1 ? 's' : ''}</span>
                 {q.durationMinutes && <span>· {q.durationMinutes} min</span>}
               </div>
+              {q.attachmentUrl && (
+                <a href={q.attachmentUrl} target="_blank" rel="noreferrer" className="lms__attach-link">
+                  📎 {decodeURIComponent(q.attachmentUrl.split('/').pop())}
+                </a>
+              )}
               <div className="lms__card-actions">
                 <Button size="sm" variant="ghost" onClick={() => {
-                  setForm({ title: q.title, description: q.description ?? '', durationMinutes: q.durationMinutes ?? '', maxAttempts: q.maxAttempts, classId: q.classId, subjectId: q.subjectId, academicYear: q.academicYear, termNumber: q.termNumber ?? '', showResults: q.showResults });
+                  setForm({ title: q.title, description: q.description ?? '', durationMinutes: q.durationMinutes ?? '', maxAttempts: q.maxAttempts, classId: q.classId, subjectId: q.subjectId, academicYear: q.academicYear, termNumber: q.termNumber ?? '', showResults: q.showResults, attachmentUrl: q.attachmentUrl ?? '' });
                   setPanel(q);
                 }}>Modifier</Button>
                 <Button size="sm" variant="ghost" onClick={() => publishMut.mutate(q.id)}>
@@ -532,13 +595,18 @@ function QuizzesTab({ classes, subjects }) {
       {/* Create/edit quiz */}
       <OffCanvas open={!!panel} onClose={() => setPanel(null)} title={panel?.id ? 'Modifier le quiz' : 'Nouveau quiz'} size="md"
         footer={<><Button variant="ghost" onClick={() => setPanel(null)}>Annuler</Button>
-          <Button onClick={() => upsert.mutate({ ...form, durationMinutes: form.durationMinutes ? Number(form.durationMinutes) : undefined, maxAttempts: Number(form.maxAttempts), termNumber: form.termNumber ? Number(form.termNumber) : undefined })} disabled={upsert.isPending}>
+          <Button onClick={() => upsert.mutate({ ...form, durationMinutes: form.durationMinutes ? Number(form.durationMinutes) : undefined, maxAttempts: Number(form.maxAttempts), termNumber: form.termNumber ? Number(form.termNumber) : undefined, attachmentUrl: form.attachmentUrl || undefined })} disabled={upsert.isPending}>
             {upsert.isPending ? '…' : 'Enregistrer'}
           </Button></>}
       >
         <div className="lms__form">
           <label className="lms__label">Titre *<input className="lms__input" value={form.title} onChange={(e) => setForm(f => ({ ...f, title: e.target.value }))} /></label>
           <label className="lms__label">Description<textarea className="lms__textarea" rows={2} value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} /></label>
+          <FilePickerField
+            label="Document joint (optionnel)"
+            value={form.attachmentUrl}
+            onChange={(url) => setForm(f => ({ ...f, attachmentUrl: url }))}
+          />
           <div className="lms__form-row">
             <label className="lms__label">Durée (min)<input type="number" className="lms__input" placeholder="Illimitée" value={form.durationMinutes} onChange={(e) => setForm(f => ({ ...f, durationMinutes: e.target.value }))} /></label>
             <label className="lms__label">Nb tentatives<input type="number" min={1} className="lms__input" value={form.maxAttempts} onChange={(e) => setForm(f => ({ ...f, maxAttempts: e.target.value }))} /></label>

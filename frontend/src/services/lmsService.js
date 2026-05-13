@@ -1,5 +1,11 @@
 import api from './api';
 
+export const uploadLmsFile = (file) => {
+  const fd = new FormData();
+  fd.append('file', file);
+  return api.post('/upload/lms', fd);
+};
+
 export const lmsService = {
   // Announcements
   announcements: {

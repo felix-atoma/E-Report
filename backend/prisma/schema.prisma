@@ -789,6 +789,7 @@ model Quiz {
   id              String     @id @default(uuid())
   title           String
   description     String?
+  attachmentUrl   String?
   status          QuizStatus @default(DRAFT)
   durationMinutes Int?
   maxAttempts     Int        @default(1)

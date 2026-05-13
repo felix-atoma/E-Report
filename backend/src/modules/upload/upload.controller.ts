@@ -64,6 +64,36 @@ export class UploadController {
     return this.service.handleFileUpload(file, type, user.institutionId);
   }
 
+  @Post('lms')
+  @Roles(Role.ADMIN, Role.TEACHER)
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: os.tmpdir(),
+        filename: (_req, file, cb) => {
+          const unique = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+          cb(null, unique + path.extname(file.originalname));
+        },
+      }),
+      limits: { fileSize: 50 * 1024 * 1024 },
+    }),
+  )
+  @ApiOperation({ summary: 'Upload an LMS attachment (any file type, up to 50 MB)' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['file'],
+      properties: { file: { type: 'string', format: 'binary' } },
+    },
+  })
+  uploadLmsFile(
+    @UploadedFile() file: UploadedFileInfo,
+    @CurrentUser() user: any,
+  ) {
+    return this.service.handleLmsFileUpload(file, user.institutionId);
+  }
+
   @Delete('file')
   @Roles(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
