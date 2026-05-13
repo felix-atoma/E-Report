@@ -1,14 +1,17 @@
 import { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { reportsService } from '../../../services/reportsService';
 import { classesService } from '../../../services/classesService';
+import { useAuth } from '../../../context/AuthContext';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Table from '../../../components/common/Table/Table';
 import Select from '../../../components/common/Select/Select';
 import Button from '../../../components/common/Button/Button';
 import StatusPill from '../../../components/common/StatusPill/StatusPill';
+import ConfirmDialog from '../../../components/common/ConfirmDialog/ConfirmDialog';
 import './ReportCardsPage.css';
 
 const STATUS_OPTIONS = [
@@ -18,8 +21,12 @@ const STATUS_OPTIONS = [
 ];
 
 function ReportCardsPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
+  const qc = useQueryClient();
   const [classFilter, setClass]   = useState('');
   const [statusFilter, setStatus] = useState('');
+  const [confirmPublish, setConfirmPublish] = useState(null);
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ['reports'],
@@ -29,6 +36,28 @@ function ReportCardsPage() {
   const { data: classes = [] } = useQuery({
     queryKey: ['classes'],
     queryFn: () => classesService.list().then((r) => r.data),
+  });
+
+  const publishMut = useMutation({
+    mutationFn: (id) => reportsService.publish(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['reports'] });
+      toast.success('Bulletin publié ! Le PDF sera disponible dans quelques instants.');
+      setConfirmPublish(null);
+    },
+    onError: (e) => {
+      toast.error(e?.response?.data?.message ?? 'Erreur lors de la publication');
+      setConfirmPublish(null);
+    },
+  });
+
+  const pdfMut = useMutation({
+    mutationFn: (id) => reportsService.regeneratePdf(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['reports'] });
+      toast.success('PDF généré avec succès !');
+    },
+    onError: (e) => toast.error(e?.response?.data?.message ?? 'Erreur lors de la génération PDF'),
   });
 
   const filtered = useMemo(() => {
@@ -78,16 +107,36 @@ function ReportCardsPage() {
     {
       key: 'actions',
       label: '',
-      style: { width: '160px', textAlign: 'right' },
+      style: { width: '220px', textAlign: 'right' },
       render: (r) => (
-        <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end' }}>
+        <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
           <Link to={`/teacher/reports/${r.id}`}>
             <Button size="sm" variant="ghost">Ouvrir</Button>
           </Link>
+          {isAdmin && r.status === 'REVIEW' && (
+            <Button size="sm" variant="primary" onClick={() => setConfirmPublish(r)}>
+              Publier
+            </Button>
+          )}
           {r.status === 'PUBLISHED' && (
-            <Link to={`/reports/${r.id}/print`} target="_blank" rel="noreferrer">
-              <Button size="sm" variant="ghost">🖨️ PDF</Button>
-            </Link>
+            <>
+              <Link to={`/reports/${r.id}/print`} target="_blank" rel="noreferrer">
+                <Button size="sm" variant="ghost">🖨️ Aperçu</Button>
+              </Link>
+              {r.pdfUrl ? (
+                <a href={r.pdfUrl} download target="_blank" rel="noreferrer">
+                  <Button size="sm" variant="ghost">📥 PDF</Button>
+                </a>
+              ) : isAdmin ? (
+                <Button size="sm" variant="ghost" onClick={() => pdfMut.mutate(r.id)} disabled={pdfMut.isPending}>
+                  {pdfMut.isPending ? '⏳…' : '🔄 Générer PDF'}
+                </Button>
+              ) : (
+                <Button size="sm" variant="ghost" disabled title="PDF en cours de génération…">
+                  ⏳ PDF
+                </Button>
+              )}
+            </>
           )}
         </div>
       ),
@@ -130,6 +179,17 @@ function ReportCardsPage() {
         rows={filtered}
         loading={isLoading}
         emptyMessage="Aucun bulletin trouvé"
+      />
+
+      <ConfirmDialog
+        open={!!confirmPublish}
+        onClose={() => setConfirmPublish(null)}
+        onConfirm={() => publishMut.mutate(confirmPublish.id)}
+        loading={publishMut.isPending}
+        title="Publier le bulletin"
+        message={`Publier le bulletin de ${confirmPublish?.student?.user?.name ?? confirmPublish?.student?.admissionNumber ?? '…'} (${confirmPublish?.termName ?? ''}) ? Cette action est irréversible.`}
+        confirmLabel="Publier"
+        variant="primary"
       />
     </AppShell>
   );

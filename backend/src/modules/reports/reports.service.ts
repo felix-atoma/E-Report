@@ -413,6 +413,40 @@ export class ReportsService {
     return { count: results.length };
   }
 
+  async regeneratePdf(id: string, institutionId: string) {
+    const report = await this.prisma.reportCard.findFirst({
+      where: { id, class: { institutionId }, status: 'PUBLISHED' },
+      include: {
+        grades: {
+          include: { subject: { select: { nameFr: true, passMark: true } } },
+          orderBy: { subject: { nameFr: 'asc' } },
+        },
+        student: {
+          include: {
+            user: { select: { name: true, profileImage: true } },
+          },
+        },
+        class: { select: { name: true } },
+      },
+    });
+    if (!report) throw new NotFoundException('Published report card not found');
+
+    const fiches = await this.prisma.gradeFiche.findMany({
+      where: { classId: report.classId, academicYear: report.academicYear, termNumber: report.termNumber },
+    });
+    const ficheMap = new Map(fiches.map((f) => [f.subjectId, f]));
+    const gradesWithFiche = report.grades.map((g: any) => ({
+      ...g,
+      ficheSignedAt: ficheMap.get(g.subjectId)?.signedAt ?? null,
+      signatureData: ficheMap.get(g.subjectId)?.signatureData ?? null,
+    }));
+
+    await this.generateAndSavePdf(report, { ...report, grades: gradesWithFiche }, institutionId);
+
+    const updated = await this.prisma.reportCard.findUnique({ where: { id }, select: { pdfUrl: true } });
+    return { pdfUrl: updated?.pdfUrl };
+  }
+
   private async ensureEditable(id: string, institutionId: string, userId: string, role: Role) {
     const report = await this.prisma.reportCard.findFirst({
       where: { id, class: { institutionId } },

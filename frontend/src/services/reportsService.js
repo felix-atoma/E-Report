@@ -7,5 +7,6 @@ export const reportsService = {
   update: (id, data) => api.patch(`/reports/${id}`, data),
   submit: (id) => api.patch(`/reports/${id}/submit`),
   publish: (id) => api.patch(`/reports/${id}/publish`),
+  regeneratePdf: (id) => api.post(`/reports/${id}/pdf`),
   titulaireUpsert: (data) => api.put('/reports/titulaire', data),
 };
