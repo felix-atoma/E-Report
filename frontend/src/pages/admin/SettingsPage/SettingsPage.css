@@ -128,6 +128,27 @@
   color: var(--color-text, #1f2937);
 }
 
+.settings-export {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.settings-export__files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.settings-export__files span {
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #6b7280);
+  background: var(--color-surface, #f9fafb);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 4px;
+  padding: 0.2rem 0.5rem;
+}
+
 @media (max-width: 480px) {
   .settings-row {
     grid-template-columns: 1fr;

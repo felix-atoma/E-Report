@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { InstitutionsService } from './institutions.service';
 import { UpdateInstitutionDto } from './dto/update-institution.dto';
@@ -39,5 +40,19 @@ export class InstitutionsController {
   @ApiOperation({ summary: 'Update academic settings (Admin only)' })
   updateAcademicSettings(@Body() dto: UpdateAcademicSettingsDto, @CurrentUser() user: any) {
     return this.service.updateAcademicSettings(user.institutionId, dto);
+  }
+
+  @Get('me/export')
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Export all institution data as ZIP (Admin only)' })
+  async exportData(@CurrentUser() user: any, @Res() res: Response) {
+    const buffer = await this.service.exportAllData(user.institutionId);
+    const date = new Date().toISOString().slice(0, 10);
+    res.set({
+      'Content-Type': 'application/zip',
+      'Content-Disposition': `attachment; filename="export_donnees_${date}.zip"`,
+      'Content-Length': buffer.length,
+    });
+    res.send(buffer);
   }
 }

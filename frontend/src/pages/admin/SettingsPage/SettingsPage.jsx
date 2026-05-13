@@ -93,6 +93,25 @@ function SettingsPage() {
     onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur de sauvegarde'),
   });
 
+  const [exporting, setExporting] = useState(false);
+
+  async function handleExport() {
+    setExporting(true);
+    try {
+      const res = await institutionsService.exportData();
+      const url = URL.createObjectURL(res.data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `export_donnees_${new Date().toISOString().slice(0, 10)}.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error('Erreur lors de l\'export');
+    } finally {
+      setExporting(false);
+    }
+  }
+
   function setInfo(field, value) {
     setInfoForm((f) => ({ ...f, [field]: value }));
   }
@@ -317,6 +336,28 @@ function SettingsPage() {
               {academicForm.feeGateEnabled ? 'Activé — PDF bloqué si frais impayés' : 'Désactivé — PDF envoyé sans condition'}
             </span>
           </label>
+        </Card>
+
+        {/* ── Export des données ── */}
+        <Card className="settings-section">
+          <h3 className="settings-section__title">Export des données</h3>
+          <p className="settings-section__desc">
+            Téléchargez toutes les données de votre établissement (élèves, classes, bulletins,
+            notes, paiements) en format CSV dans une archive ZIP. Vos données vous appartiennent.
+          </p>
+          <div className="settings-export">
+            <div className="settings-export__files">
+              <span>📄 eleves.csv</span>
+              <span>📄 classes.csv</span>
+              <span>📄 matieres.csv</span>
+              <span>📄 bulletins.csv</span>
+              <span>📄 notes.csv</span>
+              <span>📄 paiements.csv</span>
+            </div>
+            <Button onClick={handleExport} disabled={exporting}>
+              {exporting ? 'Export en cours…' : '⬇️ Exporter toutes mes données'}
+            </Button>
+          </div>
         </Card>
 
       </div>

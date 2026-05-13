@@ -5,4 +5,5 @@ export const institutionsService = {
   update: (data) => api.patch('/institutions/me', data),
   updateBranding: (data) => api.patch('/institutions/me/branding', data),
   updateAcademicSettings: (data) => api.patch('/institutions/me/academic-settings', data),
+  exportData: () => api.get('/institutions/me/export', { responseType: 'blob' }),
 };

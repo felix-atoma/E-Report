@@ -3,6 +3,20 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UpdateInstitutionDto } from './dto/update-institution.dto';
 import { UpdateBrandingDto } from './dto/update-branding.dto';
 import { UpdateAcademicSettingsDto } from './dto/update-academic-settings.dto';
+import archiver = require('archiver');
+import { PassThrough } from 'stream';
+
+function toCsv(rows: Record<string, unknown>[]): string {
+  if (!rows.length) return '';
+  const headers = Object.keys(rows[0]);
+  const escape = (v: unknown) => {
+    const s = v == null ? '' : String(v);
+    return s.includes(',') || s.includes('"') || s.includes('\n')
+      ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const lines = [headers.join(','), ...rows.map((r) => headers.map((h) => escape(r[h])).join(','))];
+  return lines.join('\r\n');
+}
 
 @Injectable()
 export class InstitutionsService {
@@ -65,6 +79,168 @@ export class InstitutionsService {
     return this.prisma.institution.update({
       where: { id: institutionId },
       data: { academicSettings: merged },
+    });
+  }
+
+  async exportAllData(institutionId: string): Promise<Buffer> {
+    const institution = await this.prisma.institution.findUnique({ where: { id: institutionId } });
+    if (!institution) throw new NotFoundException('Institution not found');
+
+    const [students, classes, subjects, reportCards, payments] = await Promise.all([
+      this.prisma.student.findMany({
+        where: { institutionId },
+        include: {
+          user: { select: { name: true, email: true } },
+          classes: { include: { class: { select: { name: true, academicYear: true } } } },
+        },
+        orderBy: { createdAt: 'asc' },
+      }),
+      this.prisma.class.findMany({
+        where: { institutionId },
+        include: { teacher: { select: { name: true } } },
+        orderBy: { name: 'asc' },
+      }),
+      this.prisma.subject.findMany({
+        where: { institutionId },
+        orderBy: { nameFr: 'asc' },
+      }),
+      this.prisma.reportCard.findMany({
+        where: { class: { institutionId } },
+        include: {
+          student: { include: { user: { select: { name: true } } } },
+          class: { select: { name: true } },
+          grades: { include: { subject: { select: { nameFr: true } } } },
+        },
+        orderBy: { createdAt: 'asc' },
+      }),
+      this.prisma.payment.findMany({
+        where: { institutionId },
+        include: {
+          student: { include: { user: { select: { name: true } } } },
+        },
+        orderBy: { paymentDate: 'asc' },
+      }),
+    ]);
+
+    const institutionCsv = toCsv([{
+      Nom: institution.name,
+      Pays: institution.country ?? '',
+      'Devise nationale': institution.countryMotto ?? '',
+      Adresse: institution.address ?? '',
+      Téléphone: institution.phone ?? '',
+      Email: institution.email ?? '',
+      'Site web': institution.website ?? '',
+      'Slogan': institution.motto ?? '',
+    }]);
+
+    const studentsCsv = toCsv(students.map((s) => {
+      const latestClass = s.classes.sort((a, b) => b.academicYear.localeCompare(a.academicYear))[0];
+      return {
+        Matricule: s.admissionNumber,
+        Nom: s.user?.name ?? '',
+        Email: s.user?.email ?? '',
+        'Date de naissance': s.dateOfBirth ? new Date(s.dateOfBirth).toLocaleDateString('fr-FR') : '',
+        Sexe: s.sex ?? '',
+        Classe: latestClass?.class.name ?? '',
+        'Année scolaire': latestClass?.class.academicYear ?? '',
+        'Date inscription': new Date(s.enrollmentDate).toLocaleDateString('fr-FR'),
+      };
+    }));
+
+    const classesCsv = toCsv(classes.map((c) => ({
+      Nom: c.name,
+      Niveau: c.level,
+      Série: c.series ?? '',
+      'Année scolaire': c.academicYear,
+      'Professeur principal': c.teacher?.name ?? '',
+      Capacité: c.capacity ?? '',
+      Salle: c.room ?? '',
+    })));
+
+    const subjectsCsv = toCsv(subjects.map((s) => ({
+      'Nom (FR)': s.nameFr,
+      'Nom (EN)': s.nameEn,
+      Code: s.code,
+      Catégorie: s.category ?? '',
+      Département: s.department ?? '',
+      'Note de passage': s.passMark,
+    })));
+
+    const reportCardsCsv = toCsv(reportCards.map((r) => ({
+      Élève: r.student.user?.name ?? r.student.admissionNumber,
+      Matricule: r.student.admissionNumber,
+      Classe: r.class.name,
+      'Année scolaire': r.academicYear,
+      Trimestre: r.termName,
+      Statut: r.status,
+      'Moyenne générale': r.overallAverage ?? '',
+      Rang: r.classRank ?? '',
+      'Effectif classe': r.classSize ?? '',
+      Mention: r.mention ?? '',
+      Conduite: r.conductRating ?? '',
+      'Moy. classe': r.classAverage ?? '',
+      'Plus forte moy.': r.classHighest ?? '',
+      'Plus faible moy.': r.classLowest ?? '',
+    })));
+
+    const gradesCsv = toCsv(reportCards.flatMap((r) =>
+      r.grades.map((g) => ({
+        Élève: r.student.user?.name ?? r.student.admissionNumber,
+        Matricule: r.student.admissionNumber,
+        Classe: r.class.name,
+        'Année scolaire': r.academicYear,
+        Trimestre: r.termName,
+        Matière: g.subject.nameFr,
+        Interro1: g.noteInterro1 ?? '',
+        Interro2: g.noteInterro2 ?? '',
+        Interro3: g.noteInterro3 ?? '',
+        Interro4: g.noteInterro4 ?? '',
+        Devoir: g.noteDevoir ?? '',
+        Composition: g.noteComposition ?? '',
+        Moyenne: g.moyenneMatiere ?? '',
+        Coefficient: g.coefficient,
+        Points: g.weightedScore ?? '',
+        Rang: g.rangMatiere ?? '',
+        Appréciation: g.appreciation ?? '',
+      })),
+    ));
+
+    const paymentsCsv = toCsv(payments.map((p) => ({
+      Élève: p.student.user?.name ?? p.student.admissionNumber,
+      Matricule: p.student.admissionNumber,
+      'Année scolaire': p.academicYear,
+      Trimestre: p.term ?? '',
+      Montant: Number(p.amount),
+      Devise: 'XOF',
+      Méthode: p.paymentMethod,
+      'N° reçu': p.receiptNumber,
+      'N° référence': p.referenceNumber ?? '',
+      Date: new Date(p.paymentDate).toLocaleDateString('fr-FR'),
+      Notes: p.notes ?? '',
+    })));
+
+    return new Promise((resolve, reject) => {
+      const chunks: Buffer[] = [];
+      const pass = new PassThrough();
+      pass.on('data', (chunk) => chunks.push(chunk));
+      pass.on('end', () => resolve(Buffer.concat(chunks)));
+      pass.on('error', reject);
+
+      const zip = archiver('zip', { zlib: { level: 6 } });
+      zip.on('error', reject);
+      zip.pipe(pass);
+
+      const exportDate = new Date().toISOString().slice(0, 10);
+      const prefix = `${institution.name.replace(/[^a-z0-9]/gi, '_')}_${exportDate}`;
+
+      zip.append(institutionCsv, { name: `${prefix}/institution.csv` });
+      zip.append(studentsCsv,    { name: `${prefix}/eleves.csv` });
+      zip.append(classesCsv,     { name: `${prefix}/classes.csv` });
+      zip.append(subjectsCsv,    { name: `${prefix}/matieres.csv` });
+      zip.append(reportCardsCsv, { name: `${prefix}/bulletins.csv` });
+      zip.append(gradesCsv,      { name: `${prefix}/notes.csv` });
+      zip.append(paymentsCsv,    { name: `${prefix}/paiements.csv` });
+      zip.finalize();
     });
   }
 
