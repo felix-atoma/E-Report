@@ -3,7 +3,11 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UpdateInstitutionDto } from './dto/update-institution.dto';
 import { UpdateBrandingDto } from './dto/update-branding.dto';
 import { UpdateAcademicSettingsDto } from './dto/update-academic-settings.dto';
-import archiver = require('archiver');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const createZip: (fmt: string, opts?: object) => NodeJS.ReadWriteStream & {
+  append(src: string | Buffer, opts: { name: string }): void;
+  finalize(): void;
+} = require('archiver');
 import { PassThrough } from 'stream';
 
 function toCsv(rows: Record<string, unknown>[]): string {
@@ -226,7 +230,7 @@ export class InstitutionsService {
       pass.on('end', () => resolve(Buffer.concat(chunks)));
       pass.on('error', reject);
 
-      const zip = archiver('zip', { zlib: { level: 6 } });
+      const zip = createZip('zip', { zlib: { level: 6 } });
       zip.on('error', reject);
       zip.pipe(pass);
 
