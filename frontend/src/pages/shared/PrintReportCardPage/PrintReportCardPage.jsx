@@ -42,6 +42,15 @@ export default function PrintReportCardPage() {
   });
 
   useEffect(() => {
+    if (!report) return;
+    const name = report.student?.user?.name ?? report.student?.admissionNumber ?? 'Bulletin';
+    const term = report.termName ?? `Trimestre ${report.termNumber}`;
+    const prev = document.title;
+    document.title = `${name} - ${term} ${report.academicYear ?? ''}`.trim();
+    return () => { document.title = prev; };
+  }, [report]);
+
+  useEffect(() => {
     if (!institution) return;
     const branding = institution.brandingSettings ?? {};
     const primary   = branding.primaryColor   || '#1e3a8a';
