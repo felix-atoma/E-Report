@@ -85,7 +85,7 @@ export class ReportsService {
           select: {
             id: true, name: true, level: true, series: true,
             teacher: { select: { id: true, name: true } },
-            subjects: { include: { subject: { select: { id: true, nameFr: true, code: true, passMark: true } } } },
+            subjects: { include: { subject: { select: { id: true, nameFr: true, code: true, passMark: true } } }, orderBy: { subject: { nameFr: 'asc' } } },
           },
         },
         createdBy: { select: { id: true, name: true } },

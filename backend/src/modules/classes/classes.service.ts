@@ -53,12 +53,14 @@ export class ClassesService {
               select: { id: true, admissionNumber: true, dateOfBirth: true, sex: true, user: { select: { name: true, profileImage: true } } },
             },
           },
+          orderBy: { student: { user: { name: 'asc' } } },
         },
         subjects: {
           include: {
             subject: { select: { id: true, nameFr: true, nameEn: true, code: true } },
             teacher: { select: { id: true, name: true } },
           },
+          orderBy: { subject: { nameFr: 'asc' } },
         },
       },
     });
