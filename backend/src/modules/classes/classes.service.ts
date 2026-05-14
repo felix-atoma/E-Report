@@ -10,6 +10,26 @@ import { UpdateClassDto } from './dto/update-class.dto';
 import { EnrollStudentDto } from './dto/enroll-student.dto';
 import { AssignSubjectDto } from './dto/assign-subject.dto';
 
+function levelSortOrder(level: string): number {
+  const l = (level ?? '').toLowerCase().replace(/[\s\-_éèê]/g, '');
+  if (/cp1/.test(l)) return 1;
+  if (/cp2/.test(l)) return 2;
+  if (/ce1/.test(l)) return 3;
+  if (/ce2/.test(l)) return 4;
+  if (/cm1/.test(l)) return 5;
+  if (/cm2/.test(l)) return 6;
+  // Collège: 6ème (lowest) → 3ème. Higher number = lower class.
+  if (/6/.test(l)) return 7;
+  if (/5/.test(l)) return 8;
+  if (/4/.test(l)) return 9;
+  if (/3/.test(l)) return 10;
+  // Lycée
+  if (/2nde|second/.test(l)) return 11;
+  if (/1[eè]?re|premi/.test(l)) return 12;
+  if (/terminale|tle|term/.test(l)) return 13;
+  return 50;
+}
+
 @Injectable()
 export class ClassesService {
   constructor(private readonly prisma: PrismaService) {}
@@ -30,7 +50,7 @@ export class ClassesService {
         teacher: { select: { id: true, name: true, email: true } },
         _count: { select: { students: true, subjects: true } },
       },
-      orderBy: [{ academicYear: 'desc' }, { name: 'asc' }],
+      orderBy: [{ academicYear: 'desc' }, { sortOrder: 'asc' }, { name: 'asc' }],
     });
   }
 
@@ -73,16 +93,18 @@ export class ClassesService {
 
   async create(dto: CreateClassDto, institutionId: string) {
     return this.prisma.class.create({
-      data: { ...dto, institutionId },
+      data: { ...dto, institutionId, sortOrder: levelSortOrder(dto.level) },
       include: { teacher: { select: { id: true, name: true, email: true } } },
     });
   }
 
   async update(id: string, dto: UpdateClassDto, institutionId: string) {
     await this.ensureExists(id, institutionId);
+    const data: any = { ...dto };
+    if (dto.level) data.sortOrder = levelSortOrder(dto.level);
     return this.prisma.class.update({
       where: { id },
-      data: dto,
+      data,
       include: { teacher: { select: { id: true, name: true, email: true } } },
     });
   }
