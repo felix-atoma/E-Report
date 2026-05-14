@@ -250,6 +250,14 @@ export default function PrintReportCardPage() {
                 <label>Conduite</label>
                 <strong>{report.conductRating ? CONDUCT_LABELS[report.conductRating] : '—'}</strong>
               </div>
+              <div className="pr-results__cell">
+                <label>Absences</label>
+                <strong>{report.attendanceAbsent != null ? `${report.attendanceAbsent} j` : '—'}</strong>
+              </div>
+              <div className="pr-results__cell">
+                <label>Retards</label>
+                <strong>{report.attendanceLate != null ? report.attendanceLate : '—'}</strong>
+              </div>
               {report.honorCouncil && (
                 <div className="pr-results__cell pr-results__cell--honor">
                   <strong>🏆 Tableau d'honneur</strong>

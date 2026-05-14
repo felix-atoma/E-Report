@@ -168,6 +168,7 @@ export interface ReportCardData {
     attendanceDays: number | null;
     attendancePresent: number | null;
     attendanceLate: number | null;
+    attendanceAbsent: number | null;
     honorCouncil: boolean | null;
     commendations: number | null;
     warnings: number | null;
