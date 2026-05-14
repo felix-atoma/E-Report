@@ -159,7 +159,8 @@ export default function PrintReportCardPage() {
                 <th rowSpan={2} className="pr-grades__col-pts">Points</th>
                 <th rowSpan={2} className="pr-grades__col-rang">Rang</th>
                 <th rowSpan={2} className="pr-grades__col-appr">Appréciation</th>
-                <th rowSpan={2} className="pr-grades__col-sig">Signature prof.</th>
+                <th rowSpan={2} className="pr-grades__col-prof">Nom du prof.</th>
+                <th rowSpan={2} className="pr-grades__col-sig">Signature</th>
               </tr>
               <tr className="pr-grades__head-sub">
                 <th className="pr-grades__col-num">Interro 1</th>
@@ -186,6 +187,7 @@ export default function PrintReportCardPage() {
                     <td className="pr-grades__col-pts">{fmt(g.weightedScore)}</td>
                     <td className="pr-grades__col-rang">{g.rangMatiere ?? '—'}</td>
                     <td className="pr-grades__col-appr">{g.appreciation ?? '—'}</td>
+                    <td className="pr-grades__col-prof">{g.teacherName ?? '—'}</td>
                     <td className="pr-grades__col-sig">
                       {fiche?.isSigned ? (
                         isAdminVerified ? (
@@ -204,7 +206,7 @@ export default function PrintReportCardPage() {
                 <td colSpan={6} className="pr-grades__foot-label">TOTAUX</td>
                 <td>{totalCoef}</td>
                 <td>{fmt(totalPoints)}</td>
-                <td colSpan={3} />
+                <td colSpan={4} />
               </tr>
             </tfoot>
           </table>

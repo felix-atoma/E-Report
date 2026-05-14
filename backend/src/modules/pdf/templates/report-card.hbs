@@ -91,8 +91,9 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:11px; color:#111; ba
 .grades-table .col-coef   { min-width:30px; }
 .grades-table .col-pts    { background:#f0fdf4; font-weight:700; }
 .grades-table .col-rang   { color:#0f766e; font-weight:700; min-width:30px; font-size:11px; }
-.grades-table .col-appr   { text-align:left; min-width:80px; font-size:10px; }
-.grades-table .col-prof   { text-align:left; min-width:90px; font-size:9.5px; }
+.grades-table .col-appr   { text-align:left; min-width:70px; font-size:10px; }
+.grades-table .col-prof   { text-align:left; min-width:75px; font-size:9.5px; }
+.grades-table .col-sig-hbs { min-width:60px; }
 .grades-table tbody tr:nth-child(even) { background:#f8fafb; }
 .grades-table tbody td.fail { color:#dc2626; font-weight:bold; }
 .grades-table tbody td.pass { color:#15803d; font-weight:600; }
@@ -244,7 +245,8 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:11px; color:#111; ba
         <th class="col-pts"  rowspan="2">Points</th>
         <th class="col-rang" rowspan="2">Rang</th>
         <th class="col-appr" rowspan="2">Appréciation</th>
-        <th class="col-prof" rowspan="2">Professeur / Signature</th>
+        <th class="col-prof" rowspan="2">Professeur</th>
+        <th class="col-sig-hbs" rowspan="2">Signature</th>
       </tr>
       <tr>
         <th class="col-num">Int. 1</th>
@@ -270,10 +272,9 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:11px; color:#111; ba
         <td class="col-pts">{{fmtScore this.weightedScore}}</td>
         <td class="col-rang">{{this.rangMatiere}}{{#if this.rangMatiere}}e{{/if}}</td>
         <td class="col-appr">{{this.appreciation}}</td>
-        <td class="col-prof" style="text-align:center;">
-          {{this.teacherName}}
+        <td class="col-prof">{{this.teacherName}}</td>
+        <td class="col-sig-hbs" style="text-align:center;">
           {{#if this.signatureData}}
-            <br>
             <img src="{{this.signatureData}}" alt="sig" style="max-height:34px;max-width:85px;object-fit:contain;display:block;margin:3px auto 0;" />
             {{#if this.ficheSignedAt}}<span style="font-size:7.5px;color:#0f766e;display:block;">✔ {{this.ficheSignedAt}}</span>{{/if}}
           {{else}}
@@ -289,7 +290,7 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:11px; color:#111; ba
         <td class="col-moy">{{fmtScore report.overallAverage}}</td>
         <td class="col-coef">{{report.totalCoef}}</td>
         <td class="col-pts">{{fmtScore report.totalPoints}}</td>
-        <td colspan="3"></td>
+        <td colspan="4"></td>
       </tr>
     </tfoot>
   </table>
