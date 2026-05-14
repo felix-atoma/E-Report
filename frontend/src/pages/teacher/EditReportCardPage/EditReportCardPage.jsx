@@ -132,8 +132,8 @@ function EditReportCardPage() {
     });
     setGradeRows(rows);
     setComment(report.teacherComment ?? '');
-    setAbsences(report.absences != null ? String(report.absences) : '');
-    setLates(report.lates != null ? String(report.lates) : '');
+    setAbsences(report.attendanceAbsent != null ? String(report.attendanceAbsent) : '');
+    setLates(report.attendanceLate != null ? String(report.attendanceLate) : '');
   }, [report, grades]);
 
   const handleGradeChange = useCallback((subjectId, field, value) => {
@@ -156,8 +156,8 @@ function EditReportCardPage() {
         gradesService.bulkUpsert(id, gradesToSave),
         reportsService.update(id, {
           teacherComment: teacherComment || undefined,
-          absences:       absences !== '' ? Number(absences) : undefined,
-          lates:          lates    !== '' ? Number(lates)    : undefined,
+          attendanceAbsent: absences !== '' ? Number(absences) : undefined,
+          attendanceLate:   lates    !== '' ? Number(lates)    : undefined,
         }),
       ]);
     },
