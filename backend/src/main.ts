@@ -2,6 +2,8 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import helmet from 'helmet';
+import compression from 'compression';
 import { AppModule } from './app.module';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
@@ -12,6 +14,10 @@ async function bootstrap() {
 
   const globalPrefix = config.get<string>('GLOBAL_PREFIX', 'api');
   app.setGlobalPrefix(globalPrefix);
+
+  // Security & performance middleware
+  app.use(helmet());
+  app.use(compression());
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -25,8 +31,12 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new TransformInterceptor());
 
+  const frontendUrl = config.get<string>('FRONTEND_URL');
+  if (!frontendUrl && config.get<string>('NODE_ENV') === 'production') {
+    throw new Error('FRONTEND_URL must be set in production');
+  }
   app.enableCors({
-    origin: config.get<string>('FRONTEND_URL', 'http://localhost:5173'),
+    origin: frontendUrl || 'http://localhost:5173',
     credentials: true,
   });
 
@@ -45,4 +55,8 @@ async function bootstrap() {
   await app.listen(port);
   console.log(`🚀 NovaBulletin API running on http://localhost:${port}/${globalPrefix}`);
 }
-bootstrap();
+
+bootstrap().catch((err) => {
+  console.error('❌ Failed to start NovaBulletin:', err);
+  process.exit(1);
+});
