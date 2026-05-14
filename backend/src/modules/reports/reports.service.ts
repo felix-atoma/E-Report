@@ -237,6 +237,29 @@ export class ReportsService {
 
     const mention = overallAverage !== null ? computeMention(overallAverage) : null;
 
+    // Compute annual average on the last term
+    const expectedTermCount =
+      report.termType === 'SEMESTRE' ? 2 : report.termType === 'TRIMESTRE' ? 3 : null;
+    const isLastTerm = expectedTermCount !== null && report.termNumber === expectedTermCount;
+
+    let annualAverage: number | null = null;
+    let councilDecision: string | null = null;
+
+    if (isLastTerm && overallAverage !== null) {
+      const priorTerms = await this.prisma.reportCard.findMany({
+        where: {
+          studentId: report.studentId,
+          academicYear: report.academicYear,
+          status: 'PUBLISHED',
+          id: { not: id },
+        },
+        select: { overallAverage: true },
+      });
+      const allAvgs = [...priorTerms.map((t) => t.overallAverage ?? 0), overallAverage];
+      annualAverage = Math.round((allAvgs.reduce((a, b) => a + b, 0) / allAvgs.length) * 100) / 100;
+      councilDecision = annualAverage >= 10 ? 'Admis(e) en classe supérieure' : 'Redoublant(e)';
+    }
+
     const published = await this.prisma.reportCard.update({
       where: { id },
       data: {
@@ -249,6 +272,8 @@ export class ReportsService {
         classLowest,
         classAverage,
         mention,
+        annualAverage,
+        councilDecision,
       },
       include: {
         student: {
@@ -329,6 +354,8 @@ export class ReportsService {
         honorCouncil: (published as any).honorCouncil ?? null,
         commendations: (published as any).commendations ?? null,
         warnings: (published as any).warnings ?? null,
+        annualAverage: (published as any).annualAverage ?? null,
+        councilDecision: (published as any).councilDecision ?? null,
       },
       student: {
         admissionNumber: reportWithGrades.student.admissionNumber,

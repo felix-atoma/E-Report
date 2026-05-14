@@ -45,12 +45,12 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:11px; color:#111; ba
   border-radius:4px; margin-bottom:10px; overflow:hidden;
 }
 .student-band .photo-cell {
-  display:flex; align-items:center; padding:6px 8px;
+  display:flex; align-items:center; justify-content:center; padding:6px 8px;
   border-right:1px solid #9ca3af; flex-shrink:0;
 }
 .student-band .photo-cell img {
-  width:56px; height:68px; object-fit:cover;
-  border-radius:2px; border:1px solid #d1d5db;
+  width:64px; height:80px; object-fit:cover;
+  border-radius:2px; border:2px solid var(--c-primary);
 }
 .student-band .fields { display:flex; flex:1; flex-wrap:wrap; }
 .student-band .field {
@@ -120,6 +120,33 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:11px; color:#111; ba
 .sum-card .mention       { font-size:16px; font-weight:bold; }
 .sum-card .mention.fail  { color:#dc2626; }
 .sum-card .mention.pass  { color:#15803d; }
+
+/* ── Annual average + council decision ── */
+.annual-bar {
+  display:flex; align-items:stretch; border:2px solid var(--c-primary);
+  border-radius:4px; margin-bottom:10px; overflow:hidden;
+}
+.annual-bar .ann-cell {
+  flex:1; padding:8px 12px; text-align:center; border-right:1px solid #c7d0da;
+}
+.annual-bar .ann-cell:last-child { border-right:none; }
+.annual-bar .ann-label {
+  font-size:8.5px; color:#555; text-transform:uppercase;
+  font-weight:700; margin-bottom:4px; letter-spacing:0.3px;
+}
+.annual-bar .ann-value { font-size:24px; font-weight:bold; }
+.annual-bar .ann-value.pass { color:#15803d; }
+.annual-bar .ann-value.fail { color:#dc2626; }
+.annual-bar .decision-cell {
+  flex:2; padding:8px 14px; display:flex;
+  align-items:center; justify-content:center;
+}
+.annual-bar .decision-text {
+  font-size:14px; font-weight:800; text-transform:uppercase;
+  letter-spacing:1px;
+}
+.annual-bar .decision-text.pass { color:#15803d; }
+.annual-bar .decision-text.fail { color:#dc2626; }
 
 /* ── Two-col section ── */
 .two-col { display:flex; gap:8px; margin-bottom:10px; }
@@ -326,6 +353,20 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:11px; color:#111; ba
       <div class="mention">{{report.conductLabel}}</div>
     </div>
   </div>
+
+  {{#if report.annualAverage}}
+  <!-- Annual average + council decision -->
+  <div class="annual-bar">
+    <div class="ann-cell">
+      <div class="ann-label">Moyenne Annuelle</div>
+      <div class="ann-value {{#if report.isPassing}}pass{{else}}fail{{/if}}">{{fmtScore report.annualAverage}}<small style="font-size:11px;">/20</small></div>
+    </div>
+    <div class="decision-cell">
+      <div class="ann-label" style="margin-right:10px;">Décision du Conseil :</div>
+      <div class="decision-text {{#if report.isPassing}}pass{{else}}fail{{/if}}">{{report.councilDecision}}</div>
+    </div>
+  </div>
+  {{/if}}
 
   <!-- Attendance + remarks -->
   <div class="two-col">

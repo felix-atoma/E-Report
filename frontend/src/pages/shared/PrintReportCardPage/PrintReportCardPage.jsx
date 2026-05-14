@@ -132,6 +132,11 @@ export default function PrintReportCardPage() {
 
         {/* ── Student band ───────────────────────────────────────────────── */}
         <div className="pr-student-band">
+          {report.student?.user?.profileImage && (
+            <div className="pr-student-band__photo">
+              <img src={report.student.user.profileImage} alt="Photo" />
+            </div>
+          )}
           <div className="pr-student-band__field pr-student-band__field--name">
             <label>Nom et Prénom</label>
             <span>{studentName}</span>
@@ -287,6 +292,24 @@ export default function PrintReportCardPage() {
             </div>
           </div>
         </div>
+
+        {/* ── Annual average + council decision (last term only) ─────────── */}
+        {report.annualAverage != null && (
+          <div className="pr-annual-bar">
+            <div className="pr-annual-bar__cell">
+              <label>Moyenne Annuelle</label>
+              <strong className={report.annualAverage >= 10 ? 'pr-val--pass' : 'pr-val--fail'}>
+                {fmt(report.annualAverage)}<span className="pr-val-denom"> / 20</span>
+              </strong>
+            </div>
+            <div className="pr-annual-bar__decision">
+              <label>Décision du Conseil</label>
+              <strong className={report.annualAverage >= 10 ? 'pr-val--pass' : 'pr-val--fail'}>
+                {report.councilDecision ?? '—'}
+              </strong>
+            </div>
+          </div>
+        )}
 
         {/* ── Comments ───────────────────────────────────────────────────── */}
         <div className="pr-comments">

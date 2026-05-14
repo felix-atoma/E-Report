@@ -354,6 +354,8 @@ model ReportCard {
   classLowest       Float?    // Moyenne la plus faible
   classAverage      Float?    // Moyenne de la classe
   mention           String?   // Mention (TB, B, AB, P, Insuf.)
+  annualAverage     Float?    // Moyenne annuelle (dernier trimestre/semestre seulement)
+  councilDecision   String?   // Décision du conseil (ex: Admis, Redoublant)
   pdfUrl            String?
   deliveryStatus    String?
   publishedAt       DateTime?

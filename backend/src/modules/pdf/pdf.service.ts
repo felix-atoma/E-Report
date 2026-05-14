@@ -171,6 +171,8 @@ export interface ReportCardData {
     honorCouncil: boolean | null;
     commendations: number | null;
     warnings: number | null;
+    annualAverage: number | null;
+    councilDecision: string | null;
   };
   student: {
     admissionNumber: string;

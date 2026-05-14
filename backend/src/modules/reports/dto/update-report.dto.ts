@@ -70,4 +70,9 @@ export class UpdateReportDto {
   @IsOptional()
   @IsBoolean()
   honorCouncil?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  councilDecision?: string;
 }
