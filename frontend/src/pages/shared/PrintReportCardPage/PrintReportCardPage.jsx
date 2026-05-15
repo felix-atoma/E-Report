@@ -98,11 +98,6 @@ export default function PrintReportCardPage() {
       {/* A4 page */}
       <div className="print-page__a4">
 
-        {/* Watermark */}
-        {institution?.name && (
-          <div className="pr-watermark" aria-hidden="true">{institution.name}</div>
-        )}
-
         {/* ── Header ─────────────────────────────────────────────────────── */}
         <div className="pr-header">
           {institution?.logo
@@ -161,6 +156,9 @@ export default function PrintReportCardPage() {
 
         {/* ── Grades table ───────────────────────────────────────────────── */}
         <div className="pr-grades-wrap">
+          {institution?.name && (
+            <div className="pr-watermark" aria-hidden="true">{institution.name}</div>
+          )}
           <table className="pr-grades">
             <thead>
               <tr className="pr-grades__head-top">

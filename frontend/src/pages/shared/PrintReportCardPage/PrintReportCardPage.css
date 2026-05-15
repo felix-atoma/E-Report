@@ -42,7 +42,8 @@
   background: #fff;
   box-shadow: 0 4px 24px rgba(0,0,0,0.20);
   font-family: Arial, Helvetica, sans-serif;
-  font-size: 9px;
+  font-size: 10px;
+  font-weight: 600;
   color: #111;
   position: relative;
   overflow: hidden;
@@ -52,12 +53,12 @@
   gap: 0;
 }
 
-/* ── Watermark ── */
+/* ── Watermark — positioned inside pr-grades-wrap only ── */
 .pr-watermark {
   position: absolute; top: 50%; left: 50%;
   transform: translate(-50%, -50%) rotate(-38deg);
-  font-size: 55px; font-weight: 900;
-  color: color-mix(in srgb, var(--bulletin-primary, var(--bp)) 5%, transparent);
+  font-size: 52px; font-weight: 900;
+  color: color-mix(in srgb, var(--bulletin-primary, var(--bp)) 6%, transparent);
   white-space: nowrap; pointer-events: none; user-select: none;
   text-transform: uppercase; letter-spacing: 8px; z-index: 0;
 }
@@ -77,22 +78,22 @@
 .pr-header__crest { margin-left:  8px; }
 .pr-header__center { flex: 1; text-align: center; }
 .pr-header__country {
-  font-size: 7px; color: #6b7280; margin-bottom: 1px; text-transform: uppercase; letter-spacing: 0.5px;
+  font-size: 7.5px; color: #6b7280; margin-bottom: 1px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;
 }
 .pr-header__school {
-  font-size: 12px; font-weight: 900;
+  font-size: 13px; font-weight: 900;
   color: var(--bulletin-primary, var(--bp));
   text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1px;
 }
-.pr-header__sub   { font-size: 8px; color: #555; }
-.pr-header__motto { font-size: 8px; font-style: italic; color: #374151; margin-top: 1px; }
+.pr-header__sub   { font-size: 8.5px; color: #555; font-weight: 600; }
+.pr-header__motto { font-size: 8.5px; font-style: italic; color: #374151; margin-top: 1px; font-weight: 600; }
 
 /* ── Title bar ── */
 .pr-title {
   background: var(--bulletin-primary, var(--bp));
   color: #fff; text-align: center;
-  padding: 3px; font-size: 10px; font-weight: 800;
-  letter-spacing: 0.8px; margin-bottom: 4px; flex-shrink: 0;
+  padding: 4px; font-size: 11px; font-weight: 900;
+  letter-spacing: 1px; margin-bottom: 4px; flex-shrink: 0;
 }
 
 /* ── Student band ── */
@@ -114,10 +115,10 @@
 .pr-student-band__field--name { flex: 2; }
 .pr-student-band__field:last-child { border-right: none; }
 .pr-student-band__field label {
-  display: block; font-size: 6.5px; font-weight: 700;
+  display: block; font-size: 7px; font-weight: 800;
   color: var(--bulletin-primary, var(--bp)); text-transform: uppercase; margin-bottom: 1px;
 }
-.pr-student-band__field span { font-size: 9px; font-weight: 700; }
+.pr-student-band__field span { font-size: 10px; font-weight: 800; }
 
 /* ════════════════════════════════════════════════════════════════════
    GRADES TABLE — flex:1 so it fills remaining vertical space
@@ -127,18 +128,21 @@
   min-height: 0;
   overflow: hidden;
   margin-bottom: 4px;
+  position: relative; /* watermark clipped inside this box */
 }
 .pr-grades {
   width: 100%;
   height: 100%;
   border-collapse: collapse;
-  font-size: 8px;
+  font-size: 9px;
+  font-weight: 700;
 }
 .pr-grades th, .pr-grades td {
   border: 1px solid #d1d5db;
   padding: 0 2px;
   text-align: center;
   vertical-align: middle;
+  font-weight: 700;
 }
 .pr-grades tbody { height: 100%; }
 .pr-grades tbody tr { height: 1px; }
@@ -146,13 +150,13 @@
 
 .pr-grades__head-top th {
   background: var(--bulletin-primary, var(--bp));
-  color: #fff; font-size: 7px; font-weight: 700; padding: 3px 2px;
+  color: #fff; font-size: 8px; font-weight: 800; padding: 3px 2px;
 }
 .pr-grades__head-sub th {
-  background: #dbeafe; color: #1e40af; font-size: 6.5px; padding: 2px;
+  background: #dbeafe; color: #1e40af; font-size: 7.5px; font-weight: 800; padding: 2px;
 }
 .pr-grades__col-matiere {
-  text-align: left !important; min-width: 82px; font-weight: 600;
+  text-align: left !important; min-width: 84px; font-weight: 800;
   padding-left: 4px !important;
 }
 .pr-grades__col-num  { min-width: 24px; }
@@ -161,15 +165,15 @@
 .pr-grades__col-moy  { background: #dcfce7; font-weight: 700; min-width: 28px; }
 .pr-grades__col-pts  { background: #f0fdf4; font-weight: 600; }
 .pr-grades__col-rang { color: #0f766e; font-weight: 700; min-width: 22px; }
-.pr-grades__col-appr { text-align: left !important; min-width: 56px; font-size: 7px; padding-left: 3px !important; }
-.pr-grades__col-prof { text-align: left !important; min-width: 56px; font-size: 7px; padding-left: 3px !important; }
+.pr-grades__col-appr { text-align: left !important; min-width: 56px; font-size: 7.5px; font-weight: 700; padding-left: 3px !important; }
+.pr-grades__col-prof { text-align: left !important; min-width: 56px; font-size: 7.5px; font-weight: 700; padding-left: 3px !important; }
 .pr-grades__col-sig  { min-width: 48px; width: 52px; padding: 1px 2px !important; }
 .pr-grades__fail { color: #dc2626 !important; font-weight: 700; }
 .pr-grades__pass { color: #15803d; }
 .pr-grades tbody tr:nth-child(even) { background: #f9fafb; }
 .pr-grades__foot td {
   background: var(--bulletin-primary, var(--bp));
-  color: #fff; font-weight: 700; font-size: 8px; padding: 2px;
+  color: #fff; font-weight: 900; font-size: 9px; padding: 2px;
 }
 .pr-grades__foot-label { text-align: right !important; padding-right: 5px !important; }
 .pr-sig-img   { max-height: 22px; max-width: 58px; object-fit: contain; display: block; margin: 0 auto; }
@@ -189,7 +193,7 @@
 }
 .pr-results__section-title {
   background: var(--bulletin-primary, var(--bp)); color: #fff;
-  font-size: 7.5px; font-weight: 700; text-transform: uppercase;
+  font-size: 8px; font-weight: 800; text-transform: uppercase;
   letter-spacing: 0.5px; padding: 2px 6px; text-align: center;
 }
 .pr-results__cells {
@@ -201,11 +205,11 @@
 }
 .pr-results__cell:last-child { border-right: none; }
 .pr-results__cell label {
-  display: block; font-size: 6.5px; color: #6b7280;
+  display: block; font-size: 7px; color: #555; font-weight: 800;
   text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 1px;
 }
-.pr-results__cell strong  { font-size: 11px; display: block; }
-.pr-results__cell--big strong { font-size: 14px; font-weight: 900; }
+.pr-results__cell strong  { font-size: 12px; font-weight: 900; display: block; }
+.pr-results__cell--big strong { font-size: 15px; font-weight: 900; }
 .pr-results__cell--high strong { color: #15803d; }
 .pr-results__cell--low  strong { color: #dc2626; }
 .pr-results__cell--honor {
@@ -227,19 +231,19 @@
   min-width: 80px;
 }
 .pr-annual-bar__cell label {
-  display: block; font-size: 6.5px; font-weight: 700;
-  color: #6b7280; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 1px;
+  display: block; font-size: 7px; font-weight: 800;
+  color: #555; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 1px;
 }
-.pr-annual-bar__cell strong { font-size: 14px; font-weight: 900; display: block; }
+.pr-annual-bar__cell strong { font-size: 15px; font-weight: 900; display: block; }
 .pr-annual-bar__decision {
   flex: 1; display: flex; align-items: center; gap: 6px; padding: 4px 12px;
 }
 .pr-annual-bar__decision label {
-  font-size: 7px; font-weight: 700; color: #6b7280;
+  font-size: 7.5px; font-weight: 800; color: #555;
   text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap;
 }
 .pr-annual-bar__decision strong {
-  font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px;
+  font-size: 13px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px;
 }
 
 /* ── Comments ── */
@@ -251,12 +255,12 @@
   flex: 1; border: 1px solid #d1d5db; border-radius: 3px; overflow: hidden;
 }
 .pr-comment-box__label {
-  background: #f3f4f6; font-size: 6.5px; font-weight: 700;
+  background: #f3f4f6; font-size: 7px; font-weight: 800;
   text-transform: uppercase; color: var(--bulletin-primary, var(--bp));
   padding: 2px 5px; letter-spacing: 0.3px;
 }
 .pr-comment-box__text {
-  padding: 2px 5px; font-size: 8px; font-style: italic;
+  padding: 2px 5px; font-size: 8.5px; font-weight: 600; font-style: italic;
   color: #374151; min-height: 16px; line-height: 1.4;
 }
 .pr-comment-box__empty { display: block; height: 12px; }
@@ -280,8 +284,8 @@
   background: #f9fafb;
 }
 .pr-sig__line   { height: 1px; background: #374151; margin-bottom: 2px; }
-.pr-sig__name   { font-size: 7px; font-weight: 600; color: var(--bulletin-primary, var(--bp)); min-height: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pr-sig__label  { font-size: 6.5px; color: #6b7280; font-style: italic; }
+.pr-sig__name   { font-size: 7.5px; font-weight: 800; color: var(--bulletin-primary, var(--bp)); min-height: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pr-sig__label  { font-size: 7px; color: #555; font-style: italic; font-weight: 600; }
 .pr-sig--stamp  { flex: 0 0 auto; width: 44px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
 .pr-sig__label--stamp { margin-top: 2px; }
 
