@@ -1,7 +1,7 @@
 /* ── Theme defaults ── */
 :root {
-  --bp: #1e3a8a;     /* bulletin primary */
-  --bs: #f59e0b;     /* bulletin secondary */
+  --bp: #1e3a8a;
+  --bs: #f59e0b;
 }
 
 /* ── Screen wrapper ── */
@@ -32,23 +32,21 @@
 .print-page__btn--close  { background: transparent; color: #cbd5e1; border: 1px solid #475569; }
 
 /* ════════════════════════════════════════════════════════════════════
-   A4 PAGE — fills exactly 297 × 210 mm
+   A4 PAGE — fixed 297 × 210 mm, flex column
    ════════════════════════════════════════════════════════════════════ */
 .print-page__a4 {
   width: 210mm;
   height: 297mm;
   margin: 1.25rem auto;
-  padding: 7mm 10mm 6mm;
+  padding: 6mm 9mm 5mm;
   background: #fff;
   box-shadow: 0 4px 24px rgba(0,0,0,0.20);
   font-family: Arial, Helvetica, sans-serif;
-  font-size: 9.5px;
+  font-size: 9px;
   color: #111;
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
-
-  /* flex column so grades table can flex-grow */
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -58,7 +56,7 @@
 .pr-watermark {
   position: absolute; top: 50%; left: 50%;
   transform: translate(-50%, -50%) rotate(-38deg);
-  font-size: 58px; font-weight: 900;
+  font-size: 55px; font-weight: 900;
   color: color-mix(in srgb, var(--bulletin-primary, var(--bp)) 5%, transparent);
   white-space: nowrap; pointer-events: none; user-select: none;
   text-transform: uppercase; letter-spacing: 8px; z-index: 0;
@@ -67,212 +65,210 @@
 /* ── Header ── */
 .pr-header {
   display: flex; align-items: center;
-  border-bottom: 3px double var(--bulletin-primary, var(--bp));
-  padding-bottom: 5px; margin-bottom: 5px;
+  border-bottom: 2px solid var(--bulletin-primary, var(--bp));
+  padding-bottom: 4px; margin-bottom: 4px;
   flex-shrink: 0;
 }
 .pr-header__logo, .pr-header__crest {
-  width: 72px; height: 72px; object-fit: contain; flex-shrink: 0;
+  width: 60px; height: 60px; object-fit: contain; flex-shrink: 0;
 }
-.pr-header__logo-placeholder { width: 72px; flex-shrink: 0; }
-.pr-header__logo  { margin-right: 10px; }
-.pr-header__crest { margin-left:  10px; }
+.pr-header__logo-placeholder { width: 60px; flex-shrink: 0; }
+.pr-header__logo  { margin-right: 8px; }
+.pr-header__crest { margin-left:  8px; }
 .pr-header__center { flex: 1; text-align: center; }
 .pr-header__country {
-  font-size: 7.5px; color: #6b7280; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px;
+  font-size: 7px; color: #6b7280; margin-bottom: 1px; text-transform: uppercase; letter-spacing: 0.5px;
 }
 .pr-header__school {
-  font-size: 13px; font-weight: 900;
+  font-size: 12px; font-weight: 900;
   color: var(--bulletin-primary, var(--bp));
   text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1px;
 }
-.pr-header__sub   { font-size: 8.5px; color: #555; }
-.pr-header__motto { font-size: 8.5px; font-style: italic; color: #374151; margin-top: 1px; }
+.pr-header__sub   { font-size: 8px; color: #555; }
+.pr-header__motto { font-size: 8px; font-style: italic; color: #374151; margin-top: 1px; }
 
 /* ── Title bar ── */
 .pr-title {
   background: var(--bulletin-primary, var(--bp));
   color: #fff; text-align: center;
-  padding: 4px; font-size: 11px; font-weight: 800;
-  letter-spacing: 0.8px; margin-bottom: 5px; flex-shrink: 0;
+  padding: 3px; font-size: 10px; font-weight: 800;
+  letter-spacing: 0.8px; margin-bottom: 4px; flex-shrink: 0;
 }
 
 /* ── Student band ── */
 .pr-student-band {
   display: flex; border: 1.5px solid var(--bulletin-primary, var(--bp));
-  margin-bottom: 5px; flex-shrink: 0; align-items: stretch;
+  margin-bottom: 4px; flex-shrink: 0; align-items: stretch;
 }
 .pr-student-band__photo {
   display: flex; align-items: center; justify-content: center;
-  padding: 4px 6px; border-right: 1px solid #9ca3af; flex-shrink: 0;
+  padding: 3px 5px; border-right: 1px solid #9ca3af; flex-shrink: 0;
 }
 .pr-student-band__photo img {
-  width: 56px; height: 70px; object-fit: cover;
+  width: 48px; height: 60px; object-fit: cover;
   border-radius: 2px; border: 1.5px solid var(--bulletin-primary, var(--bp));
 }
 .pr-student-band__field {
-  flex: 1; padding: 3px 6px; border-right: 1px solid #9ca3af;
+  flex: 1; padding: 2px 5px; border-right: 1px solid #9ca3af;
 }
 .pr-student-band__field--name { flex: 2; }
 .pr-student-band__field:last-child { border-right: none; }
 .pr-student-band__field label {
-  display: block; font-size: 7px; font-weight: 700;
+  display: block; font-size: 6.5px; font-weight: 700;
   color: var(--bulletin-primary, var(--bp)); text-transform: uppercase; margin-bottom: 1px;
 }
-.pr-student-band__field span { font-size: 9.5px; font-weight: 700; }
-
-/* ── Annual average + council decision ── */
-.pr-annual-bar {
-  display: flex; border: 2px solid var(--bulletin-primary, var(--bp));
-  border-radius: 3px; margin-bottom: 5px; flex-shrink: 0; overflow: hidden;
-}
-.pr-annual-bar__cell {
-  padding: 6px 10px; text-align: center; border-right: 1px solid #c7d0da;
-  min-width: 90px;
-}
-.pr-annual-bar__cell label {
-  display: block; font-size: 7px; font-weight: 700;
-  color: #6b7280; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px;
-}
-.pr-annual-bar__cell strong { font-size: 16px; font-weight: 900; display: block; }
-.pr-annual-bar__decision {
-  flex: 1; display: flex; align-items: center; gap: 8px; padding: 6px 14px;
-}
-.pr-annual-bar__decision label {
-  font-size: 7.5px; font-weight: 700; color: #6b7280;
-  text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap;
-}
-.pr-annual-bar__decision strong {
-  font-size: 13px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px;
-}
+.pr-student-band__field span { font-size: 9px; font-weight: 700; }
 
 /* ════════════════════════════════════════════════════════════════════
-   GRADES TABLE — flex:1 so it fills the available vertical space
+   GRADES TABLE — flex:1 so it fills remaining vertical space
    ════════════════════════════════════════════════════════════════════ */
 .pr-grades-wrap {
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
 }
 .pr-grades {
   width: 100%;
   height: 100%;
   border-collapse: collapse;
-  font-size: 8.5px;
+  font-size: 8px;
 }
 .pr-grades th, .pr-grades td {
   border: 1px solid #d1d5db;
-  padding: 0 3px;
+  padding: 0 2px;
   text-align: center;
   vertical-align: middle;
 }
-/* tbody rows distribute remaining height evenly */
 .pr-grades tbody { height: 100%; }
 .pr-grades tbody tr { height: 1px; }
 .pr-grades tbody td { height: inherit; }
 
 .pr-grades__head-top th {
   background: var(--bulletin-primary, var(--bp));
-  color: #fff; font-size: 7.5px; font-weight: 700; padding: 3px 2px;
+  color: #fff; font-size: 7px; font-weight: 700; padding: 3px 2px;
 }
 .pr-grades__head-sub th {
-  background: #dbeafe; color: #1e40af; font-size: 7px; padding: 2px;
+  background: #dbeafe; color: #1e40af; font-size: 6.5px; padding: 2px;
 }
 .pr-grades__col-matiere {
-  text-align: left !important; min-width: 88px; font-weight: 600;
-  padding-left: 5px !important;
+  text-align: left !important; min-width: 82px; font-weight: 600;
+  padding-left: 4px !important;
 }
-.pr-grades__col-num  { min-width: 26px; }
+.pr-grades__col-num  { min-width: 24px; }
 .pr-grades__col-dev  { background: rgba(254,252,193,0.5); }
 .pr-grades__col-cmp  { background: rgba(243,232,255,0.5); }
-.pr-grades__col-moy  { background: #dcfce7; font-weight: 700; min-width: 30px; }
+.pr-grades__col-moy  { background: #dcfce7; font-weight: 700; min-width: 28px; }
 .pr-grades__col-pts  { background: #f0fdf4; font-weight: 600; }
-.pr-grades__col-rang { color: #0f766e; font-weight: 700; min-width: 25px; }
-.pr-grades__col-appr { text-align: left !important; min-width: 60px; font-size: 7.5px; padding-left: 4px !important; }
-.pr-grades__col-prof { text-align: left !important; min-width: 60px; font-size: 7.5px; padding-left: 4px !important; }
-.pr-grades__col-sig  { min-width: 52px; width: 56px; padding: 1px 2px !important; }
+.pr-grades__col-rang { color: #0f766e; font-weight: 700; min-width: 22px; }
+.pr-grades__col-appr { text-align: left !important; min-width: 56px; font-size: 7px; padding-left: 3px !important; }
+.pr-grades__col-prof { text-align: left !important; min-width: 56px; font-size: 7px; padding-left: 3px !important; }
+.pr-grades__col-sig  { min-width: 48px; width: 52px; padding: 1px 2px !important; }
 .pr-grades__fail { color: #dc2626 !important; font-weight: 700; }
 .pr-grades__pass { color: #15803d; }
 .pr-grades tbody tr:nth-child(even) { background: #f9fafb; }
 .pr-grades__foot td {
   background: var(--bulletin-primary, var(--bp));
-  color: #fff; font-weight: 700; font-size: 8.5px; padding: 3px;
+  color: #fff; font-weight: 700; font-size: 8px; padding: 2px;
 }
-.pr-grades__foot-label { text-align: right !important; padding-right: 6px !important; }
-.pr-sig-img   { max-height: 26px; max-width: 64px; object-fit: contain; display: block; margin: 0 auto; }
-.pr-sig-blank { width: 44px; height: 1px; background: #d1d5db; margin: 10px auto 8px; }
-.pr-sig-verified { font-size: 8px; font-weight: 700; color: #15803d; }
+.pr-grades__foot-label { text-align: right !important; padding-right: 5px !important; }
+.pr-sig-img   { max-height: 22px; max-width: 58px; object-fit: contain; display: block; margin: 0 auto; }
+.pr-sig-blank { width: 40px; height: 1px; background: #d1d5db; margin: 8px auto 6px; }
+.pr-sig-verified { font-size: 7.5px; font-weight: 700; color: #15803d; }
 
 /* ════════════════════════════════════════════════════════════════════
-   RESULTS BAND — two sections side-by-side
+   RESULTS BAND — two rows stacked (student stats then class stats)
    ════════════════════════════════════════════════════════════════════ */
 .pr-results {
-  display: flex; gap: 5px;
-  margin-bottom: 5px; flex-shrink: 0;
+  display: flex; flex-direction: column; gap: 3px;
+  margin-bottom: 4px; flex-shrink: 0;
 }
 .pr-results__section {
-  flex: 1; border: 1.5px solid var(--bulletin-primary, var(--bp)); border-radius: 3px;
+  width: 100%; border: 1.5px solid var(--bulletin-primary, var(--bp)); border-radius: 3px;
   overflow: hidden;
 }
-.pr-results__section--class { flex: 0 0 auto; min-width: 155mm; }
 .pr-results__section-title {
   background: var(--bulletin-primary, var(--bp)); color: #fff;
-  font-size: 8px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.5px; padding: 3px 8px; text-align: center;
+  font-size: 7.5px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.5px; padding: 2px 6px; text-align: center;
 }
 .pr-results__cells {
   display: flex; flex-wrap: nowrap;
 }
 .pr-results__cell {
-  flex: 1; padding: 5px 6px; text-align: center;
+  flex: 1; padding: 4px 4px; text-align: center;
   border-right: 1px solid #e5e7eb;
 }
 .pr-results__cell:last-child { border-right: none; }
 .pr-results__cell label {
-  display: block; font-size: 7px; color: #6b7280;
-  text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px;
+  display: block; font-size: 6.5px; color: #6b7280;
+  text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 1px;
 }
-.pr-results__cell strong  { font-size: 12px; display: block; }
-.pr-results__cell--big strong { font-size: 15px; font-weight: 900; }
+.pr-results__cell strong  { font-size: 11px; display: block; }
+.pr-results__cell--big strong { font-size: 14px; font-weight: 900; }
 .pr-results__cell--high strong { color: #15803d; }
 .pr-results__cell--low  strong { color: #dc2626; }
 .pr-results__cell--honor {
   background: #fef3c7; border-color: #fcd34d;
   display: flex; align-items: center; justify-content: center;
 }
-.pr-results__cell--honor strong { font-size: 8px; color: #92400e; }
+.pr-results__cell--honor strong { font-size: 7.5px; color: #92400e; }
 .pr-val--pass { color: #15803d; }
 .pr-val--fail { color: #dc2626; }
-.pr-val-denom { font-size: 8px; font-weight: 400; color: #6b7280; }
+.pr-val-denom { font-size: 7.5px; font-weight: 400; color: #6b7280; }
+
+/* ── Annual average + council decision ── */
+.pr-annual-bar {
+  display: flex; border: 2px solid var(--bulletin-primary, var(--bp));
+  border-radius: 3px; margin-bottom: 4px; flex-shrink: 0; overflow: hidden;
+}
+.pr-annual-bar__cell {
+  padding: 4px 8px; text-align: center; border-right: 1px solid #c7d0da;
+  min-width: 80px;
+}
+.pr-annual-bar__cell label {
+  display: block; font-size: 6.5px; font-weight: 700;
+  color: #6b7280; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 1px;
+}
+.pr-annual-bar__cell strong { font-size: 14px; font-weight: 900; display: block; }
+.pr-annual-bar__decision {
+  flex: 1; display: flex; align-items: center; gap: 6px; padding: 4px 12px;
+}
+.pr-annual-bar__decision label {
+  font-size: 7px; font-weight: 700; color: #6b7280;
+  text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap;
+}
+.pr-annual-bar__decision strong {
+  font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px;
+}
 
 /* ── Comments ── */
 .pr-comments {
-  display: flex; gap: 5px;
-  margin-bottom: 5px; flex-shrink: 0;
+  display: flex; gap: 4px;
+  margin-bottom: 4px; flex-shrink: 0;
 }
 .pr-comment-box {
   flex: 1; border: 1px solid #d1d5db; border-radius: 3px; overflow: hidden;
 }
 .pr-comment-box__label {
-  background: #f3f4f6; font-size: 7px; font-weight: 700;
+  background: #f3f4f6; font-size: 6.5px; font-weight: 700;
   text-transform: uppercase; color: var(--bulletin-primary, var(--bp));
-  padding: 2px 6px; letter-spacing: 0.3px;
+  padding: 2px 5px; letter-spacing: 0.3px;
 }
 .pr-comment-box__text {
-  padding: 3px 6px; font-size: 8.5px; font-style: italic;
-  color: #374151; min-height: 18px; line-height: 1.4;
+  padding: 2px 5px; font-size: 8px; font-style: italic;
+  color: #374151; min-height: 16px; line-height: 1.4;
 }
-.pr-comment-box__empty { display: block; height: 14px; }
+.pr-comment-box__empty { display: block; height: 12px; }
 
 /* ── Signatures ── */
 .pr-signatures {
-  display: flex; gap: 8px;
-  margin-bottom: 4px; flex-shrink: 0;
+  display: flex; gap: 6px;
+  margin-bottom: 3px; flex-shrink: 0;
 }
 .pr-sig { flex: 1; text-align: center; }
 .pr-sig__area {
-  height: 26px;
+  height: 22px;
   border: 1px dashed #d1d5db;
   border-radius: 3px;
   margin-bottom: 2px;
@@ -280,19 +276,19 @@
 }
 .pr-sig__area--stamp {
   border: 1.5px dashed #9ca3af; border-radius: 50%;
-  height: 32px; width: 32px; margin: 0 auto 3px;
+  height: 28px; width: 28px; margin: 0 auto 2px;
   background: #f9fafb;
 }
 .pr-sig__line   { height: 1px; background: #374151; margin-bottom: 2px; }
-.pr-sig__name   { font-size: 7.5px; font-weight: 600; color: var(--bulletin-primary, var(--bp)); min-height: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pr-sig__label  { font-size: 7px; color: #6b7280; font-style: italic; }
-.pr-sig--stamp  { flex: 0 0 auto; width: 50px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
+.pr-sig__name   { font-size: 7px; font-weight: 600; color: var(--bulletin-primary, var(--bp)); min-height: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pr-sig__label  { font-size: 6.5px; color: #6b7280; font-style: italic; }
+.pr-sig--stamp  { flex: 0 0 auto; width: 44px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
 .pr-sig__label--stamp { margin-top: 2px; }
 
 /* ── Footer ── */
 .pr-footer {
-  font-size: 7px; color: #9ca3af; text-align: center;
-  border-top: 1px solid #e5e7eb; padding-top: 3px;
+  font-size: 6.5px; color: #9ca3af; text-align: center;
+  border-top: 1px solid #e5e7eb; padding-top: 2px;
   flex-shrink: 0;
 }
 
@@ -305,7 +301,7 @@
   .print-page { background: #fff; padding: 0; }
   .print-page__a4 {
     width: 210mm; height: 297mm;
-    margin: 0; padding: 7mm 10mm 6mm;
+    margin: 0; padding: 6mm 9mm 5mm;
     box-shadow: none;
     page-break-inside: avoid; break-inside: avoid;
   }
