@@ -251,8 +251,8 @@ export default function PrintReportCardPage() {
                 <strong>{report.conductRating ? CONDUCT_LABELS[report.conductRating] : '—'}</strong>
               </div>
               <div className="pr-results__cell">
-                <label>Absences</label>
-                <strong>{report.attendanceAbsent != null ? `${report.attendanceAbsent} j` : '—'}</strong>
+                <label>Heures d'absence</label>
+                <strong>{report.attendanceAbsentHours != null ? `${report.attendanceAbsentHours} h` : '—'}</strong>
               </div>
               <div className="pr-results__cell">
                 <label>Retards</label>

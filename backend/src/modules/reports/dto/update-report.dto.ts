@@ -52,6 +52,12 @@ export class UpdateReportDto {
   @IsOptional()
   @IsInt()
   @Min(0)
+  attendanceAbsentHours?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  @Min(0)
   attendanceExcluded?: number;
 
   @ApiPropertyOptional()

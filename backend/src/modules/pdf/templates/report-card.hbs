@@ -376,8 +376,8 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:11px; color:#111; ba
       <div class="att-row">
         <div class="att-cell"><div class="att-label">Jours de cours</div><div class="att-val">{{report.attendanceDays}}</div></div>
         <div class="att-cell"><div class="att-label">Présences</div><div class="att-val">{{report.attendancePresent}}</div></div>
-        <div class="att-cell"><div class="att-label">Absences</div><div class="att-val">{{report.attendanceAbsent}}</div></div>
-        <div class="att-cell"><div class="att-label">Retards</div><div class="att-val">{{report.attendanceLate}}</div></div>
+        <div class="att-cell"><div class="att-label">H. d'absence</div><div class="att-val">{{#if report.attendanceAbsentHours}}{{report.attendanceAbsentHours}} h{{else}}—{{/if}}</div></div>
+        <div class="att-cell"><div class="att-label">Retards</div><div class="att-val">{{#if report.attendanceLate}}{{report.attendanceLate}}{{else}}—{{/if}}</div></div>
         <div class="att-cell"><div class="att-label">Taux</div><div class="att-val">{{report.attendanceRate}}%</div></div>
       </div>
     </div>

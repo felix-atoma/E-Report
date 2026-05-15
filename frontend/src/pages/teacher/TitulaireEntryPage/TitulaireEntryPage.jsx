@@ -94,8 +94,9 @@ export default function TitulaireEntryPage() {
       [studentId]: {
         attendanceDays:      rc?.attendanceDays      != null ? String(rc.attendanceDays)      : '',
         attendancePresent:   rc?.attendancePresent   != null ? String(rc.attendancePresent)   : '',
-        attendanceLate:      rc?.attendanceLate      != null ? String(rc.attendanceLate)      : '',
-        attendanceAbsent:    rc?.attendanceAbsent    != null ? String(rc.attendanceAbsent)    : '',
+        attendanceLate:         rc?.attendanceLate         != null ? String(rc.attendanceLate)         : '',
+        attendanceAbsent:       rc?.attendanceAbsent       != null ? String(rc.attendanceAbsent)       : '',
+        attendanceAbsentHours:  rc?.attendanceAbsentHours  != null ? String(rc.attendanceAbsentHours)  : '',
         attendanceExcluded:  rc?.attendanceExcluded  != null ? String(rc.attendanceExcluded)  : '',
         warnings:            rc?.warnings            != null ? String(rc.warnings)            : '',
         commendations:       rc?.commendations       != null ? String(rc.commendations)       : '',
@@ -124,7 +125,8 @@ export default function TitulaireEntryPage() {
             attendanceDays:     e.attendanceDays     !== '' && e.attendanceDays     != null ? Number(e.attendanceDays)     : undefined,
             attendancePresent:  e.attendancePresent  !== '' && e.attendancePresent  != null ? Number(e.attendancePresent)  : undefined,
             attendanceLate:     e.attendanceLate     !== '' && e.attendanceLate     != null ? Number(e.attendanceLate)     : undefined,
-            attendanceAbsent:   e.attendanceAbsent   !== '' && e.attendanceAbsent   != null ? Number(e.attendanceAbsent)   : undefined,
+            attendanceAbsent:      e.attendanceAbsent      !== '' && e.attendanceAbsent      != null ? Number(e.attendanceAbsent)      : undefined,
+            attendanceAbsentHours: e.attendanceAbsentHours !== '' && e.attendanceAbsentHours != null ? Number(e.attendanceAbsentHours) : undefined,
             attendanceExcluded: e.attendanceExcluded !== '' && e.attendanceExcluded != null ? Number(e.attendanceExcluded) : undefined,
             warnings:           e.warnings           !== '' && e.warnings           != null ? Number(e.warnings)           : undefined,
             commendations:      e.commendations      !== '' && e.commendations      != null ? Number(e.commendations)      : undefined,
@@ -206,7 +208,8 @@ export default function TitulaireEntryPage() {
                 <th className="tit__th tit__th--name">Élève</th>
                 <th className="tit__th">Jours</th>
                 <th className="tit__th">Présents</th>
-                <th className="tit__th">Absences</th>
+                <th className="tit__th">Abs. (j)</th>
+                <th className="tit__th">H. Absence</th>
                 <th className="tit__th">Retards</th>
                 <th className="tit__th">Exclusions</th>
                 <th className="tit__th">Avert.</th>
@@ -240,6 +243,9 @@ export default function TitulaireEntryPage() {
                     </td>
                     <td className="tit__td">
                       <SmallInput value={e.attendanceAbsent} onChange={(v) => setField(studentId, 'attendanceAbsent', v)} />
+                    </td>
+                    <td className="tit__td">
+                      <SmallInput value={e.attendanceAbsentHours} onChange={(v) => setField(studentId, 'attendanceAbsentHours', v)} />
                     </td>
                     <td className="tit__td">
                       <SmallInput value={e.attendanceLate} onChange={(v) => setField(studentId, 'attendanceLate', v)} />

@@ -342,8 +342,9 @@ model ReportCard {
   conductRating     ConductRating?
   attendanceDays    Int?      // Nombre de jours de classe
   attendancePresent Int?      // Jours de présence
-  attendanceLate    Int?      // Retards
-  attendanceAbsent  Int?      // Absences (in half-days)
+  attendanceLate        Int?   // Retards
+  attendanceAbsent      Int?   // Absences (in half-days)
+  attendanceAbsentHours Int?   // Heures d'absence
   attendanceExcluded Int?     // Exclusions
   warnings          Int?      // Avertissements
   commendations     Int?      // Félicitations

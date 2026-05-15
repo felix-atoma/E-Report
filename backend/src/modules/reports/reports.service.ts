@@ -352,6 +352,7 @@ export class ReportsService {
         attendancePresent: published.attendancePresent,
         attendanceLate: (published as any).attendanceLate ?? null,
         attendanceAbsent: (published as any).attendanceAbsent ?? null,
+        attendanceAbsentHours: (published as any).attendanceAbsentHours ?? null,
         honorCouncil: (published as any).honorCouncil ?? null,
         commendations: (published as any).commendations ?? null,
         warnings: (published as any).warnings ?? null,
