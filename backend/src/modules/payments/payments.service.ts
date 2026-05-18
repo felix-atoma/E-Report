@@ -7,6 +7,43 @@ import { RecordPaymentDto } from './dto/record-payment.dto';
 export class PaymentsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /** STUDENT: their own payment history */
+  async findForStudent(userId: string, institutionId: string) {
+    const student = await this.prisma.student.findFirst({
+      where: { userId, institutionId },
+      select: { id: true },
+    });
+    if (!student) return [];
+    return this.prisma.payment.findMany({
+      where: { studentId: student.id, institutionId },
+      select: {
+        id: true, academicYear: true, term: true,
+        amount: true, paymentMethod: true, receiptNumber: true, paymentDate: true,
+      },
+      orderBy: { paymentDate: 'desc' },
+    });
+  }
+
+  /** PARENT: payment history for all their children */
+  async findForParent(parentUserId: string, institutionId: string) {
+    const children = await this.prisma.student.findMany({
+      where: { parentId: parentUserId, institutionId },
+      select: { id: true, user: { select: { name: true } } },
+    });
+    if (!children.length) return [];
+    const ids = children.map((c) => c.id);
+    const payments = await this.prisma.payment.findMany({
+      where: { studentId: { in: ids }, institutionId },
+      select: {
+        id: true, studentId: true, academicYear: true, term: true,
+        amount: true, paymentMethod: true, receiptNumber: true, paymentDate: true,
+      },
+      orderBy: { paymentDate: 'desc' },
+    });
+    const nameMap = Object.fromEntries(children.map((c) => [c.id, c.user?.name ?? c.id]));
+    return payments.map((p) => ({ ...p, studentName: nameMap[p.studentId] }));
+  }
+
   async findAll(institutionId: string, filters: { studentId?: string; academicYear?: string; term?: string }) {
     return this.prisma.payment.findMany({
       where: {

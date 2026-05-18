@@ -21,6 +21,55 @@ export class StudentsService {
     private readonly config: ConfigService,
   ) {}
 
+  /** STUDENT: fetch their own profile via linked userId */
+  async findMe(userId: string, institutionId: string) {
+    const student = await this.prisma.student.findFirst({
+      where: { userId, institutionId },
+      include: {
+        user: { select: { id: true, name: true, email: true, profileImage: true } },
+        parent: { select: { id: true, name: true, email: true } },
+        classes: {
+          include: { class: { select: { id: true, name: true, level: true, academicYear: true } } },
+          orderBy: { academicYear: 'desc' },
+        },
+        reportCards: {
+          select: {
+            id: true, academicYear: true, termNumber: true, termName: true,
+            status: true, overallAverage: true, classRank: true, classSize: true,
+            mention: true,
+          },
+          orderBy: [{ academicYear: 'desc' }, { termNumber: 'desc' }],
+        },
+      },
+    });
+    if (!student) throw new NotFoundException('Student profile not found');
+    return student;
+  }
+
+  /** PARENT: fetch all children linked to this parent user */
+  async findMyChildren(parentUserId: string, institutionId: string) {
+    return this.prisma.student.findMany({
+      where: { parentId: parentUserId, institutionId },
+      include: {
+        user: { select: { id: true, name: true, email: true, profileImage: true } },
+        classes: {
+          include: { class: { select: { id: true, name: true, level: true, academicYear: true } } },
+          orderBy: { academicYear: 'desc' },
+          take: 1,
+        },
+        reportCards: {
+          select: {
+            id: true, academicYear: true, termNumber: true, termName: true,
+            status: true, overallAverage: true, mention: true,
+          },
+          orderBy: [{ academicYear: 'desc' }, { termNumber: 'desc' }],
+          take: 3,
+        },
+      },
+      orderBy: { user: { name: 'asc' } },
+    });
+  }
+
   async findAll(institutionId: string, classId?: string) {
     return this.prisma.student.findMany({
       where: {

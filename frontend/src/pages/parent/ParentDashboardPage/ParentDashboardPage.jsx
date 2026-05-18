@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { studentsService } from '../../../services/studentsService';
 import { reportsService } from '../../../services/reportsService';
 import { bulletinsService } from '../../../services/bulletinsService';
@@ -14,14 +15,21 @@ import Loading from '../../../components/common/Loading/Loading';
 import './ParentDashboardPage.css';
 
 const PAYMENT_VARIANT = { PAID: 'success', PARTIAL: 'warning', UNPAID: 'danger', EXEMPT: 'default' };
-const PAYMENT_LABEL   = { PAID: 'À jour', PARTIAL: 'Partiel', UNPAID: 'Non payé', EXEMPT: 'Exonéré' };
 
 function ParentDashboardPage() {
   const { user } = useAuth();
+  const { t } = useTranslation();
+
+  const PAYMENT_LABEL = {
+    PAID:    t('payment.upToDate'),
+    PARTIAL: t('payment.partial'),
+    UNPAID:  t('payment.unpaid'),
+    EXEMPT:  t('payment.exempted'),
+  };
 
   const { data: children = [], isLoading: l1 } = useQuery({
     queryKey: ['my-children'],
-    queryFn: () => studentsService.list().then((r) => r.data),
+    queryFn: () => studentsService.myChildren().then((r) => r.data),
   });
 
   const { data: reports = [], isLoading: l2 } = useQuery({
@@ -34,19 +42,18 @@ function ParentDashboardPage() {
     queryFn: () => bulletinsService.list().then((r) => r.data),
   });
 
-  if (l1 || l2) return <AppShell title="Tableau de bord"><Loading /></AppShell>;
+  if (l1 || l2) return <AppShell title={t('dash.title')}><Loading /></AppShell>;
 
   const published = reports.filter((r) => r.status === 'PUBLISHED');
   const held      = reports.filter((r) => r.status === 'PUBLISHED' && (r.deliveryStatus === 'HELD_UNPAID' || r.deliveryStatus === 'HELD_PARTIAL'));
 
   return (
-    <AppShell title="Tableau de bord">
+    <AppShell title={t('dash.title')}>
       <PageHeader
-        title={`Bonjour, ${user?.name ?? 'Parent'}`}
-        subtitle="Suivez la scolarité de vos enfants"
+        title={t('dash.hello', { name: user?.name ?? t('role.PARENT') })}
+        subtitle={t('dash.followChildren')}
       />
 
-      {/* Summary bar */}
       <div className="parent-dash__stats">
         <Card className="parent-dash__stat">
           <div className="parent-dash__stat-icon parent-dash__stat-icon--blue">
@@ -58,7 +65,7 @@ function ParentDashboardPage() {
             </svg>
           </div>
           <span className="parent-dash__stat-value">{children.length}</span>
-          <span className="parent-dash__stat-label">Enfant{children.length !== 1 ? 's' : ''}</span>
+          <span className="parent-dash__stat-label">{t('dash.childCount', { count: children.length })}</span>
         </Card>
         <Card className="parent-dash__stat">
           <div className="parent-dash__stat-icon parent-dash__stat-icon--teal">
@@ -68,7 +75,7 @@ function ParentDashboardPage() {
             </svg>
           </div>
           <span className="parent-dash__stat-value">{published.length}</span>
-          <span className="parent-dash__stat-label">Bulletin{published.length !== 1 ? 's' : ''}</span>
+          <span className="parent-dash__stat-label">{t('dash.bulletinCount', { count: published.length })}</span>
         </Card>
         <Card className="parent-dash__stat">
           <div className="parent-dash__stat-icon parent-dash__stat-icon--orange">
@@ -78,19 +85,18 @@ function ParentDashboardPage() {
             </svg>
           </div>
           <span className="parent-dash__stat-value">{held.length}</span>
-          <span className="parent-dash__stat-label">En attente paiement</span>
+          <span className="parent-dash__stat-label">{t('dash.pendingPayment')}</span>
         </Card>
       </div>
 
       <div className="parent-dash__grid">
-        {/* Children */}
         <Card className="parent-dash__card">
           <div className="parent-dash__card-head">
-            <h3 className="parent-dash__card-title">Mes enfants</h3>
-            <Link to="/parent/children" className="parent-dash__see-all">Voir tout</Link>
+            <h3 className="parent-dash__card-title">{t('dash.myChildren')}</h3>
+            <Link to="/parent/children" className="parent-dash__see-all">{t('action.viewAll')}</Link>
           </div>
           {children.length === 0 ? (
-            <p className="parent-dash__empty">Aucun enfant associé à votre compte.</p>
+            <p className="parent-dash__empty">{t('dash.noChildren')}</p>
           ) : (
             <div className="parent-dash__children-list">
               {children.map((child) => (
@@ -111,13 +117,12 @@ function ParentDashboardPage() {
           )}
         </Card>
 
-        {/* Recent bulletins */}
         <Card className="parent-dash__card">
           <div className="parent-dash__card-head">
-            <h3 className="parent-dash__card-title">Bulletins récents</h3>
+            <h3 className="parent-dash__card-title">{t('dash.recentReports')}</h3>
           </div>
           {published.length === 0 ? (
-            <p className="parent-dash__empty">Aucun bulletin disponible.</p>
+            <p className="parent-dash__empty">{t('dash.noReportAvailable')}</p>
           ) : (
             <div className="parent-dash__report-list">
               {published.slice(0, 5).map((r) => (
@@ -141,12 +146,11 @@ function ParentDashboardPage() {
           )}
         </Card>
 
-        {/* Recent announcements */}
         {bulletins.length > 0 && (
           <Card className="parent-dash__card parent-dash__card--wide">
             <div className="parent-dash__card-head">
-              <h3 className="parent-dash__card-title">Annonces</h3>
-              <Link to="/parent/bulletins" className="parent-dash__see-all">Voir tout</Link>
+              <h3 className="parent-dash__card-title">{t('dash.announcements')}</h3>
+              <Link to="/parent/bulletins" className="parent-dash__see-all">{t('action.viewAll')}</Link>
             </div>
             <div className="parent-dash__bulletin-list">
               {bulletins.slice(0, 3).map((b) => (

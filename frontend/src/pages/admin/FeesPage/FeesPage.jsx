@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { feesService } from '../../../services/feesService';
 import { classesService } from '../../../services/classesService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Table from '../../../components/common/Table/Table';
-import Modal from '../../../components/common/Modal/Modal';
+import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
 import ConfirmDialog from '../../../components/common/ConfirmDialog/ConfirmDialog';
 import Input from '../../../components/common/Input/Input';
 import Select from '../../../components/common/Select/Select';
@@ -14,54 +15,39 @@ import Button from '../../../components/common/Button/Button';
 import Badge from '../../../components/common/Badge/Badge';
 import './FeesPage.css';
 
-const TERM_OPTIONS = [
-  { value: 'TRIMESTRE_1', label: '1er trimestre' },
-  { value: 'TRIMESTRE_2', label: '2ème trimestre' },
-  { value: 'TRIMESTRE_3', label: '3ème trimestre' },
-  { value: 'SEMESTRE_1',  label: '1er semestre' },
-  { value: 'SEMESTRE_2',  label: '2ème semestre' },
-  { value: 'ANNUEL',      label: 'Annuel' },
-];
+const TERM_KEYS = ['TRIMESTRE_1', 'TRIMESTRE_2', 'TRIMESTRE_3', 'SEMESTRE_1', 'SEMESTRE_2', 'ANNUEL'];
 
 const EMPTY_FORM = { name: '', amount: '', description: '', term: '' };
 
-function validate(form) {
-  const errors = {};
-  if (!form.name.trim())  errors.name   = 'Nom requis';
-  if (!form.amount)       errors.amount = 'Montant requis';
-  else if (isNaN(Number(form.amount)) || Number(form.amount) <= 0)
-    errors.amount = 'Montant invalide';
-  return errors;
-}
-
-function FeeForm({ form, errors, onChange }) {
+function FeeForm({ form, errors, onChange, termOptions }) {
+  const { t } = useTranslation();
   return (
     <div className="fee-form">
       <Input
-        id="fee-name" label="Nom de la cotisation" required
+        id="fee-name" label={t('fees.feeName')} required
         value={form.name} error={errors.name}
-        placeholder="ex: Frais de scolarité, Frais d'examen"
+        placeholder={t('fees.feePlaceholder')}
         onChange={(e) => onChange('name', e.target.value)}
       />
       <div className="fee-form__row">
         <Input
-          id="fee-amount" label="Montant (FCFA)" type="number" min="0" required
+          id="fee-amount" label={t('fees.amount')} type="number" min="0" required
           value={form.amount} error={errors.amount}
-          placeholder="ex: 50000"
+          placeholder={t('fees.amountPlaceholder')}
           onChange={(e) => onChange('amount', e.target.value)}
         />
         <Select
-          id="fee-term" label="Période"
+          id="fee-term" label={t('fees.period')}
           value={form.term}
-          placeholder="Toute l'année"
-          options={TERM_OPTIONS}
+          placeholder={t('fees.allYear')}
+          options={termOptions}
           onChange={(e) => onChange('term', e.target.value)}
         />
       </div>
       <Input
-        id="fee-desc" label="Description"
+        id="fee-desc" label={t('fees.description')}
         value={form.description}
-        placeholder="Optionnel"
+        placeholder={t('fees.optional')}
         onChange={(e) => onChange('description', e.target.value)}
       />
     </div>
@@ -69,6 +55,7 @@ function FeeForm({ form, errors, onChange }) {
 }
 
 function AssignModal({ fee, classes, open, onClose }) {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const [classId, setClassId] = useState('');
 
@@ -76,43 +63,44 @@ function AssignModal({ fee, classes, open, onClose }) {
     mutationFn: () => feesService.assignToClass(fee.id, { classId }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['fees'] });
-      toast.success('Cotisation assignée à la classe');
+      toast.success(t('fees.toast.assigned'));
       setClassId('');
       onClose();
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur d\'assignation'),
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('fees.toast.error')),
   });
 
   const classOptions = classes.map((c) => ({ value: c.id, label: c.name }));
 
   return (
-    <Modal
+    <OffCanvas
       open={open}
       onClose={onClose}
-      title={`Assigner "${fee?.name}" à une classe`}
+      title={t('fees.assignTitle', { name: fee?.name })}
       size="sm"
       footer={
         <>
-          <Button variant="ghost" onClick={onClose}>Annuler</Button>
+          <Button variant="ghost" onClick={onClose}>{t('action.cancel')}</Button>
           <Button onClick={() => assign.mutate()} disabled={!classId || assign.isPending}>
-            {assign.isPending ? 'Assignation…' : 'Assigner'}
+            {assign.isPending ? t('action.assigning') : t('action.assign')}
           </Button>
         </>
       }
     >
       <Select
         id="assign-class"
-        label="Classe"
+        label={t('fees.class')}
         value={classId}
-        placeholder="Sélectionner une classe"
+        placeholder={t('fees.selectClass')}
         options={classOptions}
         onChange={(e) => setClassId(e.target.value)}
       />
-    </Modal>
+    </OffCanvas>
   );
 }
 
 function FeesPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const [modal, setModal]       = useState(null);
   const [selected, setSelected] = useState(null);
@@ -120,6 +108,17 @@ function FeesPage() {
   const [assignFee, setAssign]  = useState(null);
   const [form, setForm]         = useState(EMPTY_FORM);
   const [errors, setErrors]     = useState({});
+
+  const termOptions = TERM_KEYS.map((k) => ({ value: k, label: t(`fees.terms.${k}`) }));
+
+  function validate(f) {
+    const errs = {};
+    if (!f.name.trim())  errs.name   = t('fees.errors.nameRequired');
+    if (!f.amount)       errs.amount = t('fees.errors.amountRequired');
+    else if (isNaN(Number(f.amount)) || Number(f.amount) <= 0)
+      errs.amount = t('fees.errors.amountInvalid');
+    return errs;
+  }
 
   const { data: fees = [], isLoading } = useQuery({
     queryKey: ['fees'],
@@ -133,20 +132,20 @@ function FeesPage() {
 
   const createMutation = useMutation({
     mutationFn: (data) => feesService.create(data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['fees'] }); toast.success('Cotisation créée'); closeModal(); },
-    onError:   (err) => toast.error(err?.response?.data?.message ?? 'Erreur'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['fees'] }); toast.success(t('fees.toast.created')); closeModal(); },
+    onError:   (err) => toast.error(err?.response?.data?.message ?? t('fees.toast.error')),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => feesService.update(id, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['fees'] }); toast.success('Cotisation mise à jour'); closeModal(); },
-    onError:   (err) => toast.error(err?.response?.data?.message ?? 'Erreur'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['fees'] }); toast.success(t('fees.toast.updated')); closeModal(); },
+    onError:   (err) => toast.error(err?.response?.data?.message ?? t('fees.toast.error')),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => feesService.deactivate(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['fees'] }); toast.success('Cotisation supprimée'); setConfirm(null); },
-    onError:   (err) => toast.error(err?.response?.data?.message ?? 'Erreur'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['fees'] }); toast.success(t('fees.toast.deleted')); setConfirm(null); },
+    onError:   (err) => toast.error(err?.response?.data?.message ?? t('fees.toast.error')),
   });
 
   function openCreate() {
@@ -197,7 +196,7 @@ function FeesPage() {
   const columns = [
     {
       key: 'name',
-      label: 'Cotisation',
+      label: t('fees.fee'),
       render: (f) => (
         <div>
           <div className="fees-table__name">{f.name}</div>
@@ -207,7 +206,7 @@ function FeesPage() {
     },
     {
       key: 'amount',
-      label: 'Montant',
+      label: t('fees.amount'),
       render: (f) => (
         <span className="fees-table__amount">
           {Number(f.amount).toLocaleString('fr-FR')} FCFA
@@ -216,15 +215,15 @@ function FeesPage() {
     },
     {
       key: 'term',
-      label: 'Période',
+      label: t('fees.period'),
       render: (f) =>
         f.term
-          ? <Badge variant="info">{TERM_OPTIONS.find((t) => t.value === f.term)?.label ?? f.term}</Badge>
-          : <span className="fees-table__empty">Annuel</span>,
+          ? <Badge variant="info">{t(`fees.terms.${f.term}`, f.term)}</Badge>
+          : <span className="fees-table__empty">{t('fees.annual')}</span>,
     },
     {
       key: 'classes',
-      label: 'Classes assignées',
+      label: t('fees.assignedClasses'),
       render: (f) => f._count?.feeAssignments ?? f.classCount ?? '—',
     },
     {
@@ -233,45 +232,45 @@ function FeesPage() {
       style: { width: '180px', textAlign: 'right' },
       render: (f) => (
         <div className="fees-table__actions">
-          <Button size="sm" variant="ghost" onClick={() => setAssign(f)}>Assigner</Button>
-          <Button size="sm" variant="ghost" onClick={() => openEdit(f)}>Modifier</Button>
-          <Button size="sm" variant="ghost" onClick={() => setConfirm(f)}>Supprimer</Button>
+          <Button size="sm" variant="ghost" onClick={() => setAssign(f)}>{t('action.assign')}</Button>
+          <Button size="sm" variant="ghost" onClick={() => openEdit(f)}>{t('action.edit')}</Button>
+          <Button size="sm" variant="ghost" onClick={() => setConfirm(f)}>{t('action.delete')}</Button>
         </div>
       ),
     },
   ];
 
   return (
-    <AppShell title="Cotisations">
+    <AppShell title={t('fees.pageTitle')}>
       <PageHeader
-        title="Cotisations scolaires"
-        subtitle={`${fees.length} structure${fees.length !== 1 ? 's' : ''} tarifaire${fees.length !== 1 ? 's' : ''}`}
-        actions={<Button icon="+" onClick={openCreate}>Nouvelle cotisation</Button>}
+        title={t('fees.pageTitle')}
+        subtitle={t('fees.count', { count: fees.length })}
+        actions={<Button icon="+" onClick={openCreate}>{t('fees.newFee')}</Button>}
       />
 
       <Table
         columns={columns}
         rows={fees}
         loading={isLoading}
-        emptyMessage="Aucune cotisation définie"
+        emptyMessage={t('fees.newFee')}
       />
 
-      <Modal
+      <OffCanvas
         open={!!modal}
         onClose={closeModal}
-        title={modal === 'create' ? 'Nouvelle cotisation' : 'Modifier la cotisation'}
+        title={modal === 'create' ? t('fees.createTitle') : t('fees.editTitle')}
         size="md"
         footer={
           <>
-            <Button variant="ghost" onClick={closeModal} disabled={isSaving}>Annuler</Button>
+            <Button variant="ghost" onClick={closeModal} disabled={isSaving}>{t('action.cancel')}</Button>
             <Button onClick={handleSubmit} disabled={isSaving}>
-              {isSaving ? 'Enregistrement…' : 'Enregistrer'}
+              {isSaving ? t('action.saving') : t('action.save')}
             </Button>
           </>
         }
       >
-        <FeeForm form={form} errors={errors} onChange={handleChange} />
-      </Modal>
+        <FeeForm form={form} errors={errors} onChange={handleChange} termOptions={termOptions} />
+      </OffCanvas>
 
       <AssignModal
         fee={assignFee}
@@ -285,9 +284,9 @@ function FeesPage() {
         onClose={() => setConfirm(null)}
         onConfirm={() => deleteMutation.mutate(confirm.id)}
         loading={deleteMutation.isPending}
-        title="Supprimer la cotisation"
-        message={`Supprimer "${confirm?.name}" ? Cette action est irréversible.`}
-        confirmLabel="Supprimer"
+        title={t('action.delete')}
+        message={`${t('action.delete')} "${confirm?.name}" ?`}
+        confirmLabel={t('action.delete')}
         variant="danger"
       />
     </AppShell>

@@ -36,8 +36,25 @@ export class InstitutionsService {
   }
 
   async update(institutionId: string, dto: UpdateInstitutionDto) {
-    await this.ensureExists(institutionId);
-    return this.prisma.institution.update({ where: { id: institutionId }, data: dto });
+    const existing = await this.prisma.institution.findUnique({
+      where: { id: institutionId },
+      select: { id: true, brandingSettings: true },
+    });
+    if (!existing) throw new NotFoundException('Institution not found');
+
+    const { circonscription, ...rest } = dto;
+    const mergedBranding = {
+      ...((existing.brandingSettings as Record<string, unknown>) ?? {}),
+      ...(circonscription !== undefined && { circonscription }),
+    };
+
+    return this.prisma.institution.update({
+      where: { id: institutionId },
+      data: {
+        ...rest,
+        brandingSettings: mergedBranding as any,
+      },
+    });
   }
 
   async updateBranding(institutionId: string, dto: UpdateBrandingDto) {
@@ -52,7 +69,8 @@ export class InstitutionsService {
     const mergedBranding: Record<string, unknown> = { ...currentBranding, ...(dto.brandingSettings ?? {}) };
     if (dto.primaryColor !== undefined)   mergedBranding.primaryColor   = dto.primaryColor;
     if (dto.secondaryColor !== undefined) mergedBranding.secondaryColor = dto.secondaryColor;
-    if (dto.faviconUrl !== undefined)     mergedBranding.faviconUrl     = dto.faviconUrl;
+    if (dto.faviconUrl !== undefined)        mergedBranding.faviconUrl        = dto.faviconUrl;
+    if (dto.circonscription !== undefined)  mergedBranding.circonscription   = dto.circonscription;
 
     return this.prisma.institution.update({
       where: { id: institutionId },

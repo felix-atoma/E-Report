@@ -8,7 +8,7 @@ export interface JwtPayload {
   sub: string;
   email: string;
   role: string;
-  institutionId: string;
+  institutionId: string | null;
 }
 
 @Injectable()

@@ -1,0 +1,61 @@
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
+import { SuperAdminService } from './superadmin.service';
+import { RegisterInstitutionDto } from './dto/register-institution.dto';
+import { Public } from '../../common/decorators/public.decorator';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { Role } from '../../common/enums/role.enum';
+
+@Controller('superadmin')
+export class SuperAdminController {
+  constructor(private readonly superAdminService: SuperAdminService) {}
+
+  // Public endpoint — no JWT required
+  @Public()
+  @Post('register')
+  registerInstitution(@Body() dto: RegisterInstitutionDto) {
+    return this.superAdminService.registerInstitution(dto);
+  }
+
+  @Roles(Role.SUPERADMIN)
+  @Get('institutions')
+  listInstitutions() {
+    return this.superAdminService.listInstitutions();
+  }
+
+  @Roles(Role.SUPERADMIN)
+  @Patch('institutions/:id/approve')
+  approveInstitution(@Param('id') id: string) {
+    return this.superAdminService.approveInstitution(id);
+  }
+
+  @Roles(Role.SUPERADMIN)
+  @Patch('institutions/:id/suspend')
+  suspendInstitution(@Param('id') id: string) {
+    return this.superAdminService.suspendInstitution(id);
+  }
+
+  @Roles(Role.SUPERADMIN)
+  @Patch('institutions/:id/reject')
+  rejectInstitution(@Param('id') id: string) {
+    return this.superAdminService.rejectInstitution(id);
+  }
+
+  @Roles(Role.SUPERADMIN)
+  @Patch('institutions/:id/notes')
+  updateNotes(@Param('id') id: string, @Body('notes') notes: string) {
+    return this.superAdminService.updateNotes(id, notes);
+  }
+
+  @Roles(Role.SUPERADMIN)
+  @Patch('institutions/:id/plan')
+  updateSubscriptionPlan(@Param('id') id: string, @Body('plan') plan: string) {
+    return this.superAdminService.updateSubscriptionPlan(id, plan);
+  }
+}

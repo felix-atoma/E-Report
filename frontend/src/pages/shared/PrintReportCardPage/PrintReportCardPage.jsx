@@ -98,6 +98,21 @@ export default function PrintReportCardPage() {
       {/* A4 page */}
       <div className="print-page__a4">
 
+        {/* ── Full-page watermark — SVG stretches name to fixed width ─────── */}
+        {institution?.name && (
+          <svg className="pr-watermark" aria-hidden="true" viewBox="0 0 700 110" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+            <text
+              x="350" y="82"
+              textAnchor="middle"
+              textLength="680"
+              lengthAdjust="spacingAndGlyphs"
+              className="pr-watermark__text"
+            >
+              {institution.name.toUpperCase()}
+            </text>
+          </svg>
+        )}
+
         {/* ── Header ─────────────────────────────────────────────────────── */}
         <div className="pr-header">
           {institution?.logo
@@ -112,6 +127,11 @@ export default function PrintReportCardPage() {
               </div>
             )}
             <div className="pr-header__school">{institution?.name ?? 'Établissement scolaire'}</div>
+            {institution?.brandingSettings?.circonscription && (
+              <div className="pr-header__circ">
+                {institution.brandingSettings.circonscription}
+              </div>
+            )}
             {institution?.address && <div className="pr-header__sub">{institution.address}</div>}
             {institution?.motto && <div className="pr-header__motto">« {institution.motto} »</div>}
           </div>
@@ -125,40 +145,50 @@ export default function PrintReportCardPage() {
           BULLETIN DE NOTES — {termLabel.toUpperCase()} — ANNÉE SCOLAIRE {report.academicYear}
         </div>
 
-        {/* ── Student band ───────────────────────────────────────────────── */}
-        <div className="pr-student-band">
-          {report.student?.user?.profileImage && (
-            <div className="pr-student-band__photo">
-              <img src={report.student.user.profileImage} alt="Photo" />
+        {/* ── Student band + photo (photo sits outside the band box) ──────── */}
+        <div className="pr-student-row">
+          <div className="pr-student-band">
+            <div className="pr-student-band__field pr-student-band__field--name">
+              <label>Nom et Prénom</label>
+              <span>{studentName}</span>
             </div>
-          )}
-          <div className="pr-student-band__field pr-student-band__field--name">
-            <label>Nom et Prénom</label>
-            <span>{studentName}</span>
+            <div className="pr-student-band__field">
+              <label>Classe</label>
+              <span>{report.class?.name ?? '—'}</span>
+            </div>
+            <div className="pr-student-band__field">
+              <label>Matricule</label>
+              <span>{report.student?.admissionNumber ?? '—'}</span>
+            </div>
+            <div className="pr-student-band__field">
+              <label>Date de naissance</label>
+              <span>{dob}</span>
+            </div>
+            <div className="pr-student-band__field">
+              <label>Effectif classe</label>
+              <span>{report.classSize ?? '—'}</span>
+            </div>
           </div>
-          <div className="pr-student-band__field">
-            <label>Classe</label>
-            <span>{report.class?.name ?? '—'}</span>
-          </div>
-          <div className="pr-student-band__field">
-            <label>Matricule</label>
-            <span>{report.student?.admissionNumber ?? '—'}</span>
-          </div>
-          <div className="pr-student-band__field">
-            <label>Date de naissance</label>
-            <span>{dob}</span>
-          </div>
-          <div className="pr-student-band__field">
-            <label>Effectif classe</label>
-            <span>{report.classSize ?? '—'}</span>
+
+          {/* Photo — sits beside the band, not inside it */}
+          <div className="pr-student-photo">
+            <span className="pr-student-photo__label">Photo</span>
+            {report.student?.user?.profileImage ? (
+              <img src={report.student.user.profileImage} alt="Photo élève" className="pr-student-photo__img" />
+            ) : (
+              <div className="pr-student-photo__placeholder">
+                <svg viewBox="0 0 52 66" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="52" height="66" rx="2" fill="#f1f5f9"/>
+                  <circle cx="26" cy="24" r="11" fill="#cbd5e1"/>
+                  <path d="M2 62c0-13.255 10.745-24 24-24s24 10.745 24 24" fill="#cbd5e1"/>
+                </svg>
+              </div>
+            )}
           </div>
         </div>
 
         {/* ── Grades table ───────────────────────────────────────────────── */}
         <div className="pr-grades-wrap">
-          {institution?.name && (
-            <div className="pr-watermark" aria-hidden="true">{institution.name}</div>
-          )}
           <table className="pr-grades">
             <thead>
               <tr className="pr-grades__head-top">
@@ -338,12 +368,6 @@ export default function PrintReportCardPage() {
             <div className="pr-sig__line" />
             <div className="pr-sig__name">{institution?.name ? `Direction — ${institution.name}` : 'Le Directeur'}</div>
             <div className="pr-sig__label">Le Directeur</div>
-          </div>
-          <div className="pr-sig">
-            <div className="pr-sig__area" />
-            <div className="pr-sig__line" />
-            <div className="pr-sig__name">&nbsp;</div>
-            <div className="pr-sig__label">Signature Parent / Tuteur</div>
           </div>
         </div>
 

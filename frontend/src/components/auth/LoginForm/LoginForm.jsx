@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../context/AuthContext';
 import './LoginForm.css';
 
 function LoginForm({ onSuccess }) {
   const { login } = useAuth();
+  const { t } = useTranslation();
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
@@ -21,7 +23,7 @@ function LoginForm({ onSuccess }) {
       const user = await login(form.email, form.password);
       onSuccess?.(user);
     } catch (err) {
-      setError(err.response?.data?.message ?? 'Email ou mot de passe incorrect.');
+      setError(err.response?.data?.message ?? t('login.invalidCredentials'));
     } finally {
       setLoading(false);
     }
@@ -37,7 +39,7 @@ function LoginForm({ onSuccess }) {
             <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
           </svg>
           <span className="login-form__alert-text">{error}</span>
-          <button type="button" className="login-form__alert-close" onClick={() => setError('')} aria-label="Fermer">
+          <button type="button" className="login-form__alert-close" onClick={() => setError('')} aria-label={t('action.close')}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
@@ -48,7 +50,7 @@ function LoginForm({ onSuccess }) {
       {/* Email field with icon prefix */}
       <div className="login-form__field">
         <label htmlFor="email" className="login-form__label">
-          Adresse email <span className="login-form__required">*</span>
+          {t('login.email')} <span className="login-form__required">*</span>
         </label>
         <div className="login-form__input-group">
           <span className="login-form__input-prefix">
@@ -73,7 +75,7 @@ function LoginForm({ onSuccess }) {
       {/* Password field with icon prefix + show/hide toggle */}
       <div className="login-form__field">
         <label htmlFor="password" className="login-form__label">
-          Mot de passe <span className="login-form__required">*</span>
+          {t('login.password')} <span className="login-form__required">*</span>
         </label>
         <div className="login-form__input-group">
           <span className="login-form__input-prefix">
@@ -96,7 +98,7 @@ function LoginForm({ onSuccess }) {
             type="button"
             className="login-form__input-suffix"
             onClick={() => setShowPassword((v) => !v)}
-            aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+            aria-label={showPassword ? t('login.hidePassword') : t('login.showPassword')}
           >
             {showPassword ? (
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -128,7 +130,7 @@ function LoginForm({ onSuccess }) {
               <span className="login-form__toggle-thumb" />
             </span>
           </div>
-          <span className="login-form__remember-text">Rester connecté</span>
+          <span className="login-form__remember-text">{t('login.rememberMe')}</span>
         </label>
       </div>
 
@@ -137,7 +139,7 @@ function LoginForm({ onSuccess }) {
         {loading ? (
           <>
             <span className="login-form__spinner" />
-            <span>Authentification…</span>
+            <span>{t('login.submitting')}</span>
           </>
         ) : (
           <>
@@ -146,14 +148,14 @@ function LoginForm({ onSuccess }) {
               <polyline points="10 17 15 12 10 7"/>
               <line x1="15" y1="12" x2="3" y2="12"/>
             </svg>
-            <span>Se connecter</span>
+            <span>{t('login.submit')}</span>
           </>
         )}
       </button>
 
       <p className="login-form__forgot">
-        Mot de passe oublié ?{' '}
-        <Link to="/forgot-password">Réinitialiser</Link>
+        {t('login.forgotPassword')}{' '}
+        <Link to="/forgot-password">{t('login.reset')}</Link>
       </p>
     </form>
   );

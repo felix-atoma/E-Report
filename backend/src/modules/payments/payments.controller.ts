@@ -12,6 +12,16 @@ import { Role } from '../../common/enums/role.enum';
 export class PaymentsController {
   constructor(private readonly service: PaymentsService) {}
 
+  @Get('my-history')
+  @Roles(Role.STUDENT, Role.PARENT)
+  @ApiOperation({ summary: 'Student: own payment history. Parent: children\'s payment history.' })
+  findMyHistory(@CurrentUser() user: any) {
+    if (user.role === Role.STUDENT) {
+      return this.service.findForStudent(user.id, user.institutionId);
+    }
+    return this.service.findForParent(user.id, user.institutionId);
+  }
+
   @Get()
   @Roles(Role.ADMIN, Role.BURSAR)
   @ApiOperation({ summary: 'List all payments for the institution' })

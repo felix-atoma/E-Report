@@ -1,0 +1,80 @@
+.gcb-box {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f6f8;
+  padding: 2rem 1.5rem;
+}
+
+.gcb-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 4px 8px 18px rgba(0, 0, 0, 0.12);
+  padding: 2.5rem 2rem;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+}
+
+.gcb-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gcb-icon--warn {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.gcb-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+}
+
+.gcb-body {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.gcb-btn {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.6rem 1.5rem;
+  background: #1e3a8a;
+  color: #fff;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.gcb-btn:hover {
+  background: #1e40af;
+}
+
+.gcb-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #e5e7eb;
+  border-top-color: #1e3a8a;
+  border-radius: 50%;
+  animation: gcb-spin 0.75s linear infinite;
+}
+
+@keyframes gcb-spin {
+  to { transform: rotate(360deg); }
+}

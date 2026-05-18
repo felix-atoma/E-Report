@@ -15,7 +15,7 @@ const PAYMENT_LABEL   = { PAID: 'Frais à jour', PARTIAL: 'Paiement partiel', UN
 function ChildrenPage() {
   const { data: children = [], isLoading } = useQuery({
     queryKey: ['my-children'],
-    queryFn: () => studentsService.list().then((r) => r.data),
+    queryFn: () => studentsService.myChildren().then((r) => r.data),
   });
 
   if (isLoading) return <AppShell title="Mes enfants"><Loading /></AppShell>;

@@ -35,6 +35,7 @@ import { AnnouncementsModule } from './modules/announcements/announcements.modul
 import { MaterialsModule } from './modules/materials/materials.module';
 import { AssignmentsModule } from './modules/assignments/assignments.module';
 import { QuizzesModule } from './modules/quizzes/quizzes.module';
+import { SuperAdminModule } from './modules/superadmin/superadmin.module';
 
 @Module({
   imports: [
@@ -78,6 +79,7 @@ import { QuizzesModule } from './modules/quizzes/quizzes.module';
     MaterialsModule,
     AssignmentsModule,
     QuizzesModule,
+    SuperAdminModule,
   ],
   providers: [
     // JWT guard applied globally — use @Public() to opt out

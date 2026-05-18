@@ -26,7 +26,8 @@
       "Bash(curl -s http://localhost:3000/health)",
       "Bash(set PRISMA_MIGRATE_SKIP_GENERATE=true)",
       "Bash(netstat -ano)",
-      "Bash(findstr \":4000\")"
+      "Bash(findstr \":4000\")",
+      "PowerShell(cd \"c:\\\\Users\\\\felix\\\\E-Report\\\\backend\"; $env:PRISMA_MIGRATE_SKIP_GENERATE=\"true\"; npx prisma migrate dev --name add_student_sex 2>&1)"
     ]
   }
 }

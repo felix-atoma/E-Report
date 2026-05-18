@@ -9,7 +9,7 @@
   padding: 1rem;
 }
 .modal {
-  background: #fff;
+  background: var(--color-bg, #fff);
   border-radius: var(--radius-lg, 10px);
   box-shadow: 0 20px 60px rgba(0,0,0,0.2);
   display: flex;

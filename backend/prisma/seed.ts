@@ -78,6 +78,8 @@ async function main() {
       feeGateEnabled: true, currency: 'XOF',
     },
     brandingSettings: { primaryColor: '#f97316', secondaryColor: '#0f766e', accentColor: '#ea580c' },
+    isActive: true,
+    status: 'ACTIVE' as any,
   };
   const existingInst = await prisma.institution.findFirst({ orderBy: { createdAt: 'asc' } });
   const inst = existingInst
@@ -467,7 +469,7 @@ async function main() {
 ║  📢 Bulletins    : 10 announcements                              ║
 ╠══════════════════════════════════════════════════════════════════╣
 ║  LOGINS                                                          ║
-║  ADMIN    admin@demo.novabulletin.local          Admin@123       ║
+║  ADMIN    admin@demo.novabulletin.local                 ║
 ║  TEACHER  kofi.agbesi@demo.novabulletin.local    Teacher@123     ║
 ║  TEACHER  ama.dossou@demo.novabulletin.local     Teacher@123     ║
 ║  TEACHER  edem.kpodo@demo.novabulletin.local     Teacher@123     ║
@@ -475,6 +477,15 @@ async function main() {
 ║  BURSAR   bursar@demo.novabulletin.local         Bursar@123      ║
 ║  PARENT   parent.edem@demo.novabulletin.local    Parent@123      ║
 ║  STUDENT  s.6a.m1@student.demo…                 Student@123     ║
+╠══════════════════════════════════════════════════════════════════╣
+║  SUPERADMIN — create manually (NOT seeded for security):         ║
+║  INSERT INTO "User" (id, name, email, password, role,            ║
+║    "isActive", "createdAt", "updatedAt")                         ║
+║  VALUES (gen_random_uuid(), 'Felix Atoma',                       ║
+║    'atomafelix2@gmail.com',                                      ║
+║    '<bcrypt-hash-of-your-password>', 'SUPERADMIN',               ║
+║    true, now(), now());                                          ║
+║  -- Or run: npx ts-node -e "require('./prisma/create-sa')"       ║
 ╚══════════════════════════════════════════════════════════════════╝
 `);
 }

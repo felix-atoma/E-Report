@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { institutionsService } from '../../../services/institutionsService';
 import { uploadService } from '../../../services/uploadService';
+import { useInstitution } from '../../../context/InstitutionContext';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Card from '../../../components/common/Card/Card';
@@ -12,16 +13,18 @@ import Button from '../../../components/common/Button/Button';
 import './BrandingPage.css';
 
 const DEFAULT_FORM = {
-  primaryColor:   '#1e40af',
-  secondaryColor: '#f59e0b',
-  logoUrl:        '',
-  crestUrl:       '',
-  stampUrl:       '',
-  faviconUrl:     '',
+  primaryColor:    '#1e40af',
+  secondaryColor:  '#f59e0b',
+  logoUrl:         '',
+  crestUrl:        '',
+  stampUrl:        '',
+  faviconUrl:      '',
+
 };
 
 function BrandingPage() {
   const qc = useQueryClient();
+  const { refreshInstitution } = useInstitution();
   const [form, setForm]         = useState(DEFAULT_FORM);
   const [logoFile, setLogo]     = useState(null);
   const [crestFile, setCrest]   = useState(null);
@@ -39,12 +42,44 @@ function BrandingPage() {
     setForm({
       primaryColor:   bs.primaryColor   ?? DEFAULT_FORM.primaryColor,
       secondaryColor: bs.secondaryColor ?? DEFAULT_FORM.secondaryColor,
-      logoUrl:        institution.logo  ?? bs.logoUrl ?? '',
-      crestUrl:       institution.crest ?? '',
-      stampUrl:       institution.stamp ?? '',
-      faviconUrl:     bs.faviconUrl     ?? '',
+      logoUrl:         institution.logo  ?? bs.logoUrl ?? '',
+      crestUrl:        institution.crest ?? '',
+      stampUrl:        institution.stamp ?? '',
+      faviconUrl:      bs.faviconUrl     ?? '',
+
     });
   }, [institution]);
+
+  /* Apply colors live to the page as the user picks them */
+  useEffect(() => {
+    const root = document.documentElement;
+    if (form.primaryColor)   root.style.setProperty('--color-primary',   form.primaryColor);
+    if (form.secondaryColor) root.style.setProperty('--color-secondary', form.secondaryColor);
+
+    /* Recompute sidebar palette from the new primary */
+    if (form.primaryColor) {
+      const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(form.primaryColor);
+      if (m) {
+        let r = parseInt(m[1], 16) / 255;
+        let g = parseInt(m[2], 16) / 255;
+        let b = parseInt(m[3], 16) / 255;
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        let h = 0;
+        if (max !== min) {
+          const d = max - min;
+          switch (max) {
+            case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+            case g: h = ((b - r) / d + 2) / 6; break;
+            case b: h = ((r - g) / d + 4) / 6; break;
+          }
+        }
+        const hDeg = Math.round(h * 360);
+        root.style.setProperty('--sidebar-bg',        `hsl(${hDeg},30%,9%)`);
+        root.style.setProperty('--sidebar-bg-subtle',  `hsl(${hDeg},25%,13%)`);
+        root.style.setProperty('--sidebar-bg-muted',   `hsl(${hDeg},20%,18%)`);
+      }
+    }
+  }, [form.primaryColor, form.secondaryColor]);
 
   function set(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
@@ -67,15 +102,17 @@ function BrandingPage() {
       if (uploads[2]) stampUrl = uploads[2].data.url;
 
       await institutionsService.updateBranding({
-        primaryColor:   form.primaryColor,
-        secondaryColor: form.secondaryColor,
+        primaryColor:    form.primaryColor,
+        secondaryColor:  form.secondaryColor,
         logoUrl,
-        crest:          crestUrl  || undefined,
-        stamp:          stampUrl  || undefined,
-        faviconUrl:     form.faviconUrl || undefined,
+        crest:           crestUrl  || undefined,
+        stamp:           stampUrl  || undefined,
+        faviconUrl:      form.faviconUrl || undefined,
+
       });
 
       qc.invalidateQueries({ queryKey: ['institution-me'] });
+      refreshInstitution();
       setLogo(null);
       setCrest(null);
       setStamp(null);

@@ -1,0 +1,379 @@
+/* ── Shared split-panel auth layout (asl-*) ──────────────────────────────── */
+/* Imported by LoginPage, ForgotPasswordPage, RegisterSchoolPage             */
+
+.asl-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef0f5;
+  padding: 2rem 1rem;
+}
+
+.asl-card-wrap {
+  display: flex;
+  width: 100%;
+  max-width: 960px;
+  min-height: 580px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+}
+
+/* ── Left panel — dark navy ───────────────────────────────────────────────── */
+
+.asl-left {
+  flex: 0 0 42%;
+  background: #0d1554;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  padding: 2.5rem 2rem 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.asl-left__title {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0 0 0.4rem;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.asl-left__subtitle {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.asl-left__desc {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.6;
+  margin: 0 0 1.5rem;
+}
+
+/* ── Dashboard illustration ───────────────────────────────────────────────── */
+
+.asl-illustration {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 0.5rem;
+}
+
+.asl-card {
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 12px 14px 10px;
+}
+
+.asl-card--main {
+  width: 100%;
+  max-width: 260px;
+}
+
+.asl-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.asl-card__title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.02em;
+}
+
+.asl-card__title--sm {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.asl-card__legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.asl-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 3px;
+  vertical-align: middle;
+}
+
+.asl-dot--blue   { background: #60a5fa; }
+.asl-dot--gray   { background: rgba(255, 255, 255, 0.3); }
+.asl-dot--green  { background: #4ade80; }
+.asl-dot--orange { background: #fb923c; }
+
+.asl-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 72px;
+  margin-bottom: 6px;
+}
+
+.asl-bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  position: relative;
+  height: 72px;
+}
+
+.asl-bar {
+  width: 100%;
+  border-radius: 3px 3px 0 0;
+  position: absolute;
+  bottom: 0;
+}
+
+.asl-bar--bg { background: rgba(255, 255, 255, 0.12); }
+.asl-bar--fg { background: #60a5fa; }
+
+.asl-months {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.45rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 2px;
+}
+
+.asl-card--donut {
+  position: absolute;
+  bottom: 2.5rem;
+  right: 0.5rem;
+  width: 110px;
+  padding: 10px 10px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.asl-donut {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 6px;
+}
+
+.asl-donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+}
+
+.asl-donut-legend span {
+  display: flex;
+  align-items: center;
+  font-size: 0.55rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ── Pagination dots ──────────────────────────────────────────────────────── */
+
+.asl-dots {
+  display: flex;
+  gap: 6px;
+  margin-top: 1rem;
+}
+
+.asl-dot-nav {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transition: background 0.2s, width 0.2s;
+}
+
+.asl-dot-nav--active {
+  background: #fff;
+  width: 22px;
+  border-radius: 4px;
+}
+
+/* ── Right panel — white ──────────────────────────────────────────────────── */
+
+.asl-right {
+  flex: 1;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  padding: 2.5rem 2.25rem 2rem;
+  overflow-y: auto;
+}
+
+.asl-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin-bottom: 1.75rem;
+}
+
+.asl-brand__logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 10px;
+}
+
+.asl-brand__name {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0d1554;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+.asl-brand__role {
+  font-size: 0.7rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.asl-heading {
+  font-size: 1.375rem;
+  font-weight: 800;
+  color: #111827;
+  margin: 0 0 0.25rem;
+  letter-spacing: -0.02em;
+}
+
+.asl-subheading {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0 0 1.25rem;
+}
+
+.asl-alert {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-left: 3px solid #f59e0b;
+  color: #92400e;
+  border-radius: 6px;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.asl-alert--error {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  border-left-color: #ef4444;
+  color: #991b1b;
+}
+
+.asl-signup-btn {
+  display: block;
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 0.625rem 1rem;
+  border: 1.5px solid #0d1554;
+  border-radius: 8px;
+  background: transparent;
+  color: #0d1554;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+.asl-signup-btn:hover {
+  background: #0d1554;
+  color: #fff;
+}
+
+.asl-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  color: #6b7280;
+  text-decoration: none;
+  margin-top: 1rem;
+  transition: color 0.15s;
+}
+
+.asl-back-link:hover { color: #0d1554; }
+
+.asl-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.875rem 0;
+  color: #d1d5db;
+  font-size: 0.75rem;
+}
+
+.asl-divider::before,
+.asl-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e5e7eb;
+}
+
+.asl-divider span { color: #9ca3af; white-space: nowrap; }
+
+.asl-google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.625rem 1rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  color: #374151;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.asl-google-btn:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+
+@media (max-width: 720px) {
+  .asl-card-wrap {
+    flex-direction: column;
+    max-width: 480px;
+  }
+  .asl-left { flex: 0 0 auto; padding: 2rem 1.5rem 1.5rem; }
+  .asl-illustration { display: none; }
+  .asl-left__desc { display: none; }
+  .asl-right { padding: 2rem 1.5rem 1.5rem; }
+}
+
+@media (max-width: 480px) {
+  .asl-page { padding: 0; align-items: stretch; }
+  .asl-card-wrap { border-radius: 0; box-shadow: none; min-height: 100vh; }
+  .asl-left { padding: 1.5rem 1.25rem 1.25rem; }
+  .asl-right { padding: 1.5rem 1.25rem 1.25rem; }
+}

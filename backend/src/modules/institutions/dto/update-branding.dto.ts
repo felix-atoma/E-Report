@@ -15,6 +15,7 @@ export class UpdateBrandingDto {
   @ApiPropertyOptional() @IsOptional() @IsString() address?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() phone?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() website?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() circonscription?: string;
 
   @ApiPropertyOptional({ description: 'Arbitrary branding config (colors, fonts, etc.)' })
   @IsOptional()

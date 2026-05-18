@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { classesService } from '../../../services/classesService';
 import { reportsService } from '../../../services/reportsService';
 import { useAuth } from '../../../context/AuthContext';
@@ -13,6 +14,7 @@ import './TeacherDashboardPage.css';
 
 function TeacherDashboardPage() {
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const { data: classes = [], isLoading: l1 } = useQuery({
     queryKey: ['classes'],
@@ -24,19 +26,19 @@ function TeacherDashboardPage() {
     queryFn: () => reportsService.list().then((r) => r.data),
   });
 
-  if (l1 || l2) return <AppShell title="Tableau de bord"><Loading /></AppShell>;
+  if (l1 || l2) return <AppShell title={t('dash.title')}><Loading /></AppShell>;
 
   const pending   = reports.filter((r) => r.status === 'DRAFT' || r.status === 'REVIEW');
   const published = reports.filter((r) => r.status === 'PUBLISHED');
 
   return (
-    <AppShell title="Tableau de bord">
+    <AppShell title={t('dash.title')}>
       <PageHeader
-        title={`Bonjour, ${user?.name ?? 'Enseignant'}`}
-        subtitle="Voici un aperçu de vos activités"
+        title={t('dash.hello', { name: user?.name ?? t('role.TEACHER') })}
+        subtitle={t('dash.activities')}
         actions={
           <Button icon="+" onClick={() => {}}>
-            <Link to="/teacher/reports/new" className="teacher-dash__link">Nouveau bulletin</Link>
+            <Link to="/teacher/reports/new" className="teacher-dash__link">{t('dash.newBulletin')}</Link>
           </Button>
         }
       />
@@ -50,7 +52,7 @@ function TeacherDashboardPage() {
             </svg>
           </div>
           <span className="teacher-dash__stat-value">{classes.length}</span>
-          <span className="teacher-dash__stat-label">Mes classes</span>
+          <span className="teacher-dash__stat-label">{t('dash.myClasses')}</span>
         </Card>
         <Card className="teacher-dash__stat">
           <div className="teacher-dash__stat-icon teacher-dash__stat-icon--blue">
@@ -60,7 +62,7 @@ function TeacherDashboardPage() {
             </svg>
           </div>
           <span className="teacher-dash__stat-value">{pending.length}</span>
-          <span className="teacher-dash__stat-label">En cours</span>
+          <span className="teacher-dash__stat-label">{t('dash.inProgress')}</span>
         </Card>
         <Card className="teacher-dash__stat">
           <div className="teacher-dash__stat-icon teacher-dash__stat-icon--teal">
@@ -70,26 +72,25 @@ function TeacherDashboardPage() {
             </svg>
           </div>
           <span className="teacher-dash__stat-value">{published.length}</span>
-          <span className="teacher-dash__stat-label">Publiés</span>
+          <span className="teacher-dash__stat-label">{t('dash.published')}</span>
         </Card>
       </div>
 
       <div className="teacher-dash__grid">
-        {/* My classes */}
         <Card className="teacher-dash__card">
           <div className="teacher-dash__card-head">
-            <h3 className="teacher-dash__card-title">Mes classes</h3>
-            <Link to="/teacher/classes" className="teacher-dash__see-all">Voir tout</Link>
+            <h3 className="teacher-dash__card-title">{t('dash.myClasses')}</h3>
+            <Link to="/teacher/classes" className="teacher-dash__see-all">{t('action.viewAll')}</Link>
           </div>
           {classes.length === 0 ? (
-            <p className="teacher-dash__empty">Aucune classe assignée</p>
+            <p className="teacher-dash__empty">{t('dash.noClass')}</p>
           ) : (
             <div className="teacher-dash__class-list">
               {classes.slice(0, 5).map((c) => (
                 <Link key={c.id} to={`/teacher/classes/${c.id}`} className="teacher-dash__class-row">
                   <span className="teacher-dash__class-name">{c.name}</span>
                   <span className="teacher-dash__class-meta">
-                    {c._count?.students ?? c.studentsCount ?? 0} élèves
+                    {t('dash.studentsCount', { count: c._count?.students ?? c.studentsCount ?? 0 })}
                   </span>
                 </Link>
               ))}
@@ -97,14 +98,13 @@ function TeacherDashboardPage() {
           )}
         </Card>
 
-        {/* Recent reports */}
         <Card className="teacher-dash__card">
           <div className="teacher-dash__card-head">
-            <h3 className="teacher-dash__card-title">Bulletins récents</h3>
-            <Link to="/teacher/reports" className="teacher-dash__see-all">Voir tout</Link>
+            <h3 className="teacher-dash__card-title">{t('dash.recentReports')}</h3>
+            <Link to="/teacher/reports" className="teacher-dash__see-all">{t('action.viewAll')}</Link>
           </div>
           {reports.length === 0 ? (
-            <p className="teacher-dash__empty">Aucun bulletin créé</p>
+            <p className="teacher-dash__empty">{t('dash.noBulletin')}</p>
           ) : (
             <div className="teacher-dash__report-list">
               {reports.slice(0, 6).map((r) => (

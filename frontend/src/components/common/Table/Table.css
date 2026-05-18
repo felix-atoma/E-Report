@@ -42,7 +42,7 @@
 }
 .table-skeleton {
   height: 12rem;
-  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background: linear-gradient(90deg, var(--color-bg-subtle, #f3f4f6) 25%, var(--color-bg-muted, #e5e7eb) 50%, var(--color-bg-subtle, #f3f4f6) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: var(--radius-md, 6px);

@@ -1,5 +1,5 @@
 {
-  "appName": "NovaBulletin",
+  "appName": "E-Report",
 
   "nav": {
     "dashboard":      "Dashboard",
@@ -28,11 +28,11 @@
   },
 
   "section": {
-    "school":    "SCHOOL",
-    "pedagogy":  "PEDAGOGY",
-    "finance":   "FINANCE",
-    "system":    "SYSTEM",
-    "classes":   "CLASSES"
+    "school":   "SCHOOL",
+    "pedagogy": "PEDAGOGY",
+    "finance":  "FINANCE",
+    "system":   "SYSTEM",
+    "classes":  "CLASSES"
   },
 
   "role": {
@@ -60,21 +60,200 @@
     "activate":   "Activate",
     "publish":    "Publish",
     "download":   "Download",
-    "logout":     "Log out"
+    "logout":     "Log out",
+    "assign":     "Assign",
+    "assigning":  "Assigning…",
+    "viewAll":    "View all",
+    "loading":    "Loading…"
   },
 
   "help": {
     "title": "Need help?",
-    "text":  "Contact NovaBulletin support"
+    "text":  "Contact E-Report support"
   },
 
   "lang": {
-    "fr": "Français",
-    "en": "English",
+    "fr":     "Français",
+    "en":     "English",
     "switch": "Switch language"
   },
 
-  "welcome": "Welcome",
-  "login":   "Log in",
-  "logout":  "Log out"
+  "login": {
+    "subtitle":          "Sign in to your workspace",
+    "email":             "Email address",
+    "password":          "Password",
+    "rememberMe":        "Stay signed in",
+    "submit":            "Sign in",
+    "submitting":        "Signing in…",
+    "forgotPassword":    "Forgot your password?",
+    "reset":             "Reset",
+    "invalidCredentials":"Incorrect email or password.",
+    "showPassword":      "Show password",
+    "hidePassword":      "Hide password",
+    "copyright":         "All rights reserved"
+  },
+
+  "dash": {
+    "title":            "Dashboard",
+    "overview":         "Overview",
+    "academicYear":     "Academic year {{year}}",
+    "currentYear":      "Current academic year",
+    "hello":            "Hello, {{name}}",
+    "personalSpace":    "Your personal workspace",
+    "activities":       "Here's a summary of your activities",
+    "followChildren":   "Track your children's schooling",
+    "students":         "Students",
+    "teachers":         "Teachers",
+    "classes":          "Classes",
+    "publishedReports": "Published reports",
+    "collectionRate":   "Collection rate",
+    "remaining":        "Outstanding balance",
+    "feeRecovery":      "Fee collection",
+    "reports":          "Report cards",
+    "totalDue":         "Total due",
+    "collected":        "Collected",
+    "toPay":            "Remaining",
+    "exemptedStudents": "Exempted students",
+    "drafts":           "Drafts",
+    "inReview":         "Under review",
+    "published":        "Published",
+    "inProgress":       "In progress",
+    "myClasses":        "My classes",
+    "recentReports":    "Recent reports",
+    "recentAnnouncements": "Recent announcements",
+    "latestReport":     "Latest report",
+    "allReports":       "View all my reports →",
+    "noReport":         "No published report yet.",
+    "noClass":          "No class assigned",
+    "noBulletin":       "No report created",
+    "noReportAvailable":"No report available.",
+    "newBulletin":      "New report",
+    "viewProgress":     "View my progress",
+    "announcements":    "Announcements",
+    "myChildren":       "My children",
+    "noChildren":       "No child linked to your account.",
+    "pendingPayment":   "Pending payment",
+    "studentsCount":    "{{count}} student",
+    "studentsCount_plural": "{{count}} students",
+    "bulletinCount":    "Report",
+    "bulletinCount_plural": "Reports",
+    "announcementCount": "Announcement",
+    "announcementCount_plural": "Announcements",
+    "childCount":       "Child",
+    "childCount_plural": "Children"
+  },
+
+  "mention": {
+    "excellent":  "Excellent",
+    "veryGood":   "Very Good",
+    "good":       "Good",
+    "fairlyGood": "Fairly Good",
+    "pass":       "Pass",
+    "fail":       "Fail"
+  },
+
+  "payment": {
+    "upToDate": "Up to date",
+    "partial":  "Partial",
+    "unpaid":   "Unpaid",
+    "exempted": "Exempted",
+    "method":   "Method",
+    "methods": {
+      "CASH":  "Cash",
+      "TMONEY":"TMoney",
+      "FLOOZ": "Flooz",
+      "MOMO":  "MoMo",
+      "BANK":  "Bank transfer",
+      "CHECK": "Cheque",
+      "OTHER": "Other"
+    }
+  },
+
+  "fees": {
+    "pageTitle":        "School fees",
+    "fee":              "Fee",
+    "feeName":          "Fee name",
+    "amount":           "Amount (FCFA)",
+    "period":           "Period",
+    "description":      "Description",
+    "assignedClasses":  "Assigned classes",
+    "assignTitle":      "Assign \"{{name}}\" to a class",
+    "newFee":           "New fee",
+    "createTitle":      "Create a fee",
+    "editTitle":        "Edit fee",
+    "feePlaceholder":   "e.g. Tuition, Exam fees",
+    "amountPlaceholder":"e.g. 50000",
+    "optional":         "Optional",
+    "allYear":          "Full year",
+    "annual":           "Annual",
+    "class":            "Class",
+    "selectClass":      "Select a class",
+    "terms": {
+      "TRIMESTRE_1": "1st term",
+      "TRIMESTRE_2": "2nd term",
+      "TRIMESTRE_3": "3rd term",
+      "SEMESTRE_1":  "1st semester",
+      "SEMESTRE_2":  "2nd semester",
+      "ANNUEL":      "Annual"
+    },
+    "errors": {
+      "nameRequired":   "Name required",
+      "amountRequired": "Amount required",
+      "amountInvalid":  "Invalid amount"
+    },
+    "toast": {
+      "created":  "Fee created",
+      "updated":  "Fee updated",
+      "deleted":  "Fee deleted",
+      "assigned": "Fee assigned to class",
+      "error":    "Error"
+    },
+    "count": "{{count}} fee structure",
+    "count_plural": "{{count}} fee structures"
+  },
+
+  "users": {
+    "fullName":       "Full name",
+    "email":          "Email",
+    "password":       "Password",
+    "phone":          "Phone / WhatsApp",
+    "role":           "Role",
+    "selectRole":     "Select a role",
+    "namePlaceholder":"e.g. Koffi Amevor",
+    "pwdPlaceholder": "Minimum 8 characters",
+    "phonePlaceholder":"+228 XX XX XX XX",
+    "subjects":       "Taught subjects",
+    "subjectsHint":   "The teacher will be automatically assigned to relevant classes.",
+    "errors": {
+      "nameRequired":    "Full name required",
+      "emailRequired":   "Email required",
+      "emailInvalid":    "Invalid email",
+      "roleRequired":    "Role required",
+      "passwordRequired":"Password required"
+    },
+    "roles": {
+      "ADMIN":   "Administrator",
+      "TEACHER": "Teacher",
+      "BURSAR":  "Bursar",
+      "PARENT":  "Parent",
+      "STUDENT": "Student"
+    }
+  },
+
+  "notFound": {
+    "title": "Page not found",
+    "desc":  "This page does not exist or has been moved.",
+    "back":  "Back to home"
+  },
+
+  "progress": {
+    "title":       "My progress",
+    "subtitle":    "Overall average trend",
+    "noData":      "Not enough data yet",
+    "noDataDesc":  "Your progress chart will appear after at least two report cards are published."
+  },
+
+  "welcome":     "Welcome",
+  "loginAction": "Log in",
+  "logout":      "Log out"
 }

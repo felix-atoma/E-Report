@@ -1,0 +1,295 @@
+@import '../../auth/asl-auth.css';
+
+/* ── Register-specific overrides ──────────────────────────────────────────── */
+
+/* Wider card for the registration form */
+.asl-card-wrap--wide {
+  max-width: 1080px;
+}
+
+/* Narrow card for the success state */
+.asl-card-wrap--narrow {
+  max-width: 520px;
+  min-height: auto;
+}
+
+/* Right panel centered (success state) */
+.asl-right--centered {
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── School illustration ──────────────────────────────────────────────────── */
+
+.asl-illustration--school {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding-bottom: 0;
+}
+
+.asl-card--school-info {
+  width: 100%;
+  max-width: 240px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 16px 16px 14px;
+  gap: 8px;
+}
+
+.asl-si-icon {
+  width: 52px;
+  height: 52px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.asl-si-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+.asl-si-desc {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.asl-card--features {
+  width: 100%;
+  max-width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+}
+
+.asl-feature {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.asl-feature__icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+  width: 24px;
+  text-align: center;
+}
+
+.asl-feature__text {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ── Page — allow scroll on tall register form ────────────────────────────── */
+.asl-page--register {
+  align-items: flex-start;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+/* ── Form fields (rsp-* classes kept from original) ──────────────────────── */
+
+.rsp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.rsp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex: 1;
+}
+
+.rsp-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.rsp-label {
+  font-size: 0.775rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.rsp-required { color: #dc2626; margin-left: 1px; }
+.rsp-optional { color: #9ca3af; font-weight: 400; font-size: 0.72rem; }
+
+.rsp-section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.25rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.rsp-section-label--mt { margin-top: 0.75rem; }
+
+.rsp-input {
+  width: 100%;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.85rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  color: #1f2937;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.rsp-input:focus {
+  border-color: #0d1554;
+  box-shadow: 0 0 0 3px rgba(13, 21, 84, 0.1);
+}
+
+.rsp-input::placeholder { color: #9ca3af; }
+
+.rsp-input[type='number']::-webkit-inner-spin-button,
+.rsp-input[type='number']::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+.rsp-input--readonly {
+  background: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────────────── */
+
+.rsp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  transition: background 0.2s, opacity 0.2s;
+}
+
+.rsp-btn--primary {
+  background: #0d1554;
+  color: #fff;
+}
+
+.rsp-btn--primary:hover:not(:disabled) { background: #1a237e; }
+
+.rsp-btn--primary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.rsp-btn--full { width: 100%; margin-top: 0.25rem; }
+
+/* ── Spinner ──────────────────────────────────────────────────────────────── */
+
+.rsp-spinner {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: rsp-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes rsp-spin { to { transform: rotate(360deg); } }
+
+/* ── Footer ───────────────────────────────────────────────────────────────── */
+
+.rsp-footer-link {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.rsp-link {
+  color: #0d1554;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.rsp-link:hover { text-decoration: underline; }
+
+/* ── Google badge ─────────────────────────────────────────────────────────── */
+
+.rsp-google-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.78rem;
+  color: #15803d;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+/* ── Success state ────────────────────────────────────────────────────────── */
+
+.rsp-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2rem 1rem;
+  gap: 0.75rem;
+}
+
+.rsp-success__icon { margin-bottom: 0.25rem; }
+
+.rsp-success__title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #15803d;
+  margin: 0;
+}
+
+.rsp-success__body {
+  font-size: 0.9rem;
+  color: #374151;
+  max-width: 360px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.rsp-success__hint {
+  font-size: 0.8rem;
+  color: #6b7280;
+  max-width: 360px;
+  margin: 0;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+
+@media (max-width: 840px) {
+  .asl-card-wrap--wide { max-width: 560px; }
+}
+
+@media (max-width: 600px) {
+  .rsp-row { grid-template-columns: 1fr; }
+}

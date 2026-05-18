@@ -11,7 +11,7 @@
   padding: 0 0.5rem;
   border: 1px solid var(--color-border, #e5e7eb);
   border-radius: var(--radius-md, 6px);
-  background: #fff;
+  background: var(--color-bg, #fff);
   color: var(--color-text, #1f2937);
   font-size: 0.9rem;
   cursor: pointer;

@@ -7,6 +7,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 import { JwtLogoutStrategy } from './strategies/jwt-logout.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
+import { GoogleStrategy } from './strategies/google.strategy';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { LocalStrategy } from './strategies/local.strategy';
     JwtModule.register({}), // secrets injected per-call via ConfigService
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtRefreshStrategy, JwtLogoutStrategy, LocalStrategy],
+  providers: [AuthService, JwtStrategy, JwtRefreshStrategy, JwtLogoutStrategy, LocalStrategy, GoogleStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}

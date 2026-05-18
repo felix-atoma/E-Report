@@ -1,6 +1,11 @@
 *, *::before, *::after { margin: 0; padding: 0; }
 html { -webkit-text-size-adjust: 100%; }
-body { line-height: 1.5; }
+body {
+  line-height: 1.5;
+  background: var(--color-bg, #fff);
+  color: var(--color-text, #1f2937);
+  transition: background 0.2s ease, color 0.2s ease;
+}
 img, picture, video, canvas, svg { display: block; max-width: 100%; }
 input, button, textarea, select { font: inherit; }
 ul, ol { list-style: none; }

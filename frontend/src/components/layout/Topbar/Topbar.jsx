@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
+import { useTheme } from '../../../context/ThemeContext';
 import Avatar from '../../common/Avatar/Avatar';
+import logoIcon from '../../../assets/images/novaBulletin-icon.svg';
 import './Topbar.css';
 
 const ROLE_LABEL = {
@@ -29,6 +31,7 @@ function useDropdown() {
 
 function Topbar({ title, onMenuClick }) {
   const { user, logout } = useAuth();
+  const { darkMode, toggleDarkMode } = useTheme();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const notif = useDropdown();
@@ -45,18 +48,23 @@ function Topbar({ title, onMenuClick }) {
 
   return (
     <header className="topbar">
-      {/* Hamburger — mobile only */}
-      <button className="topbar__hamburger" onClick={onMenuClick} aria-label="Ouvrir le menu">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="3" y1="6"  x2="21" y2="6"/>
-          <line x1="3" y1="12" x2="21" y2="12"/>
-          <line x1="3" y1="18" x2="21" y2="18"/>
-        </svg>
-      </button>
+      {/* Left — hamburger + brand + title */}
+      <div className="topbar__left">
+        <button className="topbar__hamburger" onClick={onMenuClick} aria-label="Ouvrir le menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" y1="6"  x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <div className="topbar__brand">
+          <img src={logoIcon} alt="NovaBulletin" className="topbar__brand-logo" />
+          <span className="topbar__brand-name">NovaBulletin <span className="topbar__brand-ltd">Ltd</span></span>
+        </div>
+        {title && <h1 className="topbar__title">{title}</h1>}
+      </div>
 
-      {title && <h1 className="topbar__title">{title}</h1>}
-
-      {/* Search bar — ZDesk style */}
+      {/* Centre — search */}
       <form className="topbar__search" onSubmit={handleSearch}>
         <svg className="topbar__search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -70,47 +78,73 @@ function Topbar({ title, onMenuClick }) {
         />
       </form>
 
-      <div className="topbar__spacer" />
-
-      {/* Notification dropdown */}
-      <div className="topbar__dropdown-wrap" ref={notif.ref}>
+      {/* Right — theme + notifications + user */}
+      <div className="topbar__right">
+        {/* Theme toggle */}
         <button
-          className="topbar__icon-btn topbar__icon-btn--badge"
-          onClick={() => notif.setOpen((v) => !v)}
-          aria-label="Notifications"
+          className="topbar__icon-btn"
+          onClick={toggleDarkMode}
+          aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          title={darkMode ? 'Light mode' : 'Dark mode'}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-          </svg>
-          <span className="topbar__badge">2</span>
+          {darkMode ? (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="5"/>
+              <line x1="12" y1="1"  x2="12" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="23"/>
+              <line x1="4.22" y1="4.22"  x2="5.64" y2="5.64"/>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              <line x1="1"  y1="12" x2="3"  y2="12"/>
+              <line x1="21" y1="12" x2="23" y2="12"/>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          )}
         </button>
-        {notif.open && (
-          <div className="topbar__dropdown topbar__dropdown--notif">
-            <div className="topbar__dropdown-header">
-              <span className="topbar__dropdown-title">Notifications</span>
-              <span className="topbar__notif-count">2 nouvelles</span>
-            </div>
-            <div className="topbar__notif-empty">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-              </svg>
-              <p>Aucune nouvelle notification</p>
-            </div>
-            <div className="topbar__dropdown-footer">
-              <Link to="/notifications" onClick={() => notif.setOpen(false)}>
-                Voir toutes les notifications
-              </Link>
-            </div>
-          </div>
-        )}
-      </div>
 
-      <div className="topbar__divider" aria-hidden="true" />
+        {/* Notification dropdown */}
+        <div className="topbar__dropdown-wrap" ref={notif.ref}>
+          <button
+            className="topbar__icon-btn topbar__icon-btn--badge"
+            onClick={() => notif.setOpen((v) => !v)}
+            aria-label="Notifications"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <span className="topbar__badge">2</span>
+          </button>
+          {notif.open && (
+            <div className="topbar__dropdown topbar__dropdown--notif">
+              <div className="topbar__dropdown-header">
+                <span className="topbar__dropdown-title">Notifications</span>
+                <span className="topbar__notif-count">2 nouvelles</span>
+              </div>
+              <div className="topbar__notif-empty">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                <p>Aucune nouvelle notification</p>
+              </div>
+              <div className="topbar__dropdown-footer">
+                <Link to="/notifications" onClick={() => notif.setOpen(false)}>
+                  Voir toutes les notifications
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
 
-      {/* User dropdown — ZDesk style */}
-      <div className="topbar__dropdown-wrap" ref={userDrop.ref}>
+        <div className="topbar__divider" aria-hidden="true" />
+
+        {/* User dropdown — ZDesk style */}
+        <div className="topbar__dropdown-wrap" ref={userDrop.ref}>
         <button
           className="topbar__user-btn"
           onClick={() => userDrop.setOpen((v) => !v)}
@@ -169,6 +203,7 @@ function Topbar({ title, onMenuClick }) {
             </button>
           </div>
         )}
+        </div>
       </div>
     </header>
   );

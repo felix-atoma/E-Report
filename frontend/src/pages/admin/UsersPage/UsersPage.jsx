@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { usersService } from '../../../services/usersService';
 import { subjectsService } from '../../../services/subjectsService';
@@ -7,7 +8,7 @@ import { classesService } from '../../../services/classesService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Table from '../../../components/common/Table/Table';
-import Modal from '../../../components/common/Modal/Modal';
+import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
 import ConfirmDialog from '../../../components/common/ConfirmDialog/ConfirmDialog';
 import Input from '../../../components/common/Input/Input';
 import Select from '../../../components/common/Select/Select';
@@ -17,13 +18,7 @@ import Badge from '../../../components/common/Badge/Badge';
 import SearchBar from '../../../components/common/SearchBar/SearchBar';
 import './UsersPage.css';
 
-const ROLES = [
-  { value: 'ADMIN',   label: 'Administrateur' },
-  { value: 'TEACHER', label: 'Enseignant' },
-  { value: 'BURSAR',  label: 'Gestionnaire' },
-  { value: 'PARENT',  label: 'Parent' },
-  { value: 'STUDENT', label: 'Élève' },
-];
+const ROLE_KEYS = ['ADMIN', 'TEACHER', 'BURSAR', 'PARENT', 'STUDENT'];
 
 const ROLE_VARIANT = {
   ADMIN: 'danger', TEACHER: 'info', BURSAR: 'warning', PARENT: 'success', STUDENT: 'default',
@@ -34,17 +29,8 @@ const EMPTY_FORM = {
   subjectIds: [], mainClassId: '',
 };
 
-function validate(form, isCreate) {
-  const errors = {};
-  if (!form.name.trim())  errors.name  = 'Nom complet requis';
-  if (!form.email.trim()) errors.email = 'Email requis';
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errors.email = 'Email invalide';
-  if (!form.role)         errors.role  = 'Rôle requis';
-  if (isCreate && !form.password.trim()) errors.password = 'Mot de passe requis';
-  return errors;
-}
-
-function UserForm({ form, errors, onChange, isCreate, subjects, classes }) {
+function UserForm({ form, errors, onChange, isCreate, subjects, classes, roles }) {
+  const { t } = useTranslation();
   const isTeacher = form.role === 'TEACHER';
 
   function toggleSubject(id) {
@@ -57,35 +43,35 @@ function UserForm({ form, errors, onChange, isCreate, subjects, classes }) {
   return (
     <div className="user-form">
       <Input
-        id="name" label="Nom complet" required
+        id="name" label={t('users.fullName')} required
         value={form.name} error={errors.name}
-        placeholder="ex: Koffi Amevor"
+        placeholder={t('users.namePlaceholder')}
         onChange={(e) => onChange('name', e.target.value)}
       />
       <Input
-        id="email" label="Email" type="email" required
+        id="email" label={t('users.email')} type="email" required
         value={form.email} error={errors.email}
         onChange={(e) => onChange('email', e.target.value)}
       />
       {isCreate && (
         <Input
-          id="password" label="Mot de passe" type="password" required
+          id="password" label={t('users.password')} type="password" required
           value={form.password} error={errors.password}
-          placeholder="Minimum 8 caractères"
+          placeholder={t('users.pwdPlaceholder')}
           onChange={(e) => onChange('password', e.target.value)}
         />
       )}
       <Input
-        id="whatsappNumber" label="Téléphone / WhatsApp"
+        id="whatsappNumber" label={t('users.phone')}
         value={form.whatsappNumber}
-        placeholder="+228 XX XX XX XX"
+        placeholder={t('users.phonePlaceholder')}
         onChange={(e) => onChange('whatsappNumber', e.target.value)}
       />
       <Select
-        id="role" label="Rôle" required
+        id="role" label={t('users.role')} required
         value={form.role} error={errors.role}
-        placeholder="Sélectionner un rôle"
-        options={ROLES}
+        placeholder={t('users.selectRole')}
+        options={roles}
         onChange={(e) => onChange('role', e.target.value)}
       />
 
@@ -93,12 +79,12 @@ function UserForm({ form, errors, onChange, isCreate, subjects, classes }) {
         <>
           {/* Subject assignment */}
           <div className="user-form__section">
-            <div className="user-form__section-title">Matières enseignées</div>
+            <div className="user-form__section-title">{t('users.subjects')}</div>
             <div className="user-form__section-hint">
-              L'enseignant sera automatiquement assigné aux classes concernées.
+              {t('users.subjectsHint')}
             </div>
             {subjects.length === 0 ? (
-              <p className="user-form__empty">Aucune matière disponible</p>
+              <p className="user-form__empty">—</p>
             ) : (
               <div className="user-form__subject-grid">
                 {subjects.map((s) => (
@@ -144,6 +130,7 @@ function UserForm({ form, errors, onChange, isCreate, subjects, classes }) {
 }
 
 function UsersPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const [search, setSearch]         = useState('');
   const [roleFilter, setRoleFilter] = useState('');
@@ -152,6 +139,18 @@ function UsersPage() {
   const [confirm, setConfirm]       = useState(null);
   const [form, setForm]             = useState(EMPTY_FORM);
   const [errors, setErrors]         = useState({});
+
+  const roles = ROLE_KEYS.map((k) => ({ value: k, label: t(`users.roles.${k}`) }));
+
+  function validate(f, isCreate) {
+    const errs = {};
+    if (!f.name.trim())  errs.name  = t('users.errors.nameRequired');
+    if (!f.email.trim()) errs.email = t('users.errors.emailRequired');
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)) errs.email = t('users.errors.emailInvalid');
+    if (!f.role)         errs.role  = t('users.errors.roleRequired');
+    if (isCreate && !f.password.trim()) errs.password = t('users.errors.passwordRequired');
+    return errs;
+  }
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['users'],
@@ -182,20 +181,20 @@ function UsersPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['users'] });
       qc.invalidateQueries({ queryKey: ['classes'] });
-      toast.success('Utilisateur créé');
+      toast.success(t('action.create'));
       closeModal();
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur de création'),
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('action.create')),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => usersService.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['users'] });
-      toast.success('Utilisateur mis à jour');
+      toast.success(t('action.update'));
       closeModal();
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur de mise à jour'),
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('action.update')),
   });
 
   const toggleMutation = useMutation({
@@ -203,10 +202,20 @@ function UsersPage() {
       action === 'deactivate' ? usersService.deactivate(id) : usersService.activate(id),
     onSuccess: (_, { action }) => {
       qc.invalidateQueries({ queryKey: ['users'] });
-      toast.success(action === 'deactivate' ? 'Compte désactivé' : 'Compte activé');
+      toast.success(action === 'deactivate' ? t('action.deactivate') : t('action.activate'));
       setConfirm(null);
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur'),
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('action.confirm')),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => usersService.delete(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['users'] });
+      toast.success(t('action.delete'));
+      setConfirm(null);
+    },
+    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur de suppression'),
   });
 
   function openCreate() {
@@ -272,7 +281,7 @@ function UsersPage() {
   const columns = [
     {
       key: 'name',
-      label: 'Utilisateur',
+      label: t('users.fullName'),
       render: (u) => (
         <div className="users-table__user">
           <Avatar name={u.name ?? u.email} size="sm" />
@@ -285,68 +294,71 @@ function UsersPage() {
     },
     {
       key: 'role',
-      label: 'Rôle',
+      label: t('users.role'),
       render: (u) => (
         <Badge variant={ROLE_VARIANT[u.role] ?? 'default'}>
-          {ROLES.find((r) => r.value === u.role)?.label ?? u.role}
+          {t(`users.roles.${u.role}`, u.role)}
         </Badge>
       ),
     },
     {
       key: 'phone',
-      label: 'Téléphone',
+      label: t('users.phone'),
       render: (u) => u.whatsappNumber ?? <span className="users-table__empty">—</span>,
     },
     {
       key: 'status',
-      label: 'Statut',
+      label: t('action.activate'),
       render: (u) => (
         <Badge variant={u.isActive !== false ? 'success' : 'default'}>
-          {u.isActive !== false ? 'Actif' : 'Inactif'}
+          {u.isActive !== false ? t('action.activate') : t('action.deactivate')}
         </Badge>
       ),
     },
     {
       key: 'actions',
       label: '',
-      style: { width: '120px', textAlign: 'right' },
+      style: { width: '160px', textAlign: 'right' },
       render: (u) => (
         <div className="users-table__actions">
-          <Button size="sm" variant="ghost" onClick={() => openEdit(u)}>Modifier</Button>
+          <Button size="sm" variant="ghost" onClick={() => openEdit(u)}>{t('action.edit')}</Button>
           {u.isActive !== false ? (
             <Button size="sm" variant="ghost" onClick={() => setConfirm({ user: u, action: 'deactivate' })}>
-              Désactiver
+              {t('action.deactivate')}
             </Button>
           ) : (
             <Button size="sm" variant="ghost" onClick={() => setConfirm({ user: u, action: 'activate' })}>
-              Activer
+              {t('action.activate')}
             </Button>
           )}
+          <Button size="sm" variant="ghost" onClick={() => setConfirm({ user: u, action: 'delete' })}>
+            {t('action.delete')}
+          </Button>
         </div>
       ),
     },
   ];
 
   return (
-    <AppShell title="Utilisateurs">
+    <AppShell title={t('nav.users')}>
       <PageHeader
-        title="Utilisateurs"
-        subtitle={`${users.length} compte${users.length !== 1 ? 's' : ''}`}
-        actions={<Button icon="+" onClick={openCreate}>Nouvel utilisateur</Button>}
+        title={t('nav.users')}
+        subtitle={`${users.length}`}
+        actions={<Button icon="+" onClick={openCreate}>{t('action.create')}</Button>}
       />
 
       <div className="users-page__toolbar">
         <SearchBar
           value={search}
           onChange={setSearch}
-          placeholder="Rechercher par nom ou email…"
+          placeholder={t('action.search')}
           className="users-page__search"
         />
         <Select
           id="role-filter"
           value={roleFilter}
-          placeholder="Tous les rôles"
-          options={ROLES}
+          placeholder={t('users.selectRole')}
+          options={roles}
           onChange={(e) => setRoleFilter(e.target.value)}
           className="users-page__role-filter"
         />
@@ -356,19 +368,19 @@ function UsersPage() {
         columns={columns}
         rows={filtered}
         loading={isLoading}
-        emptyMessage="Aucun utilisateur trouvé"
+        emptyMessage={t('action.search')}
       />
 
-      <Modal
+      <OffCanvas
         open={!!modal}
         onClose={closeModal}
-        title={modal === 'create' ? 'Nouvel utilisateur' : "Modifier l'utilisateur"}
+        title={modal === 'create' ? t('action.create') : t('action.edit')}
         size="md"
         footer={
           <>
-            <Button variant="ghost" onClick={closeModal} disabled={isSaving}>Annuler</Button>
+            <Button variant="ghost" onClick={closeModal} disabled={isSaving}>{t('action.cancel')}</Button>
             <Button onClick={handleSubmit} disabled={isSaving}>
-              {isSaving ? 'Enregistrement…' : 'Enregistrer'}
+              {isSaving ? t('action.saving') : t('action.save')}
             </Button>
           </>
         }
@@ -380,22 +392,30 @@ function UsersPage() {
           isCreate={modal === 'create'}
           subjects={subjects}
           classes={classes}
+          roles={roles}
         />
-      </Modal>
+      </OffCanvas>
 
       <ConfirmDialog
-        open={!!confirm}
+        open={!!confirm && confirm.action !== 'delete'}
         onClose={() => setConfirm(null)}
         onConfirm={() => toggleMutation.mutate({ id: confirm.user.id, action: confirm.action })}
         loading={toggleMutation.isPending}
-        title={confirm?.action === 'deactivate' ? 'Désactiver le compte' : 'Activer le compte'}
-        message={
-          confirm?.action === 'deactivate'
-            ? `Désactiver le compte de ${confirm?.user.name ?? confirm?.user.email} ? L'utilisateur ne pourra plus se connecter.`
-            : `Réactiver le compte de ${confirm?.user.name ?? confirm?.user.email} ?`
-        }
-        confirmLabel={confirm?.action === 'deactivate' ? 'Désactiver' : 'Activer'}
+        title={confirm?.action === 'deactivate' ? t('action.deactivate') : t('action.activate')}
+        message={confirm?.user?.name ?? confirm?.user?.email ?? ''}
+        confirmLabel={confirm?.action === 'deactivate' ? t('action.deactivate') : t('action.activate')}
         variant={confirm?.action === 'deactivate' ? 'danger' : 'primary'}
+      />
+
+      <ConfirmDialog
+        open={!!confirm && confirm.action === 'delete'}
+        onClose={() => setConfirm(null)}
+        onConfirm={() => deleteMutation.mutate(confirm.user.id)}
+        loading={deleteMutation.isPending}
+        title={t('action.delete')}
+        message={confirm?.user?.name ?? confirm?.user?.email ?? ''}
+        confirmLabel={t('action.delete')}
+        variant="danger"
       />
     </AppShell>
   );

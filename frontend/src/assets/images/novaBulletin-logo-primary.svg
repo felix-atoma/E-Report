@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 180" width="640" height="180" role="img" aria-label="novaBulletin logo">
+  <defs>
+    <linearGradient id="sparkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFB547"/>
+      <stop offset="55%" stop-color="#FF7A59"/>
+      <stop offset="100%" stop-color="#E94F8A"/>
+    </linearGradient>
+    <linearGradient id="sparkGradSoft" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFB547" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#E94F8A" stop-opacity="0.15"/>
+    </linearGradient>
+    <style>
+      .word { font-family: 'Inter','Helvetica Neue',Arial,sans-serif; font-weight: 700; letter-spacing: -1.2px; }
+      .nova { fill: #1E2A78; }
+      .bulletin { fill: #1E2A78; font-weight: 500; }
+      .tag { font-family: 'Inter','Helvetica Neue',Arial,sans-serif; font-weight: 500; letter-spacing: 4px; fill: #6B7AA8; font-size: 11px; }
+    </style>
+  </defs>
+
+  <!-- Spark / Nova icon -->
+  <g transform="translate(40 90)">
+    <!-- soft glow -->
+    <circle cx="0" cy="0" r="58" fill="url(#sparkGradSoft)"/>
+    <!-- 4-point spark -->
+    <path d="M 0 -52 C 4 -22, 22 -4, 52 0 C 22 4, 4 22, 0 52 C -4 22, -22 4, -52 0 C -22 -4, -4 -22, 0 -52 Z"
+          fill="url(#sparkGrad)"/>
+    <!-- small accent spark -->
+    <path d="M 38 -38 C 39 -30, 44 -25, 52 -24 C 44 -23, 39 -18, 38 -10 C 37 -18, 32 -23, 24 -24 C 32 -25, 37 -30, 38 -38 Z"
+          fill="#FFB547"/>
+  </g>
+
+  <!-- Wordmark -->
+  <g transform="translate(125 102)">
+    <text class="word" font-size="54">
+      <tspan class="nova">nova</tspan><tspan class="bulletin">Bulletin</tspan>
+    </text>
+    <text class="tag" y="28">E L E C T R O N I C   R E P O R T   C A R D S</text>
+  </g>
+</svg>

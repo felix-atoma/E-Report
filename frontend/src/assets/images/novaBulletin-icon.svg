@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="novaBulletin icon">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E2A78"/>
+      <stop offset="100%" stop-color="#0F1A52"/>
+    </linearGradient>
+    <linearGradient id="sparkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFB547"/>
+      <stop offset="55%" stop-color="#FF7A59"/>
+      <stop offset="100%" stop-color="#E94F8A"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="200" height="200" rx="44" fill="url(#bg)"/>
+
+  <g transform="translate(100 100)">
+    <path d="M 0 -62 C 5 -27, 27 -5, 62 0 C 27 5, 5 27, 0 62 C -5 27, -27 5, -62 0 C -27 -5, -5 -27, 0 -62 Z"
+          fill="url(#sparkGrad)"/>
+    <path d="M 44 -44 C 45 -35, 51 -29, 60 -28 C 51 -27, 45 -21, 44 -12 C 43 -21, 37 -27, 28 -28 C 37 -29, 43 -35, 44 -44 Z"
+          fill="#FFD78A"/>
+  </g>
+</svg>

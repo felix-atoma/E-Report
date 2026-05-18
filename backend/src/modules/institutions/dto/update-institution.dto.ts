@@ -46,4 +46,9 @@ export class UpdateInstitutionDto {
   @IsOptional()
   @IsString()
   missionStatement?: string;
+
+  @ApiPropertyOptional({ example: 'Inspection de l\'Enseignement du 1er Degré de Lomé-Commune' })
+  @IsOptional()
+  @IsString()
+  circonscription?: string;
 }

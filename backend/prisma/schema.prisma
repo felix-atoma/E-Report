@@ -14,6 +14,14 @@ enum Role {
   PARENT
   STUDENT
   BURSAR
+  SUPERADMIN
+}
+
+enum InstitutionStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  REJECTED
 }
 
 enum Sex {
@@ -148,11 +156,15 @@ model Institution {
   logo              String?
   crest             String?
   stamp             String?
-  brandingSettings  Json?
-  academicSettings  Json?
-  isActive          Boolean  @default(true)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  brandingSettings     Json?
+  academicSettings     Json?
+  isActive             Boolean           @default(true)
+  status               InstitutionStatus @default(PENDING)
+  declaredStudentCount Int?
+  subscriptionPlan     String?
+  ownerNotes           String?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
 
   users             User[]
   classes           Class[]
@@ -183,8 +195,8 @@ model User {
   notificationPreferences Json?
   isActive        Boolean  @default(true)
 
-  institutionId   String
-  institution     Institution @relation(fields: [institutionId], references: [id])
+  institutionId   String?
+  institution     Institution? @relation(fields: [institutionId], references: [id])
 
   studentProfile  Student?  @relation("StudentUser")
   childrenAsParent Student[] @relation("ParentUser")

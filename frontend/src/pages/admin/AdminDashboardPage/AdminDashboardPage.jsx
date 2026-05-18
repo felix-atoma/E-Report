@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { analyticsService } from '../../../services/analyticsService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
@@ -64,6 +65,7 @@ function StatCard({ label, value, icon, sub, color = 'primary' }) {
 }
 
 function AdminDashboardPage() {
+  const { t } = useTranslation();
   const { data: overview, isLoading: loadingOverview } = useQuery({
     queryKey: ['analytics', 'overview'],
     queryFn: () => analyticsService.overview().then((r) => r.data),
@@ -83,7 +85,7 @@ function AdminDashboardPage() {
     enabled: !!academicYear,
   });
 
-  if (loadingOverview) return <AppShell title="Tableau de bord"><Loading /></AppShell>;
+  if (loadingOverview) return <AppShell title={t('dash.title')}><Loading /></AppShell>;
 
   const collectionRate =
     payments?.totalDue > 0
@@ -93,26 +95,26 @@ function AdminDashboardPage() {
   const fmt = (n) => (n != null ? Number(n).toLocaleString('fr-FR') : '—');
 
   return (
-    <AppShell title="Tableau de bord">
+    <AppShell title={t('dash.title')}>
       <PageHeader
-        title="Vue d'ensemble"
-        subtitle={academicYear ? `Année scolaire ${academicYear}` : 'Année scolaire en cours'}
+        title={t('dash.overview')}
+        subtitle={academicYear ? t('dash.academicYear', { year: academicYear }) : t('dash.currentYear')}
       />
 
       <div className="dashboard-stats">
-        <StatCard label="Élèves"            value={overview?.students}        icon="students"    color="blue" />
-        <StatCard label="Enseignants"       value={overview?.teachers}        icon="teachers"    color="teal" />
-        <StatCard label="Classes"           value={overview?.classes}         icon="classes"     color="orange" />
-        <StatCard label="Bulletins publiés" value={overview?.publishedReports} icon="reports"    color="green" />
+        <StatCard label={t('dash.students')}         value={overview?.students}         icon="students"    color="blue" />
+        <StatCard label={t('dash.teachers')}         value={overview?.teachers}         icon="teachers"    color="teal" />
+        <StatCard label={t('dash.classes')}          value={overview?.classes}          icon="classes"     color="orange" />
+        <StatCard label={t('dash.publishedReports')} value={overview?.publishedReports} icon="reports"     color="green" />
         <StatCard
-          label="Taux de recouvrement"
+          label={t('dash.collectionRate')}
           value={collectionRate}
           icon="collection"
           color="teal"
           sub={payments ? `${fmt(payments.totalCollected)} / ${fmt(payments.totalDue)} FCFA` : null}
         />
         <StatCard
-          label="Reste à percevoir"
+          label={t('dash.remaining')}
           value={payments ? `${fmt(payments.totalPending)} FCFA` : '—'}
           icon="pending"
           color="orange"
@@ -120,20 +122,19 @@ function AdminDashboardPage() {
       </div>
 
       <div className="dashboard-grid">
-        {/* Payment summary card */}
         {payments && (
           <Card className="dashboard-card">
-            <h3 className="dashboard-card__title">Recouvrement des frais</h3>
+            <h3 className="dashboard-card__title">{t('dash.feeRecovery')}</h3>
             <div className="dashboard-breakdown">
               {[
-                { label: 'Total attendu',   value: `${fmt(payments.totalDue)} FCFA`,       status: 'PAID' },
-                { label: 'Collecté',        value: `${fmt(payments.totalCollected)} FCFA`, status: 'PARTIAL' },
-                { label: 'Reste à payer',   value: `${fmt(payments.totalPending)} FCFA`,   status: 'UNPAID' },
-                { label: 'Élèves exonérés', value: `${payments.exemptCount ?? 0}`,         status: 'EXEMPT' },
-              ].map(({ label, value, status }) => (
+                { labelKey: 'dash.totalDue',         value: `${fmt(payments.totalDue)} FCFA`,       status: 'PAID' },
+                { labelKey: 'dash.collected',         value: `${fmt(payments.totalCollected)} FCFA`, status: 'PARTIAL' },
+                { labelKey: 'dash.toPay',             value: `${fmt(payments.totalPending)} FCFA`,   status: 'UNPAID' },
+                { labelKey: 'dash.exemptedStudents',  value: `${payments.exemptCount ?? 0}`,         status: 'EXEMPT' },
+              ].map(({ labelKey, value, status }) => (
                 <div key={status} className="dashboard-breakdown__row">
                   <StatusPill status={status} />
-                  <span className="dashboard-breakdown__label">{label}</span>
+                  <span className="dashboard-breakdown__label">{t(labelKey)}</span>
                   <span className="dashboard-breakdown__count">{value}</span>
                 </div>
               ))}
@@ -141,19 +142,18 @@ function AdminDashboardPage() {
           </Card>
         )}
 
-        {/* Report card status */}
         {reports && (
           <Card className="dashboard-card">
-            <h3 className="dashboard-card__title">Bulletins</h3>
+            <h3 className="dashboard-card__title">{t('dash.reports')}</h3>
             <div className="dashboard-breakdown">
               {[
-                { label: 'Brouillons',  count: reports.draft,     status: 'DRAFT' },
-                { label: 'En révision', count: reports.review,    status: 'REVIEW' },
-                { label: 'Publiés',     count: reports.published, status: 'PUBLISHED' },
-              ].map(({ label, count, status }) => (
+                { labelKey: 'dash.drafts',   count: reports.draft,     status: 'DRAFT' },
+                { labelKey: 'dash.inReview', count: reports.review,    status: 'REVIEW' },
+                { labelKey: 'dash.published',count: reports.published, status: 'PUBLISHED' },
+              ].map(({ labelKey, count, status }) => (
                 <div key={status} className="dashboard-breakdown__row">
                   <StatusPill status={status} />
-                  <span className="dashboard-breakdown__label">{label}</span>
+                  <span className="dashboard-breakdown__label">{t(labelKey)}</span>
                   <span className="dashboard-breakdown__count">{count ?? 0}</span>
                 </div>
               ))}

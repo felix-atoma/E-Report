@@ -18,12 +18,14 @@ export class WhatsAppService {
   private readonly logger = new Logger(WhatsAppService.name);
   private readonly phoneNumberId: string;
   private readonly accessToken: string;
+  private readonly ownerWhatsapp: string;
   private readonly apiVersion = 'v18.0';
   private readonly enabled: boolean;
 
-  constructor(config: ConfigService) {
+  constructor(private readonly config: ConfigService) {
     this.phoneNumberId = config.get<string>('WHATSAPP_PHONE_NUMBER_ID', '');
     this.accessToken = config.get<string>('WHATSAPP_ACCESS_TOKEN', '');
+    this.ownerWhatsapp = config.get<string>('OWNER_WHATSAPP', '');
     this.enabled = !!(this.phoneNumberId && this.accessToken &&
       this.accessToken !== 'your_whatsapp_token');
 
@@ -66,6 +68,48 @@ export class WhatsAppService {
     } catch (err: any) {
       const detail = err?.response?.data ?? err?.message;
       this.logger.error(`WhatsApp failed for ${phone}`, detail);
+      return false;
+    }
+  }
+
+  async sendSchoolRegistration(schoolName: string, city: string): Promise<boolean> {
+    const phone = this.normalizePhone(this.ownerWhatsapp);
+    const message =
+      `🏫 Nouvelle école inscrite sur NovaBulletin\n` +
+      `📌 ${schoolName} — ${city}\n` +
+      `Connectez-vous au tableau de bord super-admin pour approuver.`;
+
+    if (!this.ownerWhatsapp) {
+      this.logger.warn('OWNER_WHATSAPP not configured — skipping WhatsApp notification');
+      return false;
+    }
+
+    if (!this.enabled) {
+      this.logger.log(`[DEV WHATSAPP] → ${phone}: ${message}`);
+      return true;
+    }
+
+    try {
+      await axios.post(
+        `https://graph.facebook.com/${this.apiVersion}/${this.phoneNumberId}/messages`,
+        {
+          messaging_product: 'whatsapp',
+          to: phone,
+          type: 'text',
+          text: { body: message },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+      this.logger.log(`School registration WhatsApp sent to owner`);
+      return true;
+    } catch (err: any) {
+      const detail = err?.response?.data ?? err?.message;
+      this.logger.error(`School registration WhatsApp failed`, detail);
       return false;
     }
   }

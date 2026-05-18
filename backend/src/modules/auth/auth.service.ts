@@ -74,6 +74,19 @@ export class AuthService {
 
   // ─── Login ───────────────────────────────────────────────────────────────
   async login(user: any) {
+    // SUPERADMIN users have no institution — skip institution status check
+    if (user.role !== 'SUPERADMIN' && user.institutionId) {
+      const institution = await this.prisma.institution.findUnique({
+        where: { id: user.institutionId },
+        select: { status: true },
+      });
+      if (institution && ['PENDING', 'SUSPENDED', 'REJECTED'].includes(institution.status as string)) {
+        throw new UnauthorizedException(
+          "Votre établissement est en attente d'activation",
+        );
+      }
+    }
+
     const tokens = await this.generateTokens(
       user.id,
       user.email,
@@ -215,12 +228,60 @@ export class AuthService {
     return { message: 'Password reset successfully. Please log in.' };
   }
 
+  // ─── Google OAuth — Login ────────────────────────────────────────────────
+  async handleGoogleLogin(googleUser: {
+    googleId: string;
+    email: string;
+    name: string;
+    picture?: string;
+  }) {
+    const email = googleUser.email.toLowerCase().trim();
+    const user = await this.prisma.user.findUnique({ where: { email } });
+
+    if (!user) return { error: 'no_account' as const };
+    if (!user.isActive) return { error: 'inactive' as const };
+
+    // Block institution users whose institution is not ACTIVE
+    if (user.role !== 'SUPERADMIN' && user.institutionId) {
+      const institution = await this.prisma.institution.findUnique({
+        where: { id: user.institutionId },
+        select: { status: true },
+      });
+      if (
+        institution &&
+        ['PENDING', 'SUSPENDED', 'REJECTED'].includes(institution.status as string)
+      ) {
+        return { error: 'inactive' as const };
+      }
+    }
+
+    const tokens = await this.generateTokens(
+      user.id,
+      user.email,
+      user.role,
+      user.institutionId,
+    );
+    await this.saveRefreshToken(user.id, tokens.refreshToken);
+
+    const { password: _, ...safeUser } = user;
+    return { user: safeUser, ...tokens };
+  }
+
+  // ─── Google OAuth — Register (pre-fill only) ─────────────────────────────
+  handleGoogleRegister(googleUser: { name: string; email: string; googleId: string }) {
+    return {
+      name: googleUser.name,
+      email: googleUser.email,
+      googleId: googleUser.googleId,
+    };
+  }
+
   // ─── Helpers ─────────────────────────────────────────────────────────────
   private async generateTokens(
     userId: string,
     email: string,
     role: string,
-    institutionId: string,
+    institutionId: string | null,
   ) {
     const payload = { sub: userId, email, role, institutionId };
 

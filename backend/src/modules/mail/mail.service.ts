@@ -3,6 +3,9 @@ import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import * as sgMail from '@sendgrid/mail';
 
+// Re-export config reference for the owner email default
+const OWNER_EMAIL_DEFAULT = 'atomafelix2@gmail.com';
+
 export interface MailPayload {
   to: string;
   studentName: string;
@@ -18,11 +21,13 @@ export interface MailPayload {
 export class MailService {
   private readonly logger = new Logger(MailService.name);
   private readonly fromEmail: string;
+  private readonly ownerEmail: string;
   private readonly provider: 'sendgrid' | 'smtp' | 'none';
   private smtpTransport: nodemailer.Transporter | null = null;
 
-  constructor(config: ConfigService) {
+  constructor(private readonly config: ConfigService) {
     this.fromEmail = config.get<string>('MAIL_FROM', 'noreply@novabulletin.local');
+    this.ownerEmail = config.get<string>('OWNER_EMAIL', OWNER_EMAIL_DEFAULT);
     const sendgridKey = config.get<string>('SENDGRID_API_KEY', '');
     const smtpHost = config.get<string>('SMTP_HOST', '');
 
@@ -105,6 +110,99 @@ export class MailService {
       return true;
     } catch (err) {
       this.logger.error(`Failed to send password reset email to ${to}`, err);
+      return false;
+    }
+  }
+
+  async sendSchoolRegistration(
+    schoolName: string,
+    city: string,
+    adminEmail: string,
+  ): Promise<boolean> {
+    const to = this.ownerEmail;
+    const subject = 'Nouvelle inscription école — NovaBulletin';
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;">
+        <div style="background:#1e3a8a;color:#fff;padding:16px 20px;">
+          <h2 style="margin:0;">Nouvelle inscription école</h2>
+          <p style="margin:4px 0 0;opacity:0.85;">NovaBulletin — Tableau de bord super-admin</p>
+        </div>
+        <div style="padding:20px;">
+          <p>Une nouvelle école vient de s'inscrire sur NovaBulletin et attend votre validation.</p>
+          <table style="width:100%;border-collapse:collapse;margin:16px 0;">
+            <tr>
+              <td style="padding:8px;background:#f9fafb;border:1px solid #e5e7eb;font-weight:bold;">Nom de l'école</td>
+              <td style="padding:8px;border:1px solid #e5e7eb;">${schoolName}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px;background:#f9fafb;border:1px solid #e5e7eb;font-weight:bold;">Ville / Commune</td>
+              <td style="padding:8px;border:1px solid #e5e7eb;">${city}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px;background:#f9fafb;border:1px solid #e5e7eb;font-weight:bold;">Email administrateur</td>
+              <td style="padding:8px;border:1px solid #e5e7eb;">${adminEmail}</td>
+            </tr>
+          </table>
+          <p>Connectez-vous au tableau de bord super-admin pour approuver, suspendre ou rejeter cette demande.</p>
+          <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0;" />
+          <p style="color:#6b7280;font-size:11px;">NovaBulletin — Notification automatique</p>
+        </div>
+      </div>`;
+
+    this.logger.log(`Sending school registration notification to owner: ${to}`);
+    try {
+      if (this.provider === 'sendgrid') {
+        await sgMail.send({ to, from: this.fromEmail, subject, html });
+      } else if (this.provider === 'smtp' && this.smtpTransport) {
+        await this.smtpTransport.sendMail({ from: this.fromEmail, to, subject, html });
+      } else {
+        this.logger.log(
+          `[DEV EMAIL] School registration — ${schoolName} (${city}) — admin: ${adminEmail}`,
+        );
+        return true;
+      }
+      this.logger.log(`School registration email sent to owner`);
+      return true;
+    } catch (err) {
+      this.logger.error(`Failed to send school registration email`, err);
+      return false;
+    }
+  }
+
+  async sendSchoolApproval(
+    adminName: string,
+    adminEmail: string,
+    schoolName: string,
+  ): Promise<boolean> {
+    const subject = `✅ Votre école a été approuvée — NovaBulletin`;
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;">
+        <div style="background:#15803d;color:#fff;padding:16px 20px;">
+          <h2 style="margin:0;">Compte activé !</h2>
+          <p style="margin:4px 0 0;opacity:0.85;">NovaBulletin — Gestion scolaire</p>
+        </div>
+        <div style="padding:20px;">
+          <p>Bonjour <strong>${adminName}</strong>,</p>
+          <p>Votre demande d'inscription pour l'établissement <strong>${schoolName}</strong> a été <strong style="color:#15803d;">approuvée</strong>.</p>
+          <p>Vous pouvez maintenant vous connecter à votre espace administrateur avec votre email et votre mot de passe.</p>
+          <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0;" />
+          <p style="color:#6b7280;font-size:11px;">NovaBulletin — Notification automatique</p>
+        </div>
+      </div>`;
+
+    this.logger.log(`Sending approval email to admin: ${adminEmail}`);
+    try {
+      if (this.provider === 'sendgrid') {
+        await sgMail.send({ to: adminEmail, from: this.fromEmail, subject, html });
+      } else if (this.provider === 'smtp' && this.smtpTransport) {
+        await this.smtpTransport.sendMail({ from: this.fromEmail, to: adminEmail, subject, html });
+      } else {
+        this.logger.log(`[DEV EMAIL] Approval email → ${adminEmail} (${schoolName})`);
+        return true;
+      }
+      return true;
+    } catch (err) {
+      this.logger.error(`Failed to send approval email to ${adminEmail}`, err);
       return false;
     }
   }

@@ -7,9 +7,63 @@ import { CreateBulletinDto } from './dto/create-bulletin.dto';
 export class BulletinsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(institutionId: string) {
+  async findAll(institutionId: string, userId: string, role: Role) {
+    // Admins, teachers and bursars see everything
+    if (role === Role.ADMIN || role === Role.TEACHER || role === Role.BURSAR) {
+      return this.prisma.bulletin.findMany({
+        where: { institutionId },
+        include: { author: { select: { id: true, name: true, role: true } } },
+        orderBy: { createdAt: 'desc' },
+      });
+    }
+
+    // For students: fetch their classId so we can include class-targeted bulletins
+    let studentClassId: string | null = null;
+    if (role === Role.STUDENT) {
+      const student = await this.prisma.student.findFirst({
+        where: { userId, institutionId },
+        include: {
+          classes: {
+            orderBy: { academicYear: 'desc' },
+            take: 1,
+            select: { classId: true },
+          },
+        },
+      });
+      studentClassId = student?.classes[0]?.classId ?? null;
+    }
+
+    // For parents: collect all children's classIds
+    let childrenClassIds: string[] = [];
+    if (role === Role.PARENT) {
+      const children = await this.prisma.student.findMany({
+        where: { parentId: userId, institutionId },
+        include: {
+          classes: {
+            orderBy: { academicYear: 'desc' },
+            take: 1,
+            select: { classId: true },
+          },
+        },
+      });
+      childrenClassIds = children.flatMap((c) => c.classes.map((cl) => cl.classId));
+    }
+
+    const targetAudienceForRole = role === Role.STUDENT ? 'STUDENT' : 'PARENT';
+    const classIds = role === Role.STUDENT
+      ? (studentClassId ? [studentClassId] : [])
+      : childrenClassIds;
+
     return this.prisma.bulletin.findMany({
-      where: { institutionId },
+      where: {
+        institutionId,
+        publishedAt: { not: null },           // only published bulletins for students/parents
+        OR: [
+          { targetAudience: 'ALL' },
+          { targetAudience: targetAudienceForRole },
+          ...(classIds.length > 0 ? [{ targetAudience: 'CLASS', targetId: { in: classIds } }] : []),
+        ],
+      },
       include: { author: { select: { id: true, name: true, role: true } } },
       orderBy: { createdAt: 'desc' },
     });

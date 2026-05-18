@@ -21,12 +21,12 @@ const METHOD_LABEL = {
 function PaymentHistoryPage() {
   const { data: payments = [], isLoading } = useQuery({
     queryKey: ['parent-payments'],
-    queryFn: () => paymentsService.list().then((r) => r.data),
+    queryFn: () => paymentsService.myHistory().then((r) => r.data),
   });
 
   const { data: children = [] } = useQuery({
     queryKey: ['my-children'],
-    queryFn: () => studentsService.list().then((r) => r.data),
+    queryFn: () => studentsService.myChildren().then((r) => r.data),
   });
 
   const total = payments.reduce((s, p) => s + (p.amount ?? 0), 0);

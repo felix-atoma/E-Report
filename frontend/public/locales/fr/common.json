@@ -1,8 +1,259 @@
 {
-  "appName": "NovaBulletin",
-  "welcome": "Bienvenue",
-  "login": "Se connecter",
-  "logout": "Déconnexion",
-  "save": "Enregistrer",
-  "cancel": "Annuler"
+  "appName": "E-Report",
+
+  "nav": {
+    "dashboard":      "Tableau de bord",
+    "users":          "Utilisateurs",
+    "classes":        "Classes",
+    "students":       "Élèves",
+    "subjects":       "Matières",
+    "reports":        "Bulletins",
+    "statistics":     "Statistiques",
+    "bulletins":      "Annonces",
+    "fees":           "Frais",
+    "payments":       "Paiements",
+    "notifications":  "Notifications",
+    "analytics":      "Analytiques",
+    "branding":       "Apparence",
+    "settings":       "Paramètres",
+    "myProfile":      "Mon profil",
+    "myClasses":      "Mes classes",
+    "gradeSheets":    "Fiches de notes",
+    "myChildren":     "Mes enfants",
+    "paymentHistory": "Historique paiements",
+    "heldBulletins":  "Bulletins retenus",
+    "myReports":      "Mes bulletins",
+    "myProgress":     "Ma progression",
+    "lms":            "Apprentissage"
+  },
+
+  "section": {
+    "school":   "ÉCOLE",
+    "pedagogy": "PÉDAGOGIE",
+    "finance":  "FINANCES",
+    "system":   "SYSTÈME",
+    "classes":  "CLASSES"
+  },
+
+  "role": {
+    "ADMIN":   "Administrateur",
+    "TEACHER": "Enseignant",
+    "BURSAR":  "Économe",
+    "PARENT":  "Parent",
+    "STUDENT": "Élève"
+  },
+
+  "action": {
+    "save":       "Enregistrer",
+    "saving":     "Enregistrement…",
+    "cancel":     "Annuler",
+    "edit":       "Modifier",
+    "delete":     "Supprimer",
+    "add":        "Ajouter",
+    "close":      "Fermer",
+    "back":       "Retour",
+    "confirm":    "Confirmer",
+    "search":     "Rechercher",
+    "create":     "Créer",
+    "update":     "Mettre à jour",
+    "deactivate": "Désactiver",
+    "activate":   "Activer",
+    "publish":    "Publier",
+    "download":   "Télécharger",
+    "logout":     "Se déconnecter",
+    "assign":     "Assigner",
+    "assigning":  "Assignation…",
+    "viewAll":    "Voir tout",
+    "loading":    "Chargement…"
+  },
+
+  "help": {
+    "title": "Besoin d'aide ?",
+    "text":  "Contactez le support E-Report"
+  },
+
+  "lang": {
+    "fr":     "Français",
+    "en":     "English",
+    "switch": "Changer de langue"
+  },
+
+  "login": {
+    "subtitle":          "Connectez-vous à votre espace",
+    "email":             "Adresse email",
+    "password":          "Mot de passe",
+    "rememberMe":        "Rester connecté",
+    "submit":            "Se connecter",
+    "submitting":        "Authentification…",
+    "forgotPassword":    "Mot de passe oublié ?",
+    "reset":             "Réinitialiser",
+    "invalidCredentials":"Email ou mot de passe incorrect.",
+    "showPassword":      "Afficher le mot de passe",
+    "hidePassword":      "Masquer le mot de passe",
+    "copyright":         "Tous droits réservés"
+  },
+
+  "dash": {
+    "title":            "Tableau de bord",
+    "overview":         "Vue d'ensemble",
+    "academicYear":     "Année scolaire {{year}}",
+    "currentYear":      "Année scolaire en cours",
+    "hello":            "Bonjour, {{name}}",
+    "personalSpace":    "Votre espace personnel",
+    "activities":       "Voici un aperçu de vos activités",
+    "followChildren":   "Suivez la scolarité de vos enfants",
+    "students":         "Élèves",
+    "teachers":         "Enseignants",
+    "classes":          "Classes",
+    "publishedReports": "Bulletins publiés",
+    "collectionRate":   "Taux de recouvrement",
+    "remaining":        "Reste à percevoir",
+    "feeRecovery":      "Recouvrement des frais",
+    "reports":          "Bulletins",
+    "totalDue":         "Total attendu",
+    "collected":        "Collecté",
+    "toPay":            "Reste à payer",
+    "exemptedStudents": "Élèves exonérés",
+    "drafts":           "Brouillons",
+    "inReview":         "En révision",
+    "published":        "Publiés",
+    "inProgress":       "En cours",
+    "myClasses":        "Mes classes",
+    "recentReports":    "Bulletins récents",
+    "recentAnnouncements": "Annonces récentes",
+    "latestReport":     "Dernier bulletin",
+    "allReports":       "Voir tous mes bulletins →",
+    "noReport":         "Aucun bulletin publié pour le moment.",
+    "noClass":          "Aucune classe assignée",
+    "noBulletin":       "Aucun bulletin créé",
+    "noReportAvailable":"Aucun bulletin disponible.",
+    "newBulletin":      "Nouveau bulletin",
+    "viewProgress":     "Voir ma progression",
+    "announcements":    "Annonces",
+    "myChildren":       "Mes enfants",
+    "noChildren":       "Aucun enfant associé à votre compte.",
+    "pendingPayment":   "En attente paiement",
+    "studentsCount":    "{{count}} élève",
+    "studentsCount_plural": "{{count}} élèves",
+    "bulletinCount":    "Bulletin",
+    "bulletinCount_plural": "Bulletins",
+    "announcementCount": "Annonce",
+    "announcementCount_plural": "Annonces",
+    "childCount":       "Enfant",
+    "childCount_plural": "Enfants"
+  },
+
+  "mention": {
+    "excellent":  "Excellent",
+    "veryGood":   "Très Bien",
+    "good":       "Bien",
+    "fairlyGood": "Assez Bien",
+    "pass":       "Passable",
+    "fail":       "Insuffisant"
+  },
+
+  "payment": {
+    "upToDate": "À jour",
+    "partial":  "Partiel",
+    "unpaid":   "Non payé",
+    "exempted": "Exonéré",
+    "method":   "Méthode",
+    "methods": {
+      "CASH":  "Espèces",
+      "TMONEY":"TMoney",
+      "FLOOZ": "Flooz",
+      "MOMO":  "MoMo",
+      "BANK":  "Virement bancaire",
+      "CHECK": "Chèque",
+      "OTHER": "Autre"
+    }
+  },
+
+  "fees": {
+    "pageTitle":        "Cotisations scolaires",
+    "fee":              "Cotisation",
+    "feeName":          "Nom de la cotisation",
+    "amount":           "Montant (FCFA)",
+    "period":           "Période",
+    "description":      "Description",
+    "assignedClasses":  "Classes assignées",
+    "assignTitle":      "Assigner \"{{name}}\" à une classe",
+    "newFee":           "Nouvelle cotisation",
+    "createTitle":      "Créer une cotisation",
+    "editTitle":        "Modifier la cotisation",
+    "feePlaceholder":   "ex: Frais de scolarité, Frais d'examen",
+    "amountPlaceholder":"ex: 50000",
+    "optional":         "Optionnel",
+    "allYear":          "Toute l'année",
+    "annual":           "Annuel",
+    "class":            "Classe",
+    "selectClass":      "Sélectionner une classe",
+    "terms": {
+      "TRIMESTRE_1": "1er trimestre",
+      "TRIMESTRE_2": "2ème trimestre",
+      "TRIMESTRE_3": "3ème trimestre",
+      "SEMESTRE_1":  "1er semestre",
+      "SEMESTRE_2":  "2ème semestre",
+      "ANNUEL":      "Annuel"
+    },
+    "errors": {
+      "nameRequired":   "Nom requis",
+      "amountRequired": "Montant requis",
+      "amountInvalid":  "Montant invalide"
+    },
+    "toast": {
+      "created":  "Cotisation créée",
+      "updated":  "Cotisation mise à jour",
+      "deleted":  "Cotisation supprimée",
+      "assigned": "Cotisation assignée à la classe",
+      "error":    "Erreur"
+    },
+    "count": "{{count}} structure tarifaire",
+    "count_plural": "{{count}} structures tarifaires"
+  },
+
+  "users": {
+    "fullName":       "Nom complet",
+    "email":          "Email",
+    "password":       "Mot de passe",
+    "phone":          "Téléphone / WhatsApp",
+    "role":           "Rôle",
+    "selectRole":     "Sélectionner un rôle",
+    "namePlaceholder":"ex: Koffi Amevor",
+    "pwdPlaceholder": "Minimum 8 caractères",
+    "phonePlaceholder":"+228 XX XX XX XX",
+    "subjects":       "Matières enseignées",
+    "subjectsHint":   "L'enseignant sera automatiquement assigné aux classes concernées.",
+    "errors": {
+      "nameRequired":    "Nom complet requis",
+      "emailRequired":   "Email requis",
+      "emailInvalid":    "Email invalide",
+      "roleRequired":    "Rôle requis",
+      "passwordRequired":"Mot de passe requis"
+    },
+    "roles": {
+      "ADMIN":   "Administrateur",
+      "TEACHER": "Enseignant",
+      "BURSAR":  "Gestionnaire",
+      "PARENT":  "Parent",
+      "STUDENT": "Élève"
+    }
+  },
+
+  "notFound": {
+    "title": "Page introuvable",
+    "desc":  "Cette page n'existe pas ou a été déplacée.",
+    "back":  "Retour à l'accueil"
+  },
+
+  "progress": {
+    "title":       "Ma progression",
+    "subtitle":    "Évolution de vos moyennes générales",
+    "noData":      "Pas encore assez de données",
+    "noDataDesc":  "Votre graphique de progression apparaîtra après la publication d'au moins deux bulletins."
+  },
+
+  "welcome":     "Bienvenue",
+  "loginAction": "Se connecter",
+  "logout":      "Déconnexion"
 }

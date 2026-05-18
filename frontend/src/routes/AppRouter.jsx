@@ -3,6 +3,8 @@ import ProtectedRoute from '../components/auth/ProtectedRoute/ProtectedRoute';
 
 import HomePage               from '../pages/HomePage/HomePage';
 import LoginPage              from '../pages/auth/LoginPage/LoginPage';
+import RegisterSchoolPage     from '../pages/public/RegisterSchoolPage/RegisterSchoolPage';
+import SuperAdminPage         from '../pages/superadmin/SuperAdminPage/SuperAdminPage';
 import RegisterPage           from '../pages/auth/RegisterPage/RegisterPage';
 import ForgotPasswordPage     from '../pages/auth/ForgotPasswordPage/ForgotPasswordPage';
 import ResetPasswordPage      from '../pages/auth/ResetPasswordPage/ResetPasswordPage';
@@ -59,6 +61,7 @@ import StudentLMSPage         from '../pages/student/StudentLMSPage/StudentLMSPa
 
 import ProfilePage            from '../pages/shared/ProfilePage/ProfilePage';
 import PrintReportCardPage   from '../pages/shared/PrintReportCardPage/PrintReportCardPage';
+import GoogleCallbackPage    from '../pages/auth/GoogleCallbackPage/GoogleCallbackPage';
 
 function AppRouter() {
   return (
@@ -67,10 +70,15 @@ function AppRouter() {
       <Route path="/"                   element={<HomePage />} />
       <Route path="/login"              element={<LoginPage />} />
       <Route path="/register"           element={<RegisterPage />} />
+      <Route path="/register-school"    element={<RegisterSchoolPage />} />
       <Route path="/forgot-password"    element={<ForgotPasswordPage />} />
       <Route path="/reset-password"     element={<ResetPasswordPage />} />
+      <Route path="/auth/callback"      element={<GoogleCallbackPage />} />
       <Route path="/unauthorized"       element={<UnauthorizedPage />} />
       <Route path="/error"              element={<ErrorPage />} />
+
+      {/* Super-Admin */}
+      <Route path="/superadmin" element={<ProtectedRoute roles={['SUPERADMIN']}><SuperAdminPage /></ProtectedRoute>} />
 
       {/* Admin */}
       <Route path="/admin"               element={<ProtectedRoute roles={['ADMIN']}><AdminDashboardPage /></ProtectedRoute>} />

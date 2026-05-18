@@ -1,4 +1,5 @@
 import { NestFactory, Reflector } from '@nestjs/core';
+import { Request, Response, NextFunction } from 'express';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -18,6 +19,14 @@ async function bootstrap() {
   // Security & performance middleware
   app.use(helmet());
   app.use(compression());
+
+  // Helmet sets Cross-Origin-Resource-Policy: same-origin by default, which blocks
+  // the browser from loading /uploads images when frontend and backend run on different
+  // ports. Override it only for static uploads so CORP stays strict everywhere else.
+  app.use('/uploads', (_req: Request, res: Response, next: NextFunction) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    next();
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({

@@ -6,4 +6,5 @@ export const paymentsService = {
   record: (data) => api.post('/payments', data),
   getStudentStatus: (studentId, params) =>
     api.get(`/payments/student/${studentId}/status`, { params }),
+  myHistory: () => api.get('/payments/my-history'),
 };

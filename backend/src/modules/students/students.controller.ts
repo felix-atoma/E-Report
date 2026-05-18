@@ -20,6 +20,20 @@ import { Role } from '../../common/enums/role.enum';
 export class StudentsController {
   constructor(private readonly service: StudentsService) {}
 
+  @Get('me')
+  @Roles(Role.STUDENT)
+  @ApiOperation({ summary: 'Get the logged-in student\'s own profile' })
+  findMe(@CurrentUser() user: any) {
+    return this.service.findMe(user.id, user.institutionId);
+  }
+
+  @Get('my-children')
+  @Roles(Role.PARENT)
+  @ApiOperation({ summary: 'Get all children linked to the logged-in parent' })
+  findMyChildren(@CurrentUser() user: any) {
+    return this.service.findMyChildren(user.id, user.institutionId);
+  }
+
   @Get()
   @Roles(Role.ADMIN, Role.TEACHER, Role.BURSAR)
   @ApiOperation({ summary: 'List all students in the institution' })

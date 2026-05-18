@@ -115,9 +115,15 @@ export class UsersService {
       throw new ForbiddenException('You can only update your own profile');
     }
 
+    const { notificationPreferences, ...rest } = dto;
     return this.prisma.user.update({
       where: { id },
-      data: dto,
+      data: {
+        ...rest,
+        ...(notificationPreferences !== undefined && {
+          notificationPreferences: notificationPreferences as object,
+        }),
+      },
       select: USER_SELECT,
     });
   }

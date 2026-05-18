@@ -1,14 +1,15 @@
-/* ── Off-canvas sidebar (Zendesk-style) ────────────────────────────────── */
+/* ── Off-canvas sidebar — colours driven by school branding ────────────── */
 
 .sidebar {
   display: flex;
   flex-direction: column;
   width: 240px;
   height: 100vh;
-  background: #0f172a;
+  background: var(--sidebar-bg, #0f172a);
   color: #e2e8f0;
   flex-shrink: 0;
-  transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+              background 0.4s ease;
   overflow: hidden;
   position: sticky;
   top: 0;
@@ -29,9 +30,7 @@
   flex-shrink: 0;
 }
 
-.sidebar__logo-wrap {
-  flex-shrink: 0;
-}
+.sidebar__logo-wrap { flex-shrink: 0; }
 
 .sidebar__logo {
   width: 32px;
@@ -39,6 +38,12 @@
   object-fit: contain;
   border-radius: 8px;
   display: block;
+}
+
+.sidebar__logo--icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
 }
 
 .sidebar__logo-mark {
@@ -72,7 +77,7 @@
   justify-content: center;
   background: none;
   border: none;
-  color: #64748b;
+  color: rgba(255, 255, 255, 0.35);
   cursor: pointer;
   padding: 0.3rem;
   border-radius: 6px;
@@ -85,14 +90,14 @@
   background: rgba(255, 255, 255, 0.07);
 }
 
-/* Mobile close button — hidden on desktop */
+/* Mobile close button */
 .sidebar__close-btn {
   display: none;
   align-items: center;
   justify-content: center;
   background: none;
   border: none;
-  color: #64748b;
+  color: rgba(255, 255, 255, 0.35);
   cursor: pointer;
   padding: 0.3rem;
   border-radius: 6px;
@@ -106,10 +111,10 @@
   background: rgba(255, 255, 255, 0.07);
 }
 
-/* ── User profile section (ZDesk sidenav-user) ─────────────────────────── */
+/* ── User profile ─────────────────────────────────────────────────────── */
 .sidebar__user {
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid rgba(255,255,255,0.07);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
   flex-shrink: 0;
 }
 
@@ -158,17 +163,17 @@
 
 .sidebar__user-role {
   font-size: 0.72rem;
-  color: #64748b;
+  color: rgba(255, 255, 255, 0.35);
   white-space: nowrap;
 }
 
-/* ── Help box (ZDesk help-box) ──────────────────────────────────────────── */
+/* ── Help box ─────────────────────────────────────────────────────────── */
 .sidebar__help-box {
-  background: rgba(249,115,22,0.08);
-  border: 1px solid rgba(249,115,22,0.15);
+  background: color-mix(in srgb, var(--color-primary, #f97316) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary, #f97316) 20%, transparent);
   border-radius: 8px;
   padding: 0.75rem;
-  margin: 0.5rem 0.75rem 0.5rem;
+  margin: 0.5rem 0.75rem;
   text-align: center;
 }
 
@@ -181,7 +186,7 @@
 
 .sidebar__help-text {
   font-size: 0.72rem;
-  color: #64748b;
+  color: rgba(255, 255, 255, 0.4);
   margin: 0;
   line-height: 1.4;
 }
@@ -199,7 +204,7 @@
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.08em;
-  color: #475569;
+  color: rgba(255, 255, 255, 0.28);
   text-transform: uppercase;
   white-space: nowrap;
   overflow: hidden;
@@ -209,7 +214,7 @@
   margin: 0.5rem auto;
   width: 28px;
   height: 1px;
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .sidebar__link {
@@ -217,7 +222,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.6rem 1rem;
-  color: #94a3b8;
+  color: rgba(255, 255, 255, 0.55);
   text-decoration: none;
   font-size: 0.875rem;
   white-space: nowrap;
@@ -231,10 +236,10 @@
 }
 
 .sidebar__link--active {
-  background: rgba(249, 115, 22, 0.12);
+  background: color-mix(in srgb, var(--color-primary, #f97316) 14%, transparent);
   color: #fff;
   font-weight: 500;
-  border-left-color: var(--color-primary, #1e40af);
+  border-left-color: var(--color-primary, #f97316);
 }
 
 .sidebar__link-icon {
@@ -258,12 +263,38 @@
   flex-shrink: 0;
 }
 
-/* ── Mobile backdrop ───────────────────────────────────────────────────── */
-.sidebar-backdrop {
-  display: none;
+.sidebar__footer-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
-/* ── Responsive: off-canvas on mobile/tablet ───────────────────────────── */
+.sidebar__lang-wrap {
+  padding: 0.25rem 0.75rem 0.5rem;
+}
+
+.sidebar__lang-wrap--collapsed {
+  padding: 0.25rem 0.5rem 0.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+/* Lang-switcher inside dark sidebar */
+.sidebar .lang-switcher {
+  border-color: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.55);
+}
+.sidebar .lang-switcher:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #e2e8f0;
+  border-color: rgba(255, 255, 255, 0.22);
+}
+.sidebar .lang-switcher__next { color: rgba(255, 255, 255, 0.3); }
+
+/* ── Mobile backdrop ───────────────────────────────────────────────────── */
+.sidebar-backdrop { display: none; }
+
+/* ── Responsive ────────────────────────────────────────────────────────── */
 @media (max-width: 1024px) {
   .sidebar {
     position: fixed;
@@ -274,7 +305,8 @@
     width: 260px;
     transform: translateX(-100%);
     transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-                box-shadow 0.25s;
+                box-shadow 0.25s,
+                background 0.4s ease;
     box-shadow: none;
   }
 
@@ -283,15 +315,11 @@
     box-shadow: 8px 0 32px rgba(0, 0, 0, 0.35);
   }
 
-  /* Always show labels — no icon-only mode on mobile */
-  .sidebar__link-label { display: block; }
+  .sidebar__link-label  { display: block; }
   .sidebar__school-name { display: block; }
-
-  /* Hide desktop collapse btn, show close btn */
   .sidebar__collapse-btn { display: none; }
-  .sidebar__close-btn { display: flex; }
+  .sidebar__close-btn    { display: flex; }
 
-  /* Backdrop */
   .sidebar-backdrop {
     display: block;
     position: fixed;

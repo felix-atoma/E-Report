@@ -4,7 +4,6 @@ import { useAuth } from '../../../context/AuthContext';
 import { useInstitution } from '../../../context/InstitutionContext';
 import Avatar from '../../common/Avatar/Avatar';
 import LanguageSwitcher from '../../common/LanguageSwitcher/LanguageSwitcher';
-import logoDark from '../../../assets/images/novaBulletin-logo-dark.svg';
 import logoIcon from '../../../assets/images/novaBulletin-icon.svg';
 import './Sidebar.css';
 
@@ -198,15 +197,8 @@ function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
         {/* Brand */}
         <div className="sidebar__brand">
           <div className="sidebar__logo-wrap">
-            {institution?.logo
-              ? <img src={institution.logo} alt={institution.name} className="sidebar__logo" />
-              : <img src={logoIcon} alt="NovaBulletin" className="sidebar__logo sidebar__logo--icon" />}
+            <img src={logoIcon} alt="NovaBulletin" className="sidebar__logo sidebar__logo--icon" />
           </div>
-          {!collapsed && (
-            institution?.name
-              ? <span className="sidebar__school-name">{institution.name}</span>
-              : <img src={logoDark} alt="NovaBulletin" className="sidebar__logo-wordmark" />
-          )}
           <button
             className="sidebar__collapse-btn"
             onClick={onToggle}

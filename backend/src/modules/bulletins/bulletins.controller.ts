@@ -23,9 +23,9 @@ export class BulletinsController {
   constructor(private readonly service: BulletinsService) {}
 
   @Get()
-  @ApiOperation({ summary: 'List all bulletins/announcements for the institution' })
+  @ApiOperation({ summary: 'List bulletins/announcements — filtered by caller\'s role' })
   findAll(@CurrentUser() user: any) {
-    return this.service.findAll(user.institutionId);
+    return this.service.findAll(user.institutionId, user.id, user.role);
   }
 
   @Post()

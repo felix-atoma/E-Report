@@ -8,15 +8,23 @@ export function InstitutionProvider({ children }) {
   const { user } = useAuth();
   const [institution, setInstitution] = useState(null);
 
-  useEffect(() => {
-    if (!user) { setInstitution(null); return; }
+  function fetchInstitution() {
     institutionsService.me()
       .then((res) => setInstitution(res.data))
       .catch(() => setInstitution(null));
+  }
+
+  useEffect(() => {
+    if (!user || user.role === 'SUPERADMIN') { setInstitution(null); return; }
+    fetchInstitution();
   }, [user]);
 
+  function refreshInstitution() {
+    if (user && user.role !== 'SUPERADMIN') fetchInstitution();
+  }
+
   return (
-    <InstitutionContext.Provider value={{ institution, setInstitution }}>
+    <InstitutionContext.Provider value={{ institution, setInstitution, refreshInstitution }}>
       {children}
     </InstitutionContext.Provider>
   );

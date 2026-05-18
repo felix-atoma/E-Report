@@ -21,4 +21,9 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   profileImage?: string;
+
+  @ApiPropertyOptional({ example: { email: true, whatsapp: false } })
+  @IsOptional()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  notificationPreferences?: any;
 }

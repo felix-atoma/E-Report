@@ -21,6 +21,7 @@ const DEFAULT_INFO = {
   name: '',
   country: '',
   countryMotto: '',
+  circonscription: '',
   email: '',
   phone: '',
   address: '',
@@ -56,6 +57,7 @@ function SettingsPage() {
       name:             institution.name             ?? '',
       country:          institution.country          ?? '',
       countryMotto:     institution.countryMotto     ?? '',
+      circonscription:  institution.brandingSettings?.circonscription ?? '',
       email:            institution.email            ?? '',
       phone:            institution.phone            ?? '',
       address:          institution.address          ?? '',
@@ -124,6 +126,7 @@ function SettingsPage() {
       name:             infoForm.name             || undefined,
       country:          infoForm.country          || undefined,
       countryMotto:     infoForm.countryMotto     || undefined,
+      circonscription:  infoForm.circonscription  || undefined,
       email:            infoForm.email            || undefined,
       phone:            infoForm.phone            || undefined,
       address:          infoForm.address          || undefined,
@@ -206,6 +209,14 @@ function SettingsPage() {
                 hint="Affiché après le nom du pays sur le bulletin"
               />
             </div>
+            <Input
+              id="instCirconscription"
+              label="Circonscription scolaire"
+              value={infoForm.circonscription}
+              placeholder="ex : Inspection de l'Enseignement du 1er Degré de Lomé-Commune"
+              onChange={(e) => setInfo('circonscription', e.target.value)}
+              hint="Affiché dans l'en-tête du bulletin sous le nom de l'école"
+            />
             <div className="settings-row">
               <Input
                 id="instEmail"
