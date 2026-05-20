@@ -62,6 +62,14 @@ import StudentLMSPage         from '../pages/student/StudentLMSPage/StudentLMSPa
 import ProfilePage            from '../pages/shared/ProfilePage/ProfilePage';
 import PrintReportCardPage   from '../pages/shared/PrintReportCardPage/PrintReportCardPage';
 import GoogleCallbackPage    from '../pages/auth/GoogleCallbackPage/GoogleCallbackPage';
+import MockExamsPage          from '../pages/teacher/MockExamsPage/MockExamsPage';
+import MockExamGradePage      from '../pages/teacher/MockExamGradePage/MockExamGradePage';
+import MockExamRelevePage     from '../pages/shared/MockExamRelevePage/MockExamRelevePage';
+import MockExamPalmaresPage   from '../pages/shared/MockExamPalmaresPage/MockExamPalmaresPage';
+import MockExamFichePage      from '../pages/shared/MockExamFichePage/MockExamFichePage';
+import MockExamFichePrintPage from '../pages/shared/MockExamFichePrintPage/MockExamFichePrintPage';
+import MockExamFichesListPage from '../pages/shared/MockExamFichesListPage/MockExamFichesListPage';
+import MockExamResultsPage    from '../pages/shared/MockExamResultsPage/MockExamResultsPage';
 
 function AppRouter() {
   return (
@@ -120,6 +128,10 @@ function AppRouter() {
       <Route path="/teacher/bulletins"          element={<ProtectedRoute roles={['TEACHER']}><TeacherBulletinsPage /></ProtectedRoute>} />
       <Route path="/teacher/statistics"         element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><ClassStatsPage /></ProtectedRoute>} />
       <Route path="/teacher/lms"                element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><LMSPage /></ProtectedRoute>} />
+      <Route path="/teacher/mock-exams"            element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamsPage /></ProtectedRoute>} />
+      <Route path="/teacher/mock-exams/:id/grades" element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamGradePage /></ProtectedRoute>} />
+      <Route path="/teacher/mock-exam-fiches"      element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamFichesListPage /></ProtectedRoute>} />
+      <Route path="/teacher/mock-exam-results"     element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamResultsPage /></ProtectedRoute>} />
 
       {/* Parent */}
       <Route path="/parent"                     element={<ProtectedRoute roles={['PARENT']}><ParentDashboardPage /></ProtectedRoute>} />
@@ -137,9 +149,19 @@ function AppRouter() {
       <Route path="/student/bulletins"   element={<ProtectedRoute roles={['STUDENT']}><StudentBulletinsPage /></ProtectedRoute>} />
       <Route path="/student/lms"         element={<ProtectedRoute roles={['STUDENT']}><StudentLMSPage /></ProtectedRoute>} />
 
+      {/* Admin mock-exams mirror */}
+      <Route path="/admin/mock-exams"              element={<ProtectedRoute roles={['ADMIN']}><MockExamsPage /></ProtectedRoute>} />
+      <Route path="/admin/mock-exams/:id/grades"   element={<ProtectedRoute roles={['ADMIN']}><MockExamGradePage /></ProtectedRoute>} />
+      <Route path="/admin/mock-exam-fiches"        element={<ProtectedRoute roles={['ADMIN']}><MockExamFichesListPage /></ProtectedRoute>} />
+      <Route path="/admin/mock-exam-results"       element={<ProtectedRoute roles={['ADMIN']}><MockExamResultsPage /></ProtectedRoute>} />
+
       {/* Shared */}
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
       <Route path="/reports/:id/print" element={<ProtectedRoute><PrintReportCardPage /></ProtectedRoute>} />
+      <Route path="/mock-exams/:id/fiche"          element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamFichePage /></ProtectedRoute>} />
+      <Route path="/mock-exams/:id/fiche/print"    element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamFichePrintPage /></ProtectedRoute>} />
+      <Route path="/mock-exams/:id/releve"         element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamRelevePage /></ProtectedRoute>} />
+      <Route path="/mock-exams/:id/palmares"       element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamPalmaresPage /></ProtectedRoute>} />
 
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

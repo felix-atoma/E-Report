@@ -180,6 +180,7 @@ model Institution {
   materials         CourseMaterial[]
   assignments       Assignment[]
   quizzes           Quiz[]
+  mockExams         MockExam[]
 }
 
 model User {
@@ -217,6 +218,8 @@ model User {
   assignmentsCreated    Assignment[]     @relation("AssignmentCreator")
   submissionsGraded     AssignmentSubmission[] @relation("SubmissionGrader")
   quizzesCreated        Quiz[]           @relation("QuizCreator")
+  mockExamsCreated      MockExam[]       @relation("MockExamCreator")
+  mockExamFichesSigned  MockExamSubjectFiche[] @relation("MockExamFicheSigner")
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -249,6 +252,7 @@ model Class {
   materials       CourseMaterial[]
   assignments     Assignment[]
   quizzes         Quiz[]
+  mockExams       MockExam[]
 
   sortOrder       Int      @default(0)
   isActive        Boolean  @default(true)
@@ -278,6 +282,8 @@ model Subject {
   materials       CourseMaterial[]
   assignments     Assignment[]
   quizzes         Quiz[]
+  mockExamGrades        MockExamGrade[]
+  mockExamSubjectFiches MockExamSubjectFiche[]
 
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
@@ -335,6 +341,7 @@ model Student {
   notificationLogs NotificationLog[]
   assignmentSubmissions AssignmentSubmission[]
   quizAttempts    QuizAttempt[]
+  mockExamGrades  MockExamGrade[]
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -374,8 +381,8 @@ model ReportCard {
   deliveryStatus    String?
   publishedAt       DateTime?
 
-  createdById       String
-  createdBy         User     @relation("ReportCreator", fields: [createdById], references: [id])
+  createdById       String?
+  createdBy         User?    @relation("ReportCreator", fields: [createdById], references: [id], onDelete: SetNull)
 
   student           Student  @relation(fields: [studentId], references: [id])
   class             Class    @relation(fields: [classId], references: [id])
@@ -768,8 +775,8 @@ model Assignment {
   academicYear  String
   termNumber    Int?
 
-  createdById   String
-  createdBy     User             @relation("AssignmentCreator", fields: [createdById], references: [id])
+  createdById   String?
+  createdBy     User?            @relation("AssignmentCreator", fields: [createdById], references: [id], onDelete: SetNull)
   class         Class            @relation(fields: [classId], references: [id])
   subject       Subject          @relation(fields: [subjectId], references: [id])
   submissions   AssignmentSubmission[]
@@ -819,8 +826,8 @@ model Quiz {
   academicYear    String
   termNumber      Int?
 
-  createdById   String
-  createdBy     User        @relation("QuizCreator", fields: [createdById], references: [id])
+  createdById   String?
+  createdBy     User?       @relation("QuizCreator", fields: [createdById], references: [id], onDelete: SetNull)
   class         Class       @relation(fields: [classId], references: [id])
   subject       Subject     @relation(fields: [subjectId], references: [id])
   questions     QuizQuestion[]
@@ -894,4 +901,81 @@ model QuizAnswer {
   selectedOption   QuizOption?  @relation(fields: [selectedOptionId], references: [id])
 
   @@unique([attemptId, questionId])
+}
+
+// ─── Mock / blanc exams ───────────────────────────────────────────────────────
+
+enum MockExamType {
+  BLANC
+  CEPE
+  BEPC
+  BAC1
+  BAC2
+}
+
+enum MockExamStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model MockExam {
+  id            String         @id @default(uuid())
+  institutionId String
+  classId       String
+  academicYear  String
+  examType      MockExamType   @default(BLANC)
+  label         String
+  examDate      DateTime?
+  examEndDate   DateTime?
+  status        MockExamStatus @default(DRAFT)
+  createdById   String?
+
+  institution   Institution    @relation(fields: [institutionId], references: [id])
+  class         Class          @relation(fields: [classId], references: [id])
+  createdBy     User?          @relation("MockExamCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  grades        MockExamGrade[]
+  subjectFiches MockExamSubjectFiche[]
+
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([institutionId])
+  @@index([classId])
+}
+
+model MockExamGrade {
+  id           String    @id @default(uuid())
+  mockExamId   String
+  studentId    String
+  subjectId    String
+  score        Float?
+  coefficient  Int       @default(1)
+
+  mockExam     MockExam  @relation(fields: [mockExamId], references: [id], onDelete: Cascade)
+  student      Student   @relation(fields: [studentId], references: [id])
+  subject      Subject   @relation(fields: [subjectId], references: [id])
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([mockExamId, studentId, subjectId])
+  @@index([mockExamId])
+}
+
+model MockExamSubjectFiche {
+  id           String    @id @default(uuid())
+  mockExamId   String
+  subjectId    String
+  signedAt     DateTime?
+  signedByName String?
+  signedById   String?
+
+  mockExam     MockExam  @relation(fields: [mockExamId], references: [id], onDelete: Cascade)
+  subject      Subject   @relation(fields: [subjectId], references: [id])
+  signedBy     User?     @relation("MockExamFicheSigner", fields: [signedById], references: [id])
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([mockExamId, subjectId])
 }

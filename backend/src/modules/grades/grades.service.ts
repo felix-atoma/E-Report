@@ -444,7 +444,7 @@ export class GradesService {
 
   // ─── Private helpers ─────────────────────────────────────────────────────
 
-  private async assertReportAccess(report: { createdById: string; classId: string }, userId: string, role: Role) {
+  private async assertReportAccess(report: { createdById: string | null; classId: string }, userId: string, role: Role) {
     if (role === Role.ADMIN) return;
     if (role === Role.TEACHER) {
       if (report.createdById === userId) return;

@@ -24,7 +24,10 @@
     "heldBulletins":  "Bulletins retenus",
     "myReports":      "Mes bulletins",
     "myProgress":     "Ma progression",
-    "lms":            "Apprentissage"
+    "lms":            "Apprentissage",
+    "mockExams":        "Examens blancs",
+    "mockExamFiches":   "Fiches d'exam. blancs",
+    "mockExamResults":  "Résultats exam. blancs"
   },
 
   "section": {

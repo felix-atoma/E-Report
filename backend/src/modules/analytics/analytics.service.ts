@@ -65,6 +65,7 @@ export class AnalyticsService {
         select: {
           studentId: true,
           overallAverage: true,
+          classRank: true,
           student: { select: { admissionNumber: true, user: { select: { name: true } } } },
         },
       }),
@@ -109,6 +110,40 @@ export class AnalyticsService {
     const withPrevious = progressed + declined + stable;
     const pct = (n: number) => withPrevious > 0 ? Math.round((n / withPrevious) * 100) : 0;
 
+    // ── Statistical measures on current term averages ──────────────────────
+    const averages = currentReports
+      .map((r) => (r.overallAverage != null ? Number(r.overallAverage) : null))
+      .filter((a): a is number => a != null);
+
+    const n = averages.length;
+    const round2 = (v: number) => Math.round(v * 100) / 100;
+
+    const classAverage = n > 0 ? round2(averages.reduce((s, a) => s + a, 0) / n) : null;
+
+    const sorted = [...averages].sort((a, b) => a - b);
+    const classMedian = n > 0
+      ? round2(n % 2 === 0 ? (sorted[n / 2 - 1] + sorted[n / 2]) / 2 : sorted[Math.floor(n / 2)])
+      : null;
+
+    const classMin = n > 0 ? round2(sorted[0]) : null;
+    const classMax = n > 0 ? round2(sorted[n - 1]) : null;
+
+    const classStdDev =
+      n > 1 && classAverage != null
+        ? round2(Math.sqrt(averages.reduce((s, a) => s + Math.pow(a - classAverage, 2), 0) / n))
+        : null;
+
+    const distribution = {
+      TB:    averages.filter((a) => a >= 16).length,
+      B:     averages.filter((a) => a >= 14 && a < 16).length,
+      AB:    averages.filter((a) => a >= 12 && a < 14).length,
+      P:     averages.filter((a) => a >= 10 && a < 12).length,
+      Insuf: averages.filter((a) => a < 10).length,
+    };
+
+    const passingCount = averages.filter((a) => a >= 10).length;
+    const passingRate = n > 0 ? Math.round((passingCount / n) * 100) : null;
+
     return {
       classId,
       academicYear,
@@ -121,6 +156,14 @@ export class AnalyticsService {
       stable:     { count: stable,     percentage: pct(stable)     },
       bestProgress,
       worstDecline,
+      classAverage,
+      classMedian,
+      classMin,
+      classMax,
+      classStdDev,
+      distribution,
+      passingRate,
+      passingCount,
     };
   }
 }

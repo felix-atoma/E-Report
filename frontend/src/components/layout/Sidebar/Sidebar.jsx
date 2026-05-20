@@ -19,7 +19,10 @@ const NAV = {
     { to: '/admin/reports',       icon: 'clipboard', labelKey: 'nav.reports' },
     { to: '/admin/statistics',    icon: 'stats',     labelKey: 'nav.statistics' },
     { to: '/admin/bulletins',     icon: 'megaphone', labelKey: 'nav.bulletins' },
-    { to: '/teacher/lms',         icon: 'lms',       labelKey: 'nav.lms' },
+    { to: '/admin/mock-exams',         icon: 'exam',      labelKey: 'nav.mockExams' },
+    { to: '/admin/mock-exam-fiches',   icon: 'fichexam',  labelKey: 'nav.mockExamFiches' },
+    { to: '/admin/mock-exam-results',  icon: 'trophy',    labelKey: 'nav.mockExamResults' },
+    { to: '/teacher/lms',              icon: 'lms',       labelKey: 'nav.lms' },
     { divider: true,              sectionKey: 'section.finance' },
     { to: '/admin/fees',          icon: 'coins',     labelKey: 'nav.fees' },
     { to: '/admin/payments',      icon: 'card',      labelKey: 'nav.payments' },
@@ -38,7 +41,10 @@ const NAV = {
     { to: '/teacher/reports',     icon: 'clipboard', labelKey: 'nav.reports' },
     { to: '/teacher/statistics',  icon: 'stats',     labelKey: 'nav.statistics' },
     { to: '/teacher/bulletins',   icon: 'megaphone', labelKey: 'nav.bulletins' },
-    { to: '/teacher/lms',         icon: 'lms',       labelKey: 'nav.lms' },
+    { to: '/teacher/mock-exams',         icon: 'exam',      labelKey: 'nav.mockExams' },
+    { to: '/teacher/mock-exam-fiches',   icon: 'fichexam',  labelKey: 'nav.mockExamFiches' },
+    { to: '/teacher/mock-exam-results',  icon: 'trophy',    labelKey: 'nav.mockExamResults' },
+    { to: '/teacher/lms',                icon: 'lms',       labelKey: 'nav.lms' },
   ],
   BURSAR: [
     { to: '/bursar',               icon: 'grid',      labelKey: 'nav.dashboard' },
@@ -167,6 +173,31 @@ const ICONS = {
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
       <polyline points="16 7 22 7 22 13"/>
+    </svg>
+  ),
+  exam: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+      <rect x="9" y="3" width="6" height="4" rx="1"/>
+      <path d="m9 12 2 2 4-4"/>
+    </svg>
+  ),
+  fichexam: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+      <line x1="3" y1="9" x2="21" y2="9"/>
+      <line x1="3" y1="15" x2="21" y2="15"/>
+      <line x1="9" y1="9" x2="9" y2="21"/>
+    </svg>
+  ),
+  trophy: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+      <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+      <path d="M4 22h16"/>
+      <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+      <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+      <path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/>
     </svg>
   ),
   close: (

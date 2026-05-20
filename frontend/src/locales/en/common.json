@@ -24,7 +24,10 @@
     "heldBulletins":  "Held Reports",
     "myReports":      "My Reports",
     "myProgress":     "My Progress",
-    "lms":            "Learning"
+    "lms":            "Learning",
+    "mockExams":        "Mock Exams",
+    "mockExamFiches":   "Mock Exam Sheets",
+    "mockExamResults":  "Mock Exam Results"
   },
 
   "section": {

@@ -5,6 +5,7 @@ import { reportsService } from '../../../services/reportsService';
 import { institutionsService } from '../../../services/institutionsService';
 import { gradesService } from '../../../services/gradesService';
 import Loading from '../../../components/common/Loading/Loading';
+import PrintFormatPicker from '../../../components/common/PrintFormatPicker/PrintFormatPicker';
 import './PrintReportCardPage.css';
 
 const CONDUCT_LABELS = {
@@ -87,6 +88,7 @@ export default function PrintReportCardPage() {
     <div className="print-page">
       {/* Toolbar — hidden on print */}
       <div className="print-page__toolbar no-print">
+        <PrintFormatPicker defaultFormat="A4 portrait" />
         <button className="print-page__btn print-page__btn--print" onClick={() => window.print()}>
           🖨️ Imprimer / Enregistrer PDF
         </button>

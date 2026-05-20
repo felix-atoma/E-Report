@@ -1,0 +1,207 @@
+/* ── Mock Exams Page ──────────────────────────────────────────────────────── */
+
+/* ── Levels container ────────────────────────────────────────────────────── */
+.mex-levels { display: flex; flex-direction: column; gap: 1rem; }
+
+/* ── Type section ─────────────────────────────────────────────────────────── */
+.mex-section {
+  border: 1.5px solid var(--type-border, #e5e7eb);
+  border-radius: 12px; overflow: hidden;
+  background: #fff;
+}
+
+.mex-section__header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.875rem 1.25rem;
+  background: var(--type-bg, #f9fafb);
+  cursor: pointer; gap: 1rem; flex-wrap: wrap;
+  border-bottom: 1px solid var(--type-border, #e5e7eb);
+}
+.mex-section__header:hover { filter: brightness(0.97); }
+
+.mex-section__header-left  { display: flex; align-items: center; gap: 12px; flex: 1; }
+.mex-section__header-right { display: flex; align-items: center; gap: 10px; }
+
+.mex-section__icon  { font-size: 1.5rem; line-height: 1; }
+
+.mex-section__title { font-size: 0.98rem; font-weight: 800; color: var(--type-color, #374151); }
+.mex-section__full  { font-size: 0.75rem; color: #6b7280; margin-top: 1px; }
+
+.mex-section__count {
+  font-size: 0.72rem; font-weight: 700; padding: 0.15rem 0.6rem;
+  background: var(--type-color, #6b7280); color: #fff;
+  border-radius: 10px; white-space: nowrap;
+}
+
+.mex-section__create-btn {
+  padding: 0.35rem 0.85rem; background: var(--type-color, #374151); color: #fff;
+  border: none; border-radius: 7px; font-size: 0.8rem; font-weight: 700;
+  cursor: pointer; white-space: nowrap;
+  transition: opacity 0.15s;
+}
+.mex-section__create-btn:hover { opacity: 0.85; }
+
+.mex-section__toggle { font-size: 0.7rem; color: #9ca3af; }
+
+.mex-section__body { padding: 0.75rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+
+.mex-section__empty {
+  padding: 1rem 0.5rem; font-size: 0.85rem; color: #9ca3af;
+  font-style: italic; text-align: center;
+}
+
+/* ── Exam row ─────────────────────────────────────────────────────────────── */
+.mex-exam-row {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid #f3f4f6; border-radius: 8px;
+  background: #fafafa;
+  flex-wrap: wrap;
+  transition: box-shadow 0.15s;
+}
+.mex-exam-row:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); background: #fff; }
+
+.mex-exam-row__info { flex: 1; min-width: 180px; }
+.mex-exam-row__title { font-size: 0.9rem; font-weight: 700; color: #111827; margin-bottom: 3px; }
+.mex-exam-row__meta  {
+  display: flex; gap: 10px; font-size: 0.75rem; color: #6b7280; flex-wrap: wrap; align-items: center;
+}
+
+/* ── Document buttons ─────────────────────────────────────────────────────── */
+.mex-exam-row__docs { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+
+.mex-doc-btn {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 1px; padding: 0.45rem 0.75rem; border-radius: 8px;
+  text-decoration: none; border: 1.5px solid transparent;
+  transition: all 0.15s; min-width: 80px; text-align: center;
+}
+
+.mex-doc-btn__icon  { font-size: 1.1rem; line-height: 1; }
+.mex-doc-btn__label { font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+.mex-doc-btn__sub   { font-size: 0.65rem; color: inherit; opacity: 0.75; white-space: nowrap; }
+
+/* Fiche de notes — blue */
+.mex-doc-btn--fiche {
+  background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe;
+}
+.mex-doc-btn--fiche:hover { background: #dbeafe; border-color: #93c5fd; }
+
+/* Résultats / Palmarès — teal */
+.mex-doc-btn--palmares {
+  background: #f0fdfa; color: #0f766e; border-color: #99f6e4;
+}
+.mex-doc-btn--palmares:hover { background: #ccfbf1; border-color: #5eead4; }
+
+/* Relevés de notes — purple */
+.mex-doc-btn--releve {
+  background: #faf5ff; color: #7e22ce; border-color: #e9d5ff;
+}
+.mex-doc-btn--releve:hover { background: #f3e8ff; border-color: #d8b4fe; }
+
+/* Tableau admin — grey */
+.mex-doc-btn--table {
+  background: #f9fafb; color: #374151; border-color: #e5e7eb;
+}
+.mex-doc-btn--table:hover { background: #f3f4f6; border-color: #d1d5db; }
+
+/* Delete button */
+.mex-exam-row__del {
+  background: none; border: 1px solid #fecaca; color: #b91c1c;
+  border-radius: 6px; padding: 0.3rem 0.6rem; font-size: 0.75rem;
+  cursor: pointer; transition: background 0.15s; white-space: nowrap; align-self: center;
+}
+.mex-exam-row__del:hover { background: #fee2e2; }
+
+/* ── Inline type selector ─────────────────────────────────────────────────── */
+.mex-type-select {
+  margin-left: 8px;
+  padding: 0.15rem 0.5rem; font-size: 0.7rem; font-weight: 700;
+  border: 1.5px solid #e5e7eb; border-radius: 6px;
+  background: #f8fafc; color: #374151;
+  cursor: pointer; outline: none; transition: border-color 0.12s;
+  vertical-align: middle;
+}
+.mex-type-select:hover  { border-color: #1e3a8a; color: #1e3a8a; }
+.mex-type-select:focus  { border-color: #3b82f6; }
+.mex-type-select--saving { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Inline date editor ───────────────────────────────────────────────────── */
+.mex-date-display {
+  cursor: pointer; border-radius: 4px;
+  padding: 1px 4px; transition: background 0.12s;
+}
+.mex-date-display:hover { background: #f0f4ff; color: #1e3a8a; }
+
+.mex-date-edit {
+  display: flex; align-items: center; gap: 5px; flex-wrap: wrap;
+}
+.mex-date-input {
+  padding: 0.18rem 0.4rem; font-size: 0.72rem;
+  border: 1.5px solid #cbd5e1; border-radius: 5px;
+  outline: none; color: #1f2937; background: #fff;
+}
+.mex-date-input:focus { border-color: #3b82f6; }
+.mex-date-sep { font-size: 0.7rem; color: #9ca3af; }
+.mex-date-save {
+  padding: 0.18rem 0.55rem; font-size: 0.75rem; font-weight: 700;
+  background: #1e3a8a; color: #fff; border: none; border-radius: 5px; cursor: pointer;
+}
+.mex-date-save:disabled { opacity: 0.6; cursor: not-allowed; }
+.mex-date-cancel {
+  padding: 0.18rem 0.45rem; font-size: 0.75rem; font-weight: 700;
+  background: #f1f5f9; color: #374151; border: 1.5px solid #e5e7eb; border-radius: 5px; cursor: pointer;
+}
+
+/* ── Status dot ───────────────────────────────────────────────────────────── */
+.mex-status-dot { font-size: 0.7rem; font-weight: 600; padding: 0.12rem 0.45rem; border-radius: 8px; }
+.mex-status-dot--draft { background: #fef9c3; color: #854d0e; }
+.mex-status-dot--pub   { background: #dcfce7; color: #15803d; }
+
+/* ── States ───────────────────────────────────────────────────────────────── */
+.mex-empty { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 3rem 1rem; color: #9ca3af; font-size: 0.9rem; }
+.mex-error { background: #fef2f2; border: 1px solid #fecaca; border-left: 3px solid #dc2626; color: #991b1b; border-radius: 6px; padding: 0.75rem 1rem; font-size: 0.875rem; margin-bottom: 1rem; }
+
+.mex-spinner {
+  width: 18px; height: 18px;
+  border: 2px solid #e5e7eb; border-top-color: #3b82f6;
+  border-radius: 50%; animation: mex-spin 0.7s linear infinite;
+}
+@keyframes mex-spin { to { transform: rotate(360deg); } }
+
+/* ── Buttons ──────────────────────────────────────────────────────────────── */
+.mex-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 0.4rem; border-radius: 7px; font-weight: 600; cursor: pointer;
+  border: none; text-decoration: none; transition: all 0.15s;
+  white-space: nowrap;
+}
+.mex-btn--primary { background: #1e3a8a; color: #fff; padding: 0.5rem 1.1rem; font-size: 0.875rem; }
+.mex-btn--primary:hover { background: #1e40af; }
+.mex-btn--ghost   { background: transparent; color: #6b7280; padding: 0.45rem 0.875rem; font-size: 0.875rem; }
+.mex-btn--ghost:hover { background: #f3f4f6; }
+
+/* ── Create form (inside OffCanvas) ──────────────────────────────────────── */
+.mex-form { display: flex; flex-direction: column; gap: 1rem; padding: 0.25rem 0; }
+
+.mex-form__type-badge {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0.6rem 0.875rem; border-radius: 8px;
+  border: 1.5px solid; font-size: 0.875rem; font-weight: 600;
+}
+
+.mex-form__actions {
+  display: flex; justify-content: flex-end; gap: 0.5rem;
+  padding-top: 0.5rem; border-top: 1px solid #f3f4f6; margin-top: 0.25rem;
+}
+
+.mex-field { display: flex; flex-direction: column; gap: 4px; }
+.mex-field label { font-size: 0.75rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em; }
+.mex-field input, .mex-field select {
+  padding: 0.45rem 0.7rem; border: 1.5px solid #e5e7eb; border-radius: 7px;
+  font-size: 0.875rem; color: #1f2937; background: #fff; outline: none;
+}
+.mex-field input:focus, .mex-field select:focus { border-color: #3b82f6; }
+
+.mex-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.mex-alert { background: #fef9c3; border: 1px solid #fbbf24; color: #92400e; border-radius: 6px; padding: 0.5rem 0.75rem; font-size: 0.8rem; }

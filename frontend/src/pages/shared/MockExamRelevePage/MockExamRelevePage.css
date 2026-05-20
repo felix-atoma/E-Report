@@ -1,0 +1,157 @@
+/* ── Relevé de notes — Mock Exam ──────────────────────────────────────────── */
+
+/* Screen toolbar */
+.mrel-page { background: #eef0f5; min-height: 100vh; }
+
+.mrel-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.75rem 1.5rem; background: #fff;
+  border-bottom: 1px solid #e5e7eb; gap: 1rem; flex-wrap: wrap;
+  position: sticky; top: 0; z-index: 10;
+}
+
+.mrel-toolbar__back { font-size: 0.85rem; color: #6b7280; text-decoration: none; }
+.mrel-toolbar__back:hover { color: #111827; }
+
+.mrel-toolbar__center { flex: 1; max-width: 400px; }
+
+.mrel-toolbar__select {
+  width: 100%; padding: 0.4rem 0.7rem; border: 1.5px solid #e5e7eb;
+  border-radius: 7px; font-size: 0.875rem; color: #374151; outline: none;
+}
+
+.mrel-print-btn {
+  padding: 0.45rem 1rem; background: #1e3a8a; color: #fff;
+  border: none; border-radius: 7px; font-size: 0.875rem; font-weight: 600;
+  cursor: pointer; transition: background 0.15s;
+}
+.mrel-print-btn:hover { background: #1e40af; }
+
+.mrel-loading { padding: 3rem; text-align: center; color: #6b7280; }
+.mrel-screen-error { padding: 3rem; text-align: center; color: #dc2626; }
+
+/* Cards container */
+.mrel-cards {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 2rem 1rem; gap: 2rem;
+}
+
+/* ── Single relevé card (A4-ish) ─────────────────────────────────────────── */
+.mrel-card {
+  width: 100%; max-width: 800px;
+  background: #fff; border: 1px solid #d1d5db;
+  border-radius: 4px; padding: 28px 32px;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12px; color: #1a1a1a;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+/* Header */
+.mrel-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 1rem; margin-bottom: 12px;
+}
+.mrel-header__left { display: flex; align-items: flex-start; gap: 12px; }
+.mrel-logo { width: 60px; height: 60px; object-fit: contain; }
+
+.mrel-circ { font-size: 9px; font-style: italic; color: #4b5563; margin-bottom: 2px; }
+.mrel-school-name { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.mrel-school-addr { font-size: 10px; color: #6b7280; }
+
+.mrel-header__right { text-align: right; }
+.mrel-doc-title    { font-size: 15px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; }
+.mrel-doc-subtitle { font-size: 9px; font-style: italic; color: #6b7280; margin-top: 1px; letter-spacing: 0.04em; text-transform: uppercase; }
+.mrel-exam-type    { font-size: 12px; font-weight: 700; color: #1e3a8a; margin-top: 4px; }
+.mrel-exam-label { font-size: 11px; color: #374151; }
+.mrel-exam-date  { font-size: 10px; color: #6b7280; font-style: italic; }
+
+.mrel-divider { border: none; border-top: 2px solid #111; margin: 10px 0 12px; }
+
+/* Student identity */
+.mrel-identity {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 6px 20px; margin-bottom: 14px;
+  border: 1px solid #d1d5db; padding: 8px 12px; border-radius: 3px;
+}
+.mrel-identity__field { display: flex; gap: 6px; align-items: baseline; }
+.mrel-identity__label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  color: #6b7280; min-width: 100px; flex-shrink: 0;
+}
+.mrel-identity__value { font-size: 12px; font-weight: 700; color: #111; }
+
+/* Grade table */
+.mrel-table {
+  width: 100%; border-collapse: collapse; margin-bottom: 14px;
+  font-size: 11px;
+}
+
+.mrel-th {
+  background: #1e3a8a; color: #fff; padding: 6px 8px;
+  text-align: left; font-size: 10px; text-transform: uppercase;
+  letter-spacing: 0.04em; font-weight: 700; border: 1px solid #1e3a8a;
+}
+.mrel-th--center, .mrel-th--coeff, .mrel-th--score, .mrel-th--pts { text-align: center; }
+
+.mrel-td { padding: 5px 8px; border: 1px solid #d1d5db; }
+.mrel-td--center { text-align: center; }
+.mrel-td--subject { font-weight: 600; }
+.mrel-td--score { font-weight: 700; color: #1e3a8a; }
+.mrel-td--appre { font-style: italic; font-size: 10px; }
+.mrel-td--bold  { font-weight: 900; }
+
+.mrel-row { background: #fff; }
+.mrel-row--alt { background: #f8fafc; }
+
+.mrel-total-row { background: #f0f4ff; }
+.mrel-total-row .mrel-td { border-top: 2px solid #1e3a8a; }
+
+/* Result summary */
+.mrel-result {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 0; border: 2px solid #1e3a8a; border-radius: 4px;
+  overflow: hidden; margin-bottom: 20px;
+}
+.mrel-result__item {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 8px 6px; border-right: 1px solid #bfdbfe;
+}
+.mrel-result__item:last-child { border-right: none; }
+.mrel-result__label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; font-weight: 700; }
+.mrel-result__value { font-size: 14px; font-weight: 900; color: #1e3a8a; margin-top: 2px; }
+.mrel-result__value--avg  { font-size: 16px; color: #1e3a8a; }
+.mrel-result__value--pass       { color: #15803d; }
+.mrel-result__value--admissible { color: #ca8a04; }
+.mrel-result__value--fail       { color: #dc2626; }
+.mrel-result__value--rank { font-size: 15px; }
+
+.mrel-result__item--gold   { background: #fffbeb; }
+.mrel-result__item--silver { background: #f8fafc; }
+.mrel-result__item--bronze { background: #fff7ed; }
+
+/* Signatures */
+.mrel-sigs { display: flex; justify-content: space-around; gap: 20px; margin-top: 16px; }
+.mrel-sig { flex: 1; text-align: center; }
+.mrel-sig__title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+.mrel-sig__space { height: 60px; border-bottom: 1px solid #9ca3af; margin: 0 20px; }
+.mrel-sig__name  { font-size: 9px; color: #6b7280; margin-top: 4px; }
+
+/* ── Print styles ──────────────────────────────────────────────────────────── */
+@media print {
+  .no-print { display: none !important; }
+
+  .mrel-page { background: #fff; }
+  .mrel-cards { padding: 0; gap: 0; }
+
+  .mrel-card {
+    width: 100%; max-width: 100%;
+    box-shadow: none; border: none; border-radius: 0;
+    padding: 12mm 15mm;
+    page-break-after: always;
+    page-break-inside: avoid;
+  }
+
+  .mrel-card:last-child { page-break-after: auto; }
+}
+
+@page { margin: 0; }

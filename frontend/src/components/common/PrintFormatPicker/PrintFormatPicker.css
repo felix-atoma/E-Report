@@ -1,0 +1,11 @@
+.pfp-wrap {
+  display: flex; align-items: center; gap: 4px;
+}
+.pfp-label { font-size: 0.85rem; }
+.pfp-select {
+  padding: 0.35rem 0.6rem; border: 1.5px solid #e5e7eb;
+  border-radius: 6px; font-size: 0.8rem; color: #374151;
+  background: #fff; outline: none; cursor: pointer;
+  transition: border-color 0.15s;
+}
+.pfp-select:focus { border-color: #3b82f6; }

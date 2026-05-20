@@ -1,0 +1,257 @@
+/* ── Fiche de notes — Examen Blanc ──────────────────────────────────────── */
+
+/* Screen action bar (inside AppShell content area) */
+.mfiche-screen-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 10px;
+  padding: 0.65rem 1rem; margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;
+}
+.mfiche-screen-bar__left    { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; flex: 1; }
+.mfiche-screen-bar__actions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+
+.mfiche-link-btn {
+  padding: 0.4rem 0.85rem; border-radius: 7px; font-size: 0.8rem; font-weight: 600;
+  text-decoration: none; border: 1.5px solid transparent; white-space: nowrap; transition: all 0.15s;
+}
+.mfiche-link-btn--palmares { background: #f0fdfa; color: #0f766e; border-color: #99f6e4; }
+.mfiche-link-btn--palmares:hover { background: #ccfbf1; }
+.mfiche-link-btn--releve   { background: #faf5ff; color: #7e22ce; border-color: #e9d5ff; }
+.mfiche-link-btn--releve:hover { background: #f3e8ff; }
+
+.mfiche-back { font-size: 0.82rem; color: #6b7280; text-decoration: none; }
+.mfiche-back:hover { color: #111827; }
+
+.mfiche-screen-title { font-size: 0.88rem; font-weight: 700; color: #1f2937; }
+.mfiche-screen-meta  { font-size: 0.8rem; color: #6b7280; }
+
+.mfiche-status {
+  font-size: 0.72rem; font-weight: 700; padding: 0.15rem 0.55rem;
+  border-radius: 10px;
+}
+.mfiche-status--draft { background: #fef9c3; color: #854d0e; }
+.mfiche-status--pub   { background: #dcfce7; color: #15803d; }
+
+.mfiche-print-btn {
+  padding: 0.45rem 1rem; background: #1e3a8a; color: #fff;
+  border: none; border-radius: 7px; font-size: 0.875rem; font-weight: 600;
+  cursor: pointer; transition: background 0.15s;
+}
+.mfiche-print-btn:hover { background: #1e40af; }
+
+.mfiche-screen-error { padding: 3rem; text-align: center; color: #dc2626; }
+
+/* Cards container */
+.mfiche-cards { display: flex; flex-direction: column; gap: 1.5rem; }
+
+/* Each subject section (one per print page) */
+.mfiche-page-section {
+  background: #fff;
+  border-radius: 4px;
+  padding: 24px 28px;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12px; color: #1a1a1a;
+  border-top: 4px solid #1e3a8a;
+  box-shadow: 0 4px 20px rgba(30,58,138,0.10), 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* Print-only elements */
+.print-only { display: none; }
+
+/* Subject band */
+.mfiche-subj-band {
+  display: flex; align-items: center; justify-content: space-between;
+  background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);
+  color: #fff;
+  padding: 9px 14px; border-radius: 4px; margin-bottom: 12px;
+  flex-wrap: wrap; gap: 0.5rem;
+  box-shadow: 0 2px 8px rgba(30,58,138,0.3);
+}
+.mfiche-subj-band__left { display: flex; align-items: center; gap: 12px; }
+.mfiche-subj-name   { font-size: 13px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.04em; }
+.mfiche-subj-coeff  { font-size: 10px; opacity: 0.9; display: flex; align-items: center; gap: 4px; }
+
+.mfiche-coeff-input {
+  width: 44px; padding: 0.15rem 0.3rem;
+  border: 1.5px solid rgba(255,255,255,0.5); border-radius: 4px;
+  background: rgba(255,255,255,0.15); color: #fff;
+  font-size: 11px; font-weight: 700; text-align: center;
+  outline: none;
+  -moz-appearance: textfield;
+}
+.mfiche-coeff-input::-webkit-inner-spin-button,
+.mfiche-coeff-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.mfiche-coeff-input:focus {
+  border-color: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.25);
+}
+.mfiche-subj-band__right { display: flex; align-items: center; gap: 12px; }
+.mfiche-subj-teacher { font-size: 10px; font-style: italic; opacity: 0.9; }
+
+.mfiche-save-btn {
+  padding: 0.3rem 0.8rem; background: #fff; color: #1e3a8a;
+  border: none; border-radius: 5px; font-size: 0.8rem; font-weight: 700;
+  cursor: pointer;
+}
+.mfiche-save-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.mfiche-saved-hint { font-size: 0.8rem; color: #86efac; font-weight: 700; }
+
+.mfiche-sign-btn {
+  padding: 0.3rem 0.9rem; background: #16a34a; color: #fff;
+  border: none; border-radius: 5px; font-size: 0.8rem; font-weight: 700;
+  cursor: pointer; transition: background 0.15s;
+}
+.mfiche-sign-btn:hover    { background: #15803d; }
+.mfiche-sign-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.mfiche-unsign-btn {
+  padding: 0.3rem 0.9rem; background: #dc2626; color: #fff;
+  border: none; border-radius: 5px; font-size: 0.8rem; font-weight: 700;
+  cursor: pointer; transition: background 0.15s;
+}
+.mfiche-unsign-btn:hover    { background: #b91c1c; }
+.mfiche-unsign-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.mfiche-signed-badge {
+  font-size: 0.75rem; font-weight: 700; color: #bbf7d0;
+  background: rgba(22, 163, 74, 0.25); border-radius: 5px;
+  padding: 0.2rem 0.55rem; white-space: nowrap;
+}
+
+/* Grade table */
+.mfiche-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 14px; }
+
+.mfiche-th {
+  background: #f1f5f9; color: #374151; padding: 6px 8px;
+  text-align: center; font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  border: 1px solid #d1d5db;
+}
+.mfiche-th--name  { text-align: left; min-width: 180px; }
+.mfiche-th--num   { min-width: 32px; }
+.mfiche-th--mat   { min-width: 90px; }
+.mfiche-th--score { min-width: 80px; }
+.mfiche-th--rank  { min-width: 50px; }
+.mfiche-th--appre { min-width: 110px; }
+
+.mfiche-td {
+  padding: 5px 8px; border: 1px solid #d1d5db;
+  text-align: center; vertical-align: middle;
+}
+.mfiche-td--num   { font-size: 10px; color: #9ca3af; }
+.mfiche-td--name  { text-align: left; font-weight: 600; font-size: 11px; }
+.mfiche-td--mat   { font-size: 10px; color: #6b7280; }
+.mfiche-td--score { font-weight: 900; font-size: 14px; }
+.mfiche-td--rank  { font-weight: 700; }
+.mfiche-td--appre { font-style: italic; font-size: 10px; }
+
+.mfiche-rank {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 22px; height: 22px; border-radius: 50%;
+  font-size: 10px; font-weight: 800;
+  background: #e0e7ff; color: #3730a3;
+}
+.mfiche-rank--first {
+  background: #fbbf24; color: #78350f;
+}
+
+.mfiche-row     { background: #fff; }
+.mfiche-row--alt { background: #f8fafc; }
+
+.mfiche-input {
+  width: 74px; padding: 0.3rem 0.4rem; border: 1.5px solid #e5e7eb;
+  border-radius: 5px; font-size: 1rem; font-weight: 900; text-align: center;
+  color: #1f2937; outline: none; background: #fff;
+  -moz-appearance: textfield;
+}
+.mfiche-input::-webkit-inner-spin-button,
+.mfiche-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.mfiche-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+.mfiche-input--err { border-color: #ef4444; background: #fff5f5; }
+
+.mfiche-score-ro { font-size: 14px; font-weight: 900; color: #1f2937; }
+.mfiche-score-ro--fail { color: #dc2626; }
+
+/* Stats footer */
+.mfiche-stats-row { background: #f0f4ff; }
+.mfiche-stats-cell {
+  padding: 6px 10px !important; font-size: 10px; color: #374151;
+  display: flex; flex-wrap: wrap; gap: 4px 14px;
+  border: 1px solid #d1d5db;
+}
+.mfiche-sep { color: #d1d5db; }
+
+/* Signatures */
+.mfiche-sigs { display: flex; justify-content: space-around; gap: 20px; margin-top: 20px; }
+.mfiche-sig { flex: 1; text-align: center; }
+.mfiche-sig__title {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.04em; margin-bottom: 6px;
+}
+.mfiche-sig__space { height: 55px; border-bottom: 1px solid #9ca3af; margin: 0 20px; }
+.mfiche-sig__name  { font-size: 9px; color: #6b7280; margin-top: 4px; }
+
+.mfiche-sig__signed-stamp {
+  height: 55px; margin: 0 20px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  border: 2px solid #16a34a; border-radius: 6px;
+  background: #f0fdf4;
+}
+.mfiche-sig__signed-name {
+  font-size: 11px; font-weight: 800; color: #15803d; letter-spacing: 0.02em;
+}
+.mfiche-sig__signed-date {
+  font-size: 9px; color: #166534; font-style: italic; margin-top: 2px;
+}
+
+/* ── Print styles ───────────────────────────────────────────────────────── */
+@media print {
+  .no-print   { display: none !important; }
+  .print-only { display: flex !important; }
+
+  /* Hide AppShell chrome */
+  .sidebar { display: none !important; }
+
+  /* Full width content */
+  .app-shell__main    { margin: 0 !important; padding: 0 !important; width: 100% !important; }
+  .app-shell__content { margin: 0 !important; padding: 0 !important; }
+
+  .mfiche-cards { gap: 0; }
+
+  .mfiche-page-section {
+    border: none; border-radius: 0; padding: 10mm 14mm;
+    page-break-after: always;
+    page-break-inside: avoid;
+    box-shadow: none;
+  }
+  .mfiche-page-section:last-child { page-break-after: auto; }
+
+  .mfiche-table   { font-size: 10px; }
+  .mfiche-th      { font-size: 9px; padding: 4px 6px; }
+  .mfiche-td      { padding: 4px 6px; }
+  .mfiche-stats-cell { font-size: 9px; }
+  .mfiche-subj-band { border-radius: 0; }
+  .mfiche-rank    { min-width: 18px; height: 18px; font-size: 9px; }
+}
+
+/* Print header styles */
+.mfiche-print-header {
+  justify-content: space-between; align-items: flex-start;
+  gap: 1rem; margin-bottom: 12px;
+}
+.mfiche-print-header__left { display: flex; align-items: flex-start; gap: 12px; }
+.mfiche-logo { width: 60px; height: 60px; object-fit: contain; }
+.mfiche-circ { font-size: 9px; font-style: italic; color: #4b5563; margin-bottom: 2px; }
+.mfiche-school-name { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.mfiche-school-addr { font-size: 10px; color: #6b7280; }
+.mfiche-print-header__right { text-align: right; }
+.mfiche-doc-title { font-size: 15px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em; }
+.mfiche-exam-type { font-size: 12px; font-weight: 700; color: #1e3a8a; margin-top: 2px; }
+.mfiche-exam-label { font-size: 11px; color: #374151; }
+.mfiche-exam-meta {
+  font-size: 10px; color: #374151; margin-top: 4px;
+  display: flex; gap: 14px; justify-content: flex-end;
+}
+.mfiche-exam-date { font-size: 10px; color: #6b7280; font-style: italic; }
+.mfiche-print-divider { border: none; border-top: 2px solid #111; margin: 8px 0 12px; }
+
+@page { margin: 0; }
