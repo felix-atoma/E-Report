@@ -115,10 +115,23 @@
 .pr-title {
   background: var(--bulletin-primary, var(--bp));
   color: #fff; text-align: center;
-  padding: 4px;
+  padding: 4px 6px;
   font-size: var(--bulletin-h2-size, 1.1em);
   font-weight: var(--bulletin-h2-weight, 900);
   letter-spacing: 1px; margin-bottom: 4px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  flex-wrap: wrap;
+}
+.pr-title__serial {
+  font-size: 0.65em;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.45);
+  border-radius: 3px;
+  padding: 1px 7px;
+  white-space: nowrap;
+  font-family: 'Courier New', monospace;
 }
 
 /* ── Student row (band + photo side-by-side) ── */

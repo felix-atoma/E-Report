@@ -16,6 +16,13 @@ function fmt(v) {
   if (v == null) return '—';
   return Number(v).toFixed(2).replace('.', ',');
 }
+
+function fallbackSerial(report) {
+  if (!report) return null;
+  const ay = (report.academicYear ?? '').replace('-', '').slice(-4);
+  const id = (report.id ?? '').replace(/-/g, '').toUpperCase().slice(0, 8);
+  return `${ay}T${report.termNumber ?? 1}-${id.slice(0,4)}-${id.slice(4,8)}`;
+}
 function fmtNote(v) {
   if (v == null) return '—';
   return Number(v).toFixed(0);
@@ -182,7 +189,10 @@ export default function PrintReportCardPage() {
 
         {/* ── Title bar ──────────────────────────────────────────────────── */}
         <div className="pr-title">
-          BULLETIN DE NOTES — {termLabel.toUpperCase()} — ANNÉE SCOLAIRE {report.academicYear}
+          <span>BULLETIN DE NOTES — {termLabel.toUpperCase()} — ANNÉE SCOLAIRE {report.academicYear}</span>
+          <span className="pr-title__serial">
+            N° {report.securityCode ?? fallbackSerial(report)}
+          </span>
         </div>
 
         {/* ── Student band + photo (photo sits outside the band box) ──────── */}
@@ -417,13 +427,11 @@ export default function PrintReportCardPage() {
             Généré le {new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
             {institution?.name ? ` — ${institution.name}` : ''}
           </span>
-          {report.securityCode && (
-            <span className="pr-footer__security">
-              N° Sécurité : <strong>{report.securityCode}</strong>
-              {' '}· Vérifier sur{' '}
-              <span className="pr-footer__verify-url">{window.location.origin}/verify-bulletin</span>
-            </span>
-          )}
+          <span className="pr-footer__security">
+            N° Série : <strong>{report.securityCode ?? fallbackSerial(report)}</strong>
+            {' '}· Vérifier sur{' '}
+            <span className="pr-footer__verify-url">{window.location.origin}/verify</span>
+          </span>
         </div>
 
       </div>
