@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import Sidebar from '../Sidebar/Sidebar';
 import Topbar from '../Topbar/Topbar';
+import AiAssistant from '../../common/AiAssistant/AiAssistant';
 import './AppShell.css';
 
 function AppShell({ children, title }) {
@@ -79,6 +80,7 @@ function AppShell({ children, title }) {
             <line x1="21" y1="12" x2="9" y2="12"/>
           </svg>
         </button>
+        <AiAssistant />
       </div>
     </div>
   );
