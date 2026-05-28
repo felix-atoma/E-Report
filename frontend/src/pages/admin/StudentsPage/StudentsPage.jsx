@@ -185,6 +185,7 @@ function StudentsPage() {
     onSuccess: async (res) => {
       await uploadPhotoIfNeeded(res.data?.user?.id);
       qc.invalidateQueries({ queryKey: ['students'] });
+      qc.invalidateQueries({ queryKey: ['analytics'] });
       toast.success('Élève ajouté');
       closeModal();
     },
@@ -193,7 +194,7 @@ function StudentsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id) => studentsService.delete(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['students'] }); toast.success('Élève supprimé'); setConfirm(null); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['students'] }); qc.invalidateQueries({ queryKey: ['analytics'] }); toast.success('Élève supprimé'); setConfirm(null); },
     onError:   (err) => toast.error(err?.response?.data?.message ?? 'Erreur de suppression'),
   });
 

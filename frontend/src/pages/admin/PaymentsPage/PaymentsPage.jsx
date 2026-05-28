@@ -132,6 +132,7 @@ function PaymentsPage() {
     mutationFn: (data) => paymentsService.record(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['payments'] });
+      qc.invalidateQueries({ queryKey: ['analytics'] });
       toast.success('Paiement enregistré');
       setModal(false);
       setForm(EMPTY_FORM);

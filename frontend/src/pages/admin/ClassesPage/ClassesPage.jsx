@@ -401,7 +401,7 @@ function ClassesPage() {
       }
       return res;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['classes'] }); toast.success('Classe créée'); closeModal(); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['classes'] }); qc.invalidateQueries({ queryKey: ['analytics'] }); toast.success('Classe créée'); closeModal(); },
     onError:   (err) => toast.error(err?.response?.data?.message ?? 'Erreur de création'),
   });
 
@@ -419,7 +419,7 @@ function ClassesPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id) => classesService.delete(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['classes'] }); toast.success('Classe supprimée'); setConfirm(null); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['classes'] }); qc.invalidateQueries({ queryKey: ['analytics'] }); toast.success('Classe supprimée'); setConfirm(null); },
     onError:   (err) => toast.error(err?.response?.data?.message ?? 'Erreur de suppression'),
   });
 

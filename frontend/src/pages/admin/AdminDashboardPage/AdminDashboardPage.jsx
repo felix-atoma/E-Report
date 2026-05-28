@@ -69,6 +69,8 @@ function AdminDashboardPage() {
   const { data: overview, isLoading: loadingOverview } = useQuery({
     queryKey: ['analytics', 'overview'],
     queryFn: () => analyticsService.overview().then((r) => r.data),
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 
   const academicYear = overview?.academicYear ?? null;
@@ -77,12 +79,16 @@ function AdminDashboardPage() {
     queryKey: ['analytics', 'payment-summary', academicYear],
     queryFn: () => analyticsService.paymentSummary({ academicYear }).then((r) => r.data),
     enabled: !!academicYear,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 
   const { data: reports } = useQuery({
     queryKey: ['analytics', 'report-stats', academicYear],
     queryFn: () => analyticsService.reportStats({ academicYear }).then((r) => r.data),
     enabled: !!academicYear,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 
   if (loadingOverview) return <AppShell title={t('dash.title')}><Loading /></AppShell>;

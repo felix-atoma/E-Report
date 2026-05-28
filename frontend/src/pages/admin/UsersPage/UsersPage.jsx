@@ -179,7 +179,7 @@ function UsersPage() {
   const createMutation = useMutation({
     mutationFn: (data) => usersService.create(data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['users'] });
+      qc.invalidateQueries({ queryKey: ['users'] }); qc.invalidateQueries({ queryKey: ['analytics'] });
       qc.invalidateQueries({ queryKey: ['classes'] });
       toast.success(t('action.create'));
       closeModal();
@@ -190,7 +190,7 @@ function UsersPage() {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => usersService.update(id, data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['users'] });
+      qc.invalidateQueries({ queryKey: ['users'] }); qc.invalidateQueries({ queryKey: ['analytics'] });
       toast.success(t('action.update'));
       closeModal();
     },
@@ -201,7 +201,7 @@ function UsersPage() {
     mutationFn: ({ id, action }) =>
       action === 'deactivate' ? usersService.deactivate(id) : usersService.activate(id),
     onSuccess: (_, { action }) => {
-      qc.invalidateQueries({ queryKey: ['users'] });
+      qc.invalidateQueries({ queryKey: ['users'] }); qc.invalidateQueries({ queryKey: ['analytics'] });
       toast.success(action === 'deactivate' ? t('action.deactivate') : t('action.activate'));
       setConfirm(null);
     },
@@ -211,7 +211,7 @@ function UsersPage() {
   const deleteMutation = useMutation({
     mutationFn: (id) => usersService.delete(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['users'] });
+      qc.invalidateQueries({ queryKey: ['users'] }); qc.invalidateQueries({ queryKey: ['analytics'] });
       toast.success(t('action.delete'));
       setConfirm(null);
     },
