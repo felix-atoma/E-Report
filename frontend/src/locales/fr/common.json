@@ -27,7 +27,8 @@
     "lms":            "Apprentissage",
     "mockExams":        "Examens blancs",
     "mockExamFiches":   "Fiches d'exam. blancs",
-    "mockExamResults":  "Résultats exam. blancs"
+    "mockExamResults":  "Résultats exam. blancs",
+    "bulkImport":       "Importation CSV"
   },
 
   "section": {

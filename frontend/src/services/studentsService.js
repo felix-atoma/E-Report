@@ -9,4 +9,5 @@ export const studentsService = {
   update: (id, data) => api.patch(`/students/${id}`, data),
   delete: (id) => api.delete(`/students/${id}`),
   bulkDelete: (ids) => api.post('/students/bulk-delete', { ids }),
+  bulkImport: (rows) => api.post('/students/bulk-import', { rows }),
 };

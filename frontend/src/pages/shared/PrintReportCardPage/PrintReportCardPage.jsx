@@ -54,11 +54,49 @@ export default function PrintReportCardPage() {
   useEffect(() => {
     if (!institution) return;
     const branding = institution.brandingSettings ?? {};
-    const primary   = branding.primaryColor   || '#1e3a8a';
+    const primary   = branding.primaryColor  || '#1e3a8a';
     const secondary = branding.secondaryColor || '#f59e0b';
+    const fontName  = (branding.bulletinFontFamily || 'Arial').trim();
+    const fontSize  = branding.bulletinFontSize || '10px';
+
+    // Load from Google Fonts if not a known system font
+    const SYSTEM_FONTS = new Set([
+      'Arial', 'Helvetica', 'Times New Roman', 'Times', 'Georgia', 'Garamond',
+      'Palatino Linotype', 'Palatino', 'Trebuchet MS', 'Verdana', 'Geneva',
+      'Courier New', 'Courier', 'Impact', 'Comic Sans MS',
+    ]);
+    if (!SYSTEM_FONTS.has(fontName)) {
+      const linkId = `gf-${fontName.replace(/\s+/g, '-').toLowerCase()}`;
+      if (!document.getElementById(linkId)) {
+        const link = document.createElement('link');
+        link.id = linkId;
+        link.rel = 'stylesheet';
+        link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontName)}:wght@400;700&display=swap`;
+        document.head.appendChild(link);
+      }
+    }
+
+    const fontFamilyCss = `'${fontName}', sans-serif`;
+    const h1Size   = branding.bulletinH1Size   || '1.3em';
+    const h1Weight = branding.bulletinH1Weight || '900';
+    const h2Size   = branding.bulletinH2Size   || '1.1em';
+    const h2Weight = branding.bulletinH2Weight || '900';
+    const h3Size   = branding.bulletinH3Size   || '0.8em';
+    const h3Weight = branding.bulletinH3Weight || '800';
     const el = document.createElement('style');
     el.id = 'bulletin-theme';
-    el.textContent = `:root { --bulletin-primary: ${primary}; --bulletin-secondary: ${secondary}; }`;
+    el.textContent = `:root {
+      --bulletin-primary: ${primary};
+      --bulletin-secondary: ${secondary};
+      --bulletin-font-family: ${fontFamilyCss};
+      --bulletin-font-size: ${fontSize};
+      --bulletin-h1-size: ${h1Size};
+      --bulletin-h1-weight: ${h1Weight};
+      --bulletin-h2-size: ${h2Size};
+      --bulletin-h2-weight: ${h2Weight};
+      --bulletin-h3-size: ${h3Size};
+      --bulletin-h3-weight: ${h3Weight};
+    }`;
     document.head.appendChild(el);
     return () => el.remove();
   }, [institution]);
@@ -375,8 +413,17 @@ export default function PrintReportCardPage() {
 
         {/* ── Footer ─────────────────────────────────────────────────────── */}
         <div className="pr-footer">
-          Généré le {new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
-          {institution?.name ? ` — ${institution.name}` : ''}
+          <span>
+            Généré le {new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
+            {institution?.name ? ` — ${institution.name}` : ''}
+          </span>
+          {report.securityCode && (
+            <span className="pr-footer__security">
+              N° Sécurité : <strong>{report.securityCode}</strong>
+              {' '}· Vérifier sur{' '}
+              <span className="pr-footer__verify-url">{window.location.origin}/verify-bulletin</span>
+            </span>
+          )}
         </div>
 
       </div>

@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Loading from '../../../components/common/Loading/Loading';
-import Modal from '../../../components/common/Modal/Modal';
+import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
 import SignaturePad from '../../../components/common/SignaturePad/SignaturePad';
 import { gradesService } from '../../../services/gradesService';
 import { subjectHoursService } from '../../../services/subjectHoursService';
@@ -562,14 +562,14 @@ export default function GradeEntryPage() {
         </div>
       )}
 
-      {/* Signature modal */}
-      <Modal
+      {/* Signature panel */}
+      <OffCanvas
         open={signModal}
         onClose={() => setSignModal(false)}
         title="Signer la fiche de notes"
         size="md"
         footer={
-          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+          <>
             <button
               className="fdn__btn fdn__btn--secondary"
               onClick={() => setSignModal(false)}
@@ -587,7 +587,7 @@ export default function GradeEntryPage() {
             >
               {signMutation.isPending ? 'Validation…' : '✅ Valider et verrouiller'}
             </button>
-          </div>
+          </>
         }
       >
         <div className="fdn__sign-modal-body">
@@ -595,9 +595,9 @@ export default function GradeEntryPage() {
             En signant cette fiche, vous certifiez que les notes saisies sont exactes et définitives.
             La fiche sera verrouillée et ne pourra plus être modifiée sans annuler la signature.
           </p>
-          <SignaturePad onChange={setSigData} width={500} height={180} />
+          <SignaturePad onChange={setSigData} width={460} height={180} />
         </div>
-      </Modal>
+      </OffCanvas>
 
       <div className="fdn__legend">
         <span><strong>Formule :</strong> Moy = (moy.interros×1 + devoir×2 + examen×3) ÷ 6</span>

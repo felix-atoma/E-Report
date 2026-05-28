@@ -1,3 +1,56 @@
+/* ── Read-only summary inside cards ── */
+.settings-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-sm, 6px);
+  overflow: hidden;
+}
+
+.settings-summary__row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.45rem 0.75rem;
+  border-bottom: 1px solid var(--color-border, #f3f4f6);
+  font-size: 0.85rem;
+}
+
+.settings-summary__row:last-child {
+  border-bottom: none;
+}
+
+.settings-summary__label {
+  width: 130px;
+  flex-shrink: 0;
+  font-weight: 600;
+  color: var(--color-text-muted, #6b7280);
+  font-size: 0.78rem;
+}
+
+.settings-summary__value {
+  color: var(--color-text, #1f2937);
+  word-break: break-word;
+}
+
+.settings-summary__badge {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.settings-summary__badge--on  { background: #dcfce7; color: #15803d; }
+.settings-summary__badge--off { background: #fee2e2; color: #dc2626; }
+
+.settings-section__divider {
+  height: 1px;
+  background: var(--color-border, #e5e7eb);
+  margin: 0.25rem 0;
+}
+
 .settings-loading {
   padding: 2rem;
   color: var(--color-text-muted, #6b7280);

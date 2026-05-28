@@ -1,0 +1,145 @@
+/* ══════════════════════════════════════════════════════════════════
+   AdminImportPage — Bulk CSV import
+   ══════════════════════════════════════════════════════════════════ */
+
+.imp-page {
+  display: flex; flex-direction: column; gap: 2rem;
+  max-width: 860px; margin: 1.5rem auto; padding: 0 1rem;
+}
+
+/* ── Section card ──────────────────────────────────────────────── */
+.imp-section {
+  background: #fff;
+  border-radius: 12px;
+  border: 1.5px solid #e5e7eb;
+  padding: 1.5rem 1.75rem;
+  box-shadow: 0 2px 12px rgba(30,58,138,0.07);
+}
+
+.imp-section__head {
+  display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem;
+}
+.imp-section__icon { font-size: 2rem; line-height: 1; }
+.imp-section__title {
+  font-size: 1.05rem; font-weight: 800; color: #0f172a; margin-bottom: 2px;
+}
+.imp-section__sub {
+  font-size: 0.8rem; color: #6b7280;
+}
+.imp-section__sub code {
+  background: #f1f5f9; border: 1px solid #e2e8f0;
+  padding: 1px 5px; border-radius: 4px;
+  font-size: 0.78rem; color: #1e3a8a;
+}
+
+/* ── Template box ──────────────────────────────────────────────── */
+.imp-template {
+  background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+  padding: 0.75rem 1rem; margin-bottom: 1rem;
+  font-size: 0.8rem; color: #374151;
+}
+.imp-template pre {
+  margin: 6px 0 0; font-size: 0.78rem; color: #1e3a8a;
+  white-space: pre-wrap; overflow-x: auto;
+}
+
+/* ── Drop zone ─────────────────────────────────────────────────── */
+.imp-drop {
+  border: 2px dashed #bfdbfe; border-radius: 10px;
+  padding: 1.75rem; text-align: center; cursor: pointer;
+  background: #f0f7ff; transition: all 0.15s; margin-bottom: 1rem;
+}
+.imp-drop:hover, .imp-drop--active {
+  background: #dbeafe; border-color: #3b82f6;
+}
+.imp-drop__icon { font-size: 2.2rem; margin-bottom: 0.4rem; }
+.imp-drop__text { font-size: 0.85rem; color: #1d4ed8; font-weight: 600; }
+
+/* ── Preview table ─────────────────────────────────────────────── */
+.imp-preview {
+  margin-bottom: 1rem;
+  border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;
+}
+.imp-preview__title {
+  padding: 0.5rem 0.75rem; background: #f8fafc;
+  font-size: 0.8rem; font-weight: 700; color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+}
+.imp-table {
+  width: 100%; border-collapse: collapse; font-size: 0.8rem;
+}
+.imp-table th {
+  background: #eff6ff; color: #1e3a8a; padding: 6px 8px;
+  text-align: left; font-size: 0.75rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  border-bottom: 1px solid #bfdbfe;
+}
+.imp-table td {
+  padding: 5px 8px; border-bottom: 1px solid #f1f5f9; color: #374151;
+}
+.imp-table tr:last-child td { border-bottom: none; }
+.imp-table__row--warn td { background: #fef9c3; }
+.imp-more { text-align: center; color: #9ca3af; font-style: italic; padding: 6px; }
+
+/* ── Classes hint ──────────────────────────────────────────────── */
+.imp-classes-hint {
+  margin-top: 8px; font-size: 0.78rem; color: #374151;
+  border-top: 1px dashed #e2e8f0; padding-top: 6px;
+}
+
+/* ── Rules list ────────────────────────────────────────────────── */
+.imp-rules {
+  display: flex; flex-direction: column; gap: 6px; margin-bottom: 1rem;
+}
+.imp-rule {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: 0.8rem; color: #374151;
+  background: #f8fafc; border: 1px solid #e2e8f0;
+  border-radius: 6px; padding: 6px 10px;
+}
+.imp-rule__icon { font-size: 1rem; flex-shrink: 0; }
+
+/* ── Table name column ─────────────────────────────────────────── */
+.imp-td--name { font-weight: 600; }
+
+/* ── Inline status helpers ─────────────────────────────────────── */
+.imp-ok    { color: #15803d; font-weight: 600; }
+.imp-muted { color: #9ca3af; font-style: italic; }
+
+/* ── Warnings ──────────────────────────────────────────────────── */
+.imp-warn { color: #dc2626; font-style: italic; font-size: 0.75rem; }
+
+/* ── Import button ─────────────────────────────────────────────── */
+.imp-btn {
+  display: block; width: 100%;
+  padding: 0.6rem 1rem;
+  background: linear-gradient(135deg, #1e3a8a, #2563eb);
+  color: #fff; border: none; border-radius: 8px;
+  font-size: 0.9rem; font-weight: 700; cursor: pointer;
+  transition: all 0.15s; margin-bottom: 1rem;
+}
+.imp-btn:hover { opacity: 0.92; transform: translateY(-1px); }
+.imp-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.imp-btn--teacher {
+  background: linear-gradient(135deg, #0f766e, #0d9488);
+}
+
+/* ── Result area ───────────────────────────────────────────────── */
+.imp-result {
+  border-radius: 8px; overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+.imp-result__summary {
+  display: flex; gap: 1rem; padding: 0.6rem 1rem;
+  background: #f8fafc; font-size: 0.85rem; font-weight: 700;
+  border-bottom: 1px solid #e5e7eb;
+}
+.imp-result__ok  { color: #15803d; }
+.imp-result__err { color: #dc2626; }
+.imp-result__row {
+  padding: 0.4rem 1rem; font-size: 0.8rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+.imp-result__row--fail { background: #fef2f2; color: #991b1b; }
+.imp-result__row--ok   { background: #f0fdf4; color: #15803d; font-style: italic; }
+.imp-result__row:last-child { border-bottom: none; }

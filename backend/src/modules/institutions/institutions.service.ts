@@ -67,10 +67,18 @@ export class InstitutionsService {
     // Merge color/favicon fields into the brandingSettings JSON blob
     const currentBranding = (existing.brandingSettings as Record<string, unknown>) ?? {};
     const mergedBranding: Record<string, unknown> = { ...currentBranding, ...(dto.brandingSettings ?? {}) };
-    if (dto.primaryColor !== undefined)   mergedBranding.primaryColor   = dto.primaryColor;
-    if (dto.secondaryColor !== undefined) mergedBranding.secondaryColor = dto.secondaryColor;
+    if (dto.primaryColor !== undefined)      mergedBranding.primaryColor      = dto.primaryColor;
+    if (dto.secondaryColor !== undefined)    mergedBranding.secondaryColor    = dto.secondaryColor;
     if (dto.faviconUrl !== undefined)        mergedBranding.faviconUrl        = dto.faviconUrl;
-    if (dto.circonscription !== undefined)  mergedBranding.circonscription   = dto.circonscription;
+    if (dto.circonscription !== undefined)   mergedBranding.circonscription   = dto.circonscription;
+    if (dto.bulletinFontFamily !== undefined) mergedBranding.bulletinFontFamily = dto.bulletinFontFamily;
+    if (dto.bulletinFontSize   !== undefined) mergedBranding.bulletinFontSize   = dto.bulletinFontSize;
+    if (dto.bulletinH1Size     !== undefined) mergedBranding.bulletinH1Size     = dto.bulletinH1Size;
+    if (dto.bulletinH1Weight   !== undefined) mergedBranding.bulletinH1Weight   = dto.bulletinH1Weight;
+    if (dto.bulletinH2Size     !== undefined) mergedBranding.bulletinH2Size     = dto.bulletinH2Size;
+    if (dto.bulletinH2Weight   !== undefined) mergedBranding.bulletinH2Weight   = dto.bulletinH2Weight;
+    if (dto.bulletinH3Size     !== undefined) mergedBranding.bulletinH3Size     = dto.bulletinH3Size;
+    if (dto.bulletinH3Weight   !== undefined) mergedBranding.bulletinH3Weight   = dto.bulletinH3Weight;
 
     return this.prisma.institution.update({
       where: { id: institutionId },

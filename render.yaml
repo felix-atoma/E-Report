@@ -1,0 +1,47 @@
+services:
+  - type: web
+    name: novabulletin-api
+    runtime: node
+    region: frankfurt      # closest to West Africa
+    plan: free
+    rootDir: backend
+    buildCommand: npm install && npm run build && npx prisma generate && npx prisma db push
+    startCommand: node dist/main
+    healthCheckPath: /api/health
+
+    envVars:
+      # ── Static values ──────────────────────────────────────────────────────
+      - key: NODE_ENV
+        value: production
+      - key: GLOBAL_PREFIX
+        value: api
+      - key: JWT_EXPIRES_IN
+        value: 15m
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 7d
+      - key: BCRYPT_SALT_ROUNDS
+        value: 12
+      - key: UPLOADS_DIR
+        value: uploads
+
+      # ── Set these manually in the Render dashboard ──────────────────────────
+      # DATABASE_URL   → Supabase Transaction (pooled) connection string
+      # DIRECT_URL     → Supabase Session (direct) connection string
+      # JWT_SECRET     → long random string (32+ chars)
+      # JWT_REFRESH_SECRET → different long random string
+      # FRONTEND_URL   → your Vercel frontend URL  e.g. https://novabulletin.vercel.app
+      # BASE_URL       → this Render service URL   e.g. https://novabulletin-api.onrender.com
+      # MAIL_FROM      → sender address
+      # SENDGRID_API_KEY or SMTP_* → email credentials
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: BASE_URL
+        sync: false

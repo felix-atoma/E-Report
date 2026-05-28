@@ -16,4 +16,5 @@ export const usersService = {
   deactivate: (id) => api.patch(`/users/${id}/deactivate`),
   activate: (id) => api.patch(`/users/${id}/activate`),
   delete: (id) => api.delete(`/users/${id}`),
+  bulkImportTeachers: (rows) => api.post('/users/bulk-import-teachers', { rows }),
 };

@@ -228,7 +228,7 @@ export class GradesService {
     requestingUserId: string,
     requestingRole: Role,
   ) {
-    await this.assertClassAccess(classId, requestingUserId, requestingRole);
+    await this.assertSubjectAccess(classId, subjectId, requestingUserId, requestingRole);
 
     const subject = await this.prisma.subject.findUnique({ where: { id: subjectId } });
     if (!subject) throw new NotFoundException('Subject not found');
@@ -374,7 +374,7 @@ export class GradesService {
     role: Role,
     signatureData?: string,
   ) {
-    await this.assertClassAccess(classId, userId, role);
+    await this.assertSubjectAccess(classId, subjectId, userId, role);
 
     const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { name: true } });
     if (!user) throw new NotFoundException('User not found');
@@ -424,7 +424,7 @@ export class GradesService {
     userId: string,
     role: Role,
   ) {
-    await this.assertClassAccess(classId, userId, role);
+    await this.assertSubjectAccess(classId, subjectId, userId, role);
 
     const fiche = await this.prisma.gradeFiche.findUnique({
       where: { classId_subjectId_academicYear_termNumber: { classId, subjectId, academicYear, termNumber } },
@@ -448,7 +448,15 @@ export class GradesService {
     if (role === Role.ADMIN) return;
     if (role === Role.TEACHER) {
       if (report.createdById === userId) return;
-      const cls = await this.prisma.class.findFirst({ where: { id: report.classId, teacherId: userId } });
+      const cls = await this.prisma.class.findFirst({
+        where: {
+          id: report.classId,
+          OR: [
+            { teacherId: userId },
+            { subjects: { some: { teacherId: userId } } },
+          ],
+        },
+      });
       if (cls) return;
       throw new ForbiddenException('You do not have access to this report');
     }
@@ -463,6 +471,21 @@ export class GradesService {
       });
       if (cls) return;
       throw new ForbiddenException('You do not teach in this class');
+    }
+    throw new ForbiddenException('Access denied');
+  }
+
+  // Teacher must be assigned to the specific subject (or be homeroom teacher) to write/sign
+  private async assertSubjectAccess(classId: string, subjectId: string, userId: string, role: Role) {
+    if (role === Role.ADMIN) return;
+    if (role === Role.TEACHER) {
+      const assigned = await this.prisma.classSubject.findFirst({
+        where: { classId, subjectId, teacherId: userId },
+      });
+      if (assigned) return;
+      const homeroom = await this.prisma.class.findFirst({ where: { id: classId, teacherId: userId } });
+      if (homeroom) return;
+      throw new ForbiddenException('Vous n\'êtes pas affecté à cette matière dans cette classe');
     }
     throw new ForbiddenException('Access denied');
   }

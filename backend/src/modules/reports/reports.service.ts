@@ -22,6 +22,18 @@ function computeMention(avg: number): string {
   return 'Insuffisant';
 }
 
+const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+function generateSecurityCode(academicYear: string, termNumber: number): string {
+  const parts = academicYear.split('-');
+  const sy = (parts[0] ?? '').slice(-2);
+  const ey = (parts[1] ?? String(Number(parts[0] ?? '2024') + 1)).slice(-2);
+  const rand = (n: number) =>
+    Array.from({ length: n }, () =>
+      CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)],
+    ).join('');
+  return `${sy}${ey}T${termNumber}-${rand(4)}-${rand(4)}`;
+}
+
 @Injectable()
 export class ReportsService {
   private readonly logger = new Logger(ReportsService.name);
@@ -44,6 +56,7 @@ export class ReportsService {
       where.OR = [
         { createdById: userId },
         { class: { teacherId: userId } },
+        { class: { subjects: { some: { teacherId: userId } } } },
       ];
     }
     if (role === Role.STUDENT) {
@@ -71,7 +84,7 @@ export class ReportsService {
     });
   }
 
-  async findOne(id: string, institutionId: string) {
+  async findOne(id: string, institutionId: string, userId?: string, role?: Role) {
     const report = await this.prisma.reportCard.findFirst({
       where: { id, class: { institutionId } },
       include: {
@@ -96,6 +109,22 @@ export class ReportsService {
       },
     });
     if (!report) throw new NotFoundException('Report card not found');
+
+    if (role === Role.TEACHER && userId) {
+      const hasAccess = await this.prisma.class.findFirst({
+        where: {
+          id: report.classId,
+          OR: [
+            { teacherId: userId },
+            { subjects: { some: { teacherId: userId } } },
+          ],
+        },
+      });
+      if (!hasAccess && report.createdById !== userId) {
+        throw new ForbiddenException('You do not have access to this report');
+      }
+    }
+
     return report;
   }
 
@@ -130,6 +159,7 @@ export class ReportsService {
             termNumber: dto.termNumber,
             termName,
             createdById,
+            securityCode: generateSecurityCode(dto.academicYear, dto.termNumber),
           },
           update: {},
         }),
@@ -393,6 +423,48 @@ export class ReportsService {
     });
 
     this.logger.log(`PDF generated for report ${published.id}: ${pdfUrl}`);
+  }
+
+  async verifyByCode(securityCode: string) {
+    const report = await this.prisma.reportCard.findFirst({
+      where: { securityCode, status: 'PUBLISHED' },
+      select: {
+        id: true,
+        securityCode: true,
+        academicYear: true,
+        termName: true,
+        termNumber: true,
+        overallAverage: true,
+        mention: true,
+        classRank: true,
+        classSize: true,
+        publishedAt: true,
+        student: {
+          select: {
+            admissionNumber: true,
+            user: { select: { name: true } },
+          },
+        },
+        class: { select: { name: true } },
+      },
+    });
+    if (!report) {
+      return { valid: false, message: 'Code invalide ou bulletin non publié' };
+    }
+    return {
+      valid: true,
+      studentName: report.student?.user?.name ?? report.student?.admissionNumber ?? '—',
+      admissionNumber: report.student?.admissionNumber,
+      className: report.class?.name,
+      academicYear: report.academicYear,
+      termName: report.termName,
+      overallAverage: report.overallAverage,
+      mention: report.mention,
+      classRank: report.classRank,
+      classSize: report.classSize,
+      publishedAt: report.publishedAt,
+      securityCode: report.securityCode,
+    };
   }
 
   async bulkTitulaireUpsert(dto: TitulaireEntryDto, institutionId: string, userId: string, role: Role) {

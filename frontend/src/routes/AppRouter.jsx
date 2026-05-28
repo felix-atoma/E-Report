@@ -27,6 +27,8 @@ import NotificationLogsPage   from '../pages/admin/NotificationLogsPage/Notifica
 import BrandingPage           from '../pages/admin/BrandingPage/BrandingPage';
 import SettingsPage           from '../pages/admin/SettingsPage/SettingsPage';
 import InstitutionsPage       from '../pages/admin/InstitutionsPage/InstitutionsPage';
+import AdminImportPage        from '../pages/admin/AdminImportPage/AdminImportPage';
+import BulletinVerifyPage    from '../pages/public/BulletinVerifyPage/BulletinVerifyPage';
 
 import TeacherDashboardPage   from '../pages/teacher/TeacherDashboardPage/TeacherDashboardPage';
 import LMSPage                from '../pages/teacher/LMSPage/LMSPage';
@@ -82,6 +84,7 @@ function AppRouter() {
       <Route path="/forgot-password"    element={<ForgotPasswordPage />} />
       <Route path="/reset-password"     element={<ResetPasswordPage />} />
       <Route path="/auth/callback"      element={<GoogleCallbackPage />} />
+      <Route path="/verify-bulletin"    element={<BulletinVerifyPage />} />
       <Route path="/unauthorized"       element={<UnauthorizedPage />} />
       <Route path="/error"              element={<ErrorPage />} />
 
@@ -106,6 +109,7 @@ function AppRouter() {
       <Route path="/admin/bulletins"     element={<ProtectedRoute roles={['ADMIN']}><TeacherBulletinsPage /></ProtectedRoute>} />
       <Route path="/admin/reports"       element={<ProtectedRoute roles={['ADMIN']}><ReportCardsPage /></ProtectedRoute>} />
       <Route path="/admin/statistics"    element={<ProtectedRoute roles={['ADMIN']}><ClassStatsPage /></ProtectedRoute>} />
+      <Route path="/admin/import"        element={<ProtectedRoute roles={['ADMIN']}><AdminImportPage /></ProtectedRoute>} />
 
       {/* Bursar */}
       <Route path="/bursar"              element={<ProtectedRoute roles={['BURSAR']}><BursarDashboardPage /></ProtectedRoute>} />

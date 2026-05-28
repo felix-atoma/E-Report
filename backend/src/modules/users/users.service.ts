@@ -180,4 +180,41 @@ export class UsersService {
 
     return this.prisma.user.delete({ where: { id } });
   }
+
+  async bulkImportTeachers(
+    rows: Array<{ name: string; email: string; phone?: string }>,
+    institutionId: string,
+  ) {
+    const saltRounds = this.config.get<number>('BCRYPT_SALT_ROUNDS', 12);
+    const results: { success: boolean; name: string; error?: string }[] = [];
+    for (const row of rows) {
+      try {
+        const existing = await this.prisma.user.findUnique({ where: { email: row.email } });
+        if (existing) {
+          results.push({ success: false, name: row.name, error: 'Email déjà utilisé' });
+          continue;
+        }
+        const tempPass = `Teach@${Math.random().toString(36).slice(2, 8)}`;
+        const hashed = await bcrypt.hash(tempPass, Number(saltRounds));
+        await this.prisma.user.create({
+          data: {
+            name: row.name,
+            email: row.email,
+            password: hashed,
+            role: Role.TEACHER,
+            whatsappNumber: row.phone || null,
+            institutionId,
+          },
+        });
+        results.push({ success: true, name: row.name });
+      } catch (e: any) {
+        results.push({ success: false, name: row.name, error: e.message });
+      }
+    }
+    return {
+      created: results.filter((r) => r.success).length,
+      failed: results.filter((r) => !r.success).length,
+      results,
+    };
+  }
 }

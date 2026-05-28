@@ -18,12 +18,20 @@ import { TitulaireEntryDto } from './dto/titulaire-entry.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Role } from '../../common/enums/role.enum';
+import { Public } from '../../common/decorators/public.decorator';
 
 @ApiTags('reports')
 @ApiBearerAuth()
 @Controller('reports')
 export class ReportsController {
   constructor(private readonly service: ReportsService) {}
+
+  @Get('verify/:code')
+  @Public()
+  @ApiOperation({ summary: 'Public: verify bulletin authenticity by security code' })
+  verifyByCode(@Param('code') code: string) {
+    return this.service.verifyByCode(code);
+  }
 
   @Get()
   @Roles(Role.ADMIN, Role.TEACHER, Role.PARENT, Role.STUDENT)
@@ -58,7 +66,7 @@ export class ReportsController {
   @Roles(Role.ADMIN, Role.TEACHER, Role.PARENT, Role.STUDENT)
   @ApiOperation({ summary: 'Get a report card with all grades' })
   findOne(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.service.findOne(id, user.institutionId);
+    return this.service.findOne(id, user.institutionId, user.id, user.role);
   }
 
   @Patch(':id')

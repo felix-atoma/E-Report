@@ -17,6 +17,16 @@ export class UpdateBrandingDto {
   @ApiPropertyOptional() @IsOptional() @IsString() website?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() circonscription?: string;
 
+  @ApiPropertyOptional() @IsOptional() @IsString() bulletinFontFamily?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() bulletinFontSize?: string;
+
+  @ApiPropertyOptional() @IsOptional() @IsString() bulletinH1Size?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() bulletinH1Weight?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() bulletinH2Size?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() bulletinH2Weight?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() bulletinH3Size?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() bulletinH3Weight?: string;
+
   @ApiPropertyOptional({ description: 'Arbitrary branding config (colors, fonts, etc.)' })
   @IsOptional()
   @IsObject()

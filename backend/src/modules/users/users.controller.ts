@@ -13,6 +13,21 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { IsArray, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+
+class BulkImportTeacherRowDto {
+  @IsString() @IsNotEmpty() name: string;
+  @IsString() @IsNotEmpty() email: string;
+  @IsOptional() @IsString() phone?: string;
+}
+
+class BulkImportTeachersDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => BulkImportTeacherRowDto)
+  rows: BulkImportTeacherRowDto[];
+}
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import * as path from 'path';
@@ -121,5 +136,13 @@ export class UsersController {
   @ApiOperation({ summary: 'Permanently delete a user (Admin only)' })
   remove(@Param('id') id: string, @CurrentUser() user: any) {
     return this.service.remove(id, user.id, user.institutionId);
+  }
+
+  @Post('bulk-import-teachers')
+  @Roles(Role.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Bulk import teacher accounts from CSV rows (Admin only)' })
+  bulkImportTeachers(@Body() dto: BulkImportTeachersDto, @CurrentUser() user: any) {
+    return this.service.bulkImportTeachers(dto.rows, user.institutionId);
   }
 }

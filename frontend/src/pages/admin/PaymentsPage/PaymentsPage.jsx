@@ -6,7 +6,7 @@ import { studentsService } from '../../../services/studentsService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Table from '../../../components/common/Table/Table';
-import Modal from '../../../components/common/Modal/Modal';
+import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
 import Input from '../../../components/common/Input/Input';
 import Select from '../../../components/common/Select/Select';
 import Button from '../../../components/common/Button/Button';
@@ -247,7 +247,7 @@ function PaymentsPage() {
         emptyMessage="Aucun paiement trouvé"
       />
 
-      <Modal
+      <OffCanvas
         open={modal}
         onClose={() => { setModal(false); setForm(EMPTY_FORM); setErrors({}); }}
         title="Enregistrer un paiement"
@@ -264,7 +264,7 @@ function PaymentsPage() {
         }
       >
         <PaymentForm form={form} errors={errors} onChange={handleChange} students={students} />
-      </Modal>
+      </OffCanvas>
     </AppShell>
   );
 }

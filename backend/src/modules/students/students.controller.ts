@@ -1,10 +1,27 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { IsArray, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsObject, IsString, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 
 class BulkDeleteDto {
   @IsArray()
   @IsString({ each: true })
   ids: string[];
+}
+
+class BulkImportStudentRowDto {
+  @IsString() @IsNotEmpty() name: string;
+  @IsString() @IsNotEmpty() dateOfBirth: string;
+  @IsString() sex?: string;
+  @IsString() admissionNumber?: string;
+  @IsString() email?: string;
+  @IsString() className?: string;
+}
+
+class BulkImportStudentsDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => BulkImportStudentRowDto)
+  rows: BulkImportStudentRowDto[];
 }
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { StudentsService } from './students.service';
@@ -77,5 +94,13 @@ export class StudentsController {
   @ApiOperation({ summary: 'Bulk delete students (Admin only)' })
   bulkRemove(@Body() dto: BulkDeleteDto, @CurrentUser() user: any) {
     return this.service.bulkRemove(dto.ids, user.institutionId);
+  }
+
+  @Post('bulk-import')
+  @Roles(Role.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Bulk import students from parsed CSV rows (Admin only)' })
+  bulkImport(@Body() dto: BulkImportStudentsDto, @CurrentUser() user: any) {
+    return this.service.bulkImport(dto.rows, user.institutionId);
   }
 }

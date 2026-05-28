@@ -290,6 +290,55 @@ export class StudentsService {
     return { message: 'Student deleted' };
   }
 
+  async bulkImport(
+    rows: Array<{ name: string; dateOfBirth: string; sex?: string; admissionNumber?: string; email?: string; className?: string }>,
+    institutionId: string,
+  ) {
+    // Pre-build a class name lookup map (case-insensitive) for this institution
+    const classes = await this.prisma.class.findMany({
+      where: { institutionId, isActive: true },
+      select: { id: true, name: true },
+    });
+    const classMap = new Map<string, string>(
+      classes.map((c) => [c.name.toLowerCase().trim(), c.id]),
+    );
+
+    const results: { success: boolean; name: string; error?: string }[] = [];
+    for (const row of rows) {
+      try {
+        // Resolve classId from className if provided
+        let classId: string | undefined;
+        if (row.className) {
+          classId = classMap.get(row.className.toLowerCase().trim());
+          if (!classId) {
+            results.push({ success: false, name: row.name, error: `Classe introuvable : "${row.className}"` });
+            continue;
+          }
+        }
+
+        await this.create(
+          {
+            name: row.name,
+            dateOfBirth: row.dateOfBirth,
+            sex: row.sex as 'M' | 'F' | undefined,
+            admissionNumber: row.admissionNumber || undefined,
+            email: row.email || undefined,
+            classId,
+          },
+          institutionId,
+        );
+        results.push({ success: true, name: row.name });
+      } catch (e: any) {
+        results.push({ success: false, name: row.name, error: e.message });
+      }
+    }
+    return {
+      created: results.filter((r) => r.success).length,
+      failed: results.filter((r) => !r.success).length,
+      results,
+    };
+  }
+
   private async ensureExists(id: string, institutionId: string) {
     const s = await this.prisma.student.findFirst({ where: { id, institutionId } });
     if (!s) throw new NotFoundException('Student not found');

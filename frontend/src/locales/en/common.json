@@ -27,7 +27,8 @@
     "lms":            "Learning",
     "mockExams":        "Mock Exams",
     "mockExamFiches":   "Mock Exam Sheets",
-    "mockExamResults":  "Mock Exam Results"
+    "mockExamResults":  "Mock Exam Results",
+    "bulkImport":       "CSV Import"
   },
 
   "section": {

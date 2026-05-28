@@ -4,8 +4,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")   // pooled URL — used at runtime
+  directUrl = env("DIRECT_URL")     // direct URL — used by prisma migrate
 }
 
 enum Role {
@@ -377,6 +378,7 @@ model ReportCard {
   mention           String?   // Mention (TB, B, AB, P, Insuf.)
   annualAverage     Float?    // Moyenne annuelle (dernier trimestre/semestre seulement)
   councilDecision   String?   // Décision du conseil (ex: Admis, Redoublant)
+  securityCode      String?   @unique  // Anti-fraud bulletin ID e.g. "2425T1-AB3K-MNPQ"
   pdfUrl            String?
   deliveryStatus    String?
   publishedAt       DateTime?

@@ -14,6 +14,7 @@ const NAV = {
     { to: '/admin/users',         icon: 'users',     labelKey: 'nav.users' },
     { to: '/admin/classes',       icon: 'school',    labelKey: 'nav.classes' },
     { to: '/admin/students',      icon: 'backpack',  labelKey: 'nav.students' },
+    { to: '/admin/import',        icon: 'upload',    labelKey: 'nav.bulkImport' },
     { to: '/admin/subjects',      icon: 'book',      labelKey: 'nav.subjects' },
     { divider: true,              sectionKey: 'section.pedagogy' },
     { to: '/admin/reports',       icon: 'clipboard', labelKey: 'nav.reports' },
@@ -198,6 +199,13 @@ const ICONS = {
       <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
       <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
       <path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/>
+    </svg>
+  ),
+  upload: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+      <polyline points="17 8 12 3 7 8"/>
+      <line x1="12" y1="3" x2="12" y2="15"/>
     </svg>
   ),
   close: (
