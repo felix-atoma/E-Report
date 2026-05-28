@@ -26,10 +26,10 @@ export class RecordPaymentDto {
   @IsEnum(PaymentMethodDto)
   paymentMethod: PaymentMethodDto;
 
-  @ApiProperty({ example: '2024-2025' })
+  @ApiPropertyOptional({ example: '2024-2025' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  academicYear: string;
+  academicYear?: string;
 
   @ApiPropertyOptional({ example: 'Trimestre 1' })
   @IsOptional()

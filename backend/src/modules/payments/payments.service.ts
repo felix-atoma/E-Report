@@ -77,11 +77,14 @@ export class PaymentsService {
     if (!student) throw new NotFoundException('Student not found');
 
     const receiptNumber = await this.generateReceiptNumber(institutionId);
+    const now = new Date();
+    const defaultYear = `${now.getFullYear() - (now.getMonth() < 8 ? 1 : 0)}-${now.getFullYear() + (now.getMonth() >= 8 ? 1 : 0)}`;
+    const academicYear = dto.academicYear || defaultYear;
 
     const payment = await this.prisma.payment.create({
       data: {
         studentId: dto.studentId,
-        academicYear: dto.academicYear,
+        academicYear,
         term: dto.term,
         amount: new Prisma.Decimal(dto.amount),
         paymentMethod: dto.paymentMethod as any,
@@ -99,7 +102,7 @@ export class PaymentsService {
     });
 
     // Auto-release any held notifications if student is now fully paid
-    await this.tryReleaseHeldNotifications(dto.studentId, dto.academicYear, dto.term, institutionId);
+    await this.tryReleaseHeldNotifications(dto.studentId, academicYear, dto.term, institutionId);
 
     return payment;
   }
