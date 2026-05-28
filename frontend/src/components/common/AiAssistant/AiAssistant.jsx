@@ -131,7 +131,7 @@ const HELP = {
 
 // ─── Page-specific quick tips ─────────────────────────────────────────────────
 
-const PAGE_TIPS: Record<string, { role: string; tip: string }[]> = {
+const PAGE_TIPS = {
   '/grades':     [{ role: 'TEACHER', tip: "Appuyez sur Tab pour passer d'une note à la suivante rapidement." }],
   '/bulletins':  [{ role: 'ADMIN',   tip: "Verrouillez le trimestre avant de générer les bulletins pour éviter les modifications." }],
   '/payments':   [{ role: 'ADMIN',   tip: "Filtrez par statut « Non payé » pour voir rapidement les impayés." }],
