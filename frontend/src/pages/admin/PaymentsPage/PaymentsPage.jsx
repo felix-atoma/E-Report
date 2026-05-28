@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { paymentsService } from '../../../services/paymentsService';
 import { studentsService } from '../../../services/studentsService';
+import { useInstitution } from '../../../context/InstitutionContext';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Table from '../../../components/common/Table/Table';
@@ -15,13 +16,13 @@ import SearchBar from '../../../components/common/SearchBar/SearchBar';
 import './PaymentsPage.css';
 
 const METHODS = [
-  { value: 'CASH',     label: 'Espèces' },
-  { value: 'TMONEY',   label: 'TMoney' },
-  { value: 'FLOOZ',    label: 'Flooz' },
-  { value: 'MOMO',     label: 'MoMo' },
-  { value: 'TRANSFER', label: 'Virement bancaire' },
-  { value: 'CHEQUE',   label: 'Chèque' },
-  { value: 'OTHER',    label: 'Autre' },
+  { value: 'CASH',                  label: 'Espèces' },
+  { value: 'MOBILE_MONEY_TMONEY',   label: 'TMoney' },
+  { value: 'MOBILE_MONEY_FLOOZ',    label: 'Flooz' },
+  { value: 'MOBILE_MONEY_MOMO',     label: 'MoMo' },
+  { value: 'BANK_TRANSFER',         label: 'Virement bancaire' },
+  { value: 'CHEQUE',                label: 'Chèque' },
+  { value: 'OTHER',                 label: 'Autre' },
 ];
 
 const STATUS_OPTIONS = [
@@ -38,15 +39,15 @@ const STATUS_VARIANT = {
   EXEMPT:  'default',
 };
 
-const EMPTY_FORM = { studentId: '', amount: '', method: 'CASH', reference: '', note: '' };
+const EMPTY_FORM = { studentId: '', amount: '', paymentMethod: 'CASH', referenceNumber: '', notes: '' };
 
 function validate(form) {
   const errors = {};
-  if (!form.studentId) errors.studentId = 'Élève requis';
-  if (!form.amount)    errors.amount    = 'Montant requis';
+  if (!form.studentId)      errors.studentId      = 'Élève requis';
+  if (!form.amount)         errors.amount         = 'Montant requis';
   else if (isNaN(Number(form.amount)) || Number(form.amount) <= 0)
     errors.amount = 'Montant invalide';
-  if (!form.method)    errors.method    = 'Méthode requise';
+  if (!form.paymentMethod)  errors.paymentMethod  = 'Méthode requise';
   return errors;
 }
 
@@ -77,22 +78,22 @@ function PaymentForm({ form, errors, onChange, students }) {
         />
         <Select
           id="pay-method" label="Méthode" required
-          value={form.method} error={errors.method}
+          value={form.paymentMethod} error={errors.paymentMethod}
           options={METHODS}
-          onChange={(e) => onChange('method', e.target.value)}
+          onChange={(e) => onChange('paymentMethod', e.target.value)}
         />
       </div>
       <Input
         id="pay-ref" label="Référence / N° reçu"
-        value={form.reference}
+        value={form.referenceNumber}
         placeholder="Optionnel"
-        onChange={(e) => onChange('reference', e.target.value)}
+        onChange={(e) => onChange('referenceNumber', e.target.value)}
       />
       <Input
         id="pay-note" label="Note"
-        value={form.note}
+        value={form.notes}
         placeholder="Optionnel"
-        onChange={(e) => onChange('note', e.target.value)}
+        onChange={(e) => onChange('notes', e.target.value)}
       />
     </div>
   );
@@ -100,6 +101,7 @@ function PaymentForm({ form, errors, onChange, students }) {
 
 function PaymentsPage() {
   const qc = useQueryClient();
+  const { institution } = useInstitution();
   const [search, setSearch]       = useState('');
   const [statusFilter, setStatus] = useState('');
   const [modal, setModal]         = useState(false);
@@ -147,11 +149,12 @@ function PaymentsPage() {
     const errs = validate(form);
     if (Object.keys(errs).length) { setErrors(errs); return; }
     recordMutation.mutate({
-      studentId: form.studentId,
-      amount:    Number(form.amount),
-      method:    form.method,
-      reference: form.reference || undefined,
-      note:      form.note      || undefined,
+      studentId:       form.studentId,
+      amount:          Number(form.amount),
+      paymentMethod:   form.paymentMethod,
+      academicYear:    institution?.academicYear ?? '',
+      referenceNumber: form.referenceNumber || undefined,
+      notes:           form.notes           || undefined,
     });
   }
 
@@ -189,7 +192,7 @@ function PaymentsPage() {
     {
       key: 'method',
       label: 'Méthode',
-      render: (p) => METHODS.find((m) => m.value === p.method)?.label ?? p.method,
+      render: (p) => METHODS.find((m) => m.value === p.paymentMethod)?.label ?? p.paymentMethod,
     },
     {
       key: 'status',
@@ -211,7 +214,7 @@ function PaymentsPage() {
     {
       key: 'reference',
       label: 'Référence',
-      render: (p) => p.reference ?? <span className="payments-table__empty">—</span>,
+      render: (p) => p.referenceNumber ?? <span className="payments-table__empty">—</span>,
     },
   ];
 
