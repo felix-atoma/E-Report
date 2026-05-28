@@ -16,9 +16,10 @@ export class CreateFeeDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({ enum: FeeTypeDto })
+  @ApiPropertyOptional({ enum: FeeTypeDto, default: 'TUITION' })
+  @IsOptional()
   @IsEnum(FeeTypeDto)
-  feeType: FeeTypeDto;
+  feeType?: FeeTypeDto;
 
   @ApiProperty({ example: 75000, description: 'Amount in FCFA' })
   @IsNumber()
@@ -30,10 +31,10 @@ export class CreateFeeDto {
   @IsString()
   currency?: string;
 
-  @ApiProperty({ example: '2024-2025' })
+  @ApiPropertyOptional({ example: '2024-2025' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  academicYear: string;
+  academicYear?: string;
 
   @ApiPropertyOptional({ example: 'Trimestre 1' })
   @IsOptional()

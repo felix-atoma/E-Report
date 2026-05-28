@@ -17,9 +17,13 @@ export class FeesService {
   }
 
   async create(dto: CreateFeeDto, institutionId: string) {
+    const now = new Date();
+    const defaultYear = `${now.getFullYear() - (now.getMonth() < 8 ? 1 : 0)}-${now.getFullYear() + (now.getMonth() >= 8 ? 1 : 0)}`;
     return this.prisma.fee.create({
       data: {
         ...dto,
+        feeType: dto.feeType ?? 'TUITION',
+        academicYear: dto.academicYear || defaultYear,
         amount: new Prisma.Decimal(dto.amount),
         institutionId,
       },

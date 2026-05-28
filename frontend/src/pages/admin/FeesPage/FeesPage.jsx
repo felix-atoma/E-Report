@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { feesService } from '../../../services/feesService';
 import { classesService } from '../../../services/classesService';
+import { useInstitution } from '../../../context/InstitutionContext';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Table from '../../../components/common/Table/Table';
@@ -17,7 +18,16 @@ import './FeesPage.css';
 
 const TERM_KEYS = ['TRIMESTRE_1', 'TRIMESTRE_2', 'TRIMESTRE_3', 'SEMESTRE_1', 'SEMESTRE_2', 'ANNUEL'];
 
-const EMPTY_FORM = { name: '', amount: '', description: '', term: '' };
+const FEE_TYPES = [
+  { value: 'TUITION',      label: 'Scolarité' },
+  { value: 'REGISTRATION', label: 'Inscription' },
+  { value: 'EXAM',         label: 'Examen' },
+  { value: 'CANTEEN',      label: 'Cantine' },
+  { value: 'TRANSPORT',    label: 'Transport' },
+  { value: 'OTHER',        label: 'Autre' },
+];
+
+const EMPTY_FORM = { name: '', amount: '', feeType: 'TUITION', description: '', term: '' };
 
 function FeeForm({ form, errors, onChange, termOptions }) {
   const { t } = useTranslation();
@@ -36,6 +46,14 @@ function FeeForm({ form, errors, onChange, termOptions }) {
           placeholder={t('fees.amountPlaceholder')}
           onChange={(e) => onChange('amount', e.target.value)}
         />
+        <Select
+          id="fee-type" label="Type" required
+          value={form.feeType}
+          options={FEE_TYPES}
+          onChange={(e) => onChange('feeType', e.target.value)}
+        />
+      </div>
+      <div className="fee-form__row">
         <Select
           id="fee-term" label={t('fees.period')}
           value={form.term}
@@ -102,6 +120,7 @@ function AssignModal({ fee, classes, open, onClose }) {
 function FeesPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
+  const { institution } = useInstitution();
   const [modal, setModal]       = useState(null);
   const [selected, setSelected] = useState(null);
   const [confirm, setConfirm]   = useState(null);
@@ -159,6 +178,7 @@ function FeesPage() {
     setForm({
       name:        fee.name        ?? '',
       amount:      String(fee.amount ?? ''),
+      feeType:     fee.feeType     ?? 'TUITION',
       description: fee.description ?? '',
       term:        fee.term        ?? '',
     });
@@ -182,10 +202,12 @@ function FeesPage() {
     const errs = validate(form);
     if (Object.keys(errs).length) { setErrors(errs); return; }
     const payload = {
-      name:        form.name,
-      amount:      Number(form.amount),
-      description: form.description || undefined,
-      term:        form.term        || undefined,
+      name:         form.name,
+      amount:       Number(form.amount),
+      feeType:      form.feeType || 'TUITION',
+      academicYear: institution?.academicYear || undefined,
+      description:  form.description || undefined,
+      term:         form.term        || undefined,
     };
     if (modal === 'create') createMutation.mutate(payload);
     else updateMutation.mutate({ id: selected.id, data: payload });
