@@ -64,3 +64,24 @@
   font-weight: 600;
   color: var(--color-primary, #3b82f6);
 }
+
+.child-card__pay-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.6rem 1rem;
+  background: #f59e0b;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.child-card__pay-btn:hover:not(:disabled) { background: #d97706; }
+.child-card__pay-btn:active:not(:disabled) { transform: scale(0.97); }
+.child-card__pay-btn:disabled { opacity: 0.7; cursor: not-allowed; }

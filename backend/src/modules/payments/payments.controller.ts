@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { PaymentsService } from './payments.service';
 import { RecordPaymentDto } from './dto/record-payment.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Role } from '../../common/enums/role.enum';
+import { Public } from '../../common/decorators/public.decorator';
 
 @ApiTags('payments')
 @ApiBearerAuth()
@@ -63,5 +64,33 @@ export class PaymentsController {
     @Query('term') term?: string,
   ) {
     return this.service.getStudentPaymentStatus(studentId, user.institutionId, academicYear, term);
+  }
+
+  // ── Online MoMo payment (FedaPay) ────────────────────────────────────────
+
+  @Post('initiate-momo')
+  @Roles(Role.PARENT)
+  @ApiOperation({ summary: 'Parent: initiate online MoMo payment via FedaPay' })
+  initiateMomo(
+    @Body() body: { studentId: string; academicYear: string; term?: string },
+    @CurrentUser() user: any,
+  ) {
+    return this.service.initiateOnlinePayment(
+      body.studentId,
+      user.institutionId,
+      body.academicYear,
+      body.term,
+      user.id,
+      user.name ?? 'Parent',
+      user.email,
+    );
+  }
+
+  @Public()
+  @Post('webhook/fedapay')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'FedaPay webhook — do not call manually' })
+  fedapayWebhook(@Body() body: any) {
+    return this.service.handleFedapayWebhook(body);
   }
 }

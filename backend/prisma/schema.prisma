@@ -48,6 +48,7 @@ enum PaymentMethod {
   MOBILE_MONEY_TMONEY
   MOBILE_MONEY_FLOOZ
   MOBILE_MONEY_MOMO
+  MOBILE_MONEY_ONLINE
   BANK_TRANSFER
   CASH
   CHEQUE
@@ -175,6 +176,7 @@ model Institution {
   bulletins         Bulletin[]
   fees              Fee[]
   payments          Payment[]
+  paymentIntents    PaymentIntent[]
   brandingAssets    BrandingAsset[]
   reportCardTemplates ReportCardTemplate[]
   timetableSlots    TimetableSlot[]
@@ -343,6 +345,7 @@ model Student {
   reportCards     ReportCard[]
   studentFees     StudentFee[]
   payments        Payment[]
+  paymentIntents  PaymentIntent[]
   notificationLogs NotificationLog[]
   assignmentSubmissions AssignmentSubmission[]
   quizAttempts    QuizAttempt[]
@@ -590,8 +593,9 @@ model Payment {
   term            String?
   amount          Decimal  @db.Decimal(12, 2)
   paymentMethod   PaymentMethod
-  referenceNumber String?
-  receiptNumber   String   @unique
+  referenceNumber    String?
+  receiptNumber      String   @unique
+  fedapayTransactionId Int?   @unique
   paymentDate     DateTime
   notes           String?
 
@@ -605,6 +609,24 @@ model Payment {
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+model PaymentIntent {
+  id            String   @id @default(uuid())
+  fedapayId     Int      @unique
+  studentId     String
+  institutionId String
+  academicYear  String
+  term          String?
+  amount        Decimal  @db.Decimal(12, 2)
+  parentUserId  String
+  status        String   @default("PENDING")
+
+  student       Student     @relation(fields: [studentId], references: [id])
+  institution   Institution @relation(fields: [institutionId], references: [id])
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model NotificationLog {

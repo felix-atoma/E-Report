@@ -52,6 +52,7 @@ import ChildrenPage           from '../pages/parent/ChildrenPage/ChildrenPage';
 import ChildReportCardsPage   from '../pages/parent/ChildReportCardsPage/ChildReportCardsPage';
 import ParentBulletinsPage    from '../pages/parent/ChildBulletinsPage/ChildBulletinsPage';
 import PaymentHistoryPage     from '../pages/parent/PaymentHistoryPage/PaymentHistoryPage';
+import PaymentReturnPage     from '../pages/parent/PaymentReturnPage/PaymentReturnPage';
 import NotificationPreferencesPage from '../pages/parent/NotificationPreferencesPage/NotificationPreferencesPage';
 import ParentLMSPage          from '../pages/parent/ParentLMSPage/ParentLMSPage';
 
@@ -149,6 +150,7 @@ function AppRouter() {
       <Route path="/parent/children/:id/reports" element={<ProtectedRoute roles={['PARENT']}><ChildReportCardsPage /></ProtectedRoute>} />
       <Route path="/parent/bulletins"           element={<ProtectedRoute roles={['PARENT']}><ParentBulletinsPage /></ProtectedRoute>} />
       <Route path="/parent/payments"            element={<ProtectedRoute roles={['PARENT']}><PaymentHistoryPage /></ProtectedRoute>} />
+      <Route path="/payment-return"             element={<ProtectedRoute roles={['PARENT']}><PaymentReturnPage /></ProtectedRoute>} />
       <Route path="/parent/notifications"       element={<ProtectedRoute roles={['PARENT']}><NotificationPreferencesPage /></ProtectedRoute>} />
       <Route path="/parent/lms"                 element={<ProtectedRoute roles={['PARENT']}><ParentLMSPage /></ProtectedRoute>} />
 

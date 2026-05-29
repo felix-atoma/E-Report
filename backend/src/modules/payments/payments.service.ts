@@ -1,11 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RecordPaymentDto } from './dto/record-payment.dto';
+import { FedaPayService } from './fedapay.service';
 
 @Injectable()
 export class PaymentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(PaymentsService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly fedaPay: FedaPayService,
+  ) {}
 
   /** STUDENT: their own payment history */
   async findForStudent(userId: string, institutionId: string) {
@@ -150,6 +156,91 @@ export class PaymentsService {
       },
       data: { status: 'PENDING', heldReason: null },
     });
+  }
+
+  async initiateOnlinePayment(
+    studentId: string,
+    institutionId: string,
+    academicYear: string,
+    term: string | undefined,
+    parentUserId: string,
+    parentName: string,
+    parentEmail: string,
+  ) {
+    const student = await this.prisma.student.findFirst({
+      where: { id: studentId, institutionId },
+    });
+    if (!student) throw new NotFoundException('Student not found');
+
+    const { status, balance } = await this.getStudentPaymentStatus(studentId, institutionId, academicYear, term);
+    if (status === 'PAID' || status === 'EXEMPT') {
+      throw new BadRequestException('Les frais sont déjà à jour pour cet élève.');
+    }
+    if (balance <= 0) throw new BadRequestException('Aucun solde impayé.');
+
+    const { url, fedapayId } = await this.fedaPay.createTransaction({
+      studentId,
+      institutionId,
+      academicYear,
+      term,
+      amount: balance,
+      parentName,
+      parentEmail,
+    });
+
+    await this.prisma.paymentIntent.create({
+      data: { fedapayId, studentId, institutionId, academicYear, term, amount: balance, parentUserId },
+    });
+
+    return { url, amount: balance, fedapayId };
+  }
+
+  async handleFedapayWebhook(body: any) {
+    const event = body?.event;
+    if (event !== 'transaction.approved') return { received: true };
+
+    const fedapayId: number = body?.data?.object?.id;
+    if (!fedapayId) return { received: true };
+
+    // Idempotency — skip if already processed
+    const existing = await this.prisma.payment.findUnique({ where: { fedapayTransactionId: fedapayId } });
+    if (existing) return { received: true };
+
+    // Verify with FedaPay API
+    const { approved, amount, metadata } = await this.fedaPay.verifyTransaction(fedapayId);
+    if (!approved) return { received: true };
+
+    const intent = await this.prisma.paymentIntent.findUnique({ where: { fedapayId } });
+    if (!intent) {
+      this.logger.warn(`No PaymentIntent found for FedaPay transaction ${fedapayId}`);
+      return { received: true };
+    }
+
+    await this.prisma.paymentIntent.update({ where: { fedapayId }, data: { status: 'COMPLETED' } });
+
+    const receiptNumber = await this.generateReceiptNumber(intent.institutionId);
+    const payment = await this.prisma.payment.create({
+      data: {
+        studentId: intent.studentId,
+        institutionId: intent.institutionId,
+        academicYear: intent.academicYear,
+        term: intent.term ?? undefined,
+        amount: amount,
+        paymentMethod: 'MOBILE_MONEY_ONLINE',
+        receiptNumber,
+        paymentDate: new Date(),
+        notes: `Paiement en ligne FedaPay #${fedapayId}`,
+        recordedById: intent.parentUserId,
+        fedapayTransactionId: fedapayId,
+      },
+    });
+
+    await this.tryReleaseHeldNotifications(
+      intent.studentId, intent.academicYear, intent.term ?? undefined, intent.institutionId,
+    );
+
+    this.logger.log(`FedaPay webhook processed: payment ${payment.id} for student ${intent.studentId}`);
+    return { received: true };
   }
 
   private async generateReceiptNumber(institutionId: string): Promise<string> {

@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { studentsService } from '../../../services/studentsService';
+import { paymentsService } from '../../../services/paymentsService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Avatar from '../../../components/common/Avatar/Avatar';
@@ -12,11 +14,34 @@ import './ChildrenPage.css';
 const PAYMENT_VARIANT = { PAID: 'success', PARTIAL: 'warning', UNPAID: 'danger', EXEMPT: 'default' };
 const PAYMENT_LABEL   = { PAID: 'Frais à jour', PARTIAL: 'Paiement partiel', UNPAID: 'Frais impayés', EXEMPT: 'Exonéré' };
 
+const CURRENT_YEAR = new Date().getFullYear();
+const ACADEMIC_YEAR = `${CURRENT_YEAR - 1}-${CURRENT_YEAR}`;
+
 function ChildrenPage() {
+  const [paying, setPaying] = useState(null);
+
   const { data: children = [], isLoading } = useQuery({
     queryKey: ['my-children'],
     queryFn: () => studentsService.myChildren().then((r) => r.data),
   });
+
+  const handlePayMomo = async (e, child) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setPaying(child.id);
+    try {
+      const res = await paymentsService.initiateMomo({
+        studentId: child.id,
+        academicYear: ACADEMIC_YEAR,
+      });
+      window.location.href = res.data.url;
+    } catch (err) {
+      const msg = err?.response?.data?.message ?? 'Erreur lors de l\'initialisation du paiement.';
+      alert(msg);
+    } finally {
+      setPaying(null);
+    }
+  };
 
   if (isLoading) return <AppShell title="Mes enfants"><Loading /></AppShell>;
 
@@ -62,6 +87,23 @@ function ChildrenPage() {
                 )}
                 <span className="child-card__link">Voir les bulletins →</span>
               </div>
+
+              {(child.paymentStatus === 'UNPAID' || child.paymentStatus === 'PARTIAL') && (
+                <button
+                  className="child-card__pay-btn"
+                  onClick={(e) => handlePayMomo(e, child)}
+                  disabled={paying === child.id}
+                >
+                  {paying === child.id ? (
+                    <span className="login-form__spinner" style={{ width: 14, height: 14 }} />
+                  ) : (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+                    </svg>
+                  )}
+                  Payer avec MoMo
+                </button>
+              )}
             </Link>
           ))}
         </div>
