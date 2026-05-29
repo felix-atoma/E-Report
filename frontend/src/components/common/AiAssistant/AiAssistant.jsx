@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { useLocation } from 'react-router-dom';
 import api from '../../../services/api';
@@ -63,10 +64,8 @@ function AiAssistant() {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
   };
 
-  return (
-    <>
-      {open && (
-        <div className="ai-panel">
+  const panel = open && (
+    <div className="ai-panel">
           {/* Header */}
           <div className="ai-panel__header">
             <div className="ai-panel__header-left">
@@ -154,13 +153,18 @@ function AiAssistant() {
             </button>
           </div>
         </div>
-      )}
+  );
+
+  return (
+    <>
+      {createPortal(panel, document.body)}
 
       <button
+        type="button"
         className={`side-btn side-btn--ai${open ? ' side-btn--ai-active' : ''}`}
         title="Centre d'aide"
         aria-label="Centre d'aide"
-        onClick={() => setOpen((o) => !o)}
+        onClick={(e) => { e.stopPropagation(); setOpen((o) => !o); }}
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="10"/>
