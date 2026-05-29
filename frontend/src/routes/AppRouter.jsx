@@ -108,6 +108,8 @@ function AppRouter() {
       <Route path="/admin/settings"      element={<ProtectedRoute roles={['ADMIN']}><SettingsPage /></ProtectedRoute>} />
       <Route path="/admin/bulletins"     element={<ProtectedRoute roles={['ADMIN']}><TeacherBulletinsPage /></ProtectedRoute>} />
       <Route path="/admin/reports"       element={<ProtectedRoute roles={['ADMIN']}><ReportCardsPage /></ProtectedRoute>} />
+      <Route path="/admin/reports/new"   element={<ProtectedRoute roles={['ADMIN']}><CreateReportCardPage /></ProtectedRoute>} />
+      <Route path="/admin/reports/:id"   element={<ProtectedRoute roles={['ADMIN']}><EditReportCardPage /></ProtectedRoute>} />
       <Route path="/admin/statistics"    element={<ProtectedRoute roles={['ADMIN']}><ClassStatsPage /></ProtectedRoute>} />
       <Route path="/admin/import"        element={<ProtectedRoute roles={['ADMIN']}><AdminImportPage /></ProtectedRoute>} />
 

@@ -110,7 +110,7 @@ function ReportCardsPage() {
       style: { width: '220px', textAlign: 'right' },
       render: (r) => (
         <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-          <Link to={`/teacher/reports/${r.id}`}>
+          <Link to={isAdmin ? `/admin/reports/${r.id}` : `/teacher/reports/${r.id}`}>
             <Button size="sm" variant="ghost">Ouvrir</Button>
           </Link>
           {(r.status === 'REVIEW' || r.status === 'PUBLISHED') && (
@@ -145,7 +145,7 @@ function ReportCardsPage() {
         title="Bulletins de notes"
         subtitle={`${filtered.length} bulletin${filtered.length !== 1 ? 's' : ''}`}
         actions={
-          <Link to="/teacher/reports/new">
+          <Link to={isAdmin ? '/admin/reports/new' : '/teacher/reports/new'}>
             <Button icon="+">Nouveau bulletin</Button>
           </Link>
         }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../../../context/AuthContext';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { reportsService } from '../../../services/reportsService';
@@ -40,6 +41,7 @@ function validate(form) {
 
 function CreateReportCardPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const preselectedClass = searchParams.get('classId') ?? '';
 
@@ -62,7 +64,7 @@ function CreateReportCardPage() {
     onSuccess: (res) => {
       const count = res.data?.count ?? 1;
       toast.success(`${count} bulletin${count !== 1 ? 's' : ''} créé${count !== 1 ? 's' : ''}`);
-      navigate('/teacher/reports');
+      navigate(user?.role === 'ADMIN' ? '/admin/reports' : '/teacher/reports');
     },
     onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur de création'),
   });
