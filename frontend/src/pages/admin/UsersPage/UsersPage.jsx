@@ -25,7 +25,7 @@ const ROLE_VARIANT = {
 };
 
 const EMPTY_FORM = {
-  name: '', email: '', whatsappNumber: '', role: '', password: '',
+  name: '', email: '', whatsappNumber: '', role: '',
   subjectIds: [], mainClassId: '',
 };
 
@@ -54,12 +54,12 @@ function UserForm({ form, errors, onChange, isCreate, subjects, classes, roles }
         onChange={(e) => onChange('email', e.target.value)}
       />
       {isCreate && (
-        <Input
-          id="password" label={t('users.password')} type="password" required
-          value={form.password} error={errors.password}
-          placeholder={t('users.pwdPlaceholder')}
-          onChange={(e) => onChange('password', e.target.value)}
-        />
+        <div className="user-form__otp-notice">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          Un code OTP sera envoyé à l'adresse email pour la première connexion.
+        </div>
       )}
       <Input
         id="whatsappNumber" label={t('users.phone')}
@@ -148,7 +148,6 @@ function UsersPage() {
     if (!f.email.trim()) errs.email = t('users.errors.emailRequired');
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)) errs.email = t('users.errors.emailInvalid');
     if (!f.role)         errs.role  = t('users.errors.roleRequired');
-    if (isCreate && !f.password.trim()) errs.password = t('users.errors.passwordRequired');
     return errs;
   }
 
@@ -261,7 +260,6 @@ function UsersPage() {
       email:          form.email,
       role:           form.role,
       whatsappNumber: form.whatsappNumber || undefined,
-      ...(isCreate ? { password: form.password } : {}),
     };
 
     if (isCreate && form.role === 'TEACHER') {
