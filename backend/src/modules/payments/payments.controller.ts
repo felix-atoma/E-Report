@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Post, Query, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { PaymentsService } from './payments.service';
 import { RecordPaymentDto } from './dto/record-payment.dto';
@@ -87,10 +87,11 @@ export class PaymentsController {
   }
 
   @Public()
-  @Post('webhook/fedapay')
+  @Post('webhook/notchpay')
   @HttpCode(200)
-  @ApiOperation({ summary: 'FedaPay webhook — do not call manually' })
-  fedapayWebhook(@Body() body: any) {
-    return this.service.handleFedapayWebhook(body);
+  @ApiOperation({ summary: 'Notchpay webhook — do not call manually' })
+  notchpayWebhook(@Body() body: any, @Req() req: any) {
+    const signature = req.headers['x-notch-signature'] ?? '';
+    return this.service.handleNotchpayWebhook(body, signature);
   }
 }

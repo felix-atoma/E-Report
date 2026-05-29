@@ -593,9 +593,10 @@ model Payment {
   term            String?
   amount          Decimal  @db.Decimal(12, 2)
   paymentMethod   PaymentMethod
-  referenceNumber    String?
-  receiptNumber      String   @unique
-  fedapayTransactionId Int?   @unique
+  referenceNumber      String?
+  receiptNumber        String   @unique
+  fedapayTransactionId Int?     @unique
+  notchpayReference    String?  @unique
   paymentDate     DateTime
   notes           String?
 
@@ -612,15 +613,16 @@ model Payment {
 }
 
 model PaymentIntent {
-  id            String   @id @default(uuid())
-  fedapayId     Int      @unique
-  studentId     String
-  institutionId String
-  academicYear  String
-  term          String?
-  amount        Decimal  @db.Decimal(12, 2)
-  parentUserId  String
-  status        String   @default("PENDING")
+  id                 String   @id @default(uuid())
+  fedapayId          Int?     @unique
+  notchpayReference  String?  @unique
+  studentId          String
+  institutionId      String
+  academicYear       String
+  term               String?
+  amount             Decimal  @db.Decimal(12, 2)
+  parentUserId       String
+  status             String   @default("PENDING")
 
   student       Student     @relation(fields: [studentId], references: [id])
   institution   Institution @relation(fields: [institutionId], references: [id])

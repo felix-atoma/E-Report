@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, BadRequestException, Logger } from '@nes
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RecordPaymentDto } from './dto/record-payment.dto';
-import { FedaPayService } from './fedapay.service';
+import { NotchpayService } from './notchpay.service';
 
 @Injectable()
 export class PaymentsService {
@@ -10,7 +10,7 @@ export class PaymentsService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly fedaPay: FedaPayService,
+    private readonly notchpay: NotchpayService,
   ) {}
 
   /** STUDENT: their own payment history */
@@ -178,7 +178,7 @@ export class PaymentsService {
     }
     if (balance <= 0) throw new BadRequestException('Aucun solde impayé.');
 
-    const { url, fedapayId } = await this.fedaPay.createTransaction({
+    const { url, reference } = await this.notchpay.createTransaction({
       studentId,
       institutionId,
       academicYear,
@@ -189,34 +189,49 @@ export class PaymentsService {
     });
 
     await this.prisma.paymentIntent.create({
-      data: { fedapayId, studentId, institutionId, academicYear, term, amount: balance, parentUserId },
+      data: {
+        notchpayReference: reference,
+        studentId,
+        institutionId,
+        academicYear,
+        term,
+        amount: balance,
+        parentUserId,
+      },
     });
 
-    return { url, amount: balance, fedapayId };
+    return { url, amount: balance, reference };
   }
 
-  async handleFedapayWebhook(body: any) {
-    const event = body?.event;
-    if (event !== 'transaction.approved') return { received: true };
+  async handleNotchpayWebhook(body: any, signature: string) {
+    // Verify signature
+    const rawBody = JSON.stringify(body);
+    if (!this.notchpay.verifyWebhookSignature(rawBody, signature)) {
+      this.logger.warn('Notchpay webhook signature mismatch — rejected');
+      return { received: false };
+    }
 
-    const fedapayId: number = body?.data?.object?.id;
-    if (!fedapayId) return { received: true };
+    const event: string = body?.event;
+    if (event !== 'payment.complete') return { received: true };
+
+    const reference: string = body?.data?.reference ?? body?.data?.payment?.reference;
+    if (!reference) return { received: true };
 
     // Idempotency — skip if already processed
-    const existing = await this.prisma.payment.findUnique({ where: { fedapayTransactionId: fedapayId } });
+    const existing = await this.prisma.payment.findFirst({ where: { notchpayReference: reference } });
     if (existing) return { received: true };
 
-    // Verify with FedaPay API
-    const { approved, amount, metadata } = await this.fedaPay.verifyTransaction(fedapayId);
-    if (!approved) return { received: true };
+    // Verify with Notchpay API
+    const { complete, amount, metadata } = await this.notchpay.verifyTransaction(reference);
+    if (!complete) return { received: true };
 
-    const intent = await this.prisma.paymentIntent.findUnique({ where: { fedapayId } });
+    const intent = await this.prisma.paymentIntent.findFirst({ where: { notchpayReference: reference } });
     if (!intent) {
-      this.logger.warn(`No PaymentIntent found for FedaPay transaction ${fedapayId}`);
+      this.logger.warn(`No PaymentIntent for Notchpay reference ${reference}`);
       return { received: true };
     }
 
-    await this.prisma.paymentIntent.update({ where: { fedapayId }, data: { status: 'COMPLETED' } });
+    await this.prisma.paymentIntent.update({ where: { id: intent.id }, data: { status: 'COMPLETED' } });
 
     const receiptNumber = await this.generateReceiptNumber(intent.institutionId);
     const payment = await this.prisma.payment.create({
@@ -225,13 +240,13 @@ export class PaymentsService {
         institutionId: intent.institutionId,
         academicYear: intent.academicYear,
         term: intent.term ?? undefined,
-        amount: amount,
+        amount,
         paymentMethod: 'MOBILE_MONEY_ONLINE',
         receiptNumber,
         paymentDate: new Date(),
-        notes: `Paiement en ligne FedaPay #${fedapayId}`,
+        notes: `Paiement en ligne Notchpay — ${reference}`,
         recordedById: intent.parentUserId,
-        fedapayTransactionId: fedapayId,
+        notchpayReference: reference,
       },
     });
 
@@ -239,7 +254,7 @@ export class PaymentsService {
       intent.studentId, intent.academicYear, intent.term ?? undefined, intent.institutionId,
     );
 
-    this.logger.log(`FedaPay webhook processed: payment ${payment.id} for student ${intent.studentId}`);
+    this.logger.log(`Notchpay webhook processed: payment ${payment.id} for student ${intent.studentId}`);
     return { received: true };
   }
 
