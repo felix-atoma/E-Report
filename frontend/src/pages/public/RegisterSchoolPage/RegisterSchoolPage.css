@@ -293,3 +293,9 @@
 @media (max-width: 600px) {
   .rsp-row { grid-template-columns: 1fr; }
 }
+
+@media (max-width: 480px) {
+  .asl-card-wrap--wide { max-width: 100%; border-radius: 0; box-shadow: none; min-height: 100vh; }
+  .rsp-form { padding: 1.25rem 1rem; }
+  .rsp-row  { gap: 0.625rem; }
+}

@@ -192,3 +192,10 @@
 }
 
 @media (max-width: 640px) { .student-form__row { grid-template-columns: 1fr; } }
+@media (max-width: 520px) {
+  .students-page__toolbar     { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+  .students-page__search      { min-width: 0; width: 100%; }
+  .students-page__class-filter,
+  .students-page__role-filter,
+  .students-page__filter      { width: 100%; }
+}

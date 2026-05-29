@@ -377,3 +377,12 @@
   .asl-left { padding: 1.5rem 1.25rem 1.25rem; }
   .asl-right { padding: 1.5rem 1.25rem 1.25rem; }
 }
+
+@media (max-width: 400px) {
+  .asl-left  { padding: 1.25rem 1rem 0.75rem; }
+  .asl-right { padding: 1.25rem 1rem 1.25rem; }
+  .asl-card--main { max-width: 100%; }
+  .asl-card__title { font-size: 1.25rem; }
+  .asl-left__title { font-size: 1.1rem; }
+  .asl-left__subtitle { font-size: 0.8rem; }
+}

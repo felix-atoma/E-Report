@@ -58,3 +58,10 @@
 }
 
 @media (max-width: 640px) { .payment-form__row { grid-template-columns: 1fr; } }
+@media (max-width: 520px) {
+  .payments-page__toolbar     { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+  .payments-page__search      { min-width: 0; width: 100%; }
+  .payments-page__class-filter,
+  .payments-page__role-filter,
+  .payments-page__filter      { width: 100%; }
+}

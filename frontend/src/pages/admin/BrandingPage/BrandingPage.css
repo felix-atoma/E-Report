@@ -276,3 +276,7 @@
   line-height: 1.6;
   overflow: hidden;
 }
+
+@media (max-width: 480px) {
+  .branding-page__grid { grid-template-columns: 1fr; }
+}

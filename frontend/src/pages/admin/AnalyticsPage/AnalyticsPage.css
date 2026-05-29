@@ -86,3 +86,11 @@
   font-size: 0.8rem;
   color: var(--color-text-muted, #6b7280);
 }
+
+@media (max-width: 480px) {
+  .analytics-kpis   { grid-template-columns: 1fr 1fr; gap: 0.625rem; }
+  .analytics-charts { grid-template-columns: 1fr; }
+}
+@media (max-width: 360px) {
+  .analytics-kpis   { grid-template-columns: 1fr; }
+}

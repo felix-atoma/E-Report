@@ -105,3 +105,10 @@
 @media (max-width: 500px) {
   .progress-kpis { grid-template-columns: 1fr; }
 }
+
+@media (max-width: 640px) {
+  .progress-kpis { grid-template-columns: 1fr 1fr; gap: 0.625rem; }
+}
+@media (max-width: 380px) {
+  .progress-kpis { grid-template-columns: 1fr; }
+}

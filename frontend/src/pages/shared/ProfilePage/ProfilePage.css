@@ -170,3 +170,7 @@
   font-size: 0.72rem;
   color: var(--color-text-muted, #9ca3af);
 }
+
+@media (max-width: 520px) {
+  .profile__row { grid-template-columns: 1fr; gap: 0.625rem; }
+}

@@ -52,3 +52,14 @@
   gap: 0.5rem;
   justify-content: flex-end;
 }
+
+@media (max-width: 520px) {
+  .modal-overlay { align-items: flex-end; padding: 0; }
+  .modal {
+    width: 100%;
+    max-width: 100% !important;
+    max-height: 92vh;
+    border-radius: 16px 16px 0 0;
+    margin: 0;
+  }
+}

@@ -136,3 +136,13 @@
 .student-report-item__btn--print:hover {
   background: #e5e7eb;
 }
+
+@media (max-width: 640px) {
+  .student-report-item__header { flex-wrap: wrap; gap: 0.5rem; }
+  .student-report-item__header > * { min-width: 0; }
+}
+.student-grades-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+@media (max-width: 480px) {
+  .student-grades-table th,
+  .student-grades-table td { font-size: 0.78rem; padding: 0.4rem 0.5rem; }
+}

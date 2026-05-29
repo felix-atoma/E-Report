@@ -116,3 +116,14 @@
 .lms__sub-table tbody tr:hover { background: #f9fafb; }
 .lms__sub-score { display: flex; align-items: center; gap: 0.4rem; }
 .lms__sub-score input { width: 60px; padding: 0.3rem 0.5rem; border: 1px solid #d1d5db; border-radius: 5px; font-size: 0.85rem; }
+
+@media (max-width: 640px) {
+  .lms__grid          { grid-template-columns: 1fr; }
+  .lms__form-row      { grid-template-columns: 1fr; }
+  .lms__filters       { flex-direction: column; align-items: stretch; }
+  .lms__filter-select { min-width: 0; width: 100%; }
+}
+@media (max-width: 480px) {
+  .lms__sub-table { font-size: 0.78rem; }
+  .lms__sub-table th, .lms__sub-table td { padding: 0.45rem 0.5rem; }
+}
