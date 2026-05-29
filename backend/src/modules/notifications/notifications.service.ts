@@ -31,6 +31,29 @@ export class NotificationsService {
     });
   }
 
+  async unreadCount(userId: string) {
+    const count = await this.prisma.notificationLog.count({
+      where: { recipientUserId: userId, isRead: false },
+    });
+    return { count };
+  }
+
+  async markAllRead(userId: string) {
+    await this.prisma.notificationLog.updateMany({
+      where: { recipientUserId: userId, isRead: false },
+      data: { isRead: true },
+    });
+    return { success: true };
+  }
+
+  async markRead(id: string, userId: string) {
+    await this.prisma.notificationLog.updateMany({
+      where: { id, recipientUserId: userId },
+      data: { isRead: true },
+    });
+    return { success: true };
+  }
+
   async findHeld(institutionId: string) {
     return this.prisma.notificationLog.findMany({
       where: {

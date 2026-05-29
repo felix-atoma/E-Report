@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, HttpStatus, Param, Patch } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { NotificationsService } from './notifications.service';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -12,9 +12,29 @@ export class NotificationsController {
   constructor(private readonly service: NotificationsService) {}
 
   @Get('mine')
-  @ApiOperation({ summary: 'Get notifications for the current user (parents/teachers)' })
+  @ApiOperation({ summary: 'Get notifications for the current user' })
   findMine(@CurrentUser() user: any) {
     return this.service.findForUser(user.id);
+  }
+
+  @Get('unread-count')
+  @ApiOperation({ summary: 'Get unread notification count for current user' })
+  unreadCount(@CurrentUser() user: any) {
+    return this.service.unreadCount(user.id);
+  }
+
+  @Post('mark-all-read')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Mark all notifications as read' })
+  markAllRead(@CurrentUser() user: any) {
+    return this.service.markAllRead(user.id);
+  }
+
+  @Patch(':id/read')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Mark a single notification as read' })
+  markRead(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.service.markRead(id, user.id);
   }
 
   @Get('held')

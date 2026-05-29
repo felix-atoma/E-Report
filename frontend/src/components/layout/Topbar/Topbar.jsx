@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../../context/AuthContext';
 import { useTheme } from '../../../context/ThemeContext';
+import { notificationsService } from '../../../services/notificationsService';
 import Avatar from '../../common/Avatar/Avatar';
 import logoIcon from '../../../assets/images/novaBulletin-icon.svg';
 import './Topbar.css';
@@ -29,13 +31,48 @@ function useDropdown() {
   return { open, setOpen, ref };
 }
 
+const STATUS_ICON = {
+  DELIVERED: '✅', PENDING: '🕐', HELD_UNPAID: '🔒', HELD_PARTIAL: '🟡',
+  FAILED: '❌', SENT: '📨',
+};
+
+function timeAgo(date) {
+  const diff = Math.floor((Date.now() - new Date(date)) / 1000);
+  if (diff < 60) return 'À l\'instant';
+  if (diff < 3600) return `Il y a ${Math.floor(diff / 60)} min`;
+  if (diff < 86400) return `Il y a ${Math.floor(diff / 3600)} h`;
+  return `Il y a ${Math.floor(diff / 86400)} j`;
+}
+
 function Topbar({ title, onMenuClick }) {
   const { user, logout } = useAuth();
   const { darkMode, toggleDarkMode } = useTheme();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const notif = useDropdown();
   const userDrop = useDropdown();
+
+  const { data: notifications = [] } = useQuery({
+    queryKey: ['notifications-mine'],
+    queryFn: () => notificationsService.mine().then((r) => r.data),
+    refetchInterval: 60000,
+    enabled: !!user,
+  });
+
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+  const markAllRead = useMutation({
+    mutationFn: () => notificationsService.markAllRead(),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications-mine'] }),
+  });
+
+  const handleOpenNotif = () => {
+    notif.setOpen((v) => {
+      if (!v && unreadCount > 0) markAllRead.mutate();
+      return !v;
+    });
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -110,31 +147,68 @@ function Topbar({ title, onMenuClick }) {
         <div className="topbar__dropdown-wrap" ref={notif.ref}>
           <button
             className="topbar__icon-btn topbar__icon-btn--badge"
-            onClick={() => notif.setOpen((v) => !v)}
+            onClick={handleOpenNotif}
             aria-label="Notifications"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
             </svg>
-            <span className="topbar__badge">2</span>
+            {unreadCount > 0 && (
+              <span className="topbar__badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
+            )}
           </button>
+
           {notif.open && (
             <div className="topbar__dropdown topbar__dropdown--notif">
               <div className="topbar__dropdown-header">
                 <span className="topbar__dropdown-title">Notifications</span>
-                <span className="topbar__notif-count">2 nouvelles</span>
+                {unreadCount > 0 && (
+                  <span className="topbar__notif-count">{unreadCount} nouvelle{unreadCount > 1 ? 's' : ''}</span>
+                )}
               </div>
-              <div className="topbar__notif-empty">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                </svg>
-                <p>Aucune nouvelle notification</p>
+
+              <div className="topbar__notif-list">
+                {notifications.length === 0 ? (
+                  <div className="topbar__notif-empty">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    <p>Aucune notification</p>
+                  </div>
+                ) : (
+                  notifications.slice(0, 8).map((n) => (
+                    <div
+                      key={n.id}
+                      className={`topbar__notif-item${!n.isRead ? ' topbar__notif-item--unread' : ''}`}
+                    >
+                      <span className="topbar__notif-icon">
+                        {STATUS_ICON[n.status] ?? '🔔'}
+                      </span>
+                      <div className="topbar__notif-body">
+                        <p className="topbar__notif-text">
+                          {n.student?.user?.name ?? 'Élève'} —{' '}
+                          {n.reportCard?.termName ?? 'Bulletin'}
+                          {n.reportCard?.academicYear ? ` ${n.reportCard.academicYear}` : ''}
+                        </p>
+                        <p className="topbar__notif-status">
+                          {n.status === 'HELD_UNPAID' ? 'Retenu — frais impayés'
+                            : n.status === 'HELD_PARTIAL' ? 'Retenu — paiement partiel'
+                            : n.status === 'DELIVERED' ? 'Bulletin envoyé'
+                            : n.status === 'PENDING' ? 'En attente d\'envoi'
+                            : n.status}
+                        </p>
+                        <p className="topbar__notif-time">{timeAgo(n.createdAt)}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
+
               <div className="topbar__dropdown-footer">
                 <Link to="/notifications" onClick={() => notif.setOpen(false)}>
-                  Voir toutes les notifications
+                  Voir toutes les notifications →
                 </Link>
               </div>
             </div>

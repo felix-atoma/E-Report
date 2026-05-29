@@ -237,6 +237,45 @@
   border-radius: 999px;
 }
 
+.topbar__notif-list {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.topbar__notif-item {
+  display: flex;
+  gap: 0.625rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-border, #f3f4f6);
+  transition: background 0.12s;
+}
+.topbar__notif-item:hover { background: var(--color-surface-raised, #f9fafb); }
+.topbar__notif-item--unread { background: #eff6ff; border-left: 3px solid #3b82f6; }
+.topbar__notif-item--unread:hover { background: #dbeafe; }
+
+.topbar__notif-icon { font-size: 1.1rem; flex-shrink: 0; padding-top: 2px; }
+
+.topbar__notif-body { flex: 1; min-width: 0; }
+.topbar__notif-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text, #111827);
+  margin: 0 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.topbar__notif-status {
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #6b7280);
+  margin: 0 0 2px;
+}
+.topbar__notif-time {
+  font-size: 0.7rem;
+  color: #9ca3af;
+  margin: 0;
+}
+
 .topbar__notif-empty {
   display: flex;
   flex-direction: column;
