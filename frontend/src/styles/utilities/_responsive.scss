@@ -1,0 +1,76 @@
+// ── Responsive utilities ─────────────────────────────────────────────────────
+
+// Scrollable table wrapper — apply to any <div> wrapping a <table>
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--radius-md, 8px);
+}
+
+// Hide / show by breakpoint
+@media (max-width: 768px) {
+  .hide-mobile  { display: none !important; }
+  .show-mobile  { display: block !important; }
+}
+@media (min-width: 769px) {
+  .hide-desktop { display: none !important; }
+  .show-desktop { display: block !important; }
+}
+
+// Stack any flex/grid row into a column on mobile
+@media (max-width: 640px) {
+  .stack-mobile {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .stack-mobile > * { width: 100% !important; }
+}
+
+// Generic card grid — collapses gracefully
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+@media (max-width: 480px) {
+  .card-grid { grid-template-columns: 1fr; }
+}
+
+// Stat / KPI grid — 2 col on small mobile, 4 on desktop
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+}
+@media (max-width: 400px) {
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+}
+
+// Two-column form — becomes single column on mobile
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+@media (max-width: 640px) {
+  .form-grid-2 { grid-template-columns: 1fr; }
+}
+
+// Mobile-friendly padding for page containers
+@media (max-width: 640px) {
+  .page-container,
+  [class$="-page"],
+  [class$="__page"] {
+    padding: 0.75rem !important;
+  }
+}
+
+// Ensure images never overflow
+img { max-width: 100%; height: auto; }
+
+// Prevent long words from overflowing cards/cells
+.card, [class*="-card"], [class*="card-"] {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}

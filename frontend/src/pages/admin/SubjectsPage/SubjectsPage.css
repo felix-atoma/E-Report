@@ -67,3 +67,5 @@
     width: 100%;
   }
 }
+
+@media (max-width: 640px) { .subject-form__row { grid-template-columns: 1fr; } }

@@ -184,3 +184,9 @@
   padding: 2rem 0;
 }
 .tit__error { color: #dc2626; }
+
+@media (max-width: 640px) {
+  .tit__th, .tit__td { font-size: 0.78rem; padding: 6px 4px; }
+  .tit__th--name { min-width: 120px; }
+  .tit__th--comment { min-width: 120px; }
+}

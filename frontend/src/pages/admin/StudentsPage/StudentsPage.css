@@ -190,3 +190,5 @@
     width: 100%;
   }
 }
+
+@media (max-width: 640px) { .student-form__row { grid-template-columns: 1fr; } }

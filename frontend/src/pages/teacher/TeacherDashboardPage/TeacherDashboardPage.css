@@ -231,3 +231,10 @@
     align-items: flex-start;
   }
 }
+
+@media (max-width: 640px) {
+  .teacher-dash__stats { grid-template-columns: 1fr 1fr; gap: 0.625rem; }
+}
+@media (max-width: 360px) {
+  .teacher-dash__stats { grid-template-columns: 1fr; }
+}

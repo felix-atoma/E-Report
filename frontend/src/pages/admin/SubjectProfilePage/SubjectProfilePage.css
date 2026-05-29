@@ -286,3 +286,7 @@
   .spp-kpis { grid-template-columns: 1fr; }
   .spp-section--full { grid-column: 1; }
 }
+
+@media (max-width: 480px) {
+  [class*="kpi"] { grid-template-columns: 1fr 1fr !important; }
+}

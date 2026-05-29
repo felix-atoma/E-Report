@@ -322,3 +322,8 @@
   .asp-kpis { grid-template-columns: 1fr 1fr; }
   .asp-section--full { grid-column: 1; }
 }
+
+@media (max-width: 480px) {
+  .asp-kpis        { grid-template-columns: 1fr 1fr !important; }
+  .asp-attend-kpis { grid-template-columns: 1fr 1fr !important; }
+}

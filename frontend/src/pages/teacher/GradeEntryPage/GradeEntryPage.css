@@ -427,3 +427,16 @@
   margin-bottom: 1rem;
 }
 .fdn__signature-banner__icon { font-size: 1.1rem; flex-shrink: 0; }
+
+@media (max-width: 640px) {
+  .fdn__th--name   { min-width: 120px; }
+  .fdn__th--note   { min-width: 60px; }
+  .fdn__th--devoir { min-width: 64px; }
+  .fdn__th--compo  { min-width: 64px; }
+  .fdn__th--moy    { min-width: 60px; }
+  .fdn__th--coef   { min-width: 44px; }
+  .fdn__th--total  { min-width: 52px; }
+  .fdn__th--rang   { min-width: 44px; }
+  .fdn__td, .fdn__th { font-size: 0.78rem; padding: 6px 4px; }
+  .fdn__input { width: 52px; padding: 4px 2px; font-size: 0.78rem; }
+}

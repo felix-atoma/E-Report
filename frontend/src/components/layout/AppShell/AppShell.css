@@ -75,13 +75,16 @@
 }
 
 @media (max-width: 1024px) {
-  .app-shell__content {
-    padding: 1rem;
-  }
+  .app-shell__content { padding: 1rem; }
+}
+
+@media (max-width: 640px) {
+  .app-shell__content { padding: 0.75rem 0.625rem; }
+  /* Tighten headings on mobile */
+  .app-shell__content h1 { font-size: 1.25rem; }
+  .app-shell__content h2 { font-size: 1.1rem; }
 }
 
 @media (max-width: 480px) {
-  .app-shell__content {
-    padding: 0.75rem;
-  }
+  .app-shell__content { padding: 0.625rem 0.5rem; }
 }

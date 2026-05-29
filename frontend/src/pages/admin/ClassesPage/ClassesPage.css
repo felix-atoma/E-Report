@@ -213,3 +213,9 @@
   color: var(--color-primary, #f97316);
   font-style: italic;
 }
+
+@media (max-width: 640px) {
+  .class-form__row { grid-template-columns: 1fr; }
+  .cls-subjects__row { grid-template-columns: 1fr 1fr; }
+  .cls-subjects__row .cls-subjects__del { grid-column: span 2; justify-self: end; }
+}

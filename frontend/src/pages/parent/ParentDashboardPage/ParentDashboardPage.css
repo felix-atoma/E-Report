@@ -129,3 +129,11 @@
 @media (max-width: 500px) {
   .parent-dash__stats { grid-template-columns: 1fr; }
 }
+
+@media (max-width: 640px) {
+  .parent-dash__stats { grid-template-columns: 1fr 1fr !important; gap: 0.625rem; }
+  .parent-dash__grid  { grid-template-columns: 1fr; }
+}
+@media (max-width: 360px) {
+  .parent-dash__stats { grid-template-columns: 1fr !important; }
+}

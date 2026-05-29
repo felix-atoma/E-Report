@@ -144,3 +144,10 @@
   color: var(--color-primary, #f97316);
 }
 .bursar-dash__quick-link svg { flex-shrink: 0; }
+
+@media (max-width: 640px) {
+  .bursar-dash__stats { grid-template-columns: 1fr 1fr; gap: 0.625rem; }
+}
+@media (max-width: 360px) {
+  .bursar-dash__stats { grid-template-columns: 1fr; }
+}

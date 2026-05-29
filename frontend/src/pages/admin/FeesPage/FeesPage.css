@@ -41,3 +41,5 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 640px) { .fee-form__row { grid-template-columns: 1fr; } }

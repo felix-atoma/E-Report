@@ -137,3 +137,7 @@
   .student-dash__stats { flex-direction: row; }
   .student-dash__stat  { flex: 1; }
 }
+
+@media (max-width: 640px) {
+  .student-dash { grid-template-columns: 1fr !important; }
+}
