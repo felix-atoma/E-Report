@@ -10,7 +10,6 @@
     "sourceMap": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "baseUrl": ".",
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
@@ -22,10 +21,10 @@
     "resolveJsonModule": true,
     "types": ["jest", "node"],
     "paths": {
-      "@/*": ["src/*"],
-      "@common/*": ["src/common/*"],
-      "@modules/*": ["src/modules/*"],
-      "@integrations/*": ["src/integrations/*"]
+      "@/*": ["./src/*"],
+      "@common/*": ["./src/common/*"],
+      "@modules/*": ["./src/modules/*"],
+      "@integrations/*": ["./src/integrations/*"]
     }
   },
   "include": ["src/**/*"],
