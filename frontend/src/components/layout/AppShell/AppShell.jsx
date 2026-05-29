@@ -41,7 +41,9 @@ function AppShell({ children, title }) {
           onMenuClick={() => setMobileOpen(true)}
         />
         <main className="app-shell__content">
-          {children}
+          <div key={location.pathname} className="page-enter">
+            {children}
+          </div>
         </main>
       </div>
 

@@ -1,3 +1,93 @@
+// ── Utility animation classes ─────────────────────────────────────────────────
 .transition-base { transition: all var(--transition-base); }
-.fade-in { animation: fade-in var(--transition-base); }
-.slide-up { animation: slide-up var(--transition-base); }
+
+.fade-in        { animation: fade-in        var(--transition-base) both; }
+.slide-up       { animation: slide-up       var(--transition-base) both; }
+.slide-down     { animation: slide-down     var(--transition-base) both; }
+.slide-in-right { animation: slide-in-right var(--transition-base) both; }
+.scale-in       { animation: scale-in       var(--transition-base) both; }
+
+// ── Page transition wrapper ───────────────────────────────────────────────────
+.page-enter {
+  animation: slide-up 0.28s cubic-bezier(.22,.68,0,1.2) both;
+}
+
+// ── Staggered children (add .stagger to parent) ───────────────────────────────
+.stagger > * {
+  animation: slide-up 0.3s cubic-bezier(.22,.68,0,1.2) both;
+}
+@for $i from 1 through 12 {
+  .stagger > *:nth-child(#{$i}) {
+    animation-delay: #{($i - 1) * 55}ms;
+  }
+}
+
+// ── Card hover lift ───────────────────────────────────────────────────────────
+.card, [class*="-card"], [class*="card-"] {
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
+  &:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,.10);
+    transform: translateY(-1px);
+  }
+}
+
+// ── Table row hover ───────────────────────────────────────────────────────────
+.table tbody tr, [class*="table__row"], [class*="-table"] tr {
+  transition: background var(--transition-fast);
+}
+
+// ── Button micro-interactions ─────────────────────────────────────────────────
+button, .btn, [class*="btn"] {
+  transition: background var(--transition-fast),
+              color var(--transition-fast),
+              box-shadow var(--transition-fast),
+              transform 100ms ease,
+              opacity var(--transition-fast);
+
+  &:not(:disabled):active {
+    transform: scale(0.97);
+  }
+}
+
+// ── Sidebar nav item ──────────────────────────────────────────────────────────
+[class*="sidebar"] a, [class*="nav__item"], [class*="sidebar__link"] {
+  transition: background var(--transition-fast),
+              color var(--transition-fast),
+              padding-left var(--transition-base);
+}
+
+// ── Modal / OffCanvas entrance ────────────────────────────────────────────────
+[class*="offcanvas__panel"], [class*="modal__content"] {
+  animation: slide-in-right 0.26s cubic-bezier(.22,.68,0,1.2) both;
+}
+
+// ── Stat cards staggered entrance ────────────────────────────────────────────
+.stat-card {
+  animation: scale-in 0.3s cubic-bezier(.22,.68,0,1.2) both;
+}
+@for $i from 1 through 8 {
+  .stat-card:nth-child(#{$i}) {
+    animation-delay: #{($i - 1) * 60}ms;
+  }
+}
+
+// ── Badge / pill transitions ──────────────────────────────────────────────────
+[class*="badge"], [class*="status-pill"] {
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+// ── Input focus transitions ───────────────────────────────────────────────────
+input, select, textarea {
+  transition: border-color var(--transition-fast),
+              box-shadow var(--transition-fast),
+              background var(--transition-fast);
+}
+
+// ── Respect prefers-reduced-motion ───────────────────────────────────────────
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

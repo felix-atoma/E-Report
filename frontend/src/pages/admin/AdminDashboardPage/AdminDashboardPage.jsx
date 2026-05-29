@@ -107,7 +107,7 @@ function AdminDashboardPage() {
         subtitle={academicYear ? t('dash.academicYear', { year: academicYear }) : t('dash.currentYear')}
       />
 
-      <div className="dashboard-stats">
+      <div className="dashboard-stats stagger">
         <StatCard label={t('dash.students')}         value={overview?.students}         icon="students"    color="blue" />
         <StatCard label={t('dash.teachers')}         value={overview?.teachers}         icon="teachers"    color="teal" />
         <StatCard label={t('dash.classes')}          value={overview?.classes}          icon="classes"     color="orange" />
