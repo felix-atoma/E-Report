@@ -208,30 +208,129 @@ export class MailService {
   }
 
   async sendWelcomeOtp(to: string, name: string, otp: string, institutionName: string): Promise<boolean> {
-    const subject = `Bienvenue sur NovaBulletin — Votre code de première connexion`;
+    const subject = `Bienvenue sur NovaBulletin — Votre code d'accès`;
     const frontendUrl = this.config.get('FRONTEND_URL', 'http://localhost:3000');
+    const loginUrl = `${frontendUrl}/login-otp`;
+    const year = new Date().getFullYear();
+
     const html = `
-      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-        <div style="background:#1e3a8a;padding:20px;border-radius:8px 8px 0 0;text-align:center;">
-          <h1 style="color:#fff;margin:0;font-size:22px;">NovaBulletin</h1>
-          <p style="color:#93c5fd;margin:4px 0 0;">${institutionName}</p>
-        </div>
-        <div style="background:#fff;border:1px solid #e5e7eb;border-top:none;padding:32px;border-radius:0 0 8px 8px;">
-          <h2 style="color:#1e3a8a;margin-top:0;">Bonjour ${name} 👋</h2>
-          <p style="color:#374151;">Votre compte NovaBulletin a été créé par l'administration.</p>
-          <p style="color:#374151;">Utilisez le code ci-dessous pour votre première connexion :</p>
-          <div style="text-align:center;margin:28px 0;">
-            <div style="display:inline-block;background:#f1f5f9;border:2px dashed #6366f1;border-radius:12px;padding:16px 40px;">
-              <span style="font-size:36px;font-weight:900;letter-spacing:10px;color:#1e3a8a;font-family:'Courier New',monospace;">${otp}</span>
+<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:40px 0;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+
+      <!-- Header -->
+      <tr>
+        <td style="background:linear-gradient(135deg,#1e3a8a 0%,#1d4ed8 100%);border-radius:12px 12px 0 0;padding:36px 40px;text-align:center;">
+          <div style="display:inline-block;background:rgba(255,255,255,0.15);border-radius:50%;padding:14px;margin-bottom:12px;">
+            <div style="width:36px;height:36px;background:#fff;border-radius:50%;display:inline-block;line-height:36px;text-align:center;">
+              <span style="color:#1e3a8a;font-weight:900;font-size:18px;">N</span>
             </div>
-            <p style="color:#6b7280;font-size:13px;margin-top:10px;">⏱ Ce code expire dans <strong>24 heures</strong></p>
           </div>
-          <p style="color:#374151;">Connectez-vous sur <a href="${frontendUrl}/login-otp" style="color:#6366f1;font-weight:600;">${frontendUrl}/login-otp</a> avec votre adresse email et ce code.</p>
-          <p style="color:#374151;">Vous serez ensuite invité(e) à définir votre propre mot de passe.</p>
-          <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;">
-          <p style="color:#9ca3af;font-size:12px;">Si vous n'attendiez pas ce message, ignorez cet email.</p>
-        </div>
-      </div>`;
+          <h1 style="color:#fff;margin:0;font-size:26px;font-weight:800;letter-spacing:-0.5px;">NovaBulletin</h1>
+          <p style="color:#93c5fd;margin:6px 0 0;font-size:14px;">${institutionName}</p>
+        </td>
+      </tr>
+
+      <!-- Body -->
+      <tr>
+        <td style="background:#ffffff;padding:40px;border-left:1px solid #e5e7eb;border-right:1px solid #e5e7eb;">
+
+          <p style="color:#6b7280;font-size:13px;margin:0 0 24px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Activation du compte</p>
+
+          <h2 style="color:#111827;font-size:22px;font-weight:700;margin:0 0 16px;">Bonjour, ${name} 👋</h2>
+
+          <p style="color:#4b5563;font-size:15px;line-height:1.7;margin:0 0 12px;">
+            Votre compte a été créé sur <strong>NovaBulletin</strong> par l'administration de <strong>${institutionName}</strong>.
+          </p>
+          <p style="color:#4b5563;font-size:15px;line-height:1.7;margin:0 0 28px;">
+            Pour accéder à votre espace, utilisez le code OTP ci-dessous lors de votre première connexion :
+          </p>
+
+          <!-- OTP Box -->
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td align="center" style="padding:0 0 28px;">
+                <div style="display:inline-block;background:#f8fafc;border:2px solid #e0e7ff;border-radius:16px;padding:24px 48px;text-align:center;">
+                  <p style="margin:0 0 6px;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:2px;font-weight:600;">Code OTP</p>
+                  <p style="margin:0;font-size:42px;font-weight:900;letter-spacing:14px;color:#1e3a8a;font-family:'Courier New',Courier,monospace;">${otp}</p>
+                  <p style="margin:10px 0 0;font-size:12px;color:#9ca3af;">
+                    ⏱&nbsp; Expire dans <strong style="color:#dc2626;">24 heures</strong>
+                  </p>
+                </div>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Steps -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:10px;margin-bottom:28px;">
+            <tr><td style="padding:20px 24px;">
+              <p style="margin:0 0 14px;font-size:13px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.5px;">Comment se connecter</p>
+              <table cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding:6px 0;vertical-align:top;">
+                    <span style="display:inline-block;width:22px;height:22px;background:#1e3a8a;color:#fff;border-radius:50%;font-size:11px;font-weight:700;text-align:center;line-height:22px;margin-right:10px;">1</span>
+                  </td>
+                  <td style="padding:6px 0;color:#4b5563;font-size:14px;line-height:1.5;">
+                    Cliquez sur le bouton ci-dessous ou rendez-vous sur <strong>NovaBulletin</strong>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:6px 0;vertical-align:top;">
+                    <span style="display:inline-block;width:22px;height:22px;background:#1e3a8a;color:#fff;border-radius:50%;font-size:11px;font-weight:700;text-align:center;line-height:22px;margin-right:10px;">2</span>
+                  </td>
+                  <td style="padding:6px 0;color:#4b5563;font-size:14px;line-height:1.5;">
+                    Entrez votre adresse email <strong>${to}</strong> et le code OTP
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:6px 0;vertical-align:top;">
+                    <span style="display:inline-block;width:22px;height:22px;background:#1e3a8a;color:#fff;border-radius:50%;font-size:11px;font-weight:700;text-align:center;line-height:22px;margin-right:10px;">3</span>
+                  </td>
+                  <td style="padding:6px 0;color:#4b5563;font-size:14px;line-height:1.5;">
+                    Définissez votre mot de passe personnel
+                  </td>
+                </tr>
+              </table>
+            </td></tr>
+          </table>
+
+          <!-- CTA Button -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+            <tr>
+              <td align="center">
+                <a href="${loginUrl}" style="display:inline-block;background:linear-gradient(135deg,#1e3a8a,#1d4ed8);color:#ffffff;text-decoration:none;padding:14px 40px;border-radius:8px;font-size:15px;font-weight:700;letter-spacing:0.3px;">
+                  Se connecter avec mon OTP →
+                </a>
+              </td>
+            </tr>
+          </table>
+
+          <hr style="border:none;border-top:1px solid #f3f4f6;margin:0 0 20px;">
+          <p style="color:#9ca3af;font-size:12px;line-height:1.6;margin:0;">
+            Si vous n'êtes pas à l'origine de cette inscription, ignorez cet email en toute sécurité.<br>
+            Ce message a été envoyé automatiquement — merci de ne pas y répondre.
+          </p>
+        </td>
+      </tr>
+
+      <!-- Footer -->
+      <tr>
+        <td style="background:#f9fafb;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 12px 12px;padding:20px 40px;text-align:center;">
+          <p style="margin:0;color:#9ca3af;font-size:12px;">
+            © ${year} <strong>NovaBulletin</strong> · Plateforme de gestion des bulletins scolaires
+          </p>
+        </td>
+      </tr>
+
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>`;
 
     try {
       if (this.provider === 'sendgrid') {
