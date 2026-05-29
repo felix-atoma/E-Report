@@ -13,7 +13,8 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  z-index: 200;
+  z-index: 1500;
+  pointer-events: auto;
   padding: 4px;
   box-shadow: -2px 4px 12px rgba(0,0,0,0.15);
   border-radius: 6px 0 0 6px;
@@ -27,6 +28,9 @@
   height: 38px;
   border: none;
   cursor: pointer;
+  pointer-events: auto;
+  position: relative;
+  z-index: 1500;
   transition: transform 0.2s ease, filter 0.2s;
   border-radius: 4px;
 }

@@ -7,9 +7,9 @@
 .slide-in-right { animation: slide-in-right var(--transition-base) both; }
 .scale-in       { animation: scale-in       var(--transition-base) both; }
 
-// ── Page transition wrapper ───────────────────────────────────────────────────
+// ── Page transition wrapper — fade only (no transform to avoid stacking context issues)
 .page-enter {
-  animation: slide-up 0.28s cubic-bezier(.22,.68,0,1.2) both;
+  animation: fade-in 0.2s ease both;
 }
 
 // ── Staggered children (add .stagger to parent) ───────────────────────────────
