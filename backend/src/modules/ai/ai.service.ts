@@ -49,7 +49,7 @@ export class AiService {
     if (apiKey) {
       this.client = new Anthropic({ apiKey });
       this.enabled = true;
-      this.logger.log('AI Assistant: Claude claude-haiku-4-5-20251001 ready');
+      this.logger.log('AI Assistant: Claude Sonnet 4.6 ready');
     } else {
       this.enabled = false;
       this.logger.warn('ANTHROPIC_API_KEY not set — AI assistant disabled');
@@ -67,7 +67,7 @@ export class AiService {
         : `[Rôle: ${role}]\n\n${message}`;
 
       const response = await this.client.messages.create({
-        model: 'claude-haiku-4-5-20251001',
+        model: 'claude-sonnet-4-6',
         max_tokens: 1024,
         system: SYSTEM_PROMPT,
         messages: [{ role: 'user', content: userContent }],
