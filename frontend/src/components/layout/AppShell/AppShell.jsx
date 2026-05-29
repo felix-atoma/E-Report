@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../../context/AuthContext';
 import { notificationsService } from '../../../services/notificationsService';
@@ -65,24 +65,20 @@ function AppShell({ children, title }) {
 
       {/* Fixed right-side floating action buttons */}
       <div className="side-btn-wrapper">
+
         {/* Profile */}
-        <button
-          className="side-btn side-btn--green"
-          title="Mon profil"
-          onClick={() => navigate('/profile')}
-          aria-label="Mon profil"
-        >
+        <Link to="/profile" className="side-btn side-btn--green" title="Mon profil" aria-label="Mon profil">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
             <circle cx="12" cy="7" r="4"/>
           </svg>
-        </button>
+        </Link>
 
-        {/* Notifications with live badge */}
-        <button
+        {/* Notifications with live unread badge */}
+        <Link
+          to={NOTIF_ROUTE[user?.role] ?? '/profile'}
           className="side-btn side-btn--red"
           title="Notifications"
-          onClick={() => navigate(NOTIF_ROUTE[user?.role] ?? '/profile')}
           aria-label="Notifications"
           style={{ position: 'relative' }}
         >
@@ -102,15 +98,10 @@ function AppShell({ children, title }) {
               {unreadData > 9 ? '9+' : unreadData}
             </span>
           )}
-        </button>
+        </Link>
 
         {/* Logout */}
-        <button
-          className="side-btn side-btn--blue"
-          title="Se déconnecter"
-          onClick={handleLogout}
-          aria-label="Se déconnecter"
-        >
+        <button className="side-btn side-btn--blue" title="Se déconnecter" onClick={handleLogout} aria-label="Se déconnecter">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
             <polyline points="16 17 21 12 16 7"/>

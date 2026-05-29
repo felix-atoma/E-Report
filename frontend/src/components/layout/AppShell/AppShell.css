@@ -33,6 +33,7 @@
   z-index: 1500;
   transition: transform 0.2s ease, filter 0.2s;
   border-radius: 4px;
+  text-decoration: none;
 }
 
 .side-btn:hover {
