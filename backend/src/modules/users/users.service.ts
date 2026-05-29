@@ -13,6 +13,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { Role } from '../../common/enums/role.enum';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { MailService } from '../mail/mail.service';
 
 const USER_SELECT = {
   id: true,
@@ -34,6 +35,7 @@ export class UsersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
+    private readonly mail: MailService,
   ) {}
 
   async findAll(institutionId: string, role?: Role) {
@@ -71,19 +73,36 @@ export class UsersService {
     if (existing) throw new ConflictException('Email already in use');
 
     const saltRounds = this.config.get<number>('BCRYPT_SALT_ROUNDS', 12);
-    const hashed = await bcrypt.hash(dto.password, Number(saltRounds));
+    // Generate 6-digit OTP for first login
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    const otpHash = await bcrypt.hash(otp, 10);
+    const otpExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+
+    // Use a random temp password — user must set their own via OTP flow
+    const tempPassword = await bcrypt.hash(crypto.randomUUID(), Number(saltRounds));
 
     const user = await this.prisma.user.create({
       data: {
         name: dto.name,
         email: dto.email,
-        password: hashed,
+        password: tempPassword,
         role: dto.role,
         whatsappNumber: dto.whatsappNumber,
         institutionId,
+        mustChangePassword: true,
+        otpHash,
+        otpExpiresAt,
       },
-      select: USER_SELECT,
+      select: { ...USER_SELECT, institution: { select: { name: true } } },
     });
+
+    // Send welcome email with OTP (non-blocking)
+    this.mail.sendWelcomeOtp(
+      dto.email,
+      dto.name,
+      otp,
+      (user as any).institution?.name ?? 'NovaBulletin',
+    ).catch(() => {/* logged inside service */});
 
     if (dto.role === Role.TEACHER && dto.subjectIds?.length) {
       await this.prisma.classSubject.updateMany({

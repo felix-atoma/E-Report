@@ -299,6 +299,46 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
+  // ─── OTP login (first-time users) ────────────────────────────────────────
+  async loginWithOtp(email: string, otp: string) {
+    const user = await this.prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });
+    if (!user || !user.isActive) throw new UnauthorizedException('Compte introuvable ou inactif');
+    if (!user.otpHash || !user.otpExpiresAt) throw new UnauthorizedException('Aucun OTP actif pour ce compte');
+    if (user.otpExpiresAt < new Date()) throw new UnauthorizedException('Code OTP expiré. Contactez l\'administrateur');
+
+    const valid = await bcrypt.compare(otp, user.otpHash);
+    if (!valid) throw new UnauthorizedException('Code OTP incorrect');
+
+    // Generate short-lived token for password setup only
+    const setupToken = await this.jwt.signAsync(
+      { sub: user.id, email: user.email, role: user.role, institutionId: user.institutionId, mustChangePassword: true },
+      { secret: this.config.get<string>('JWT_SECRET'), expiresIn: '30m' },
+    );
+
+    return { setupToken, mustChangePassword: true, name: user.name, email: user.email };
+  }
+
+  // ─── Set password after OTP login ────────────────────────────────────────
+  async setPassword(userId: string, newPassword: string) {
+    const saltRounds = this.config.get<number>('BCRYPT_SALT_ROUNDS', 12);
+    const hashed = await bcrypt.hash(newPassword, Number(saltRounds));
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        password: hashed,
+        mustChangePassword: false,
+        otpHash: null,
+        otpExpiresAt: null,
+      },
+    });
+
+    const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
+    const tokens = await this.generateTokens(user.id, user.email, user.role, user.institutionId);
+    await this.saveRefreshToken(user.id, tokens.refreshToken);
+    return tokens;
+  }
+
   private async saveRefreshToken(userId: string, refreshToken: string) {
     const hashed = await bcrypt.hash(refreshToken, 10);
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days

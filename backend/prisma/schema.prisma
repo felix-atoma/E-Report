@@ -197,6 +197,9 @@ model User {
   language        Language @default(FR)
   notificationPreferences Json?
   isActive        Boolean  @default(true)
+  mustChangePassword Boolean @default(false)
+  otpHash         String?
+  otpExpiresAt    DateTime?
 
   institutionId   String?
   institution     Institution? @relation(fields: [institutionId], references: [id])

@@ -90,6 +90,22 @@ export class AuthController {
     return this.authService.resetPassword(dto.token, dto.password);
   }
 
+  // ─── OTP first-login ─────────────────────────────────────────────────────
+  @Public()
+  @Post('login-otp')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'First login with OTP — returns setup token' })
+  loginOtp(@Body() body: { email: string; otp: string }) {
+    return this.authService.loginWithOtp(body.email, body.otp);
+  }
+
+  @Post('set-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Set own password after OTP login' })
+  setPassword(@CurrentUser() user: any, @Body() body: { password: string }) {
+    return this.authService.setPassword(user.id, body.password);
+  }
+
   // ─── Google OAuth ─────────────────────────────────────────────────────────
 
   @Get('google')

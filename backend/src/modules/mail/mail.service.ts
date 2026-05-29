@@ -207,6 +207,48 @@ export class MailService {
     }
   }
 
+  async sendWelcomeOtp(to: string, name: string, otp: string, institutionName: string): Promise<boolean> {
+    const subject = `Bienvenue sur NovaBulletin — Votre code de première connexion`;
+    const frontendUrl = this.config.get('FRONTEND_URL', 'http://localhost:3000');
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+        <div style="background:#1e3a8a;padding:20px;border-radius:8px 8px 0 0;text-align:center;">
+          <h1 style="color:#fff;margin:0;font-size:22px;">NovaBulletin</h1>
+          <p style="color:#93c5fd;margin:4px 0 0;">${institutionName}</p>
+        </div>
+        <div style="background:#fff;border:1px solid #e5e7eb;border-top:none;padding:32px;border-radius:0 0 8px 8px;">
+          <h2 style="color:#1e3a8a;margin-top:0;">Bonjour ${name} 👋</h2>
+          <p style="color:#374151;">Votre compte NovaBulletin a été créé par l'administration.</p>
+          <p style="color:#374151;">Utilisez le code ci-dessous pour votre première connexion :</p>
+          <div style="text-align:center;margin:28px 0;">
+            <div style="display:inline-block;background:#f1f5f9;border:2px dashed #6366f1;border-radius:12px;padding:16px 40px;">
+              <span style="font-size:36px;font-weight:900;letter-spacing:10px;color:#1e3a8a;font-family:'Courier New',monospace;">${otp}</span>
+            </div>
+            <p style="color:#6b7280;font-size:13px;margin-top:10px;">⏱ Ce code expire dans <strong>24 heures</strong></p>
+          </div>
+          <p style="color:#374151;">Connectez-vous sur <a href="${frontendUrl}/login-otp" style="color:#6366f1;font-weight:600;">${frontendUrl}/login-otp</a> avec votre adresse email et ce code.</p>
+          <p style="color:#374151;">Vous serez ensuite invité(e) à définir votre propre mot de passe.</p>
+          <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;">
+          <p style="color:#9ca3af;font-size:12px;">Si vous n'attendiez pas ce message, ignorez cet email.</p>
+        </div>
+      </div>`;
+
+    try {
+      if (this.provider === 'sendgrid') {
+        await sgMail.send({ to, from: this.fromEmail, subject, html });
+      } else if (this.provider === 'smtp' && this.smtpTransport) {
+        await this.smtpTransport.sendMail({ from: this.fromEmail, to, subject, html });
+      } else {
+        this.logger.log(`[DEV OTP] To: ${to} | Name: ${name} | OTP: ${otp}`);
+        return true;
+      }
+      return true;
+    } catch (err) {
+      this.logger.error(`Failed to send welcome OTP to ${to}`, err);
+      return false;
+    }
+  }
+
   private buildBulletinEmail(p: MailPayload): string {
     const pdfSection = p.pdfUrl
       ? `<a href="${p.pdfUrl}" style="display:inline-block;background:#1e3a8a;color:#fff;padding:10px 20px;border-radius:4px;text-decoration:none;margin-top:12px;">

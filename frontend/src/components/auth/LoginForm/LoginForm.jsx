@@ -157,6 +157,13 @@ function LoginForm({ onSuccess }) {
         {t('login.forgotPassword')}{' '}
         <Link to="/forgot-password">{t('login.reset')}</Link>
       </p>
+
+      <p className="login-form__forgot" style={{ marginTop: '8px' }}>
+        Première connexion ?{' '}
+        <Link to="/login-otp" style={{ color: '#6366f1', fontWeight: 600 }}>
+          Connexion avec OTP
+        </Link>
+      </p>
     </form>
   );
 }

@@ -8,6 +8,8 @@ import SuperAdminPage         from '../pages/superadmin/SuperAdminPage/SuperAdmi
 import RegisterPage           from '../pages/auth/RegisterPage/RegisterPage';
 import ForgotPasswordPage     from '../pages/auth/ForgotPasswordPage/ForgotPasswordPage';
 import ResetPasswordPage      from '../pages/auth/ResetPasswordPage/ResetPasswordPage';
+import OtpLoginPage           from '../pages/auth/OtpLoginPage/OtpLoginPage';
+import SetPasswordPage        from '../pages/auth/SetPasswordPage/SetPasswordPage';
 import NotFoundPage           from '../pages/shared/NotFoundPage/NotFoundPage';
 import UnauthorizedPage       from '../pages/shared/UnauthorizedPage/UnauthorizedPage';
 import ErrorPage              from '../pages/shared/ErrorPage/ErrorPage';
@@ -83,6 +85,8 @@ function AppRouter() {
       <Route path="/register-school"    element={<RegisterSchoolPage />} />
       <Route path="/forgot-password"    element={<ForgotPasswordPage />} />
       <Route path="/reset-password"     element={<ResetPasswordPage />} />
+      <Route path="/login-otp"          element={<OtpLoginPage />} />
+      <Route path="/set-password"       element={<SetPasswordPage />} />
       <Route path="/auth/callback"      element={<GoogleCallbackPage />} />
       <Route path="/verify-bulletin"    element={<BulletinVerifyPage />} />
       <Route path="/unauthorized"       element={<UnauthorizedPage />} />
