@@ -256,7 +256,7 @@ export class MailService {
               <td align="center" style="padding:0 0 28px;">
                 <div style="display:inline-block;background:#f8fafc;border:2px solid #e0e7ff;border-radius:16px;padding:24px 48px;text-align:center;">
                   <p style="margin:0 0 6px;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:2px;font-weight:600;">Code OTP</p>
-                  <p style="margin:0;font-size:42px;font-weight:900;letter-spacing:14px;color:#1e3a8a;font-family:'Courier New',Courier,monospace;">${otp}</p>
+                  <p style="margin:0;font-size:20px;font-weight:900;letter-spacing:4px;color:#1e3a8a;font-family:'Courier New',Courier,monospace;word-break:break-all;">${otp}</p>
                   <p style="margin:10px 0 0;font-size:12px;color:#9ca3af;">
                     ⏱&nbsp; Expire dans <strong style="color:#dc2626;">24 heures</strong>
                   </p>

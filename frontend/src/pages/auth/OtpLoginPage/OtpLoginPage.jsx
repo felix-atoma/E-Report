@@ -90,11 +90,10 @@ function OtpLoginPage() {
                 </span>
                 <input
                   id="otp-code" type="text" className="login-form__input"
-                  placeholder="123456"
+                  placeholder="ex: A1B2C3D4E5F6..."
                   value={form.otp} onChange={set('otp')}
-                  maxLength={6} inputMode="numeric"
-                  style={{ letterSpacing: '0.3em', fontFamily: 'monospace', fontSize: '1.2em' }}
-                  autoComplete="one-time-code" required
+                  style={{ fontFamily: 'monospace', fontSize: '0.95em', letterSpacing: '0.1em' }}
+                  autoComplete="off" required
                 />
               </div>
             </div>

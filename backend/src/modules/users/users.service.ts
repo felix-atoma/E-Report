@@ -73,8 +73,8 @@ export class UsersService {
     if (existing) throw new ConflictException('Email already in use');
 
     const saltRounds = this.config.get<number>('BCRYPT_SALT_ROUNDS', 12);
-    // Generate 6-digit OTP for first login
-    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    // Generate secure random OTP token for first login
+    const otp = crypto.randomUUID().replace(/-/g, '').toUpperCase();
     const otpHash = await bcrypt.hash(otp, 10);
     const otpExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
 
