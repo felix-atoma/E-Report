@@ -1,7 +1,30 @@
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
-const prisma = new PrismaClient();
+const basePrisma = new PrismaClient();
+
+// Auto-reconnect on P1001/P1017 (Supabase drops idle connections)
+const prisma = basePrisma.$extends({
+  query: {
+    async $allOperations({ args, query }) {
+      for (let attempt = 0; attempt < 5; attempt++) {
+        try {
+          return await query(args);
+        } catch (e: any) {
+          if ((e.code === 'P1001' || e.code === 'P1017') && attempt < 4) {
+            const wait = 1500 * (attempt + 1);
+            console.log(`  ⟳ Connection lost (${e.code}), retrying in ${wait}ms…`);
+            await basePrisma.$disconnect();
+            await new Promise((r) => setTimeout(r, wait));
+            await basePrisma.$connect();
+          } else {
+            throw e;
+          }
+        }
+      }
+    },
+  },
+}) as unknown as PrismaClient;
 
 // ── Name pools (Togolese) ─────────────────────────────────────────────────────
 const MN = ['Kofi','Kwame','Komi','Kodjo','Kossi','Mawuli','Edem','Dodzi','Yawo','Selom','Kafui','Atsu','Amah','Agbeko','Senyo','Delali','Elikem','Kekeli','Fiogbe','Gbati','Egnonto','Kuami','Tchapo','Ablam','Togbé'];
@@ -192,6 +215,8 @@ async function main() {
 
   async function createStudents(defs: ReturnType<typeof makeDefs>, classId: string) {
     const result: any[] = [];
+    await prisma.$disconnect();
+    await prisma.$connect();
     for (const d of defs) {
       const u = await prisma.user.create({ data: { email: d.email, password: studentPw, name: d.name, role: 'STUDENT', institutionId: inst.id } });
       const s = await prisma.student.create({ data: { admissionNumber: d.admission, dateOfBirth: new Date(d.dob), sex: d.sex, institutionId: inst.id, userId: u.id, parentId: parents[d.pi].id } });
@@ -202,12 +227,18 @@ async function main() {
   }
 
   const s6A   = await createStudents(makeDefs('6A',  2012), class6A.id);
+  console.log(`  ↳ 6A done (${s6A.length})`);
   const s3B   = await createStudents(makeDefs('3B',  2009), class3B.id);
+  console.log(`  ↳ 3B done (${s3B.length})`);
   const s2A   = await createStudents(makeDefs('2A',  2007), class2A.id);
+  console.log(`  ↳ 2A done (${s2A.length})`);
   const sTleD = await createStudents(makeDefs('TLD', 2005), classTleD.id);
+  console.log(`  ↳ TleD done (${sTleD.length})`);
   console.log(`✅ Students: ${s6A.length + s3B.length + s2A.length + sTleD.length} total (50 × 4 classes)`);
 
   // ── 9. Fees & payments ───────────────────────────────────────────────────────
+  await prisma.$disconnect();
+  await prisma.$connect();
   const fees = {
     '6eme':      await prisma.fee.upsert({ where: { id: 'seed-fee-6e-t1'  }, update: {}, create: { id: 'seed-fee-6e-t1',  name: 'Scolarité 6ème T1',      feeType: 'TUITION', amount: 45000, currency: 'XOF', academicYear: AY, term: '1er Trimestre', appliesToLevel: '6eme',      institutionId: inst.id } }),
     '3eme':      await prisma.fee.upsert({ where: { id: 'seed-fee-3e-t1'  }, update: {}, create: { id: 'seed-fee-3e-t1',  name: 'Scolarité 3ème T1',      feeType: 'TUITION', amount: 50000, currency: 'XOF', academicYear: AY, term: '1er Trimestre', appliesToLevel: '3eme',      institutionId: inst.id } }),
@@ -232,6 +263,8 @@ async function main() {
   console.log('✅ Fees & payments');
 
   // ── 10. Report cards + grades ────────────────────────────────────────────────
+  await prisma.$disconnect();
+  await prisma.$connect();
   async function seedTerm(
     students: any[], classId: string, codes: string[], coefs: Record<string,number>,
     teacher: any, termNumber: number, termName: string, publishedAt: Date,
@@ -314,6 +347,8 @@ async function main() {
   console.log('✅ Report cards T3 (Terminale D)');
 
   // ── 11. Fiches de notes (GradeFiche) ─────────────────────────────────────────
+  await prisma.$disconnect();
+  await prisma.$connect();
   // T1: all 4 classes, all signed
   // T2: Terminale D (all signed), 3ème B (6/7 signed), 2nde A (not yet)
   // T3: Terminale D (all signed — bac prep done)
