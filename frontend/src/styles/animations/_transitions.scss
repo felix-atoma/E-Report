@@ -36,8 +36,8 @@
   transition: background var(--transition-fast);
 }
 
-// ── Button micro-interactions ─────────────────────────────────────────────────
-button, .btn, [class*="btn"] {
+// ── Button micro-interactions (exclude side-btn to avoid hit-area conflicts) ──
+button:not(.side-btn), .btn, [class*="btn"]:not(.side-btn) {
   transition: background var(--transition-fast),
               color var(--transition-fast),
               box-shadow var(--transition-fast),

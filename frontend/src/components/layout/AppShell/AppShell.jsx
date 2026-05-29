@@ -67,16 +67,16 @@ function AppShell({ children, title }) {
       <div className="side-btn-wrapper">
 
         {/* Profile */}
-        <Link to="/profile" className="side-btn side-btn--green" title="Mon profil" aria-label="Mon profil">
+        <a href="/profile" className="side-btn side-btn--green" title="Mon profil" aria-label="Mon profil">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
             <circle cx="12" cy="7" r="4"/>
           </svg>
-        </Link>
+        </a>
 
         {/* Notifications with live unread badge */}
-        <Link
-          to={NOTIF_ROUTE[user?.role] ?? '/profile'}
+        <a
+          href={NOTIF_ROUTE[user?.role] ?? '/profile'}
           className="side-btn side-btn--red"
           title="Notifications"
           aria-label="Notifications"
@@ -98,7 +98,7 @@ function AppShell({ children, title }) {
               {unreadData > 9 ? '9+' : unreadData}
             </span>
           )}
-        </Link>
+        </a>
 
         {/* Logout */}
         <button className="side-btn side-btn--blue" title="Se déconnecter" onClick={handleLogout} aria-label="Se déconnecter">

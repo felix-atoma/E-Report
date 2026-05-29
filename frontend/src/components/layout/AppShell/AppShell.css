@@ -7,38 +7,34 @@
 /* ── ZDesk-style fixed right-side floating buttons ─────────────────────── */
 .side-btn-wrapper {
   position: fixed;
-  top: 40%;
+  top: calc(50% - 80px);
   right: 0;
-  transform: translateY(-50%);
   display: flex;
   flex-direction: column;
   gap: 2px;
-  z-index: 1500;
-  pointer-events: auto;
+  z-index: 9999;
   padding: 4px;
   box-shadow: -2px 4px 12px rgba(0,0,0,0.15);
   border-radius: 6px 0 0 6px;
+  background: rgba(255,255,255,0.95);
 }
 
 .side-btn {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   width: 38px;
   height: 38px;
   border: none;
   cursor: pointer;
-  pointer-events: auto;
-  position: relative;
-  z-index: 1500;
-  transition: transform 0.2s ease, filter 0.2s;
   border-radius: 4px;
   text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: filter 0.15s;
 }
 
 .side-btn:hover {
-  transform: scale(1.1);
-  filter: brightness(0.92);
+  filter: brightness(0.88);
 }
 
 .side-btn--green {
