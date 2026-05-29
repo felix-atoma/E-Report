@@ -84,7 +84,12 @@ function AiAssistant() {
                 </div>
               </div>
             </div>
-            <button className="ai-panel__close" onClick={() => setOpen(false)} aria-label="Fermer">✕</button>
+            <button
+              type="button"
+              className="ai-panel__close"
+              onClick={(e) => { e.stopPropagation(); setOpen(false); }}
+              aria-label="Fermer"
+            >✕</button>
           </div>
 
           {/* Messages */}

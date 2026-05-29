@@ -54,11 +54,18 @@
 .ai-panel__close {
   background: rgba(255,255,255,0.15);
   border: none; color: #fff; cursor: pointer;
-  width: 26px; height: 26px; border-radius: 50%;
-  font-size: 0.85rem; display: flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 50%;
+  font-size: 1rem; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
   transition: background 0.15s;
+  pointer-events: auto;
+  transform: none !important;
+  position: relative;
+  z-index: 10;
+  flex-shrink: 0;
 }
-.ai-panel__close:hover { background: rgba(255,255,255,0.25); }
+.ai-panel__close:hover { background: rgba(255,255,255,0.3); }
+.ai-panel__close:active { background: rgba(255,255,255,0.4); transform: none !important; }
 
 /* ── Messages ────────────────────────────────────────────────────── */
 .ai-panel__messages {
