@@ -6,6 +6,7 @@ import { InstitutionProvider } from './context/InstitutionContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
 import AppRouter from './routes/AppRouter';
+import PwaInstallPrompt from './components/common/PwaInstallPrompt/PwaInstallPrompt';
 import './App.css';
 
 const queryClient = new QueryClient();
@@ -20,6 +21,7 @@ function App() {
               <ThemeProvider>
                 <AppRouter />
                 <Toaster position="top-right" />
+                <PwaInstallPrompt />
               </ThemeProvider>
             </InstitutionProvider>
           </AuthProvider>

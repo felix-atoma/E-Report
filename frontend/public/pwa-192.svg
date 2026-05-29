@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E2A78"/>
+      <stop offset="100%" stop-color="#0F1A52"/>
+    </linearGradient>
+    <linearGradient id="sparkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFB547"/>
+      <stop offset="55%" stop-color="#FF7A59"/>
+      <stop offset="100%" stop-color="#E94F8A"/>
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="42" fill="url(#bg)"/>
+  <g transform="translate(96 96)">
+    <path d="M 0 -60 C 5 -26, 26 -5, 60 0 C 26 5, 5 26, 0 60 C -5 26, -26 5, -60 0 C -26 -5, -5 -26, 0 -60 Z" fill="url(#sparkGrad)"/>
+    <path d="M 42 -42 C 43 -34, 49 -28, 58 -27 C 49 -26, 43 -20, 42 -12 C 41 -20, 35 -26, 26 -27 C 35 -28, 41 -34, 42 -42 Z" fill="#FFD78A"/>
+  </g>
+</svg>
