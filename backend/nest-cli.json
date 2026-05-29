@@ -5,7 +5,7 @@
   "compilerOptions": {
     "deleteOutDir": true,
     "assets": [
-      { "include": "modules/pdf/templates/**/*", "outDir": "dist/src" }
+      { "include": "modules/pdf/templates/**/*", "outDir": "dist" }
     ],
     "watchAssets": true
   }
