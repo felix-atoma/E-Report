@@ -26,6 +26,7 @@ import { UploadModule } from './modules/upload/upload.module';
 import { BrandingModule } from './modules/branding/branding.module';
 import { MailModule } from './modules/mail/mail.module';
 import { WhatsAppModule } from './modules/whatsapp/whatsapp.module';
+import { AiModule } from './modules/ai/ai.module';
 import { PdfModule } from './modules/pdf/pdf.module';
 import { ProgramsModule } from './modules/programs/programs.module';
 import { TimetablesModule } from './modules/timetables/timetables.module';
@@ -71,6 +72,7 @@ import { MockExamsModule } from './modules/mock-exams/mock-exams.module';
     UploadModule,
     MailModule,
     WhatsAppModule,
+    AiModule,
     PdfModule,
     ProgramsModule,
     TimetablesModule,
