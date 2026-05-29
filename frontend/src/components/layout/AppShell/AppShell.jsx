@@ -8,6 +8,12 @@ import Topbar from '../Topbar/Topbar';
 import AiAssistant from '../../common/AiAssistant/AiAssistant';
 import './AppShell.css';
 
+const NOTIF_ROUTE = {
+  ADMIN: '/admin/notifications', BURSAR: '/bursar/notifications',
+  TEACHER: '/teacher/notifications', PARENT: '/parent/notifications',
+  STUDENT: '/student/notifications', SUPERADMIN: '/superadmin',
+};
+
 function AppShell({ children, title }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -76,7 +82,7 @@ function AppShell({ children, title }) {
         <button
           className="side-btn side-btn--red"
           title="Notifications"
-          onClick={() => navigate('/notifications')}
+          onClick={() => navigate(NOTIF_ROUTE[user?.role] ?? '/profile')}
           aria-label="Notifications"
           style={{ position: 'relative' }}
         >
