@@ -12,14 +12,13 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
-  if (process.env.SENTRY_DSN) {
-    Sentry.init({
-      dsn: process.env.SENTRY_DSN,
-      environment: process.env.NODE_ENV ?? 'development',
-      integrations: [nodeProfilingIntegration()],
-      tracesSampleRate: 0.2,
-    });
-  }
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN || "https://e23f50286f8b8847ccdb82a0c495fe7c@o4511477173518336.ingest.de.sentry.io/4511477289975888",
+    environment: process.env.NODE_ENV ?? 'development',
+    sendDefaultPii: true,
+    integrations: [nodeProfilingIntegration()],
+    tracesSampleRate: 0.2,
+  });
 
   const app = await NestFactory.create(AppModule);
   const config = app.get(ConfigService);
