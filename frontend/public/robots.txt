@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+Allow: /home
+Allow: /legal/tos
+Allow: /legal/privacy
+Allow: /register-school
+Allow: /login
+
+Disallow: /admin
+Disallow: /teacher
+Disallow: /bursar
+Disallow: /parent
+Disallow: /student
+Disallow: /superadmin
+Disallow: /profile
+Disallow: /api/
+
+Sitemap: https://e-report-frontend.vercel.app/sitemap.xml

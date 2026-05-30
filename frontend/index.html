@@ -2,19 +2,126 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/pwa-192.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- Primary SEO -->
+    <title>NovaBulletin — Logiciel de gestion scolaire pour les écoles d'Afrique</title>
+    <meta name="description" content="NovaBulletin remplace Excel pour la gestion des bulletins scolaires. Calcul automatique des moyennes, bulletins PDF en 1 clic, envoi WhatsApp aux parents. Conçu pour les écoles du Togo et d'Afrique francophone." />
+    <meta name="keywords" content="logiciel bulletin scolaire, gestion notes scolaires, bulletin scolaire PDF, application école Togo, gestion scolaire numérique, bulletin WhatsApp parents, logiciel école Afrique, remplacer Excel école, frais scolaires, gestion établissement scolaire, logiciel école Bénin, logiciel école Côte d'Ivoire, logiciel école Sénégal" />
+    <meta name="author" content="NovaBulletin" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <link rel="canonical" href="https://e-report-frontend.vercel.app/" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://e-report-frontend.vercel.app/" />
+    <meta property="og:title" content="NovaBulletin — Logiciel de gestion scolaire pour les écoles d'Afrique" />
+    <meta property="og:description" content="Fini Excel. NovaBulletin calcule les moyennes, génère les bulletins PDF et les envoie aux parents sur WhatsApp. 3 jours de travail réduits à 30 minutes." />
+    <meta property="og:image" content="https://e-report-frontend.vercel.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="NovaBulletin — Tableau de bord de gestion scolaire" />
+    <meta property="og:locale" content="fr_TG" />
+    <meta property="og:locale:alternate" content="fr_FR" />
+    <meta property="og:site_name" content="NovaBulletin" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="NovaBulletin — Logiciel de gestion scolaire pour les écoles d'Afrique" />
+    <meta name="twitter:description" content="Fini Excel. Calcul automatique des moyennes, bulletins PDF en 1 clic, envoi WhatsApp aux parents. Essayez gratuitement." />
+    <meta name="twitter:image" content="https://e-report-frontend.vercel.app/og-image.png" />
+
+    <!-- Geographic targeting -->
+    <meta name="geo.region" content="TG" />
+    <meta name="geo.placename" content="Lomé, Togo" />
+    <meta name="language" content="French" />
+
+    <!-- PWA -->
+    <link rel="icon" type="image/svg+xml" href="/pwa-192.svg" />
+    <link rel="apple-touch-icon" href="/pwa-192.svg" />
     <meta name="theme-color" content="#1E2A78" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="NovaBulletin" />
-    <link rel="apple-touch-icon" href="/pwa-192.svg" />
-    <meta name="description" content="Gestion scolaire numérique — bulletins, notes, frais scolaires" />
-    <title>NovaBulletin</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Sitemap -->
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+
+    <!-- Structured Data: SoftwareApplication -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "NovaBulletin",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web, Android, iOS",
+      "description": "Logiciel de gestion scolaire pour les écoles d'Afrique francophone. Bulletins scolaires automatisés, calcul des moyennes, envoi WhatsApp aux parents, gestion des frais scolaires.",
+      "url": "https://e-report-frontend.vercel.app",
+      "screenshot": "https://e-report-frontend.vercel.app/og-image.png",
+      "featureList": [
+        "Calcul automatique des moyennes scolaires",
+        "Génération de bulletins PDF avec logo de l'école",
+        "Envoi automatique des bulletins sur WhatsApp",
+        "Gestion des frais scolaires",
+        "Tableau de bord multi-rôles (admin, enseignant, parent, élève)",
+        "Import/export CSV des élèves et notes",
+        "Statistiques et analytics de l'établissement"
+      ],
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "XOF",
+        "description": "Essai gratuit — payez seulement si satisfait"
+      },
+      "provider": {
+        "@type": "Organization",
+        "name": "NovaBulletin",
+        "email": "felixatoma2@gmail.com",
+        "areaServed": ["TG","BJ","CI","SN","GH","CM"],
+        "url": "https://e-report-frontend.vercel.app"
+      }
+    }
+    </script>
+
+    <!-- Structured Data: Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "NovaBulletin",
+      "url": "https://e-report-frontend.vercel.app",
+      "logo": "https://e-report-frontend.vercel.app/pwa-512.svg",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "felixatoma2@gmail.com",
+        "contactType": "customer support",
+        "availableLanguage": ["French", "English"]
+      },
+      "sameAs": []
+    }
+    </script>
+
+    <!-- Structured Data: WebSite with SearchAction -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "NovaBulletin",
+      "url": "https://e-report-frontend.vercel.app",
+      "description": "Logiciel de gestion scolaire numérique pour les écoles d'Afrique francophone",
+      "inLanguage": "fr",
+      "publisher": {
+        "@type": "Organization",
+        "name": "NovaBulletin"
+      }
+    }
+    </script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div id="root"></div>

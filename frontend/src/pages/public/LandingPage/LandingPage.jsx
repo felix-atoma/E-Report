@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import logoIcon from '../../../assets/images/novaBulletin-icon.svg';
 import './LandingPage.css';
+
+const SITE_URL = 'https://e-report-frontend.vercel.app';
+const OG_IMAGE = `${SITE_URL}/og-image.png`;
 
 const FEATURES = [
   { icon: '📊', title: 'Calcul automatique', desc: 'Les moyennes, coefficients et rangs sont calculés automatiquement. Zéro erreur, zéro formule Excel.' },
@@ -41,12 +45,32 @@ export default function LandingPage() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  useEffect(() => {
-    document.title = 'NovaBulletin — Le bulletin scolaire moderne pour les écoles d\'Afrique';
-  }, []);
+  useEffect(() => { window.scrollTo(0, 0); }, []);
 
   return (
     <div className="lp">
+      <Helmet>
+        <html lang="fr" />
+        <title>NovaBulletin — Logiciel de gestion scolaire pour les écoles d'Afrique</title>
+        <meta name="description" content="NovaBulletin remplace Excel pour la gestion des bulletins scolaires. Calcul automatique des moyennes, bulletins PDF en 1 clic, envoi WhatsApp aux parents. Conçu pour les écoles du Togo, Bénin, Côte d'Ivoire et toute l'Afrique francophone." />
+        <meta name="keywords" content="logiciel bulletin scolaire, gestion notes scolaires, bulletin scolaire PDF, application école Togo, gestion scolaire numérique, bulletin WhatsApp parents, logiciel école Afrique, remplacer Excel école, frais scolaires, gestion établissement scolaire" />
+        <link rel="canonical" href={SITE_URL} />
+
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={SITE_URL} />
+        <meta property="og:title" content="NovaBulletin — Logiciel de gestion scolaire pour les écoles d'Afrique" />
+        <meta property="og:description" content="Fini Excel. NovaBulletin calcule les moyennes, génère les bulletins PDF et les envoie aux parents sur WhatsApp. 3 jours de travail réduits à 30 minutes." />
+        <meta property="og:image" content={OG_IMAGE} />
+        <meta property="og:locale" content="fr_TG" />
+        <meta property="og:site_name" content="NovaBulletin" />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="NovaBulletin — Logiciel de gestion scolaire" />
+        <meta name="twitter:description" content="Fini Excel. Bulletins PDF en 1 clic, envoi WhatsApp automatique aux parents. Essayez gratuitement." />
+        <meta name="twitter:image" content={OG_IMAGE} />
+      </Helmet>
 
       {/* ── NAVBAR ─────────────────────────────────────────────────────── */}
       <nav className={`lp-nav${scrolled ? ' lp-nav--scrolled' : ''}`}>

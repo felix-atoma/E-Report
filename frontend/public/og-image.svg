@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f1a52"/>
+      <stop offset="50%" stop-color="#1E2A78"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <linearGradient id="spark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFB547"/>
+      <stop offset="55%" stop-color="#FF7A59"/>
+      <stop offset="100%" stop-color="#E94F8A"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Decorative blobs -->
+  <circle cx="1050" cy="80" r="220" fill="#FF7A59" opacity="0.12"/>
+  <circle cx="150" cy="550" r="180" fill="#E94F8A" opacity="0.1"/>
+
+  <!-- Logo icon -->
+  <rect x="80" y="80" width="72" height="72" rx="16" fill="#1E2A78" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
+  <g transform="translate(116 116)">
+    <path d="M 0 -24 C 2 -10, 10 -2, 24 0 C 10 2, 2 10, 0 24 C -2 10, -10 2, -24 0 C -10 -2, -2 -10, 0 -24 Z" fill="url(#spark)"/>
+  </g>
+
+  <!-- Brand name -->
+  <text x="168" y="127" font-family="Arial, sans-serif" font-size="32" font-weight="800" fill="white">NovaBulletin</text>
+
+  <!-- Main headline -->
+  <text x="80" y="250" font-family="Arial, sans-serif" font-size="58" font-weight="900" fill="white">Fini Excel.</text>
+  <text x="80" y="320" font-family="Arial, sans-serif" font-size="48" font-weight="900">
+    <tspan fill="#FFB547">Bienvenue dans le bulletin</tspan>
+  </text>
+  <text x="80" y="380" font-family="Arial, sans-serif" font-size="48" font-weight="900">
+    <tspan fill="#FF7A59">scolaire moderne.</tspan>
+  </text>
+
+  <!-- Subtitle -->
+  <text x="80" y="440" font-family="Arial, sans-serif" font-size="24" fill="#a5b4fc">Calcul automatique · PDF en 1 clic · Envoi WhatsApp aux parents</text>
+
+  <!-- Stats pills -->
+  <rect x="80" y="490" width="200" height="44" rx="22" fill="rgba(255,255,255,0.12)"/>
+  <text x="180" y="518" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="white" text-anchor="middle">3 jours → 30 min</text>
+
+  <rect x="296" y="490" width="160" height="44" rx="22" fill="rgba(255,255,255,0.12)"/>
+  <text x="376" y="518" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="white" text-anchor="middle">0 erreur</text>
+
+  <rect x="472" y="490" width="240" height="44" rx="22" fill="rgba(255,255,255,0.12)"/>
+  <text x="592" y="518" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="white" text-anchor="middle">100% parents informés</text>
+
+  <!-- Right side mockup -->
+  <rect x="780" y="120" width="350" height="380" rx="16" fill="white" opacity="0.95"/>
+  <rect x="780" y="120" width="350" height="36" rx="16" fill="#f3f4f6"/>
+  <rect x="780" y="140" width="350" height="16" fill="#f3f4f6"/>
+  <circle cx="802" cy="138" r="6" fill="#ef4444"/>
+  <circle cx="822" cy="138" r="6" fill="#f59e0b"/>
+  <circle cx="842" cy="138" r="6" fill="#10b981"/>
+
+  <!-- Mockup content -->
+  <text x="800" y="182" font-family="Arial, sans-serif" font-size="13" font-weight="700" fill="#111827">Tableau de bord — Trimestre 2</text>
+
+  <!-- Stats grid -->
+  <rect x="800" y="192" width="72" height="48" rx="8" fill="#eff6ff"/>
+  <text x="836" y="210" font-family="Arial, sans-serif" font-size="16" font-weight="900" fill="#1E2A78" text-anchor="middle">245</text>
+  <text x="836" y="228" font-family="Arial, sans-serif" font-size="10" fill="#6b7280" text-anchor="middle">Élèves</text>
+
+  <rect x="882" y="192" width="72" height="48" rx="8" fill="#f0fdf4"/>
+  <text x="918" y="210" font-family="Arial, sans-serif" font-size="16" font-weight="900" fill="#15803d" text-anchor="middle">98%</text>
+  <text x="918" y="228" font-family="Arial, sans-serif" font-size="10" fill="#6b7280" text-anchor="middle">Envoyés</text>
+
+  <rect x="964" y="192" width="72" height="48" rx="8" fill="#fef3c7"/>
+  <text x="1000" y="210" font-family="Arial, sans-serif" font-size="16" font-weight="900" fill="#92400e" text-anchor="middle">87%</text>
+  <text x="1000" y="228" font-family="Arial, sans-serif" font-size="10" fill="#6b7280" text-anchor="middle">Frais</text>
+
+  <!-- Student rows -->
+  <rect x="800" y="256" width="310" height="32" rx="6" fill="#f9fafb"/>
+  <text x="812" y="277" font-family="Arial, sans-serif" font-size="12" font-weight="600" fill="#374151">Kofi Mensah</text>
+  <text x="980" y="277" font-family="Arial, sans-serif" font-size="12" font-weight="700" fill="#1E2A78">15.4/20</text>
+  <rect x="1040" y="261" width="28" height="18" rx="4" fill="#d1fae5"/>
+  <text x="1054" y="275" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#065f46" text-anchor="middle">A</text>
+
+  <rect x="800" y="296" width="310" height="32" rx="6" fill="#f9fafb"/>
+  <text x="812" y="317" font-family="Arial, sans-serif" font-size="12" font-weight="600" fill="#374151">Yao Adjovi</text>
+  <text x="980" y="317" font-family="Arial, sans-serif" font-size="12" font-weight="700" fill="#1E2A78">17.2/20</text>
+  <rect x="1040" y="301" width="28" height="18" rx="4" fill="#fef3c7"/>
+  <text x="1054" y="315" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#92400e" text-anchor="middle">A+</text>
+
+  <rect x="800" y="336" width="310" height="32" rx="6" fill="#f9fafb"/>
+  <text x="812" y="357" font-family="Arial, sans-serif" font-size="12" font-weight="600" fill="#374151">Ama Koffi</text>
+  <text x="980" y="357" font-family="Arial, sans-serif" font-size="12" font-weight="700" fill="#1E2A78">13.8/20</text>
+  <rect x="1040" y="341" width="28" height="18" rx="4" fill="#dbeafe"/>
+  <text x="1054" y="355" font-family="Arial, sans-serif" font-size="10" font-weight="700" fill="#1e40af" text-anchor="middle">B</text>
+
+  <!-- WhatsApp notification -->
+  <rect x="800" y="390" width="310" height="56" rx="10" fill="#dcfce7" stroke="#86efac" stroke-width="1.5"/>
+  <text x="820" y="410" font-family="Arial, sans-serif" font-size="11" font-weight="700" fill="#15803d">📱 WhatsApp</text>
+  <text x="820" y="430" font-family="Arial, sans-serif" font-size="11" fill="#374151">Bulletin de Kofi reçu ✓✓</text>
+
+  <!-- Bottom URL -->
+  <text x="80" y="600" font-family="Arial, sans-serif" font-size="18" fill="rgba(255,255,255,0.4)">e-report-frontend.vercel.app</text>
+  <text x="1120" y="600" font-family="Arial, sans-serif" font-size="14" fill="rgba(255,255,255,0.3)" text-anchor="end">Fait avec ❤️ au Togo</text>
+</svg>
