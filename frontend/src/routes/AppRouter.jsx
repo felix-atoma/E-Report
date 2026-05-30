@@ -5,6 +5,7 @@ import HomePage               from '../pages/HomePage/HomePage';
 import LoginPage              from '../pages/auth/LoginPage/LoginPage';
 import RegisterSchoolPage     from '../pages/public/RegisterSchoolPage/RegisterSchoolPage';
 import LegalPage              from '../pages/public/LegalPage/LegalPage';
+import LandingPage            from '../pages/public/LandingPage/LandingPage';
 import SuperAdminPage         from '../pages/superadmin/SuperAdminPage/SuperAdminPage';
 import RegisterPage           from '../pages/auth/RegisterPage/RegisterPage';
 import ForgotPasswordPage     from '../pages/auth/ForgotPasswordPage/ForgotPasswordPage';
@@ -82,6 +83,7 @@ function AppRouter() {
     <Routes>
       {/* Public */}
       <Route path="/"                   element={<HomePage />} />
+      <Route path="/home"               element={<LandingPage />} />
       <Route path="/login"              element={<LoginPage />} />
       <Route path="/register"           element={<RegisterPage />} />
       <Route path="/register-school"    element={<RegisterSchoolPage />} />
