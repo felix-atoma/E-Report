@@ -231,6 +231,13 @@ export class GradesService {
     requestingRole: Role,
   ) {
     await this.assertSubjectAccess(classId, subjectId, requestingUserId, requestingRole);
+
+    const subject = await this.prisma.subject.findUnique({ where: { id: subjectId } });
+    if (!subject) throw new NotFoundException('Subject not found');
+
+    const cls = await this.prisma.class.findUnique({ where: { id: classId } });
+    if (!cls) throw new NotFoundException('Class not found');
+
     const results: { studentId: string; status: 'ok' | 'error'; message?: string }[] = [];
 
     for (const row of rows) {
@@ -240,23 +247,42 @@ export class GradesService {
         if (row.compo !== undefined && (row.compo < 0 || row.compo > 20))
           throw new Error('Composition hors plage 0–20');
 
-        await this.prisma.classFicheGrade.upsert({
-          where: {
-            classId_subjectId_studentId_academicYear_termNumber: {
-              classId, subjectId, studentId: row.studentId, academicYear, termNumber,
-            },
-          },
-          create: {
-            classId, subjectId, studentId: row.studentId,
-            academicYear, termNumber,
-            devoir: row.devoir ?? null,
-            compo: row.compo ?? null,
-          },
-          update: {
-            ...(row.devoir !== undefined && { devoir: row.devoir }),
-            ...(row.compo !== undefined && { compo: row.compo }),
-          },
+        // Find or create the student's report card for this term
+        let reportCard = await this.prisma.reportCard.findUnique({
+          where: { studentId_academicYear_termNumber: { studentId: row.studentId, academicYear, termNumber } },
         });
+        if (!reportCard) {
+          reportCard = await this.prisma.reportCard.create({
+            data: {
+              studentId: row.studentId,
+              classId,
+              academicYear,
+              termType: 'TRIMESTRE',
+              termNumber,
+              termName: `Trimestre ${termNumber}`,
+              createdById: requestingUserId,
+            },
+          });
+        }
+
+        const moy = computeMoyenneMatiere(null, null, null, null, row.devoir ?? null, row.compo ?? null);
+        const coef = 1;
+        const gradeData = {
+          noteDevoir: row.devoir ?? null,
+          noteComposition: row.compo ?? null,
+          moyenneMatiere: moy,
+          coefficient: coef,
+          weightedScore: moy !== null ? moy * coef : 0,
+          score: moy ?? 0,
+          appreciation: computeAppreciation(moy, subject.nameFr),
+        };
+
+        await (this.prisma.grade as any).upsert({
+          where: { reportCardId_subjectId: { reportCardId: reportCard.id, subjectId } },
+          create: { reportCardId: reportCard.id, subjectId, ...gradeData },
+          update: gradeData,
+        });
+
         results.push({ studentId: row.studentId, status: 'ok' });
       } catch (e: any) {
         results.push({ studentId: row.studentId, status: 'error', message: e.message });
