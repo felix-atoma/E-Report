@@ -221,6 +221,52 @@ export class GradesService {
     };
   }
 
+  async importCsvGrades(
+    classId: string,
+    subjectId: string,
+    academicYear: string,
+    termNumber: number,
+    rows: { studentId: string; devoir?: number; compo?: number }[],
+    requestingUserId: string,
+    requestingRole: Role,
+  ) {
+    await this.assertSubjectAccess(classId, subjectId, requestingUserId, requestingRole);
+    const results: { studentId: string; status: 'ok' | 'error'; message?: string }[] = [];
+
+    for (const row of rows) {
+      try {
+        if (row.devoir !== undefined && (row.devoir < 0 || row.devoir > 20))
+          throw new Error('Devoir hors plage 0–20');
+        if (row.compo !== undefined && (row.compo < 0 || row.compo > 20))
+          throw new Error('Composition hors plage 0–20');
+
+        await this.prisma.classFicheGrade.upsert({
+          where: {
+            classId_subjectId_studentId_academicYear_termNumber: {
+              classId, subjectId, studentId: row.studentId, academicYear, termNumber,
+            },
+          },
+          create: {
+            classId, subjectId, studentId: row.studentId,
+            academicYear, termNumber,
+            devoir: row.devoir ?? null,
+            compo: row.compo ?? null,
+          },
+          update: {
+            ...(row.devoir !== undefined && { devoir: row.devoir }),
+            ...(row.compo !== undefined && { compo: row.compo }),
+          },
+        });
+        results.push({ studentId: row.studentId, status: 'ok' });
+      } catch (e: any) {
+        results.push({ studentId: row.studentId, status: 'error', message: e.message });
+      }
+    }
+
+    const ok = results.filter((r) => r.status === 'ok').length;
+    return { imported: ok, failed: results.length - ok, results };
+  }
+
   async saveForClassSubject(
     classId: string,
     subjectId: string,

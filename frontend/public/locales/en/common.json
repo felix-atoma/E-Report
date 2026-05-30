@@ -27,7 +27,8 @@
     "lms":            "Learning",
     "mockExams":        "Mock Exams",
     "mockExamFiches":   "Mock Exam Sheets",
-    "mockExamResults":  "Mock Exam Results"
+    "mockExamResults":  "Mock Exam Results",
+    "bulkImport":       "CSV Import"
   },
 
   "section": {
@@ -258,5 +259,84 @@
 
   "welcome":     "Welcome",
   "loginAction": "Log in",
-  "logout":      "Log out"
+  "logout":      "Log out",
+
+  "common": {
+    "save":"Save","cancel":"Cancel","delete":"Delete","edit":"Edit","add":"Add",
+    "create":"Create","search":"Search…","loading":"Loading…","noResults":"No results",
+    "confirm":"Confirm","close":"Close","back":"Back","next":"Next","yes":"Yes","no":"No",
+    "actions":"Actions","status":"Status","name":"Name","email":"Email",
+    "required":"Required field","optional":"Optional","total":"Total","of":"of",
+    "perPage":"per page","page":"Page","all":"All","active":"Active","inactive":"Inactive",
+    "male":"Male","female":"Female","uploadFile":"Choose file",
+    "downloadTemplate":"Download template","importCsv":"Import CSV","exportCsv":"Export CSV",
+    "confirmDelete":"Are you sure you want to delete this item?",
+    "deleteWarning":"This action cannot be undone.",
+    "errorGeneric":"An error occurred. Please try again.",
+    "successSaved":"Changes saved.","successCreated":"Created successfully.",
+    "successDeleted":"Deleted successfully."
+  },
+
+  "classes": {
+    "title":"Classes","addClass":"Add class","className":"Class name","level":"Level",
+    "capacity":"Maximum capacity","teacher":"Head teacher","academicYear":"Academic year",
+    "students":"Students","subjects":"Subjects",
+    "classNamePlaceholder":"e.g. Grade 6A, Year 12C","levelPlaceholder":"e.g. Secondary, High school",
+    "noClasses":"No classes created","editClass":"Edit class","deleteClass":"Delete class",
+    "errors":{"nameRequired":"Class name required","yearRequired":"Academic year required"},
+    "toast":{"created":"Class created","updated":"Class updated","deleted":"Class deleted"}
+  },
+
+  "students": {
+    "title":"Students","addStudent":"Add student","admissionNumber":"Admission number",
+    "dateOfBirth":"Date of birth","gender":"Gender","class":"Class",
+    "parent":"Parent / Guardian","parentEmail":"Parent email","parentPhone":"Parent phone",
+    "noStudents":"No students registered","importStudents":"Import students (CSV)",
+    "editStudent":"Edit student","viewProfile":"View profile",
+    "errors":{"nameRequired":"Name required","classRequired":"Class required"},
+    "toast":{"created":"Student added","updated":"Student updated","deleted":"Student deleted",
+    "imported":"{{count}} student(s) imported"}
+  },
+
+  "payments": {
+    "title":"Payments","addPayment":"Record payment","student":"Student","fee":"Fee",
+    "amount":"Amount (FCFA)","method":"Payment method","date":"Date","reference":"Reference",
+    "noPayments":"No payments recorded","receipt":"Receipt",
+    "errors":{"studentRequired":"Student required","feeRequired":"Fee required",
+    "amountRequired":"Amount required","methodRequired":"Payment method required"},
+    "toast":{"created":"Payment recorded","deleted":"Payment cancelled"}
+  },
+
+  "settings": {
+    "title":"Settings","schoolName":"School name","schoolType":"School type",
+    "address":"Address","phone":"Phone","academicYear":"Academic year",
+    "currentTerm":"Current term","language":"Language","notifications":"Notifications",
+    "appearance":"Appearance","security":"Security","general":"General",
+    "toast":{"saved":"Settings saved"}
+  },
+
+  "grades": {
+    "title":"Grades","devoir":"Assignment","compo":"Exam","average":"Average",
+    "coefficient":"Coeff.","rank":"Rank","comment":"Comment","subject":"Subject",
+    "sign":"Sign grade sheet","unsign":"Remove signature","save":"Save grades",
+    "importCsv":"Import CSV","downloadTemplate":"Download template",
+    "signed":"Sheet signed","locked":"Sheet locked",
+    "toast":{"saved":"Grades saved","signed":"Sheet signed and locked",
+    "unsigned":"Signature removed","imported":"{{count}} grade(s) imported"}
+  },
+
+  "onboarding": {
+    "title":"Set up your school","subtitle":"{{done}} of {{total}} steps completed","hide":"Dismiss",
+    "branding":{"title":"Customise your school","desc":"Add your school logo and colours."},
+    "class":{"title":"Create your first class","desc":"e.g. Grade 6A, Year 12C."},
+    "subject":{"title":"Add subjects","desc":"Maths, French, Sciences… with their coefficients."},
+    "teacher":{"title":"Invite your teachers","desc":"They will receive a one-time code by email."},
+    "student":{"title":"Import your students","desc":"Add students one by one or via CSV."},
+    "fee":{"title":"Configure school fees","desc":"Report cards will be blocked if fees are unpaid."}
+  },
+
+  "legal": {
+    "tos":"Terms of Use","privacy":"Privacy Policy",
+    "accept":"By submitting this form, you accept our","and":"and our"
+  }
 }

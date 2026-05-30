@@ -340,6 +340,12 @@ function RegisterSchoolPage() {
             Vous avez déjà un compte ?{' '}
             <Link to="/login" className="rsp-link">Se connecter</Link>
           </p>
+          <p className="rsp-legal-note">
+            En soumettant ce formulaire, vous acceptez nos{' '}
+            <Link to="/legal/tos" target="_blank" className="rsp-link">Conditions d'utilisation</Link>
+            {' '}et notre{' '}
+            <Link to="/legal/privacy" target="_blank" className="rsp-link">Politique de confidentialité</Link>.
+          </p>
         </div>
       </div>
     </div>

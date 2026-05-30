@@ -27,7 +27,8 @@
     "lms":            "Apprentissage",
     "mockExams":        "Examens blancs",
     "mockExamFiches":   "Fiches d'exam. blancs",
-    "mockExamResults":  "Résultats exam. blancs"
+    "mockExamResults":  "Résultats exam. blancs",
+    "bulkImport":       "Importation CSV"
   },
 
   "section": {
@@ -258,5 +259,184 @@
 
   "welcome":     "Bienvenue",
   "loginAction": "Se connecter",
-  "logout":      "Déconnexion"
+  "logout":      "Déconnexion",
+
+  "common": {
+    "save":        "Enregistrer",
+    "cancel":      "Annuler",
+    "delete":      "Supprimer",
+    "edit":        "Modifier",
+    "add":         "Ajouter",
+    "create":      "Créer",
+    "search":      "Rechercher…",
+    "loading":     "Chargement…",
+    "noResults":   "Aucun résultat",
+    "confirm":     "Confirmer",
+    "close":       "Fermer",
+    "back":        "Retour",
+    "next":        "Suivant",
+    "yes":         "Oui",
+    "no":          "Non",
+    "actions":     "Actions",
+    "status":      "Statut",
+    "name":        "Nom",
+    "email":       "Email",
+    "required":    "Champ requis",
+    "optional":    "Optionnel",
+    "total":       "Total",
+    "of":          "sur",
+    "perPage":     "par page",
+    "page":        "Page",
+    "all":         "Tous",
+    "active":      "Actif",
+    "inactive":    "Inactif",
+    "male":        "Masculin",
+    "female":      "Féminin",
+    "uploadFile":  "Choisir un fichier",
+    "downloadTemplate": "Télécharger le modèle",
+    "importCsv":   "Importer CSV",
+    "exportCsv":   "Exporter CSV",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cet élément ?",
+    "deleteWarning": "Cette action est irréversible.",
+    "errorGeneric": "Une erreur est survenue. Veuillez réessayer.",
+    "successSaved": "Modifications enregistrées.",
+    "successCreated": "Créé avec succès.",
+    "successDeleted": "Supprimé avec succès."
+  },
+
+  "classes": {
+    "title":           "Classes",
+    "addClass":        "Ajouter une classe",
+    "className":       "Nom de la classe",
+    "level":           "Niveau",
+    "capacity":        "Effectif maximum",
+    "teacher":         "Enseignant principal",
+    "academicYear":    "Année scolaire",
+    "students":        "Élèves",
+    "subjects":        "Matières",
+    "classNamePlaceholder": "ex: 6ème A, Terminale C",
+    "levelPlaceholder":     "ex: Collège, Lycée",
+    "noClasses":       "Aucune classe créée",
+    "editClass":       "Modifier la classe",
+    "deleteClass":     "Supprimer la classe",
+    "errors": {
+      "nameRequired":  "Nom de la classe requis",
+      "yearRequired":  "Année scolaire requise"
+    },
+    "toast": {
+      "created": "Classe créée",
+      "updated": "Classe mise à jour",
+      "deleted": "Classe supprimée"
+    }
+  },
+
+  "students": {
+    "title":           "Élèves",
+    "addStudent":      "Ajouter un élève",
+    "admissionNumber": "Numéro d'admission",
+    "dateOfBirth":     "Date de naissance",
+    "gender":          "Sexe",
+    "class":           "Classe",
+    "parent":          "Parent / Tuteur",
+    "parentEmail":     "Email du parent",
+    "parentPhone":     "Téléphone du parent",
+    "noStudents":      "Aucun élève enregistré",
+    "importStudents":  "Importer des élèves (CSV)",
+    "editStudent":     "Modifier l'élève",
+    "viewProfile":     "Voir le profil",
+    "errors": {
+      "nameRequired":  "Nom requis",
+      "classRequired": "Classe requise"
+    },
+    "toast": {
+      "created": "Élève ajouté",
+      "updated": "Élève mis à jour",
+      "deleted": "Élève supprimé",
+      "imported": "{{count}} élève(s) importé(s)"
+    }
+  },
+
+  "payments": {
+    "title":          "Paiements",
+    "addPayment":     "Enregistrer un paiement",
+    "student":        "Élève",
+    "fee":            "Cotisation",
+    "amount":         "Montant (FCFA)",
+    "method":         "Mode de paiement",
+    "date":           "Date",
+    "reference":      "Référence",
+    "noPayments":     "Aucun paiement enregistré",
+    "receipt":        "Reçu",
+    "errors": {
+      "studentRequired": "Élève requis",
+      "feeRequired":     "Cotisation requise",
+      "amountRequired":  "Montant requis",
+      "methodRequired":  "Mode de paiement requis"
+    },
+    "toast": {
+      "created": "Paiement enregistré",
+      "deleted": "Paiement annulé"
+    }
+  },
+
+  "settings": {
+    "title":           "Paramètres",
+    "schoolName":      "Nom de l'établissement",
+    "schoolType":      "Type d'établissement",
+    "address":         "Adresse",
+    "phone":           "Téléphone",
+    "academicYear":    "Année scolaire",
+    "currentTerm":     "Trimestre en cours",
+    "language":        "Langue",
+    "notifications":   "Notifications",
+    "appearance":      "Apparence",
+    "security":        "Sécurité",
+    "general":         "Général",
+    "toast": {
+      "saved": "Paramètres enregistrés"
+    }
+  },
+
+  "grades": {
+    "title":       "Notes",
+    "devoir":      "Devoir",
+    "compo":       "Composition",
+    "average":     "Moyenne",
+    "coefficient": "Coeff.",
+    "rank":        "Rang",
+    "comment":     "Appréciation",
+    "subject":     "Matière",
+    "sign":        "Signer la fiche",
+    "unsign":      "Annuler la signature",
+    "save":        "Enregistrer les notes",
+    "importCsv":   "Importer CSV",
+    "downloadTemplate": "Télécharger le modèle",
+    "signed":      "Fiche signée",
+    "locked":      "Fiche verrouillée",
+    "toast": {
+      "saved":   "Notes enregistrées",
+      "signed":  "Fiche signée et verrouillée",
+      "unsigned":"Signature annulée",
+      "imported":"{{count}} note(s) importée(s)"
+    }
+  },
+
+  "onboarding": {
+    "title":    "Configurez votre école",
+    "subtitle": "{{done}} sur {{total}} étapes complétées",
+    "hide":     "Masquer",
+    "branding": { "title": "Personnalisez votre école", "desc": "Ajoutez le logo et les couleurs de votre établissement." },
+    "class":    { "title": "Créez votre première classe", "desc": "Ex : 6ème A, Terminale C, CP1." },
+    "subject":  { "title": "Ajoutez les matières", "desc": "Maths, Français, Sciences… avec leurs coefficients." },
+    "teacher":  { "title": "Invitez vos enseignants", "desc": "Ils recevront un code OTP par email pour se connecter." },
+    "student":  { "title": "Importez vos élèves", "desc": "Ajoutez les élèves un par un ou via CSV." },
+    "fee":      { "title": "Configurez les frais scolaires", "desc": "Les bulletins seront bloqués si les frais sont impayés." }
+  },
+
+  "legal": {
+    "tos":     "Conditions d'utilisation",
+    "privacy": "Politique de confidentialité",
+    "accept":  "En soumettant ce formulaire, vous acceptez nos",
+    "and":     "et notre"
+  }
 }

@@ -4,6 +4,7 @@ import ProtectedRoute from '../components/auth/ProtectedRoute/ProtectedRoute';
 import HomePage               from '../pages/HomePage/HomePage';
 import LoginPage              from '../pages/auth/LoginPage/LoginPage';
 import RegisterSchoolPage     from '../pages/public/RegisterSchoolPage/RegisterSchoolPage';
+import LegalPage              from '../pages/public/LegalPage/LegalPage';
 import SuperAdminPage         from '../pages/superadmin/SuperAdminPage/SuperAdminPage';
 import RegisterPage           from '../pages/auth/RegisterPage/RegisterPage';
 import ForgotPasswordPage     from '../pages/auth/ForgotPasswordPage/ForgotPasswordPage';
@@ -90,6 +91,7 @@ function AppRouter() {
       <Route path="/set-password"       element={<SetPasswordPage />} />
       <Route path="/auth/callback"      element={<GoogleCallbackPage />} />
       <Route path="/verify-bulletin"    element={<BulletinVerifyPage />} />
+      <Route path="/legal/:type"        element={<LegalPage />} />
       <Route path="/unauthorized"       element={<UnauthorizedPage />} />
       <Route path="/error"              element={<ErrorPage />} />
 

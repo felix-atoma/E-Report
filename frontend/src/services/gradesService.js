@@ -26,4 +26,11 @@ export const gradesService = {
     api.delete(`/grades/class/${classId}/subject/${subjectId}/sign`, {
       params: { academicYear, termNumber },
     }),
+
+  importCsvGrades: (classId, subjectId, academicYear, termNumber, rows) =>
+    api.post(
+      `/grades/class/${classId}/subject/${subjectId}/import-csv`,
+      { rows },
+      { params: { academicYear, termNumber } },
+    ),
 };

@@ -299,3 +299,11 @@
   .rsp-form { padding: 1.25rem 1rem; }
   .rsp-row  { gap: 0.625rem; }
 }
+
+.rsp-legal-note {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  text-align: center;
+  margin-top: 0.75rem;
+  line-height: 1.5;
+}

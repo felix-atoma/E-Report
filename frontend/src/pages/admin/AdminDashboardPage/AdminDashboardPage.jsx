@@ -6,6 +6,7 @@ import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Card from '../../../components/common/Card/Card';
 import StatusPill from '../../../components/common/StatusPill/StatusPill';
 import Loading from '../../../components/common/Loading/Loading';
+import OnboardingWizard from '../../../components/common/OnboardingWizard/OnboardingWizard';
 import './AdminDashboardPage.css';
 
 const STAT_ICONS = {
@@ -107,6 +108,7 @@ function AdminDashboardPage() {
         subtitle={academicYear ? t('dash.academicYear', { year: academicYear }) : t('dash.currentYear')}
       />
 
+      <OnboardingWizard stats={overview} />
       <div className="dashboard-stats stagger">
         <StatCard label={t('dash.students')}         value={overview?.students}         icon="students"    color="blue" />
         <StatCard label={t('dash.teachers')}         value={overview?.teachers}         icon="teachers"    color="teal" />

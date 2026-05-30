@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -203,6 +203,50 @@ export default function GradeEntryPage() {
     onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur lors de l\'enregistrement'),
   });
 
+  const csvRef = useRef(null);
+  const csvMutation = useMutation({
+    mutationFn: (rows) => gradesService.importCsvGrades(classId, subjectId, academicYear, termNumber, rows),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ficheKey });
+      toast.success(`${data.data.imported} note(s) importée(s)${data.data.failed ? `, ${data.data.failed} erreur(s)` : ''}.`);
+    },
+    onError: () => toast.error('Erreur lors de l\'import CSV'),
+  });
+
+  const handleCsvImport = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const lines = ev.target.result.split('\n').filter(Boolean);
+      const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
+      const idIdx = headers.findIndex((h) => h.includes('id') || h.includes('matricule'));
+      const devIdx = headers.findIndex((h) => h.includes('devoir') || h === 'd');
+      const compoIdx = headers.findIndex((h) => h.includes('compo') || h === 'c');
+      if (idIdx === -1) { toast.error('Colonne studentId/matricule introuvable'); return; }
+      const rows = lines.slice(1).map((line) => {
+        const cols = line.split(',');
+        return {
+          studentId: cols[idIdx]?.trim(),
+          ...(devIdx !== -1 && cols[devIdx]?.trim() && { devoir: parseFloat(cols[devIdx]) }),
+          ...(compoIdx !== -1 && cols[compoIdx]?.trim() && { compo: parseFloat(cols[compoIdx]) }),
+        };
+      }).filter((r) => r.studentId);
+      csvMutation.mutate(rows);
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const downloadTemplate = () => {
+    const students = rows.map((r) => `${r.studentId},${r.studentName},,""`);
+    const csv = ['studentId,Nom,devoir,compo', ...students].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'template_notes.csv'; a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const signMutation = useMutation({
     mutationFn: (signatureData) =>
       gradesService.signFiche(classId, subjectId, academicYear, termNumber, signatureData),
@@ -357,6 +401,17 @@ export default function GradeEntryPage() {
           Notes enregistrées avec succès.
         </div>
       )}
+
+      <div className="fdn__csv-bar">
+        <span className="fdn__csv-label">Import CSV :</span>
+        <button type="button" className="fdn__btn fdn__btn--csv-dl" onClick={downloadTemplate}>
+          ⬇ Télécharger le modèle
+        </button>
+        <button type="button" className="fdn__btn fdn__btn--csv-up" onClick={() => csvRef.current?.click()} disabled={csvMutation.isPending}>
+          ⬆ Importer les notes
+        </button>
+        <input ref={csvRef} type="file" accept=".csv" style={{ display: 'none' }} onChange={handleCsvImport} />
+      </div>
 
       {isSigned && (
         <div className="fdn__signature-banner">

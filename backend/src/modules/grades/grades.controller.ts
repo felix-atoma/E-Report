@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { GradesService } from './grades.service';
 import { BulkGradesDto } from './dto/bulk-grades.dto';
@@ -93,6 +93,24 @@ export class GradesController {
     return this.service.signFiche(
       classId, subjectId, academicYear, parseInt(termNumber, 10),
       user.id, user.role, body?.signatureData,
+    );
+  }
+
+  @Post('class/:classId/subject/:subjectId/import-csv')
+  @Roles(Role.ADMIN, Role.TEACHER)
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Import grades from CSV rows (array of {studentId, devoir, compo})' })
+  importCsv(
+    @Param('classId') classId: string,
+    @Param('subjectId') subjectId: string,
+    @Query('academicYear') academicYear: string,
+    @Query('termNumber') termNumber: string,
+    @Body() body: { rows: { studentId: string; devoir?: number; compo?: number }[] },
+    @CurrentUser() user: any,
+  ) {
+    return this.service.importCsvGrades(
+      classId, subjectId, academicYear, parseInt(termNumber, 10),
+      body.rows, user.id, user.role,
     );
   }
 

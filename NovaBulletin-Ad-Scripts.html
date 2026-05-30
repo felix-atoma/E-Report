@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NovaBulletin — Scripts Publicitaires</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f8fafc;
+      color: #1f2937;
+      line-height: 1.7;
+    }
+
+    .cover {
+      background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);
+      color: #fff;
+      padding: 60px 40px;
+      text-align: center;
+      page-break-after: always;
+    }
+    .cover h1 { font-size: 2.8rem; font-weight: 900; letter-spacing: -1px; margin-bottom: 10px; }
+    .cover h2 { font-size: 1.3rem; font-weight: 400; color: #93c5fd; margin-bottom: 30px; }
+    .cover .tagline {
+      display: inline-block;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 50px;
+      padding: 12px 32px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 40px;
+    }
+    .cover .meta { font-size: 0.9rem; color: #93c5fd; }
+
+    .toc {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 40px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      page-break-after: always;
+    }
+    .toc h2 { font-size: 1.4rem; color: #1e3a8a; margin-bottom: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
+    .toc ol { padding-left: 20px; }
+    .toc li { padding: 6px 0; font-size: 1rem; color: #374151; }
+    .toc li span { color: #6b7280; font-size: 0.85rem; }
+
+    .section {
+      max-width: 800px;
+      margin: 30px auto;
+      padding: 40px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      page-break-inside: avoid;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #e5e7eb;
+    }
+    .section-num {
+      width: 40px; height: 40px;
+      background: #1e3a8a;
+      color: #fff;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .section-title { font-size: 1.4rem; font-weight: 800; color: #1e3a8a; }
+    .section-sub { font-size: 0.85rem; color: #6b7280; margin-top: 2px; }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 12px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+    }
+    .badge--youtube { background: #fee2e2; color: #dc2626; }
+    .badge--facebook { background: #dbeafe; color: #1d4ed8; }
+    .badge--google { background: #dcfce7; color: #16a34a; }
+    .badge--whatsapp { background: #d1fae5; color: #065f46; }
+    .badge--core { background: #fef3c7; color: #92400e; }
+
+    .scene {
+      background: #f8fafc;
+      border-left: 4px solid #1e3a8a;
+      border-radius: 0 8px 8px 0;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+    }
+    .scene-header {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #1e3a8a;
+      margin-bottom: 10px;
+    }
+    .scene-time {
+      display: inline-block;
+      background: #1e3a8a;
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-right: 8px;
+    }
+
+    .voice { font-style: italic; color: #374151; margin: 8px 0; }
+    .visual { color: #6b7280; font-size: 0.9rem; margin: 6px 0; }
+    .visual::before { content: "🎬 "; }
+
+    .advantage-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 0.9rem;
+    }
+    .advantage-table th {
+      background: #1e3a8a;
+      color: #fff;
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 700;
+    }
+    .advantage-table th:first-child { border-radius: 8px 0 0 0; }
+    .advantage-table th:last-child { border-radius: 0 8px 0 0; }
+    .advantage-table td {
+      padding: 10px 16px;
+      border-bottom: 1px solid #f3f4f6;
+      vertical-align: top;
+    }
+    .advantage-table tr:nth-child(even) td { background: #f9fafb; }
+    .advantage-table .bad { color: #dc2626; }
+    .advantage-table .good { color: #16a34a; font-weight: 600; }
+
+    .msg-block {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .msg-block-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #065f46;
+      margin-bottom: 12px;
+    }
+    .msg-block p { color: #1f2937; font-size: 0.95rem; margin-bottom: 8px; }
+
+    .ad-block {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+    }
+    .ad-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #1d4ed8; margin-bottom: 12px; }
+    .ad-line { display: flex; gap: 8px; margin-bottom: 6px; align-items: flex-start; }
+    .ad-label { font-size: 0.72rem; font-weight: 700; color: #6b7280; min-width: 80px; padding-top: 2px; }
+    .ad-content { font-size: 0.9rem; color: #1f2937; }
+
+    .keywords {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .keyword {
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      color: #166534;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .core-message {
+      background: linear-gradient(135deg, #1e3a8a, #1d4ed8);
+      color: #fff;
+      border-radius: 16px;
+      padding: 40px;
+      text-align: center;
+    }
+    .core-message h3 { font-size: 1.8rem; font-weight: 900; line-height: 1.3; margin-bottom: 16px; }
+    .core-message p { font-size: 1rem; color: #93c5fd; }
+
+    .tip {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-left: 4px solid #f59e0b;
+      border-radius: 0 8px 8px 0;
+      padding: 14px 18px;
+      margin: 16px 0;
+      font-size: 0.9rem;
+      color: #78350f;
+    }
+    .tip strong { color: #92400e; }
+
+    .divider {
+      max-width: 800px;
+      margin: 0 auto;
+      border: none;
+      border-top: 2px dashed #e5e7eb;
+    }
+
+    .footer {
+      max-width: 800px;
+      margin: 30px auto 60px;
+      padding: 30px 40px;
+      background: #1e3a8a;
+      color: #93c5fd;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    .footer strong { color: #fff; }
+
+    @media print {
+      body { background: #fff; }
+      .section, .toc { box-shadow: none; margin: 20px 0; }
+      .cover { page-break-after: always; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <h1>NovaBulletin</h1>
+  <h2>Scripts Publicitaires Complets</h2>
+  <div class="tagline">📢 Avantages Concurrentiels vs Excel</div>
+  <p class="meta">Préparé pour : Felix Atoma &nbsp;|&nbsp; Marché cible : Écoles francophones d'Afrique</p>
+</div>
+
+<!-- TABLE OF CONTENTS -->
+<div class="toc">
+  <h2>Table des Matières</h2>
+  <ol>
+    <li>Avantages Concurrentiels — Tableau Comparatif <span>(vs Excel)</span></li>
+    <li>YouTube Ad — 60 Secondes <span>(Version complète)</span></li>
+    <li>YouTube Ad — 30 Secondes <span>(Version courte)</span></li>
+    <li>Facebook / Instagram Ad <span>(Image + Texte)</span></li>
+    <li>Google Search Ads <span>(Annonces texte)</span></li>
+    <li>WhatsApp Broadcast <span>(3 messages séquentiels)</span></li>
+    <li>Message Central <span>(À mémoriser)</span></li>
+  </ol>
+</div>
+
+<!-- SECTION 1: COMPETITIVE ADVANTAGES -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">1</div>
+    <div>
+      <div class="section-title">Avantages Concurrentiels</div>
+      <div class="section-sub">NovaBulletin vs Excel — Comparaison directe</div>
+    </div>
+  </div>
+
+  <table class="advantage-table">
+    <tr>
+      <th>Critère</th>
+      <th>Excel (ancien système)</th>
+      <th>NovaBulletin</th>
+    </tr>
+    <tr>
+      <td><strong>Calcul des moyennes</strong></td>
+      <td class="bad">❌ Manuel — formules à créer, risque d'erreurs</td>
+      <td class="good">✅ Automatique — 0 erreur possible</td>
+    </tr>
+    <tr>
+      <td><strong>Génération des bulletins</strong></td>
+      <td class="bad">❌ Mise en page manuelle, impression, distribution</td>
+      <td class="good">✅ PDF généré en 1 clic avec logo de l'école</td>
+    </tr>
+    <tr>
+      <td><strong>Envoi aux parents</strong></td>
+      <td class="bad">❌ Papier physique — lent, souvent perdu</td>
+      <td class="good">✅ WhatsApp + Email — reçu le jour même</td>
+    </tr>
+    <tr>
+      <td><strong>Suivi des frais scolaires</strong></td>
+      <td class="bad">❌ Séparé, aucun lien avec les bulletins</td>
+      <td class="good">✅ Intégré — bloque automatiquement si impayé</td>
+    </tr>
+    <tr>
+      <td><strong>Accès des parents</strong></td>
+      <td class="bad">❌ Aucun accès direct</td>
+      <td class="good">✅ Portail dédié 24h/24, 7j/7</td>
+    </tr>
+    <tr>
+      <td><strong>Accès des enseignants</strong></td>
+      <td class="bad">❌ Fichiers partagés, conflits de versions</td>
+      <td class="good">✅ Chaque enseignant a son propre accès sécurisé</td>
+    </tr>
+    <tr>
+      <td><strong>Temps par trimestre</strong></td>
+      <td class="bad">❌ 3 à 5 jours de travail</td>
+      <td class="good">✅ 30 minutes suffisent</td>
+    </tr>
+    <tr>
+      <td><strong>Historique des bulletins</strong></td>
+      <td class="bad">❌ Fichiers éparpillés, risque de perte</td>
+      <td class="good">✅ Tout centralisé, accessible en permanence</td>
+    </tr>
+    <tr>
+      <td><strong>Recouvrement des frais</strong></td>
+      <td class="bad">❌ Manuel, inefficace</td>
+      <td class="good">✅ Automatique — les parents paient pour accéder</td>
+    </tr>
+    <tr>
+      <td><strong>Compétences requises</strong></td>
+      <td class="bad">❌ Maîtrise d'Excel indispensable</td>
+      <td class="good">✅ Aucune — interface simple sur mobile</td>
+    </tr>
+    <tr>
+      <td><strong>Coût de démarrage</strong></td>
+      <td class="bad">❌ Logiciel + formation + temps</td>
+      <td class="good">✅ Essayez d'abord — payez seulement si satisfait</td>
+    </tr>
+  </table>
+
+  <div class="tip">
+    <strong>Argument clé à retenir :</strong> "Excel vous prend 3 à 5 jours de travail manuel chaque trimestre, avec des risques d'erreurs et des parents qui ne reçoivent rien. NovaBulletin fait tout ça en 30 minutes, automatiquement, et les parents reçoivent le bulletin sur WhatsApp le jour même."
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- SECTION 2: YOUTUBE 60s -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <div>
+      <div class="section-title">YouTube Ad — 60 Secondes</div>
+      <div class="section-sub">Version complète — Maximum d'impact</div>
+    </div>
+  </div>
+
+  <span class="badge badge--youtube">▶ YouTube — 60 secondes</span>
+
+  <div class="scene">
+    <div class="scene-header"><span class="scene-time">0 – 8 sec</span>SCÈNE 1 — LE PROBLÈME</div>
+    <p class="visual">Un(e) secrétaire scolaire devant un écran Excel rempli de chiffres. Elle efface, recorrige, recommence. La pile de papiers déborde de son bureau. Il est 23h. Elle est épuisée.</p>
+    <p class="voice">"Chaque fin de trimestre, c'est la même histoire. Des heures. Des jours. Des nuits à saisir des notes dans Excel. À corriger des formules. À imprimer des bulletins qui se perdent ou qui arrivent en retard chez les parents."</p>
+  </div>
+
+  <div class="scene">
+    <div class="scene-header"><span class="scene-time">8 – 20 sec</span>SCÈNE 2 — LA RÉVÉLATION ⚠️ Ne pas passer après ce point</div>
+    <p class="visual">Écran noir. Logo NovaBulletin apparaît avec animation. Enseignant sur son téléphone, saisit des notes dans une interface claire et moderne.</p>
+    <p class="voice">"NovaBulletin change tout ça. Vos enseignants saisissent les notes directement depuis leur téléphone. NovaBulletin calcule toutes les moyennes automatiquement — sans aucune formule Excel, sans aucune erreur."</p>
+  </div>
+
+  <div class="scene">
+    <div class="scene-header"><span class="scene-time">20 – 35 sec</span>SCÈNE 3 — LE PDF EN 1 CLIC</div>
+    <p class="visual">Animation montrant un bulletin PDF se générer automatiquement avec le logo de l'école dessus.</p>
+    <p class="voice">"En un seul clic, le bulletin de chaque élève est généré automatiquement au format PDF — avec le nom de votre école, votre logo, vos couleurs. Pas de mise en page. Pas d'impression. Pas de distribution manuelle."</p>
+  </div>
+
+  <div class="scene">
+    <div class="scene-header"><span class="scene-time">35 – 47 sec</span>SCÈNE 4 — PARENTS SUR WHATSAPP</div>
+    <p class="visual">Notification WhatsApp sur le téléphone d'un parent. Il sourit en lisant les résultats de son enfant.</p>
+    <p class="voice">"Les parents reçoivent le bulletin de leur enfant directement sur WhatsApp ou par email — le jour même de la publication. Plus d'attente. Plus de bulletins perdus. Les parents sont informés en temps réel, où qu'ils soient."</p>
+  </div>
+
+  <div class="scene">
+    <div class="scene-header"><span class="scene-time">47 – 55 sec</span>SCÈNE 5 — FRAIS SCOLAIRES</div>
+    <p class="visual">Interface admin montrant les frais scolaires. Un bulletin est marqué "retenu" pour un élève avec frais impayés.</p>
+    <p class="voice">"Et pour les établissements qui ont des problèmes de recouvrement de frais scolaires — NovaBulletin bloque automatiquement l'accès au bulletin tant que les frais ne sont pas réglés. Plus besoin de courir après les parents. Le système travaille pour vous."</p>
+  </div>
+
+  <div class="scene" style="border-left-color: #f59e0b;">
+    <div class="scene-header" style="color: #92400e;"><span class="scene-time" style="background:#f59e0b;">55 – 60 sec</span>SCÈNE 6 — CALL TO ACTION</div>
+    <p class="visual">Logo NovaBulletin. URL en grand à l'écran.</p>
+    <p class="voice">"NovaBulletin. Le bulletin scolaire moderne pour les écoles d'Afrique. Essayez ce trimestre. Vous payez seulement si vous êtes satisfait. Sinon, vous revenez à votre ancien système. Aucun risque."</p>
+    <br>
+    <p><strong>Texte à l'écran :</strong></p>
+    <p>🌐 e-report-frontend.vercel.app</p>
+    <p>📱 Disponible sur tous les appareils</p>
+    <p>✅ Payez seulement si vous êtes satisfait</p>
+  </div>
+</div>
+
+<!-- SECTION 3: YOUTUBE 30s -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">3</div>
+    <div>
+      <div class="section-title">YouTube Ad — 30 Secondes</div>
+      <div class="section-sub">Version courte — Pour les campagnes budget serré</div>
+    </div>
+  </div>
+
+  <span class="badge badge--youtube">▶ YouTube — 30 secondes</span>
+
+  <div class="scene">
+    <div class="scene-header"><span class="scene-time">0 – 6 sec</span>ACCROCHE</div>
+    <p class="visual">Excel ouvert, formules partout, message d'erreur rouge.</p>
+    <p class="voice">"Vous passez encore des nuits sur Excel pour préparer les bulletins scolaires ?"</p>
+  </div>
+
+  <div class="scene">
+    <div class="scene-header"><span class="scene-time">6 – 18 sec</span>SOLUTION</div>
+    <p class="visual">NovaBulletin en action. Notes saisies → Bulletin généré → Notification WhatsApp reçue.</p>
+    <p class="voice">"NovaBulletin calcule les moyennes automatiquement, génère les bulletins PDF en un clic, et les envoie aux parents directement sur WhatsApp. 3 jours de travail réduits à 30 minutes."</p>
+  </div>
+
+  <div class="scene" style="border-left-color: #f59e0b;">
+    <div class="scene-header" style="color: #92400e;"><span class="scene-time" style="background:#f59e0b;">18 – 30 sec</span>CALL TO ACTION</div>
+    <p class="visual">Logo + site web + téléphone avec notification.</p>
+    <p class="voice">"NovaBulletin. Le bulletin scolaire intelligent. Essayez ce trimestre — vous payez seulement si vous êtes satisfait."</p>
+    <p><strong>URL :</strong> e-report-frontend.vercel.app</p>
+  </div>
+</div>
+
+<!-- SECTION 4: FACEBOOK -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">4</div>
+    <div>
+      <div class="section-title">Facebook / Instagram Ad</div>
+      <div class="section-sub">Texte + Image — Ciblage directeurs d'école</div>
+    </div>
+  </div>
+
+  <span class="badge badge--facebook">👍 Facebook / Instagram</span>
+
+  <div class="ad-block">
+    <div class="ad-title">Texte de l'annonce</div>
+    <div class="ad-line">
+      <span class="ad-label">TITRE :</span>
+      <span class="ad-content"><strong>Fini Excel pour les bulletins scolaires 🎓</strong></span>
+    </div>
+  </div>
+
+  <div class="msg-block">
+    <div class="msg-block-title">Corps du message complet</div>
+    <p>Vous êtes directeur(trice) d'école et vous utilisez encore Excel pour gérer les bulletins scolaires ?</p>
+    <p>Voici ce que ça vous coûte vraiment :</p>
+    <p>❌ 3 à 5 jours de travail manuel par trimestre<br>
+    ❌ Des erreurs de calcul impossibles à détecter<br>
+    ❌ Des bulletins que les parents ne reçoivent jamais<br>
+    ❌ Des frais impayés que personne ne relance</p>
+    <p>✅ NovaBulletin fait tout ça à votre place :</p>
+    <p>• Calcul automatique des moyennes (0 erreur)<br>
+    • Génération PDF instantanée avec votre logo<br>
+    • Envoi automatique sur WhatsApp des parents<br>
+    • Blocage des bulletins si frais impayés<br>
+    • Tableau de bord pour l'admin, les enseignants, l'économe ET les parents</p>
+    <p>Plus de 30 minutes suffisent pour ce qui vous prenait 3 jours.</p>
+    <p>🤝 NOTRE ENGAGEMENT : Essayez ce trimestre. Si ça vous convient, vous payez en fin de trimestre. Si non, vous revenez à votre ancien système. Aucun risque pour vous.</p>
+    <p>👇 Cliquez pour commencer dès aujourd'hui :<br>
+    <strong>e-report-frontend.vercel.app</strong></p>
+  </div>
+
+  <div class="ad-block">
+    <div class="ad-title">Paramètres de ciblage recommandés</div>
+    <div class="ad-line"><span class="ad-label">Pays :</span><span class="ad-content">Togo, Bénin, Côte d'Ivoire, Sénégal, Ghana, Cameroun</span></div>
+    <div class="ad-line"><span class="ad-label">Profession :</span><span class="ad-content">Directeur d'école, Proviseur, Chef d'établissement, Enseignant, Secrétaire scolaire</span></div>
+    <div class="ad-line"><span class="ad-label">Intérêts :</span><span class="ad-content">Éducation, Gestion scolaire, Microsoft Excel, Administration publique</span></div>
+    <div class="ad-line"><span class="ad-label">Âge :</span><span class="ad-content">30 – 60 ans</span></div>
+    <div class="ad-line"><span class="ad-label">Budget :</span><span class="ad-content">Commencer avec 3–5 USD/jour</span></div>
+  </div>
+</div>
+
+<!-- SECTION 5: GOOGLE SEARCH -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">5</div>
+    <div>
+      <div class="section-title">Google Search Ads</div>
+      <div class="section-sub">Annonces texte — Personnes qui cherchent activement</div>
+    </div>
+  </div>
+
+  <span class="badge badge--google">🔍 Google Ads</span>
+
+  <div class="ad-block">
+    <div class="ad-title">Annonce 1</div>
+    <div class="ad-line"><span class="ad-label">Titre 1 :</span><span class="ad-content">Bulletins scolaires automatiques</span></div>
+    <div class="ad-line"><span class="ad-label">Titre 2 :</span><span class="ad-content">Remplacez Excel en 30 minutes</span></div>
+    <div class="ad-line"><span class="ad-label">Titre 3 :</span><span class="ad-content">Essayez d'abord — Payez si satisfait</span></div>
+    <div class="ad-line"><span class="ad-label">Description :</span><span class="ad-content">Calcul automatique des moyennes, PDF en 1 clic, envoi WhatsApp aux parents. Fini la saisie manuelle. Essayez NovaBulletin gratuitement dès aujourd'hui.</span></div>
+  </div>
+
+  <div class="ad-block">
+    <div class="ad-title">Annonce 2</div>
+    <div class="ad-line"><span class="ad-label">Titre 1 :</span><span class="ad-content">Logiciel bulletin scolaire Togo</span></div>
+    <div class="ad-line"><span class="ad-label">Titre 2 :</span><span class="ad-content">Les parents reçoivent sur WhatsApp</span></div>
+    <div class="ad-line"><span class="ad-label">Titre 3 :</span><span class="ad-content">Essai gratuit — Aucune installation</span></div>
+    <div class="ad-line"><span class="ad-label">Description :</span><span class="ad-content">Votre école mérite mieux qu'Excel. NovaBulletin génère et envoie les bulletins automatiquement. Bloque les bulletins si frais impayés. Essai gratuit.</span></div>
+  </div>
+
+  <div class="ad-block">
+    <div class="ad-title">Annonce 3</div>
+    <div class="ad-line"><span class="ad-label">Titre 1 :</span><span class="ad-content">Gestion notes scolaires — Togo</span></div>
+    <div class="ad-line"><span class="ad-label">Titre 2 :</span><span class="ad-content">3 jours → 30 minutes par trimestre</span></div>
+    <div class="ad-line"><span class="ad-label">Titre 3 :</span><span class="ad-content">Démo gratuite disponible</span></div>
+    <div class="ad-line"><span class="ad-label">Description :</span><span class="ad-content">NovaBulletin remplace Excel. Moyennes calculées automatiquement. Bulletins PDF envoyés sur WhatsApp. Recouvrement frais automatisé. 1er trimestre gratuit.</span></div>
+  </div>
+
+  <div class="ad-block" style="background: #f0fdf4; border-color: #bbf7d0;">
+    <div class="ad-title" style="color: #166534;">Mots-clés à cibler</div>
+    <div class="keywords">
+      <span class="keyword">logiciel bulletin scolaire</span>
+      <span class="keyword">gestion notes scolaires</span>
+      <span class="keyword">bulletin scolaire PDF automatique</span>
+      <span class="keyword">application école Togo</span>
+      <span class="keyword">remplacer Excel école</span>
+      <span class="keyword">gestion scolaire numérique Afrique</span>
+      <span class="keyword">bulletin scolaire WhatsApp</span>
+      <span class="keyword">logiciel gestion école Afrique</span>
+      <span class="keyword">automatiser bulletins scolaires</span>
+      <span class="keyword">logiciel notes enseignants</span>
+      <span class="keyword">application directeur école</span>
+      <span class="keyword">gestion frais scolaires</span>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 6: WHATSAPP -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">6</div>
+    <div>
+      <div class="section-title">WhatsApp Broadcast</div>
+      <div class="section-sub">3 messages séquentiels — Envoyés sur 5 jours</div>
+    </div>
+  </div>
+
+  <span class="badge badge--whatsapp">💬 WhatsApp</span>
+
+  <div class="msg-block">
+    <div class="msg-block-title">MESSAGE 1 — ACCROCHE (Jour 1)</div>
+    <p>Bonjour Monsieur/Madame le Directeur(trice) 👋</p>
+    <p>Une question rapide :</p>
+    <p>Combien de jours votre équipe passe-t-elle sur Excel pour préparer les bulletins chaque trimestre ?</p>
+    <p>2 jours ? 3 jours ? Plus ?</p>
+    <p>Je vous pose cette question parce que j'ai une solution qui réduit ce temps à 30 minutes.</p>
+    <p>Pas d'exagération. Je vous explique demain.</p>
+  </div>
+
+  <div class="msg-block">
+    <div class="msg-block-title">MESSAGE 2 — LA SOLUTION (Jour 2)</div>
+    <p>Suite de mon message d'hier 👆</p>
+    <p>J'ai développé NovaBulletin — une plateforme pensée spécialement pour les écoles africaines.</p>
+    <p>Voici ce qu'elle fait à votre place :</p>
+    <p>📊 <strong>Calcul automatique des moyennes</strong><br>
+    → Vos enseignants saisissent les notes. Le système fait le reste. Zéro erreur.</p>
+    <p>📄 <strong>Bulletins PDF générés en 1 clic</strong><br>
+    → Avec le nom et le logo de votre école. Aucune mise en page manuelle.</p>
+    <p>📱 <strong>Envoi direct aux parents sur WhatsApp</strong><br>
+    → Ils reçoivent le bulletin de leur enfant le jour même de la publication.</p>
+    <p>💰 <strong>Frais scolaires intégrés</strong><br>
+    → Le bulletin est bloqué automatiquement si les frais ne sont pas réglés.</p>
+    <p>🤝 Essayez ce trimestre. Vous payez seulement si vous êtes satisfait. Sinon, vous revenez à votre ancien système.</p>
+    <p>Voulez-vous une démo de 10 minutes ?<br>
+    👉 e-report-frontend.vercel.app</p>
+  </div>
+
+  <div class="msg-block">
+    <div class="msg-block-title">MESSAGE 3 — PREUVE SOCIALE (Jour 5)</div>
+    <p>Ce que les directeurs nous disent le plus souvent après avoir essayé NovaBulletin :</p>
+    <p>💬 <em>"Je ne savais pas que c'était possible de gagner autant de temps."</em></p>
+    <p>💬 <em>"Les parents m'appellent pour me remercier de recevoir les bulletins sur WhatsApp."</em></p>
+    <p>💬 <em>"Le système de blocage pour frais impayés a amélioré notre recouvrement de 40%."</em></p>
+    <p>Votre école peut avoir les mêmes résultats.</p>
+    <p>Essayez ce trimestre. Payez seulement si vous êtes satisfait.<br>
+    👉 e-report-frontend.vercel.app</p>
+  </div>
+</div>
+
+<!-- SECTION 7: CORE MESSAGE -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">7</div>
+    <div>
+      <div class="section-title">Message Central</div>
+      <div class="section-sub">À mémoriser et utiliser dans toute communication</div>
+    </div>
+  </div>
+
+  <span class="badge badge--core">⭐ Essentiel</span>
+
+  <div class="core-message">
+    <h3>"Excel vous prend 3 jours.<br>NovaBulletin vous prend 30 minutes."</h3>
+    <p>Même résultat. Zéro erreur. Les parents reçoivent sur WhatsApp.<br><br>
+    Essayez ce trimestre. Si ça vous convient, vous payez.<br>
+    Si non, vous revenez à Excel. <strong style="color:#fde68a;">Aucun risque pour vous.</strong></p>
+  </div>
+
+  <br>
+
+  <div class="tip">
+    <strong>Règle d'or :</strong> Commencez TOUJOURS par le chiffre "3 jours → 30 minutes". C'est votre ancre. C'est la première chose que le directeur doit entendre. Tout le reste vient en support de cet argument.
+  </div>
+
+  <div class="tip">
+    <strong>Pour Togo spécifiquement :</strong> Insistez sur WhatsApp (tous les parents l'utilisent) et sur le blocage automatique des frais impayés (problème numéro 1 des établissements togolais). Ce sont vos deux meilleurs arguments sur ce marché.
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <p><strong>NovaBulletin</strong> — Le bulletin scolaire moderne pour les écoles d'Afrique</p>
+  <p style="margin-top:8px;">🌐 e-report-frontend.vercel.app &nbsp;|&nbsp; ✉️ felixatoma2@gmail.com</p>
+  <p style="margin-top:8px; font-size:0.8rem;">Document confidentiel — Usage interne uniquement</p>
+</div>
+
+</body>
+</html>

@@ -330,6 +330,7 @@ export class AuthService {
         mustChangePassword: false,
         otpHash: null,
         otpExpiresAt: null,
+        emailVerifiedAt: new Date(),
       },
     });
 

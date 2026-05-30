@@ -1,3 +1,5 @@
+import * as Sentry from '@sentry/nestjs';
+import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { Request, Response, NextFunction } from 'express';
 import { ValidationPipe } from '@nestjs/common';
@@ -10,6 +12,15 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
+  if (process.env.SENTRY_DSN) {
+    Sentry.init({
+      dsn: process.env.SENTRY_DSN,
+      environment: process.env.NODE_ENV ?? 'development',
+      integrations: [nodeProfilingIntegration()],
+      tracesSampleRate: 0.2,
+    });
+  }
+
   const app = await NestFactory.create(AppModule);
   const config = app.get(ConfigService);
 

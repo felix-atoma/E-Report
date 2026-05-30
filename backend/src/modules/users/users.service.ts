@@ -27,6 +27,7 @@ const USER_SELECT = {
   whatsappNumber: true,
   whatsappVerified: true,
   isActive: true,
+  emailVerifiedAt: true,
   createdAt: true,
   updatedAt: true,
 };

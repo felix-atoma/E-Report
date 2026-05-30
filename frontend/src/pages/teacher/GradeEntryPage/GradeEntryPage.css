@@ -440,3 +440,16 @@
   .fdn__td, .fdn__th { font-size: 0.78rem; padding: 6px 4px; }
   .fdn__input { width: 52px; padding: 4px 2px; font-size: 0.78rem; }
 }
+
+.fdn__csv-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 0;
+  flex-wrap: wrap;
+}
+.fdn__csv-label { font-size: 0.8rem; font-weight: 600; color: var(--color-text-muted, #6b7280); }
+.fdn__btn--csv-dl { background: #f0fdf4; color: #15803d; border: 1px solid #86efac; }
+.fdn__btn--csv-dl:hover { background: #dcfce7; }
+.fdn__btn--csv-up { background: #eff6ff; color: #1d4ed8; border: 1px solid #93c5fd; }
+.fdn__btn--csv-up:hover { background: #dbeafe; }
