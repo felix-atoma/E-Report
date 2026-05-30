@@ -96,6 +96,16 @@ export class AuthService {
     await this.saveRefreshToken(user.id, tokens.refreshToken);
 
     const fullUser = await this.prisma.user.findUnique({ where: { id: user.id } });
+
+    // Auto-verify email for users who successfully log in with a password
+    if (fullUser && !fullUser.emailVerifiedAt) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { emailVerifiedAt: new Date() },
+      });
+      fullUser.emailVerifiedAt = new Date();
+    }
+
     const { password: _, ...safeUser } = fullUser!;
 
     return { user: safeUser, ...tokens };
@@ -117,6 +127,7 @@ export class AuthService {
         whatsappVerified: true,
         notificationPreferences: true,
         isActive: true,
+        emailVerifiedAt: true,
         createdAt: true,
         institution: {
           select: {
@@ -131,6 +142,16 @@ export class AuthService {
     });
 
     if (!user) throw new UnauthorizedException('User not found');
+
+    // Silently verify existing users who are actively using the app
+    if (!user.emailVerifiedAt) {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { emailVerifiedAt: new Date() },
+      });
+      return { ...user, emailVerifiedAt: new Date() };
+    }
+
     return user;
   }
 
