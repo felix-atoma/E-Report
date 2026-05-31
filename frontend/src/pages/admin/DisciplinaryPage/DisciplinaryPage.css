@@ -1,0 +1,366 @@
+/* DisciplinaryPage */
+
+.disc-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  align-items: flex-start;
+}
+
+.disc-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.disc-filter-pill {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  padding: 5px 13px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.disc-filter-pill:hover {
+  background: #e5e7eb;
+}
+
+.disc-filter-pill--active {
+  background: #1E2A78;
+  border-color: #1E2A78;
+  color: #fff;
+}
+
+.disc-resolved-filter {
+  display: flex;
+  gap: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.disc-resolved-btn {
+  background: #fff;
+  border: none;
+  color: #374151;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  padding: 5px 14px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  border-right: 1px solid #e5e7eb;
+}
+
+.disc-resolved-btn:last-child {
+  border-right: none;
+}
+
+.disc-resolved-btn:hover {
+  background: #f3f4f6;
+}
+
+.disc-resolved-btn--active {
+  background: #1E2A78;
+  color: #fff;
+}
+
+/* List */
+.disc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Card */
+.disc-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1rem 1.125rem;
+  transition: box-shadow 0.15s;
+}
+
+.disc-card:hover {
+  box-shadow: 0 2px 12px rgba(30, 42, 120, 0.07);
+}
+
+.disc-card--resolved {
+  opacity: 0.7;
+  border-color: #d1fae5;
+  background: #f0fdf4;
+}
+
+.disc-card__left {
+  flex-shrink: 0;
+}
+
+.disc-card__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1E2A78, #4f63d2);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.disc-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.disc-card__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 3px;
+}
+
+.disc-card__student {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.disc-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.disc-card__resolved-pill {
+  font-size: 0.7rem;
+  background: #dcfce7;
+  color: #15803d;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.disc-card__open-pill {
+  font-size: 0.7rem;
+  background: #ffedd5;
+  color: #c2410c;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.disc-card__date {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.disc-card__by {
+  font-style: italic;
+}
+
+.disc-card__desc {
+  font-size: 0.875rem;
+  color: #374151;
+  margin: 0 0 6px;
+  line-height: 1.5;
+}
+
+.disc-card__sanction {
+  font-size: 0.8125rem;
+  color: #b45309;
+  background: #fffbeb;
+  border-left: 3px solid #f59e0b;
+  padding: 4px 8px;
+  border-radius: 0 4px 4px 0;
+}
+
+.disc-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.disc-card__resolve-btn {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #15803d;
+  font-size: 0.7875rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.disc-card__resolve-btn:hover {
+  background: #dcfce7;
+}
+
+.disc-card__resolve-btn--undo {
+  background: #fff7ed;
+  border-color: #fed7aa;
+  color: #c2410c;
+}
+
+.disc-card__resolve-btn--undo:hover {
+  background: #ffedd5;
+}
+
+.disc-card__delete-btn {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s, background 0.15s;
+}
+
+.disc-card__delete-btn:hover {
+  color: #ef4444;
+  background: #fee2e2;
+}
+
+/* Form */
+.disc-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  position: relative;
+}
+
+.disc-form__label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.35rem;
+}
+
+.disc-form__required {
+  color: #ef4444;
+}
+
+.disc-form__search-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.disc-form__search-input:focus {
+  border-color: #1E2A78;
+  box-shadow: 0 0 0 3px rgba(30, 42, 120, 0.1);
+}
+
+.disc-form__search-input--error {
+  border-color: #ef4444;
+}
+
+.disc-form__student-list {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 2px;
+  z-index: 10;
+}
+
+.disc-form__student-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background 0.1s;
+}
+
+.disc-form__student-option:hover {
+  background: #f0f4ff;
+}
+
+.disc-form__student-num {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.disc-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.disc-form__textarea {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.disc-form__textarea:focus {
+  border-color: #1E2A78;
+  box-shadow: 0 0 0 3px rgba(30, 42, 120, 0.1);
+}
+
+.disc-form__textarea--error {
+  border-color: #ef4444;
+}
+
+.disc-form__error {
+  font-size: 0.75rem;
+  color: #ef4444;
+  margin: 2px 0 0;
+}
+
+.disc-form__check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #374151;
+  cursor: pointer;
+}
+
+.disc-form__check input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #1E2A78;
+}
+
+@media (max-width: 600px) {
+  .disc-form__row {
+    grid-template-columns: 1fr;
+  }
+  .disc-toolbar {
+    flex-direction: column;
+  }
+}

@@ -21,7 +21,23 @@ import './StudentsPage.css';
 
 const EMPTY_FORM = {
   name: '', dateOfBirth: '', sex: '', classId: '', parentEmail: '',
+  // Extended profile fields
+  address: '', city: '',
+  fatherName: '', fatherPhone: '',
+  motherName: '', motherPhone: '',
+  emergencyContactName: '', emergencyContactPhone: '', emergencyContactRelation: '',
+  bloodType: '', medicalConditions: '',
+  previousSchool: '', birthPlace: '',
+  studentStatus: 'ACTIVE',
 };
+
+const STUDENT_STATUS_OPTIONS = [
+  { value: 'ACTIVE', label: 'Actif' },
+  { value: 'GRADUATED', label: 'Diplômé' },
+  { value: 'TRANSFERRED', label: 'Transféré' },
+  { value: 'WITHDRAWN', label: 'Retiré' },
+  { value: 'SUSPENDED', label: 'Suspendu' },
+];
 
 function validate(form) {
   const errors = {};
@@ -70,7 +86,7 @@ function PhotoPicker({ preview, existingSrc, name, fileInputRef, onPhotoClick })
 }
 
 function StudentForm({ form, errors, onChange, classes, isCreate, existingAdmissionNumber,
-  photoPreview, existingPhotoSrc, fileInputRef, onPhotoClick }) {
+  photoPreview, existingPhotoSrc, fileInputRef, onPhotoClick, showExtended, onToggleExtended }) {
   const classOptions = classes.map((c) => ({ value: c.id, label: c.name }));
 
   return (
@@ -131,6 +147,130 @@ function StudentForm({ form, errors, onChange, classes, isCreate, existingAdmiss
         placeholder="Optionnel — lie le compte parent"
         onChange={(e) => onChange('parentEmail', e.target.value)}
       />
+
+      {/* Toggle extended fields */}
+      <button
+        type="button"
+        className="student-form__toggle-extended"
+        onClick={onToggleExtended}
+      >
+        {showExtended ? '▲ Moins d\'informations' : '▼ Plus d\'informations (adresse, famille, santé…)'}
+      </button>
+
+      {showExtended && (
+        <>
+          <div className="student-form__section-title">Statut &amp; Scolarité</div>
+          <div className="student-form__row">
+            <Select
+              id="studentStatus"
+              label="Statut"
+              value={form.studentStatus}
+              options={STUDENT_STATUS_OPTIONS}
+              onChange={(e) => onChange('studentStatus', e.target.value)}
+            />
+            <Input
+              id="previousSchool"
+              label="École précédente"
+              value={form.previousSchool}
+              placeholder="Optionnel"
+              onChange={(e) => onChange('previousSchool', e.target.value)}
+            />
+          </div>
+          <div className="student-form__row">
+            <Input
+              id="birthPlace"
+              label="Lieu de naissance"
+              value={form.birthPlace}
+              onChange={(e) => onChange('birthPlace', e.target.value)}
+            />
+            <Input
+              id="bloodType"
+              label="Groupe sanguin"
+              value={form.bloodType}
+              placeholder="ex: A+, O-, …"
+              onChange={(e) => onChange('bloodType', e.target.value)}
+            />
+          </div>
+          <Input
+            id="medicalConditions"
+            label="Conditions médicales"
+            value={form.medicalConditions}
+            placeholder="Allergies, maladies chroniques…"
+            onChange={(e) => onChange('medicalConditions', e.target.value)}
+          />
+
+          <div className="student-form__section-title">Adresse</div>
+          <div className="student-form__row">
+            <Input
+              id="address"
+              label="Adresse"
+              value={form.address}
+              onChange={(e) => onChange('address', e.target.value)}
+            />
+            <Input
+              id="city"
+              label="Ville"
+              value={form.city}
+              onChange={(e) => onChange('city', e.target.value)}
+            />
+          </div>
+
+          <div className="student-form__section-title">Père</div>
+          <div className="student-form__row">
+            <Input
+              id="fatherName"
+              label="Nom du père"
+              value={form.fatherName}
+              onChange={(e) => onChange('fatherName', e.target.value)}
+            />
+            <Input
+              id="fatherPhone"
+              label="Téléphone père"
+              value={form.fatherPhone}
+              onChange={(e) => onChange('fatherPhone', e.target.value)}
+            />
+          </div>
+
+          <div className="student-form__section-title">Mère</div>
+          <div className="student-form__row">
+            <Input
+              id="motherName"
+              label="Nom de la mère"
+              value={form.motherName}
+              onChange={(e) => onChange('motherName', e.target.value)}
+            />
+            <Input
+              id="motherPhone"
+              label="Téléphone mère"
+              value={form.motherPhone}
+              onChange={(e) => onChange('motherPhone', e.target.value)}
+            />
+          </div>
+
+          <div className="student-form__section-title">Contact d'urgence</div>
+          <div className="student-form__row">
+            <Input
+              id="emergencyContactName"
+              label="Nom"
+              value={form.emergencyContactName}
+              onChange={(e) => onChange('emergencyContactName', e.target.value)}
+            />
+            <Input
+              id="emergencyContactPhone"
+              label="Téléphone"
+              value={form.emergencyContactPhone}
+              onChange={(e) => onChange('emergencyContactPhone', e.target.value)}
+            />
+          </div>
+          <Input
+            id="emergencyContactRelation"
+            label="Relation"
+            value={form.emergencyContactRelation}
+            placeholder="ex: Oncle, Tuteur…"
+            onChange={(e) => onChange('emergencyContactRelation', e.target.value)}
+          />
+        </>
+      )}
     </div>
   );
 }
@@ -150,6 +290,7 @@ function StudentsPage() {
   const [errors, setErrors]       = useState({});
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
+  const [showExtended, setShowExtended] = useState(false);
 
   const { data: students = [], isLoading } = useQuery({
     queryKey: ['students'],
@@ -260,10 +401,26 @@ function StudentsPage() {
       sex:         student.sex ?? '',
       classId:     student.classes?.[0]?.classId ?? '',
       parentEmail: student.parent?.email ?? '',
+      // Extended fields
+      address:                  student.address ?? '',
+      city:                     student.city ?? '',
+      fatherName:               student.fatherName ?? '',
+      fatherPhone:              student.fatherPhone ?? '',
+      motherName:               student.motherName ?? '',
+      motherPhone:              student.motherPhone ?? '',
+      emergencyContactName:     student.emergencyContactName ?? '',
+      emergencyContactPhone:    student.emergencyContactPhone ?? '',
+      emergencyContactRelation: student.emergencyContactRelation ?? '',
+      bloodType:                student.bloodType ?? '',
+      medicalConditions:        student.medicalConditions ?? '',
+      previousSchool:           student.previousSchool ?? '',
+      birthPlace:               student.birthPlace ?? '',
+      studentStatus:            student.studentStatus ?? 'ACTIVE',
     });
     setErrors({});
     setPhotoFile(null);
     setPhotoPreview(null);
+    setShowExtended(false);
     setModal('edit');
   }
 
@@ -274,6 +431,7 @@ function StudentsPage() {
     setErrors({});
     setPhotoFile(null);
     setPhotoPreview(null);
+    setShowExtended(false);
   }
 
   function handleChange(field, value) {
@@ -290,6 +448,21 @@ function StudentsPage() {
       sex:         form.sex         || undefined,
       classId:     form.classId     || undefined,
       parentEmail: form.parentEmail || undefined,
+      // Extended profile
+      address:                  form.address                  || undefined,
+      city:                     form.city                     || undefined,
+      fatherName:               form.fatherName               || undefined,
+      fatherPhone:              form.fatherPhone              || undefined,
+      motherName:               form.motherName               || undefined,
+      motherPhone:              form.motherPhone              || undefined,
+      emergencyContactName:     form.emergencyContactName     || undefined,
+      emergencyContactPhone:    form.emergencyContactPhone    || undefined,
+      emergencyContactRelation: form.emergencyContactRelation || undefined,
+      bloodType:                form.bloodType                || undefined,
+      medicalConditions:        form.medicalConditions        || undefined,
+      previousSchool:           form.previousSchool           || undefined,
+      birthPlace:               form.birthPlace               || undefined,
+      studentStatus:            form.studentStatus            || undefined,
     };
     if (modal === 'create') {
       createMutation.mutate(payload);
@@ -426,6 +599,8 @@ function StudentsPage() {
           existingPhotoSrc={modal === 'edit' ? selected?.user?.profileImage : null}
           fileInputRef={fileInputRef}
           onPhotoClick={handlePhotoClick}
+          showExtended={showExtended}
+          onToggleExtended={() => setShowExtended((v) => !v)}
         />
       </OffCanvas>
 

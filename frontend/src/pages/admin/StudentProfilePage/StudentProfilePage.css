@@ -309,6 +309,73 @@
 .asp-empty { font-size: 0.875rem; color: var(--color-text-secondary, #9ca3af); margin: 0; text-align: center; padding: 1rem 0; }
 .asp-empty-inline { font-size: 0.8rem; color: var(--color-text-secondary, #9ca3af); }
 
+/* ── Disciplinary records ── */
+.asp-disc-records {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.asp-disc-record {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 0.875rem 1rem;
+  background: #fff;
+}
+
+.asp-disc-record--resolved {
+  opacity: 0.7;
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.asp-disc-record__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.asp-disc-record__type {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.asp-disc-record__date {
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
+.asp-disc-record__pill {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.asp-disc-record__pill--ok   { background: #dcfce7; color: #15803d; }
+.asp-disc-record__pill--open { background: #ffedd5; color: #c2410c; }
+
+.asp-disc-record__desc {
+  font-size: 0.875rem;
+  color: #374151;
+  margin: 0 0 4px;
+  line-height: 1.5;
+}
+
+.asp-disc-record__sanction {
+  font-size: 0.8125rem;
+  color: #b45309;
+  background: #fffbeb;
+  border-left: 3px solid #f59e0b;
+  padding: 3px 8px;
+  border-radius: 0 4px 4px 0;
+  margin-top: 4px;
+}
+
 /* ── Responsive ── */
 @media (max-width: 900px) {
   .asp-kpis { grid-template-columns: 1fr 1fr; }

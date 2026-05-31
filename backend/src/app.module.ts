@@ -40,6 +40,9 @@ import { SuperAdminModule } from './modules/superadmin/superadmin.module';
 import { MockExamsModule } from './modules/mock-exams/mock-exams.module';
 import { AttendanceModule } from './modules/attendance/attendance.module';
 import { SchoolDocumentsModule } from './modules/school-documents/school-documents.module';
+import { StaffProfilesModule } from './modules/staff-profiles/staff-profiles.module';
+import { CalendarModule } from './modules/calendar/calendar.module';
+import { DisciplinaryModule } from './modules/disciplinary/disciplinary.module';
 
 @Module({
   imports: [
@@ -88,6 +91,9 @@ import { SchoolDocumentsModule } from './modules/school-documents/school-documen
     MockExamsModule,
     AttendanceModule,
     SchoolDocumentsModule,
+    StaffProfilesModule,
+    CalendarModule,
+    DisciplinaryModule,
   ],
   providers: [
     // JWT guard applied globally — use @Public() to opt out

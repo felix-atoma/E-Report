@@ -80,6 +80,9 @@ import MockExamFichePage      from '../pages/shared/MockExamFichePage/MockExamFi
 import MockExamFichePrintPage from '../pages/shared/MockExamFichePrintPage/MockExamFichePrintPage';
 import MockExamFichesListPage from '../pages/shared/MockExamFichesListPage/MockExamFichesListPage';
 import MockExamResultsPage    from '../pages/shared/MockExamResultsPage/MockExamResultsPage';
+import StaffDirectoryPage     from '../pages/admin/StaffDirectoryPage/StaffDirectoryPage';
+import CalendarPage           from '../pages/admin/CalendarPage/CalendarPage';
+import DisciplinaryPage       from '../pages/admin/DisciplinaryPage/DisciplinaryPage';
 
 function AppRouter() {
   return (
@@ -126,6 +129,9 @@ function AppRouter() {
       <Route path="/admin/import"        element={<ProtectedRoute roles={['ADMIN']}><AdminImportPage /></ProtectedRoute>} />
       <Route path="/admin/attendance"    element={<ProtectedRoute roles={['ADMIN']}><AdminAttendancePage /></ProtectedRoute>} />
       <Route path="/admin/school-documents" element={<ProtectedRoute roles={['ADMIN']}><SchoolDocumentsPage /></ProtectedRoute>} />
+      <Route path="/admin/staff"         element={<ProtectedRoute roles={['ADMIN']}><StaffDirectoryPage /></ProtectedRoute>} />
+      <Route path="/admin/calendar"      element={<ProtectedRoute roles={['ADMIN']}><CalendarPage /></ProtectedRoute>} />
+      <Route path="/admin/disciplinary"  element={<ProtectedRoute roles={['ADMIN']}><DisciplinaryPage /></ProtectedRoute>} />
 
       {/* Bursar */}
       <Route path="/bursar"              element={<ProtectedRoute roles={['BURSAR']}><BursarDashboardPage /></ProtectedRoute>} />
@@ -153,6 +159,7 @@ function AppRouter() {
       <Route path="/teacher/mock-exams/:id/grades" element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamGradePage /></ProtectedRoute>} />
       <Route path="/teacher/mock-exam-fiches"      element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamFichesListPage /></ProtectedRoute>} />
       <Route path="/teacher/mock-exam-results"     element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamResultsPage /></ProtectedRoute>} />
+      <Route path="/teacher/calendar"    element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><CalendarPage /></ProtectedRoute>} />
 
       {/* Parent */}
       <Route path="/parent"                     element={<ProtectedRoute roles={['PARENT']}><ParentDashboardPage /></ProtectedRoute>} />
@@ -163,6 +170,7 @@ function AppRouter() {
       <Route path="/payment-return"             element={<ProtectedRoute roles={['PARENT']}><PaymentReturnPage /></ProtectedRoute>} />
       <Route path="/parent/notifications"       element={<ProtectedRoute roles={['PARENT']}><NotificationPreferencesPage /></ProtectedRoute>} />
       <Route path="/parent/lms"                 element={<ProtectedRoute roles={['PARENT']}><ParentLMSPage /></ProtectedRoute>} />
+      <Route path="/parent/calendar"     element={<ProtectedRoute roles={['PARENT']}><CalendarPage /></ProtectedRoute>} />
 
       {/* Student */}
       <Route path="/student"             element={<ProtectedRoute roles={['STUDENT']}><StudentDashboardPage /></ProtectedRoute>} />

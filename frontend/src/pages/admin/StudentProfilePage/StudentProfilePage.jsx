@@ -2,6 +2,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { studentsService } from '../../../services/studentsService';
 import { feesService } from '../../../services/feesService';
+import { disciplinaryService } from '../../../services/disciplinaryService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Card from '../../../components/common/Card/Card';
@@ -14,6 +15,15 @@ import './StudentProfilePage.css';
 /* ── Constants ── */
 const FEE_VARIANT = { PAID: 'success', PARTIAL: 'warning', UNPAID: 'danger', EXEMPT: 'info' };
 const FEE_LABEL   = { PAID: 'Payé', PARTIAL: 'Partiel', UNPAID: 'Impayé', EXEMPT: 'Exempté' };
+
+const DISC_TYPE_CONFIG = {
+  WARNING:     { label: 'Avertissement', bg: '#ffedd5', color: '#c2410c' },
+  SUSPENSION:  { label: 'Suspension',    bg: '#fee2e2', color: '#b91c1c' },
+  EXCLUSION:   { label: 'Exclusion',     bg: '#fde8e8', color: '#7f1d1d' },
+  NOTE:        { label: 'Note',          bg: '#dbeafe', color: '#1d4ed8' },
+  COMMENDATION:{ label: 'Félicitation',  bg: '#dcfce7', color: '#15803d' },
+  OTHER:       { label: 'Autre',         bg: '#f3f4f6', color: '#4b5563' },
+};
 
 const CONDUCT_LABEL   = { TRES_BIEN: 'Très Bien', BIEN: 'Bien', PASSABLE: 'Passable', MEDIOCRE: 'Médiocre' };
 const CONDUCT_VARIANT = { TRES_BIEN: 'success', BIEN: 'info', PASSABLE: 'warning', MEDIOCRE: 'danger' };
@@ -58,6 +68,12 @@ function AdminStudentProfilePage() {
   const { data: feeSummary } = useQuery({
     queryKey: ['fee-summary', id],
     queryFn: () => feesService.getStudentSummary(id).then((r) => r.data),
+    enabled: !!id,
+  });
+
+  const { data: disciplinaryRecords = [] } = useQuery({
+    queryKey: ['disciplinary-student', id],
+    queryFn: () => disciplinaryService.listByStudent(id).then((r) => r.data),
     enabled: !!id,
   });
 
@@ -359,6 +375,50 @@ function AdminStudentProfilePage() {
                   })}
                 </tbody>
               </table>
+            </div>
+          )}
+        </Card>
+
+        {/* ── Dossier disciplinaire ── */}
+        <Card className="asp-section asp-section--full">
+          <h3 className="asp-section__title">Dossier disciplinaire</h3>
+          {disciplinaryRecords.length === 0 ? (
+            <p className="asp-empty">Aucun dossier disciplinaire enregistré.</p>
+          ) : (
+            <div className="asp-disc-records">
+              {disciplinaryRecords.map((rec) => {
+                const cfg = DISC_TYPE_CONFIG[rec.type] ?? DISC_TYPE_CONFIG.OTHER;
+                return (
+                  <div key={rec.id} className={`asp-disc-record ${rec.resolved ? 'asp-disc-record--resolved' : ''}`}>
+                    <div className="asp-disc-record__header">
+                      <span
+                        className="asp-disc-record__type"
+                        style={{ background: cfg.bg, color: cfg.color }}
+                      >
+                        {cfg.label}
+                      </span>
+                      <span className="asp-disc-record__date">
+                        {new Date(rec.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      </span>
+                      {rec.resolved ? (
+                        <span className="asp-disc-record__pill asp-disc-record__pill--ok">Résolu</span>
+                      ) : (
+                        <span className="asp-disc-record__pill asp-disc-record__pill--open">En cours</span>
+                      )}
+                    </div>
+                    <p className="asp-disc-record__desc">{rec.description}</p>
+                    {rec.sanction && (
+                      <div className="asp-disc-record__sanction">
+                        <strong>Sanction :</strong> {rec.sanction}
+                        {rec.sanctionStart && (
+                          <> ({new Date(rec.sanctionStart).toLocaleDateString('fr-FR')}
+                          {rec.sanctionEnd && <> — {new Date(rec.sanctionEnd).toLocaleDateString('fr-FR')}</>})</>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </Card>

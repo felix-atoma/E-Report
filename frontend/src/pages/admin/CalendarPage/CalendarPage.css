@@ -1,0 +1,251 @@
+/* CalendarPage */
+
+.cal-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.cal-filter-pill {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  padding: 5px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cal-filter-pill:hover {
+  background: #e5e7eb;
+}
+
+.cal-filter-pill--active {
+  background: #1E2A78;
+  border-color: #1E2A78;
+  color: #fff;
+}
+
+/* Month groups */
+.cal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.cal-month-group__title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1E2A78;
+  margin: 0 0 0.75rem 0;
+  text-transform: capitalize;
+  border-bottom: 2px solid #e0e7ff;
+  padding-bottom: 0.4rem;
+}
+
+.cal-events {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Event row */
+.cal-event-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 0.875rem 1rem;
+  transition: box-shadow 0.15s;
+}
+
+.cal-event-row:hover {
+  box-shadow: 0 2px 8px rgba(30, 42, 120, 0.07);
+}
+
+.cal-event-row__dot {
+  width: 10px;
+  height: 10px;
+  min-width: 10px;
+  border-radius: 50%;
+  margin-top: 5px;
+}
+
+.cal-event-row__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.cal-event-row__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 3px;
+}
+
+.cal-event-row__title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.cal-event-row__private {
+  font-size: 0.7rem;
+  background: #f3f4f6;
+  color: #6b7280;
+  padding: 1px 7px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.cal-event-row__dates {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.cal-event-row__allday {
+  font-size: 0.7rem;
+  background: #e0e7ff;
+  color: #3730a3;
+  padding: 1px 7px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.cal-event-row__desc {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  margin: 4px 0 0;
+  line-height: 1.5;
+}
+
+.cal-event-row__delete {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s, background 0.15s;
+  align-self: flex-start;
+}
+
+.cal-event-row__delete:hover {
+  color: #ef4444;
+  background: #fee2e2;
+}
+
+/* Event type chip */
+.cal-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+/* Form */
+.cal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.cal-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.cal-form__checks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cal-form__check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #374151;
+  cursor: pointer;
+}
+
+.cal-form__check input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #1E2A78;
+}
+
+.cal-form__label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.4rem;
+}
+
+.cal-form__textarea {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.cal-form__textarea:focus {
+  border-color: #1E2A78;
+  box-shadow: 0 0 0 3px rgba(30, 42, 120, 0.1);
+}
+
+/* Color picker */
+.cal-color-picker {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+}
+
+.cal-color-swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s;
+  outline: none;
+}
+
+.cal-color-swatch:hover {
+  transform: scale(1.15);
+}
+
+.cal-color-swatch--active {
+  border-color: #111827;
+  transform: scale(1.15);
+}
+
+@media (max-width: 600px) {
+  .cal-form__row {
+    grid-template-columns: 1fr;
+  }
+}

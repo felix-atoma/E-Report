@@ -1,0 +1,198 @@
+/* StaffDirectoryPage */
+
+.staff-dir__toolbar {
+  margin-bottom: 1.5rem;
+}
+
+.staff-dir__search {
+  width: 100%;
+  max-width: 400px;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.staff-dir__search:focus {
+  border-color: #1E2A78;
+  box-shadow: 0 0 0 3px rgba(30, 42, 120, 0.1);
+}
+
+.staff-dir__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1rem;
+}
+
+/* Staff Card */
+.staff-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.staff-card:hover {
+  box-shadow: 0 4px 16px rgba(30, 42, 120, 0.08);
+  border-color: #c7d2fe;
+}
+
+.staff-card__avatar {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1E2A78, #4f63d2);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.03em;
+}
+
+.staff-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.staff-card__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.staff-card__name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.staff-card__role {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.role--admin    { background: #dbeafe; color: #1d4ed8; }
+.role--teacher  { background: #dcfce7; color: #15803d; }
+.role--bursar   { background: #fef3c7; color: #b45309; }
+.role--default  { background: #f3f4f6; color: #374151; }
+
+.staff-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.staff-card__meta-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.staff-card__meta-item svg {
+  flex-shrink: 0;
+  color: #9ca3af;
+}
+
+.staff-card__meta-item--contract {
+  display: inline-flex;
+  background: #f0f9ff;
+  color: #0369a1;
+  padding: 1px 7px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  width: fit-content;
+  margin-top: 2px;
+}
+
+.staff-card__edit-btn {
+  background: none;
+  border: 1px solid #e5e7eb;
+  color: #1E2A78;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+  align-self: flex-start;
+}
+
+.staff-card__edit-btn:hover {
+  background: #f0f4ff;
+  border-color: #1E2A78;
+}
+
+/* OffCanvas form */
+.staff-profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.staff-profile-form__section-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding-top: 0.5rem;
+  border-top: 1px solid #f3f4f6;
+  margin-top: 0.25rem;
+}
+
+.staff-profile-form__section-title:first-child {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.staff-profile-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.staff-profile-form__notes {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.staff-profile-form__notes:focus {
+  border-color: #1E2A78;
+  box-shadow: 0 0 0 3px rgba(30, 42, 120, 0.1);
+}
+
+@media (max-width: 640px) {
+  .staff-dir__grid {
+    grid-template-columns: 1fr;
+  }
+  .staff-profile-form__row {
+    grid-template-columns: 1fr;
+  }
+}

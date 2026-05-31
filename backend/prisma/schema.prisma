@@ -187,6 +187,8 @@ model Institution {
   mockExams         MockExam[]
   attendances       Attendance[]
   schoolDocuments   SchoolDocument[]
+  staffProfiles     StaffProfile[]
+  calendarEvents    CalendarEvent[]
 }
 
 model User {
@@ -230,6 +232,7 @@ model User {
   quizzesCreated        Quiz[]           @relation("QuizCreator")
   mockExamsCreated      MockExam[]       @relation("MockExamCreator")
   mockExamFichesSigned  MockExamSubjectFiche[] @relation("MockExamFicheSigner")
+  staffProfile          StaffProfile?
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -345,6 +348,30 @@ model Student {
 
   institutionId   String
   institution     Institution @relation(fields: [institutionId], references: [id])
+
+  address             String?
+  city                String?
+  region              String?
+  nationality         String?
+  religion            String?
+  bloodType           String?
+  medicalConditions   String?
+  allergies           String?
+  emergencyContactName     String?
+  emergencyContactPhone    String?
+  emergencyContactRelation String?
+  fatherName          String?
+  fatherPhone         String?
+  fatherOccupation    String?
+  motherName          String?
+  motherPhone         String?
+  motherOccupation    String?
+  previousSchool      String?
+  birthPlace          String?
+  birthCertificateNumber String?
+  photo               String?
+  studentStatus       StudentStatus @default(ACTIVE)
+  disciplinaryRecords DisciplinaryRecord[]
 
   classes         ClassStudent[]
   reportCards     ReportCard[]
@@ -1073,5 +1100,100 @@ enum DocumentCategory {
   EXAM
   STAFF
   STUDENT
+  OTHER
+}
+
+model StaffProfile {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  institutionId   String
+  staffNumber     String?
+  employmentDate  DateTime?
+  contractType    String?
+  qualification   String?
+  specialization  String?
+  experienceYears Int?
+  address         String?
+  city            String?
+  nationality     String?
+  nationalId      String?
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  notes           String?  @db.Text
+  isActive        Boolean  @default(true)
+
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  institution     Institution @relation(fields: [institutionId], references: [id])
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model CalendarEvent {
+  id              String            @id @default(uuid())
+  institutionId   String
+  title           String
+  description     String?           @db.Text
+  startDate       DateTime
+  endDate         DateTime?
+  allDay          Boolean           @default(true)
+  type            CalendarEventType @default(EVENT)
+  classId         String?
+  color           String?
+  isPublic        Boolean           @default(true)
+  createdById     String?
+
+  institution     Institution @relation(fields: [institutionId], references: [id])
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model DisciplinaryRecord {
+  id              String           @id @default(uuid())
+  studentId       String
+  institutionId   String
+  date            DateTime
+  type            DisciplinaryType
+  description     String           @db.Text
+  sanction        String?
+  sanctionStart   DateTime?
+  sanctionEnd     DateTime?
+  recordedByName  String?
+  recordedById    String?
+  resolved        Boolean          @default(false)
+
+  student         Student     @relation(fields: [studentId], references: [id])
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+enum StudentStatus {
+  ACTIVE
+  GRADUATED
+  TRANSFERRED
+  WITHDRAWN
+  SUSPENDED
+}
+
+enum CalendarEventType {
+  HOLIDAY
+  EXAM
+  EVENT
+  MEETING
+  SPORT
+  CULTURAL
+  DEADLINE
+  PARENT_MEETING
+  OTHER
+}
+
+enum DisciplinaryType {
+  WARNING
+  SUSPENSION
+  EXCLUSION
+  NOTE
+  COMMENDATION
   OTHER
 }

@@ -182,6 +182,37 @@
   letter-spacing: 0.05em;
 }
 
+/* Extended form toggle */
+.student-form__toggle-extended {
+  background: none;
+  border: 1px dashed #d1d5db;
+  color: #6b7280;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.15s, border-color 0.15s;
+  width: 100%;
+}
+.student-form__toggle-extended:hover {
+  color: #1E2A78;
+  border-color: #a5b4fc;
+}
+
+/* Section title inside form */
+.student-form__section-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding-top: 0.5rem;
+  border-top: 1px solid #f3f4f6;
+  margin-top: 0.25rem;
+}
+
 @media (max-width: 480px) {
   .student-form__row {
     grid-template-columns: 1fr;
