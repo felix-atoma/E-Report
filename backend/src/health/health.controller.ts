@@ -33,7 +33,7 @@ export class HealthController {
       try {
         results[key] = await (fn as () => Promise<any>)();
       } catch (err: any) {
-        results[key] = { error: err?.message?.slice(0, 600), code: err?.code };
+        results[key] = { code: err?.code, meta: err?.meta, tail: err?.message?.split('\n').slice(-4).join(' ') };
       }
     }
     return results;
