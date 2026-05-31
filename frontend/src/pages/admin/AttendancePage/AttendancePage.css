@@ -1,0 +1,29 @@
+.att-controls { margin-bottom: 1.25rem; }
+.att-controls__row { display: flex; gap: 1.25rem; flex-wrap: wrap; }
+.att-controls__field { display: flex; flex-direction: column; gap: .375rem; min-width: 200px; flex: 1; }
+.att-controls__field label { font-size: .8rem; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: .5px; }
+.att-controls__field select,
+.att-controls__field input { padding: .6rem .875rem; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: .9rem; color: #111827; background: #fff; font-family: inherit; }
+.att-controls__field select:focus,
+.att-controls__field input:focus { outline: none; border-color: #1E2A78; }
+
+.att-table-wrap { padding: 0; overflow-x: auto; }
+.att-table { width: 100%; border-collapse: collapse; font-size: .875rem; min-width: 600px; }
+.att-table th { padding: .75rem 1rem; background: #f8fafc; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: #6b7280; text-align: left; border-bottom: 1px solid #e5e7eb; }
+.att-table td { padding: .75rem 1rem; border-bottom: 1px solid #f3f4f6; color: #374151; vertical-align: middle; }
+.att-table tbody tr:hover td { background: #f9fafb; }
+.att-table__name { font-weight: 700; color: #111827; }
+.att-table__present { color: #15803d; font-weight: 700; }
+.att-table__absent  { color: #dc2626; font-weight: 700; }
+.att-table__late    { color: #d97706; font-weight: 700; }
+
+.att-rate { display: flex; align-items: center; gap: .625rem; }
+.att-rate__bar { flex: 1; height: 6px; background: #f3f4f6; border-radius: 3px; overflow: hidden; min-width: 60px; }
+.att-rate__fill { height: 100%; background: #16a34a; border-radius: 3px; transition: width .3s ease; }
+.att-rate span { font-size: .8rem; font-weight: 700; color: #374151; white-space: nowrap; }
+
+.att-pill { display: inline-block; padding: .25rem .75rem; border-radius: 999px; font-size: .75rem; font-weight: 700; }
+.att-pill--present { background: #dcfce7; color: #15803d; }
+.att-pill--absent  { background: #fee2e2; color: #dc2626; }
+.att-pill--late    { background: #fef3c7; color: #d97706; }
+.att-pill--excused { background: #f3f4f6; color: #6b7280; }

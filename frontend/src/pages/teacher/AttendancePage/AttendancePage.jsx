@@ -1,0 +1,166 @@
+import { useState } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
+import { classesService } from '../../../services/classesService';
+import { attendanceService } from '../../../services/attendanceService';
+import AppShell from '../../../components/layout/AppShell/AppShell';
+import PageHeader from '../../../components/layout/PageHeader/PageHeader';
+import Card from '../../../components/common/Card/Card';
+import Loading from '../../../components/common/Loading/Loading';
+import EmptyState from '../../../components/common/EmptyState/EmptyState';
+import Button from '../../../components/common/Button/Button';
+import './AttendancePage.css';
+
+const STATUS_OPTIONS = [
+  { value: 'PRESENT',  label: 'Présent',  color: '#16a34a' },
+  { value: 'ABSENT',   label: 'Absent',   color: '#dc2626' },
+  { value: 'LATE',     label: 'Retard',   color: '#d97706' },
+  { value: 'EXCUSED',  label: 'Excusé',   color: '#6b7280' },
+];
+
+function today() {
+  return new Date().toISOString().split('T')[0];
+}
+
+export default function AttendancePage() {
+  const [selectedClassId, setSelectedClassId] = useState('');
+  const [date, setDate] = useState(today());
+  const [entries, setEntries] = useState({});
+
+  const { data: classes = [], isLoading: loadingClasses } = useQuery({
+    queryKey: ['classes'],
+    queryFn: () => classesService.list().then((r) => r.data),
+  });
+
+  const { data: classDetail, isLoading: loadingClass } = useQuery({
+    queryKey: ['class', selectedClassId],
+    queryFn: () => classesService.get(selectedClassId).then((r) => r.data),
+    enabled: !!selectedClassId,
+  });
+
+  const { data: existing = [] } = useQuery({
+    queryKey: ['attendance', selectedClassId, date],
+    queryFn: () => attendanceService.listByClass(selectedClassId, { date }).then((r) => r.data),
+    enabled: !!selectedClassId && !!date,
+    onSuccess: (data) => {
+      const map = {};
+      data.forEach((rec) => { map[rec.studentId] = rec.status; });
+      setEntries(map);
+    },
+  });
+
+  const students = classDetail?.students?.map((cs) => cs.student) ?? [];
+
+  const { mutate: save, isLoading: saving } = useMutation({
+    mutationFn: () =>
+      attendanceService.bulkUpsert({
+        classId: selectedClassId,
+        date,
+        entries: students.map((s) => ({
+          studentId: s.id,
+          status: entries[s.id] ?? 'PRESENT',
+        })),
+      }),
+    onSuccess: () => toast.success('Présences enregistrées'),
+    onError: () => toast.error('Erreur lors de l\'enregistrement'),
+  });
+
+  const setAll = (status) => {
+    const map = {};
+    students.forEach((s) => { map[s.id] = status; });
+    setEntries(map);
+  };
+
+  const toggle = (studentId, status) => {
+    setEntries((prev) => ({ ...prev, [studentId]: status }));
+  };
+
+  if (loadingClasses) return <AppShell title="Présences"><Loading /></AppShell>;
+
+  const presentCount = students.filter((s) => (entries[s.id] ?? 'PRESENT') === 'PRESENT').length;
+  const absentCount  = students.filter((s) => (entries[s.id] ?? 'PRESENT') === 'ABSENT').length;
+
+  return (
+    <AppShell title="Présences">
+      <PageHeader
+        title="Feuille de présences"
+        subtitle="Marquez les présences de votre classe pour chaque séance"
+      />
+
+      <Card className="att-controls">
+        <div className="att-controls__row">
+          <div className="att-controls__field">
+            <label>Classe</label>
+            <select value={selectedClassId} onChange={(e) => { setSelectedClassId(e.target.value); setEntries({}); }}>
+              <option value="">— Sélectionner une classe —</option>
+              {classes.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="att-controls__field">
+            <label>Date</label>
+            <input type="date" value={date} onChange={(e) => { setDate(e.target.value); setEntries({}); }} />
+          </div>
+        </div>
+      </Card>
+
+      {selectedClassId && loadingClass && <Loading />}
+
+      {selectedClassId && !loadingClass && students.length === 0 && (
+        <EmptyState message="Aucun élève dans cette classe." />
+      )}
+
+      {students.length > 0 && (
+        <>
+          <div className="att-summary">
+            <span className="att-summary__chip att-summary__chip--present">✅ {presentCount} présents</span>
+            <span className="att-summary__chip att-summary__chip--absent">❌ {absentCount} absents</span>
+            <span className="att-summary__chip att-summary__chip--total">📋 {students.length} élèves</span>
+          </div>
+
+          <div className="att-bulk-btns">
+            <button type="button" className="att-bulk-btn att-bulk-btn--present" onClick={() => setAll('PRESENT')}>Tous présents</button>
+            <button type="button" className="att-bulk-btn att-bulk-btn--absent"  onClick={() => setAll('ABSENT')}>Tous absents</button>
+          </div>
+
+          <Card className="att-list">
+            {students.map((student, i) => {
+              const current = entries[student.id] ?? 'PRESENT';
+              return (
+                <div key={student.id} className="att-row">
+                  <div className="att-row__info">
+                    <span className="att-row__num">{i + 1}</span>
+                    <div>
+                      <strong className="att-row__name">{student.user?.name ?? student.admissionNumber}</strong>
+                      <span className="att-row__id">{student.admissionNumber}</span>
+                    </div>
+                  </div>
+                  <div className="att-row__btns">
+                    {STATUS_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        className={`att-status-btn${current === opt.value ? ' active' : ''}`}
+                        style={current === opt.value ? { '--sc': opt.color } : {}}
+                        onClick={() => toggle(student.id, opt.value)}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </Card>
+
+          <div className="att-footer">
+            <Button onClick={() => save()} disabled={saving}>
+              {saving ? 'Enregistrement…' : '💾 Enregistrer les présences'}
+            </Button>
+          </div>
+        </>
+      )}
+    </AppShell>
+  );
+}

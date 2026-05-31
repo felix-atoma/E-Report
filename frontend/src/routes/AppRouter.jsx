@@ -17,6 +17,8 @@ import UnauthorizedPage       from '../pages/shared/UnauthorizedPage/Unauthorize
 import ErrorPage              from '../pages/shared/ErrorPage/ErrorPage';
 
 import AdminDashboardPage     from '../pages/admin/AdminDashboardPage/AdminDashboardPage';
+import AdminAttendancePage    from '../pages/admin/AttendancePage/AttendancePage';
+import SchoolDocumentsPage    from '../pages/admin/SchoolDocumentsPage/SchoolDocumentsPage';
 import UsersPage              from '../pages/admin/UsersPage/UsersPage';
 import ClassesPage            from '../pages/admin/ClassesPage/ClassesPage';
 import AdminClassDetailPage      from '../pages/admin/ClassDetailPage/ClassDetailPage';
@@ -35,6 +37,7 @@ import AdminImportPage        from '../pages/admin/AdminImportPage/AdminImportPa
 import BulletinVerifyPage    from '../pages/public/BulletinVerifyPage/BulletinVerifyPage';
 
 import TeacherDashboardPage   from '../pages/teacher/TeacherDashboardPage/TeacherDashboardPage';
+import TeacherAttendancePage  from '../pages/teacher/AttendancePage/AttendancePage';
 import LMSPage                from '../pages/teacher/LMSPage/LMSPage';
 import MyClassesPage          from '../pages/teacher/MyClassesPage/MyClassesPage';
 import ClassDetailPage        from '../pages/teacher/ClassDetailPage/ClassDetailPage';
@@ -121,6 +124,8 @@ function AppRouter() {
       <Route path="/admin/reports/:id"   element={<ProtectedRoute roles={['ADMIN']}><EditReportCardPage /></ProtectedRoute>} />
       <Route path="/admin/statistics"    element={<ProtectedRoute roles={['ADMIN']}><ClassStatsPage /></ProtectedRoute>} />
       <Route path="/admin/import"        element={<ProtectedRoute roles={['ADMIN']}><AdminImportPage /></ProtectedRoute>} />
+      <Route path="/admin/attendance"    element={<ProtectedRoute roles={['ADMIN']}><AdminAttendancePage /></ProtectedRoute>} />
+      <Route path="/admin/school-documents" element={<ProtectedRoute roles={['ADMIN']}><SchoolDocumentsPage /></ProtectedRoute>} />
 
       {/* Bursar */}
       <Route path="/bursar"              element={<ProtectedRoute roles={['BURSAR']}><BursarDashboardPage /></ProtectedRoute>} />
@@ -142,6 +147,7 @@ function AppRouter() {
       <Route path="/teacher/reports/:id"        element={<ProtectedRoute roles={['TEACHER']}><EditReportCardPage /></ProtectedRoute>} />
       <Route path="/teacher/bulletins"          element={<ProtectedRoute roles={['TEACHER']}><TeacherBulletinsPage /></ProtectedRoute>} />
       <Route path="/teacher/statistics"         element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><ClassStatsPage /></ProtectedRoute>} />
+      <Route path="/teacher/attendance"         element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><TeacherAttendancePage /></ProtectedRoute>} />
       <Route path="/teacher/lms"                element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><LMSPage /></ProtectedRoute>} />
       <Route path="/teacher/mock-exams"            element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamsPage /></ProtectedRoute>} />
       <Route path="/teacher/mock-exams/:id/grades" element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamGradePage /></ProtectedRoute>} />

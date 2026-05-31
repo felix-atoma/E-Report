@@ -8,6 +8,7 @@ import Card from '../../../components/common/Card/Card';
 import Avatar from '../../../components/common/Avatar/Avatar';
 import Badge from '../../../components/common/Badge/Badge';
 import Loading from '../../../components/common/Loading/Loading';
+import AttendanceInput from '../../../components/reports/AttendanceInput/AttendanceInput';
 import './StudentProfilePage.css';
 
 /* ── Constants ── */
@@ -211,6 +212,12 @@ function AdminStudentProfilePage() {
               )}
             </>
           )}
+        </Card>
+
+        {/* ── Daily Attendance Records ── */}
+        <Card className="asp-section">
+          <h3 className="asp-section__title">Présences journalières</h3>
+          <AttendanceInput studentId={student.id} />
         </Card>
 
         {/* ── Discipline & Conduite ── */}

@@ -1,3 +1,30 @@
-.attendance-input {
-  padding: var(--spacing-md);
-}
+.att-widget { font-size: .875rem; }
+.att-widget--loading,
+.att-widget--empty { color: #9ca3af; font-style: italic; padding: .5rem 0; }
+
+.att-widget__summary { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #f3f4f6; }
+.att-widget__stat { display: flex; flex-direction: column; align-items: center; padding: .625rem 1rem; border-radius: 10px; min-width: 72px; }
+.att-widget__stat strong { font-size: 1.4rem; font-weight: 900; line-height: 1; }
+.att-widget__stat span   { font-size: .7rem; font-weight: 600; margin-top: 2px; }
+.att-widget__stat--present { background: #dcfce7; color: #15803d; }
+.att-widget__stat--absent  { background: #fee2e2; color: #dc2626; }
+.att-widget__stat--late    { background: #fef3c7; color: #d97706; }
+.att-widget__stat--excused { background: #f3f4f6; color: #6b7280; }
+
+.att-widget__rate { display: flex; flex-direction: column; justify-content: center; gap: 2px; flex: 1; min-width: 120px; }
+.att-widget__rate strong { font-size: 1.4rem; font-weight: 900; color: #111827; }
+.att-widget__rate span   { font-size: .7rem; font-weight: 600; color: #6b7280; }
+.att-widget__bar { height: 6px; background: #f3f4f6; border-radius: 3px; overflow: hidden; margin-top: 4px; }
+.att-widget__bar-fill { height: 100%; background: #16a34a; border-radius: 3px; }
+
+.att-widget__list { display: flex; flex-direction: column; gap: .375rem; }
+.att-widget__row { display: flex; align-items: center; gap: .625rem; padding: .35rem 0; border-bottom: 1px solid #f9fafb; }
+.att-widget__date { font-size: .78rem; color: #6b7280; width: 50px; flex-shrink: 0; }
+.att-widget__pill { font-size: .7rem; font-weight: 700; padding: .15rem .5rem; border-radius: 999px; flex-shrink: 0; }
+.att-widget__pill--present { background: #dcfce7; color: #15803d; }
+.att-widget__pill--absent  { background: #fee2e2; color: #dc2626; }
+.att-widget__pill--late    { background: #fef3c7; color: #d97706; }
+.att-widget__pill--excused { background: #f3f4f6; color: #6b7280; }
+.att-widget__subject { font-size: .78rem; color: #374151; font-weight: 600; }
+.att-widget__note { font-size: .75rem; color: #9ca3af; font-style: italic; }
+.att-widget__more { font-size: .78rem; color: #9ca3af; text-align: center; margin-top: .5rem; }
