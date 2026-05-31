@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import logoIcon from '../../../assets/images/novaBulletin-icon.svg';
@@ -7,132 +7,332 @@ import './LandingPage.css';
 const SITE_URL = 'https://e-report-frontend.vercel.app';
 const OG_IMAGE = `${SITE_URL}/og-image.png`;
 
-/* ─── Data ──────────────────────────────────────────────────────────────── */
+/* ── SVG Illustrations ──────────────────────────────────────────────────── */
+const IllustrationHero = () => (
+  <svg viewBox="0 0 500 420" xmlns="http://www.w3.org/2000/svg" className="lp-illus lp-illus--hero" aria-hidden="true">
+    {/* Sky background */}
+    <rect width="500" height="420" fill="none"/>
+    {/* School building */}
+    <rect x="60" y="180" width="280" height="200" rx="4" fill="#1E2A78" opacity="0.9"/>
+    <rect x="60" y="160" width="280" height="30" rx="4" fill="#0f1a52"/>
+    {/* Roof triangle */}
+    <polygon points="140,100 200,60 260,100" fill="#FF7A59"/>
+    {/* Flag */}
+    <line x1="200" y1="60" x2="200" y2="20" stroke="#FFB547" strokeWidth="2.5"/>
+    <polygon points="200,20 230,30 200,40" fill="#FFB547"/>
+    {/* Windows */}
+    {[[90,200],[150,200],[210,200],[270,200],[90,260],[150,260],[210,260],[270,260]].map(([x,y],i) => (
+      <rect key={i} x={x} y={y} width="50" height="40" rx="6" fill="#60a5fa" opacity="0.8"/>
+    ))}
+    {/* Door */}
+    <rect x="165" y="310" width="70" height="70" rx="4" fill="#FFB547"/>
+    <circle cx="228" cy="348" r="3" fill="#1E2A78"/>
+    {/* Decorative sign */}
+    <rect x="120" y="185" width="160" height="12" rx="3" fill="#FFB547" opacity="0.7"/>
+    <text x="200" y="194.5" textAnchor="middle" fontSize="7" fontWeight="700" fill="#0f1a52">ÉCOLE PRIMAIRE</text>
+    {/* Trees */}
+    <ellipse cx="30" cy="320" rx="22" ry="28" fill="#16a34a" opacity="0.8"/>
+    <rect x="27" y="340" width="6" height="40" fill="#78350f"/>
+    <ellipse cx="420" cy="310" rx="25" ry="32" fill="#15803d" opacity="0.9"/>
+    <rect x="417" y="332" width="6" height="48" fill="#78350f"/>
+    <ellipse cx="460" cy="330" rx="18" ry="22" fill="#16a34a"/>
+    <rect x="457" y="347" width="6" height="33" fill="#78350f"/>
+    {/* Ground */}
+    <rect x="0" y="370" width="500" height="50" rx="8" fill="#16a34a" opacity="0.4"/>
+    {/* Path */}
+    <rect x="165" y="370" width="70" height="50" fill="#d4a96a" opacity="0.5"/>
+    {/* Sun */}
+    <circle cx="440" cy="70" r="32" fill="#FFB547" opacity="0.9"/>
+    {[0,45,90,135,180,225,270,315].map((a,i) => (
+      <line key={i} x1={440+Math.cos(a*Math.PI/180)*38} y1={70+Math.sin(a*Math.PI/180)*38} x2={440+Math.cos(a*Math.PI/180)*50} y2={70+Math.sin(a*Math.PI/180)*50} stroke="#FFB547" strokeWidth="3" strokeLinecap="round"/>
+    ))}
+    {/* Clouds */}
+    <g opacity="0.7">
+      <ellipse cx="80" cy="80" rx="30" ry="16" fill="white"/>
+      <ellipse cx="100" cy="72" rx="22" ry="18" fill="white"/>
+      <ellipse cx="60" cy="75" rx="18" ry="14" fill="white"/>
+    </g>
+    <g opacity="0.6">
+      <ellipse cx="310" cy="50" rx="36" ry="18" fill="white"/>
+      <ellipse cx="335" cy="42" rx="24" ry="20" fill="white"/>
+      <ellipse cx="288" cy="46" rx="20" ry="16" fill="white"/>
+    </g>
+    {/* Students walking */}
+    <g transform="translate(430,340)">
+      <circle cx="0" cy="-30" r="10" fill="#fbbf24"/>
+      <rect x="-6" y="-20" width="12" height="20" rx="3" fill="#3b82f6"/>
+      <line x1="-6" y1="-10" x2="-14" y2="0" stroke="#fbbf24" strokeWidth="3" strokeLinecap="round"/>
+      <line x1="6" y1="-10" x2="12" y2="-2" stroke="#fbbf24" strokeWidth="3" strokeLinecap="round"/>
+    </g>
+    <g transform="translate(455,345)">
+      <circle cx="0" cy="-28" r="9" fill="#f87171"/>
+      <rect x="-5" y="-19" width="10" height="18" rx="3" fill="#a855f7"/>
+      <line x1="-5" y1="-8" x2="-12" y2="2" stroke="#f87171" strokeWidth="2.5" strokeLinecap="round"/>
+      <line x1="5" y1="-8" x2="10" y2="0" stroke="#f87171" strokeWidth="2.5" strokeLinecap="round"/>
+    </g>
+  </svg>
+);
 
-const FEATURES = [
-  { icon: '🧮', color: '#dbeafe', iconColor: '#1d4ed8', title: 'Calcul automatique des moyennes', desc: 'Devoir, composition, coefficients — tout est calculé instantanément. Aucune formule Excel, aucune erreur possible. Le rang de chaque élève est recalculé automatiquement à chaque saisie.' },
-  { icon: '📄', color: '#dcfce7', iconColor: '#16a34a', title: 'Bulletins PDF en 1 clic', desc: 'Chaque bulletin est généré au format PDF professionnel avec le logo, les couleurs et le cachet de votre école. Prêt à imprimer ou à partager digitalement.' },
-  { icon: '📱', color: '#fce7f3', iconColor: '#be185d', title: 'Envoi WhatsApp & Email', desc: 'Les parents reçoivent automatiquement le bulletin de leur enfant sur WhatsApp et par email dès la publication. Notification en temps réel, zéro distribution manuelle.' },
-  { icon: '💰', color: '#fef3c7', iconColor: '#d97706', title: 'Frais scolaires intégrés', desc: 'Gérez les cotisations scolaires directement depuis la plateforme. Le bulletin est automatiquement bloqué si les frais ne sont pas réglés — plus besoin de courir après les parents.' },
-  { icon: '📊', color: '#ede9fe', iconColor: '#7c3aed', title: 'Analytics & Statistiques', desc: 'Tableau de bord complet avec taux de recouvrement, progression par classe, comparatif trimestres, et suivi des bulletins publiés vs en attente.' },
-  { icon: '👥', color: '#e0f2fe', iconColor: '#0369a1', title: 'Multi-rôles & accès sécurisés', desc: 'Chaque acteur a son propre espace : l\'admin gère tout, l\'enseignant saisit ses notes, l\'économe suit les paiements, le parent consulte les résultats.' },
-  { icon: '☁️', color: '#f0fdf4', iconColor: '#15803d', title: 'Cloud & sauvegarde automatique', desc: 'Toutes vos données sont sauvegardées en temps réel dans le cloud. Aucun risque de fichier corrompu ou perdu. Accès depuis n\'importe quel appareil.' },
-  { icon: '📥', color: '#fff7ed', iconColor: '#c2410c', title: 'Import CSV & export', desc: 'Importez vos élèves, enseignants et notes depuis Excel ou CSV en quelques secondes. Exportez les données quand vous en avez besoin.' },
-  { icon: '🏆', color: '#fdf4ff', iconColor: '#9333ea', title: 'Examens blancs & palmarès', desc: 'Organisez des examens blancs, publiez les résultats et générez le palmarès de l\'établissement. Les élèves et parents y accèdent directement depuis leur portail.' },
+const IllustrationWhatsapp = () => (
+  <svg viewBox="0 0 280 480" xmlns="http://www.w3.org/2000/svg" className="lp-illus lp-illus--phone" aria-hidden="true">
+    {/* Phone body */}
+    <rect x="20" y="10" width="240" height="460" rx="36" fill="#1f2937" stroke="#374151" strokeWidth="2"/>
+    <rect x="30" y="20" width="220" height="440" rx="30" fill="#111827"/>
+    {/* Screen */}
+    <rect x="30" y="20" width="220" height="440" rx="30" fill="#f0fdf4"/>
+    {/* Status bar */}
+    <rect x="30" y="20" width="220" height="32" rx="30" fill="#16a34a"/>
+    <rect x="30" y="40" width="220" height="12" fill="#16a34a"/>
+    <text x="140" y="38" textAnchor="middle" fontSize="10" fontWeight="700" fill="white">WhatsApp</text>
+    {/* Notch */}
+    <rect x="100" y="20" width="80" height="16" rx="8" fill="#1f2937"/>
+    {/* Chat header */}
+    <rect x="30" y="52" width="220" height="50" fill="#16a34a"/>
+    <circle cx="66" cy="77" r="16" fill="#dcfce7"/>
+    <text x="66" y="82" textAnchor="middle" fontSize="14" fontWeight="900" fill="#16a34a">N</text>
+    <text x="120" y="72" fontSize="10" fontWeight="700" fill="white">NovaBulletin</text>
+    <text x="120" y="85" fontSize="8" fill="#bbf7d0">En ligne ●</text>
+    {/* Message bubbles */}
+    {/* Bubble 1 */}
+    <rect x="50" y="118" width="150" height="52" rx="12" fill="#dcfce7"/>
+    <text x="65" y="134" fontSize="8" fontWeight="600" fill="#166534">📄 Bulletin de Kofi Mensah</text>
+    <text x="65" y="147" fontSize="7.5" fill="#374151">Trimestre 2 — 2025/2026</text>
+    <text x="65" y="159" fontSize="7.5" fill="#374151">Moyenne : 15.4/20 — Rang : 3/28</text>
+    <text x="180" y="165" fontSize="6.5" fill="#6b7280">09:32 ✓✓</text>
+    {/* Bubble 2 */}
+    <rect x="50" y="182" width="140" height="38" rx="12" fill="#dcfce7"/>
+    <text x="65" y="196" fontSize="7.5" fill="#374151">📎 Voir le bulletin PDF complet</text>
+    <text x="65" y="210" fontSize="7" fill="#3b82f6" textDecoration="underline">Appuyez pour ouvrir →</text>
+    <text x="172" y="215" fontSize="6.5" fill="#6b7280">09:32 ✓✓</text>
+    {/* Bubble 3 */}
+    <rect x="88" y="232" width="162" height="36" rx="12" fill="#fff"/>
+    <text x="100" y="246" fontSize="7.5" fill="#374151">Merci ! J'ai reçu le bulletin 🙏</text>
+    <text x="100" y="260" fontSize="7.5" fill="#374151">Très bons résultats !</text>
+    <text x="234" y="263" fontSize="6.5" fill="#6b7280">09:35</text>
+    {/* Bubble 4 */}
+    <rect x="50" y="280" width="155" height="50" rx="12" fill="#dcfce7"/>
+    <text x="65" y="295" fontSize="8" fontWeight="600" fill="#166534">📌 Rappel frais scolaires</text>
+    <text x="65" y="308" fontSize="7.5" fill="#374151">Solde restant : 15 000 FCFA</text>
+    <text x="65" y="320" fontSize="7.5" fill="#374151">Trimestre 3 — Échéance : 15/04</text>
+    <text x="188" y="326" fontSize="6.5" fill="#6b7280">10:00 ✓✓</text>
+    {/* Input bar */}
+    <rect x="30" y="410" width="220" height="50" fill="#f0fdf4" rx="0"/>
+    <rect x="38" y="418" width="155" height="32" rx="16" fill="white" stroke="#e5e7eb" strokeWidth="1"/>
+    <text x="60" y="438" fontSize="8" fill="#9ca3af">Écrire un message…</text>
+    <circle cx="218" cy="434" r="14" fill="#16a34a"/>
+    <text x="218" y="439" textAnchor="middle" fontSize="12">🎤</text>
+    {/* Bottom bar */}
+    <rect x="90" y="468" width="100" height="4" rx="2" fill="#374151"/>
+  </svg>
+);
+
+const IllustrationLMS = () => (
+  <svg viewBox="0 0 520 360" xmlns="http://www.w3.org/2000/svg" className="lp-illus lp-illus--lms" aria-hidden="true">
+    {/* Laptop body */}
+    <rect x="60" y="40" width="400" height="260" rx="12" fill="#1f2937" stroke="#374151" strokeWidth="2"/>
+    <rect x="72" y="52" width="376" height="236" rx="6" fill="#0f172a"/>
+    {/* Screen content */}
+    <rect x="72" y="52" width="376" height="236" rx="6" fill="#1e293b"/>
+    {/* Sidebar */}
+    <rect x="72" y="52" width="90" height="236" rx="6" fill="#0f172a"/>
+    <text x="117" y="82" textAnchor="middle" fontSize="8" fontWeight="800" fill="#60a5fa">COURS</text>
+    {[['📚','Mathématiques',72],['📖','Français',90],['🔬','Sciences',108],['🗺️','Histoire',126],['🎨','Arts',144],['📐','Géométrie',162]].map(([ico,lbl,y],i) => (
+      <g key={i}>
+        <rect x="78" y={y-10} width="78" height="20" rx="4" fill={i===0?'#1E2A78':'transparent'}/>
+        <text x="84" y={y+3} fontSize="9">{ico}</text>
+        <text x="97" y={y+3} fontSize="7.5" fill={i===0?'#fff':'#94a3b8'}>{lbl}</text>
+      </g>
+    ))}
+    {/* Main content area */}
+    <rect x="168" y="60" width="272" height="220" rx="4" fill="#1e293b"/>
+    {/* Header */}
+    <rect x="168" y="60" width="272" height="32" rx="4" fill="#1E2A78"/>
+    <text x="184" y="76" fontSize="9" fontWeight="700" fill="white">📚 Mathématiques — 6ème A</text>
+    <rect x="396" y="66" width="36" height="18" rx="4" fill="#FF7A59"/>
+    <text x="414" y="78" textAnchor="middle" fontSize="7.5" fontWeight="700" fill="white">+ Ajouter</text>
+    {/* Tabs */}
+    {[['Cours',168],['Devoirs',210],['Quiz',252],['Résultats',290]].map(([t,x],i) => (
+      <g key={i}>
+        <rect x={x} y="94" width={i===0?36:i===3?44:38} height="16" rx="4" fill={i===0?'#3b82f6':'transparent'}/>
+        <text x={x+(i===0?18:i===3?22:19)} y="105.5" textAnchor="middle" fontSize="7" fontWeight={i===0?'700':'400'} fill={i===0?'#fff':'#64748b'}>{t}</text>
+      </g>
+    ))}
+    {/* Course card */}
+    <rect x="174" y="118" width="120" height="80" rx="8" fill="#0f172a" stroke="#1E2A78" strokeWidth="1.5"/>
+    <rect x="174" y="118" width="120" height="32" rx="8" fill="#1E2A78"/>
+    <text x="234" y="131" textAnchor="middle" fontSize="8.5" fontWeight="700" fill="white">📐 Chapitre 4</text>
+    <text x="234" y="143" textAnchor="middle" fontSize="7" fill="#93c5fd">Les fractions</text>
+    <text x="184" y="162" fontSize="7" fill="#94a3b8">PDF · 8 pages · 2.3 MB</text>
+    <text x="184" y="175" fontSize="7" fill="#94a3b8">Ajouté le 12 mai 2026</text>
+    <rect x="242" y="186" width="45" height="16" rx="4" fill="#16a34a"/>
+    <text x="264.5" y="197" textAnchor="middle" fontSize="7" fontWeight="700" fill="white">⬇ Télécharger</text>
+    {/* Assignment card */}
+    <rect x="302" y="118" width="130" height="80" rx="8" fill="#0f172a" stroke="#d97706" strokeWidth="1.5"/>
+    <rect x="302" y="118" width="130" height="32" rx="8" fill="#d97706"/>
+    <text x="367" y="131" textAnchor="middle" fontSize="8.5" fontWeight="700" fill="white">📝 Devoir N°3</text>
+    <text x="367" y="143" textAnchor="middle" fontSize="7" fill="#fef3c7">Exercices p.45-46</text>
+    <text x="312" y="162" fontSize="7" fill="#94a3b8">⏰ Rendre avant le 20 mai</text>
+    <rect x="312" y="168" width="80" height="6" rx="3" fill="#374151"/>
+    <rect x="312" y="168" width="48" height="6" rx="3" fill="#d97706"/>
+    <text x="312" y="188" fontSize="7" fill="#94a3b8">18/30 rendus ✓</text>
+    {/* Quiz card */}
+    <rect x="174" y="210" width="120" height="62" rx="8" fill="#0f172a" stroke="#7c3aed" strokeWidth="1.5"/>
+    <rect x="174" y="210" width="120" height="24" rx="8" fill="#7c3aed"/>
+    <text x="234" y="224" textAnchor="middle" fontSize="8.5" fontWeight="700" fill="white">🎯 Quiz — Fractions</text>
+    <text x="184" y="244" fontSize="7" fill="#94a3b8">10 questions · 20 min</text>
+    <text x="184" y="255" fontSize="7" fill="#a78bfa">Moy. classe : 14.2/20</text>
+    <rect x="248" y="260" width="38" height="14" rx="4" fill="#7c3aed"/>
+    <text x="267" y="270" textAnchor="middle" fontSize="7" fontWeight="700" fill="white">Commencer</text>
+    {/* Timetable card */}
+    <rect x="302" y="210" width="130" height="62" rx="8" fill="#0f172a" stroke="#0e7490" strokeWidth="1.5"/>
+    <rect x="302" y="210" width="130" height="24" rx="8" fill="#0e7490"/>
+    <text x="367" y="224" textAnchor="middle" fontSize="8.5" fontWeight="700" fill="white">📅 Emploi du temps</text>
+    {[['Lundi','Math 8h-10h'],['Mardi','Fr. 8h-9h'],['Mercredi','Sci. 10h-12h']].map(([j,c],i) => (
+      <text key={i} x="312" y={240+i*11} fontSize="7" fill="#94a3b8">{j}: <tspan fill="#e0f2fe">{c}</tspan></text>
+    ))}
+    {/* Laptop base */}
+    <rect x="20" y="300" width="480" height="20" rx="4" fill="#374151"/>
+    <rect x="140" y="300" width="240" height="8" rx="2" fill="#1f2937"/>
+    {/* Decorative elements */}
+    <circle cx="460" cy="30" r="18" fill="#FFB547" opacity="0.8"/>
+    <circle cx="480" cy="15" r="10" fill="#FF7A59" opacity="0.6"/>
+    <circle cx="50" cy="20" r="12" fill="#a855f7" opacity="0.5"/>
+  </svg>
+);
+
+const IllustrationTeacher = () => (
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className="lp-illus lp-illus--teacher" aria-hidden="true">
+    <circle cx="100" cy="200" r="80" fill="#dbeafe" opacity="0.4"/>
+    {/* Body */}
+    <rect x="70" y="110" width="60" height="70" rx="10" fill="#1E2A78"/>
+    {/* Tie */}
+    <polygon points="100,115 95,130 100,140 105,130" fill="#FF7A59"/>
+    {/* Head */}
+    <circle cx="100" cy="90" r="28" fill="#fbbf24"/>
+    {/* Hair */}
+    <ellipse cx="100" cy="65" rx="28" ry="12" fill="#78350f"/>
+    <rect x="72" y="65" width="56" height="10" fill="#78350f"/>
+    {/* Eyes */}
+    <circle cx="91" cy="88" r="4" fill="white"/>
+    <circle cx="109" cy="88" r="4" fill="white"/>
+    <circle cx="92" cy="89" r="2.5" fill="#1f2937"/>
+    <circle cx="110" cy="89" r="2.5" fill="#1f2937"/>
+    {/* Smile */}
+    <path d="M 91 99 Q 100 106 109 99" fill="none" stroke="#1f2937" strokeWidth="2.5" strokeLinecap="round"/>
+    {/* Arms */}
+    <rect x="40" y="115" width="32" height="12" rx="6" fill="#1E2A78"/>
+    <rect x="128" y="115" width="32" height="12" rx="6" fill="#1E2A78"/>
+    {/* Tablet in right hand */}
+    <rect x="152" y="105" width="28" height="36" rx="4" fill="#0f172a" stroke="#60a5fa" strokeWidth="2"/>
+    <rect x="155" y="108" width="22" height="28" rx="2" fill="#1e293b"/>
+    {[0,1,2,3].map(i => <rect key={i} x="157" y={111+i*6} width={i===0?18:i===1?14:16} height="3" rx="1" fill="#3b82f6" opacity="0.7"/>)}
+    {/* Legs */}
+    <rect x="80" y="175" width="16" height="25" rx="4" fill="#374151"/>
+    <rect x="104" y="175" width="16" height="25" rx="4" fill="#374151"/>
+    {/* Shoes */}
+    <ellipse cx="88" cy="200" rx="12" ry="5" fill="#1f2937"/>
+    <ellipse cx="112" cy="200" rx="12" ry="5" fill="#1f2937"/>
+  </svg>
+);
+
+/* ── Data ───────────────────────────────────────────────────────────────── */
+const FEATURES_ROW1 = [
+  { icon: '🧮', color: '#dbeafe', iconColor: '#1d4ed8', title: 'Calcul automatique', desc: 'Moyennes, coefficients, rangs calculés instantanément. Zéro formule Excel, zéro erreur.' },
+  { icon: '📄', color: '#dcfce7', iconColor: '#16a34a', title: 'Bulletins PDF en 1 clic', desc: 'Bulletin professionnel avec logo, couleurs et cachet de votre école. Prêt à imprimer ou partager.' },
+  { icon: '📱', color: '#fce7f3', iconColor: '#be185d', title: 'WhatsApp & Email', desc: 'Parents informés instantanément par WhatsApp. Distribution automatique dès la publication.' },
+];
+const FEATURES_ROW2 = [
+  { icon: '💰', color: '#fef3c7', iconColor: '#d97706', title: 'Frais scolaires', desc: 'Gestion intégrée des cotisations. Blocage automatique des bulletins si frais impayés.' },
+  { icon: '📊', color: '#ede9fe', iconColor: '#7c3aed', title: 'Analytics temps réel', desc: 'Taux de recouvrement, progression par classe, bulletins publiés vs en attente — en direct.' },
+  { icon: '☁️', color: '#f0fdf4', iconColor: '#15803d', title: 'Cloud sécurisé', desc: 'Données sauvegardées en temps réel. Accès depuis n\'importe quel appareil, n\'importe où.' },
+];
+
+const LMS_FEATURES = [
+  { icon: '📚', title: 'Cours & Documents', desc: 'Les enseignants déposent leurs cours, PDF et ressources pédagogiques. Les élèves y accèdent depuis leur portail, à tout moment.' },
+  { icon: '📝', title: 'Devoirs & Exercices', desc: 'Publication des devoirs avec date limite. Suivi en temps réel des rendus. Rappels automatiques aux élèves en retard.' },
+  { icon: '🎯', title: 'Quiz Interactifs', desc: 'Créez des quiz avec correction automatique. Les résultats sont disponibles immédiatement après la soumission.' },
+  { icon: '📅', title: 'Emploi du Temps', desc: 'Emploi du temps de chaque classe accessible depuis l\'application. Mis à jour en temps réel par l\'administration.' },
+  { icon: '📢', title: 'Annonces & Actualités', desc: 'Publiez des annonces ciblées aux parents, enseignants ou élèves. Chaque partie reçoit uniquement ce qui la concerne.' },
+  { icon: '🏆', title: 'Examens Blancs', desc: 'Organisez des examens blancs, saisissez les notes et publiez le palmarès complet de l\'établissement.' },
 ];
 
 const STEPS = [
-  { num: '01', icon: '🏫', title: 'Inscrivez votre école', desc: 'Remplissez le formulaire d\'inscription en 2 minutes. Notre équipe valide votre demande sous 24h et active votre compte gratuitement.', detail: 'Nom de l\'école · Type d\'établissement · Niveau d\'enseignement · Contact' },
-  { num: '02', icon: '⚙️', title: 'Configurez en 30 minutes', desc: 'Ajoutez vos classes, matières avec coefficients, enseignants et élèves. Personnalisez les bulletins avec le logo et les couleurs de votre école.', detail: 'Classes · Matières · Coefficients · Import CSV élèves · Logo école' },
-  { num: '03', icon: '✏️', title: 'Les enseignants saisissent les notes', desc: 'Vos professeurs se connectent sur leur téléphone ou ordinateur et saisissent les notes de leurs matières. Ils signent numériquement leur fiche.', detail: 'Devoir · Composition · Appréciations · Signature numérique' },
-  { num: '04', icon: '🚀', title: 'Publiez & les parents reçoivent', desc: 'L\'admin publie les bulletins en 1 clic. Chaque parent reçoit instantanément le bulletin de son enfant sur WhatsApp. Les frais impayés bloquent automatiquement l\'envoi.', detail: 'PDF auto-généré · WhatsApp · Email · Blocage frais impayés' },
+  { num: '01', icon: '🏫', title: 'Inscrivez votre école', desc: 'Formulaire en 2 minutes. Validation sous 24h. Compte activé gratuitement.', tags: ['Nom école','Type','Niveau','Contact'] },
+  { num: '02', icon: '⚙️', title: 'Configurez en 30 min', desc: 'Ajoutez classes, matières, enseignants, élèves. Import CSV disponible.', tags: ['Classes','Matières','Coefficients','Import CSV'] },
+  { num: '03', icon: '✏️', title: 'Saisie des notes', desc: 'Les professeurs saisissent les notes sur leur téléphone. Signature numérique.', tags: ['Devoir','Composition','Appréciations','Signature'] },
+  { num: '04', icon: '🚀', title: 'Publiez & envoyez', desc: 'L\'admin publie. Chaque parent reçoit le bulletin sur WhatsApp instantanément.', tags: ['PDF auto','WhatsApp','Email','Blocage frais'] },
 ];
 
 const ROLES = [
-  {
-    icon: '🏫', title: 'Administrateur', color: '#1E2A78',
-    desc: 'Une vision complète de votre établissement en temps réel.',
-    features: ['Tableau de bord analytique complet', 'Gestion des classes, matières, enseignants', 'Création et gestion des comptes utilisateurs', 'Paramétrage des frais scolaires', 'Personnalisation des bulletins (logo, couleurs)', 'Publication des bulletins d\'un clic', 'Suivi du taux de recouvrement des frais', 'Accès aux statistiques par classe et par trimestre'],
-  },
-  {
-    icon: '👨‍🏫', title: 'Enseignant', color: '#0369a1',
-    desc: 'Saisissez les notes depuis votre téléphone, n\'importe où.',
-    features: ['Saisie des notes sur mobile et desktop', 'Calcul automatique des moyennes', 'Appréciations et commentaires par élève', 'Signature numérique des fiches de notes', 'Gestion de l\'emploi du temps', 'Dépôt de cours, devoirs et quiz LMS', 'Correction des examens blancs', 'Historique de toutes ses fiches'],
-  },
-  {
-    icon: '💼', title: 'Économe / Bursar', color: '#d97706',
-    desc: 'Gérez les frais scolaires sans effort.',
-    features: ['Enregistrement des paiements (TMoney, Flooz, cash)', 'Vue en temps réel des impayés par classe', 'Génération de reçus PDF', 'Suivi par cotisation et par période', 'Rapport financier exportable', 'Statistiques de recouvrement', 'Notification automatique des bulletins retenus', 'Accès multi-classe multi-établissement'],
-  },
-  {
-    icon: '👨‍👩‍👧', title: 'Parent', color: '#15803d',
-    desc: 'Restez informé de la scolarité de vos enfants en temps réel.',
-    features: ['Bulletins reçus sur WhatsApp & Email', 'Portail parent accessible 24h/24', 'Suivi de la progression trimestre par trimestre', 'Historique complet de tous les bulletins', 'Paiement des frais scolaires en ligne', 'Accès aux annonces de l\'école', 'Consulter les devoirs et cours du LMS', 'Notifications instantanées'],
-  },
+  { icon: '🏫', title: 'Administrateur', color: '#1E2A78', desc: 'Vision complète de votre établissement.', features: ['Tableau de bord analytique complet','Gestion classes, matières, enseignants','Création et gestion des comptes','Paramétrage des frais scolaires','Personnalisation des bulletins','Publication en 1 clic','Suivi du taux de recouvrement','Statistiques par classe et trimestre'] },
+  { icon: '👨‍🏫', title: 'Enseignant', color: '#0369a1', desc: 'Gérez vos notes et cours depuis votre téléphone.', features: ['Saisie des notes sur mobile','Calcul automatique des moyennes','Appréciations par élève','Signature numérique des fiches','Dépôt de cours et documents','Publication de devoirs et quiz','Gestion emploi du temps','Correction examens blancs'] },
+  { icon: '💼', title: 'Économe', color: '#d97706', desc: 'Gérez les frais sans paperasse.', features: ['Enregistrement paiements (TMoney, Flooz, cash)','Vue impayés en temps réel','Génération de reçus PDF','Suivi par cotisation et période','Rapport financier exportable','Statistiques de recouvrement','Bulletins retenus automatiquement','Accès multi-établissement'] },
+  { icon: '👨‍👩‍👧', title: 'Parent', color: '#15803d', desc: 'Suivez la scolarité de vos enfants.', features: ['Bulletins sur WhatsApp & Email','Portail parent 24h/24','Progression trimestre par trimestre','Historique complet des bulletins','Paiement frais en ligne','Consulter cours et devoirs LMS','Annonces de l\'école','Notifications instantanées'] },
 ];
 
 const TESTIMONIALS = [
-  { name: 'Directeur Kodjo A.', school: 'Collège Sainte-Marie, Lomé', text: 'Avant NovaBulletin, nous passions 5 jours à préparer les bulletins chaque trimestre. Maintenant c\'est 30 minutes. Les parents adorent recevoir les bulletins sur WhatsApp.', rating: 5, initials: 'KA' },
-  { name: 'Mme Afi D.', school: 'École Primaire Les Colibris, Lomé', text: 'Le système de blocage automatique pour frais impayés a transformé notre recouvrement. Nous avons récupéré 40% de créances en un trimestre.', rating: 5, initials: 'AD' },
-  { name: 'Prof. Edem K.', school: 'Lycée Technique, Kara', text: 'En tant qu\'enseignant, je saisie mes notes depuis mon téléphone entre deux cours. C\'est rapide, intuitif et je ne me souviens plus pourquoi on utilisait Excel.', rating: 5, initials: 'EK' },
-  { name: 'Parent — Mme Sena F.', school: 'Parent d\'élève, Lomé', text: 'Recevoir le bulletin de ma fille sur WhatsApp le jour même, c\'est fantastique. Je suis informée instantanément et je n\'ai plus à attendre la distribution papier.', rating: 5, initials: 'SF' },
+  { name: 'Kodjo Agbenyéga', role: 'Directeur', school: 'Collège Sainte-Marie, Lomé', text: 'Avant NovaBulletin, nous passions 5 jours à préparer les bulletins chaque trimestre. Maintenant c\'est 30 minutes. Les parents adorent recevoir les bulletins sur WhatsApp. C\'est une révolution pour notre école.', initials: 'KA', color: '#1E2A78' },
+  { name: 'Mme Afi Dossou', role: 'Directrice', school: 'École Primaire Les Colibris, Lomé', text: 'Le système de blocage automatique pour frais impayés a transformé notre recouvrement. Nous avons récupéré 40% de créances supplémentaires en un seul trimestre. Je recommande à toutes les écoles.', initials: 'AD', color: '#16a34a' },
+  { name: 'Prof. Edem Kodjo', role: 'Enseignant de Mathématiques', school: 'Lycée Technique de Kara', text: 'Je saisie mes notes depuis mon téléphone entre deux cours. C\'est rapide, intuitif. La signature numérique des fiches est une fonctionnalité que j\'adore. Je ne reviendrai jamais à Excel.', initials: 'EK', color: '#7c3aed' },
+  { name: 'Sena Fiatowo', role: 'Parent d\'élève', school: 'Lomé, Togo', text: 'Recevoir le bulletin de ma fille sur WhatsApp le jour même, c\'est fantastique ! Je peux suivre sa progression en temps réel depuis mon téléphone. Merci NovaBulletin.', initials: 'SF', color: '#d97706' },
+  { name: 'M. Kwame Asante', role: 'Proviseur', school: 'Lycée International de Cotonou', text: 'La gestion des frais scolaires intégrée aux bulletins est exactement ce dont nous avions besoin. Tout est centralisé, l\'économe et l\'admin voient les mêmes informations en temps réel.', initials: 'KW', color: '#be185d' },
 ];
 
 const FAQS = [
-  { q: 'Est-ce que je dois payer pour essayer ?', a: 'Non. Utilisez NovaBulletin pendant tout un trimestre. Si vous êtes satisfait, vous payez à la fin. Sinon, vous revenez à votre ancien système. Aucun engagement, aucune carte bancaire requise.' },
-  { q: 'Combien de temps faut-il pour configurer l\'école ?', a: 'Environ 30 minutes pour une école de taille moyenne. Vous pouvez importer vos élèves depuis un fichier Excel ou CSV. Notre équipe est disponible pour vous aider à chaque étape.' },
-  { q: 'Les enseignants doivent-ils être formés ?', a: 'L\'interface est conçue pour être intuitive sur mobile. La plupart des enseignants maîtrisent la plateforme en moins de 10 minutes. Nous fournissons un guide de démarrage rapide.' },
-  { q: 'Que se passe-t-il si un parent n\'utilise pas WhatsApp ?', a: 'NovaBulletin envoie aussi les bulletins par email. Si le parent n\'a ni WhatsApp ni email, l\'admin peut imprimer le bulletin PDF directement depuis la plateforme.' },
-  { q: 'Les données de nos élèves sont-elles sécurisées ?', a: 'Oui. Toutes les données sont chiffrées, sauvegardées en temps réel sur Supabase (infrastructure cloud de niveau bancaire) et accessibles uniquement aux utilisateurs autorisés de votre école.' },
-  { q: 'Peut-on personnaliser les bulletins aux couleurs de notre école ?', a: 'Absolument. Vous pouvez ajouter le logo, choisir les couleurs primaires et secondaires, et personnaliser l\'en-tête de vos bulletins depuis le module Apparence.' },
+  { q: 'Est-ce que je dois payer pour essayer ?', a: 'Non. Utilisez NovaBulletin pendant tout un trimestre complet. Si vous êtes satisfait à la fin du trimestre, vous payez. Sinon, vous revenez à votre ancien système. Aucun engagement, aucune carte bancaire requise dès le départ.' },
+  { q: 'Combien de temps faut-il pour configurer l\'école ?', a: 'Environ 30 minutes pour une école de taille moyenne. Vous pouvez importer vos élèves depuis un fichier Excel ou CSV en quelques clics. Notre équipe vous accompagne à chaque étape via WhatsApp.' },
+  { q: 'Les enseignants doivent-ils être formés ?', a: 'L\'interface est conçue pour être intuitive sur mobile. La plupart des enseignants maîtrisent la plateforme en moins de 10 minutes. Nous fournissons un guide de démarrage rapide et un support WhatsApp dédié.' },
+  { q: 'Que se passe-t-il si un parent n\'utilise pas WhatsApp ?', a: 'NovaBulletin envoie aussi les bulletins par email. Si le parent n\'a ni WhatsApp ni email, l\'admin peut imprimer le bulletin PDF directement depuis la plateforme, comme avant.' },
+  { q: 'Les données de nos élèves sont-elles sécurisées ?', a: 'Oui. Toutes les données sont chiffrées et hébergées sur Supabase (infrastructure cloud de niveau bancaire). Chaque école n\'a accès qu\'à ses propres données. Conformité RGPD assurée.' },
+  { q: 'Fonctionne-t-il sur tous les appareils ?', a: 'Oui. NovaBulletin est une application web qui fonctionne sur ordinateur, tablette et smartphone (Android et iOS). Aucune installation requise — ouvrez simplement votre navigateur.' },
 ];
 
 const COMPARISON = [
-  { feature: 'Calcul des moyennes', excel: '❌ Manuel, formules', autres: '⚠️ Partiel', nova: '✅ Automatique' },
-  { feature: 'Bulletins PDF', excel: '❌ Mise en page manuelle', autres: '✅ Oui', nova: '✅ En 1 clic' },
-  { feature: 'Envoi WhatsApp', excel: '❌ Non', autres: '❌ Non', nova: '✅ Automatique' },
-  { feature: 'Frais scolaires intégrés', excel: '❌ Séparé', autres: '⚠️ Partiel', nova: '✅ Complet + blocage' },
-  { feature: 'Portail parent', excel: '❌ Non', autres: '⚠️ Basique', nova: '✅ 24h/24 + mobile' },
-  { feature: 'Analytics dashboard', excel: '⚠️ Tableaux manuels', autres: '✅ Oui', nova: '✅ Temps réel' },
-  { feature: 'Import CSV élèves', excel: '✅ Oui', autres: '✅ Oui', nova: '✅ Oui' },
+  { feature: 'Calcul automatique des moyennes', excel: '❌ Formules manuelles', autres: '⚠️ Partiel', nova: '✅ 100% automatique' },
+  { feature: 'Bulletins PDF avec logo école', excel: '❌ Mise en page manuelle', autres: '✅ Oui', nova: '✅ En 1 clic' },
+  { feature: 'Envoi WhatsApp aux parents', excel: '❌ Non', autres: '❌ Non', nova: '✅ Automatique' },
+  { feature: 'Gestion frais scolaires intégrée', excel: '❌ Fichier séparé', autres: '⚠️ Module payant', nova: '✅ Intégré + blocage auto' },
+  { feature: 'Portail parent mobile', excel: '❌ Non', autres: '⚠️ Basique', nova: '✅ Application complète' },
+  { feature: 'LMS (cours, devoirs, quiz)', excel: '❌ Non', autres: '⚠️ Option payante', nova: '✅ Inclus' },
   { feature: 'Examens blancs & palmarès', excel: '❌ Non', autres: '❌ Non', nova: '✅ Inclus' },
-  { feature: 'Adapté à l\'Afrique francophone', excel: '❌ Non', autres: '❌ Non', nova: '✅ Conçu pour Togo+' },
-  { feature: 'Prix', excel: '~0 (mais heures perdues)', autres: '50k–200k FCFA/mois', nova: '✅ Payez si satisfait' },
+  { feature: 'Analytics tableau de bord', excel: '⚠️ Tableaux manuels', autres: '✅ Oui', nova: '✅ Temps réel' },
+  { feature: 'Adapté Afrique francophone', excel: '❌ Non', autres: '❌ Non', nova: '✅ Conçu pour Togo+' },
+  { feature: 'Prix', excel: '~0 (heures perdues)', autres: '50k–200k FCFA/mois', nova: '✅ Payez si satisfait' },
 ];
 
-const STATS = [
-  { value: '3 jours', label: 'de travail manuel', sub: 'éliminés chaque trimestre' },
-  { value: '30 min', label: 'suffisent désormais', sub: 'pour préparer un trimestre' },
-  { value: '100%', label: 'des parents informés', sub: 'le jour même de la publication' },
-  { value: '0', label: 'erreur de calcul', sub: 'grâce au calcul automatique' },
-];
-
-/* ─── Animated Counter ──────────────────────────────────────────────────── */
-function useCountUp(target, duration = 1500, startOnView = true) {
-  const [count, setCount] = useState(0);
-  const [started, setStarted] = useState(false);
+/* ── Hooks ──────────────────────────────────────────────────────────────── */
+function useInView(threshold = 0.2) {
   const ref = useRef(null);
-
+  const [inView, setInView] = useState(false);
   useEffect(() => {
-    if (!startOnView) { setStarted(true); return; }
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setStarted(true); obs.disconnect(); } }, { threshold: 0.3 });
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setInView(true); obs.disconnect(); } }, { threshold });
     if (ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
-  }, [startOnView]);
+  }, [threshold]);
+  return { ref, inView };
+}
 
+function useCountUp(targetStr, duration = 1800) {
+  const [count, setCount] = useState(0);
+  const { ref, inView } = useInView(0.3);
   useEffect(() => {
-    if (!started) return;
-    const num = parseInt(target.replace(/[^\d]/g, ''));
+    if (!inView) return;
+    const num = parseInt(String(targetStr).replace(/[^\d]/g, ''));
     if (!num) return;
-    let start = 0;
-    const step = num / (duration / 16);
-    const timer = setInterval(() => {
-      start += step;
-      if (start >= num) { setCount(num); clearInterval(timer); }
-      else setCount(Math.floor(start));
-    }, 16);
-    return () => clearInterval(timer);
-  }, [started, target, duration]);
-
-  const display = typeof target === 'string'
-    ? target.replace(/\d+/, count.toString())
-    : count;
-
+    let start = 0; const step = num / (duration / 16);
+    const t = setInterval(() => { start += step; if (start >= num) { setCount(num); clearInterval(t); } else setCount(Math.floor(start)); }, 16);
+    return () => clearInterval(t);
+  }, [inView, targetStr, duration]);
+  const display = String(targetStr).replace(/\d+/, count.toString());
   return { display, ref };
 }
 
-/* ─── Components ────────────────────────────────────────────────────────── */
-function StarRating({ n }) {
-  return <div className="lp-stars">{Array.from({ length: n }).map((_, i) => <span key={i}>★</span>)}</div>;
-}
-
-function StatCard({ value, label, sub }) {
+/* ── Sub-components ─────────────────────────────────────────────────────── */
+function AnimStat({ value, label, sub }) {
   const { display, ref } = useCountUp(value);
   return (
-    <div className="lp-stat-card" ref={ref}>
-      <strong>{display}</strong>
-      <span>{label}</span>
-      <small>{sub}</small>
+    <div className="lp-anim-stat" ref={ref}>
+      <strong>{display}</strong><span>{label}</span><small>{sub}</small>
     </div>
   );
 }
@@ -140,30 +340,72 @@ function StatCard({ value, label, sub }) {
 function FaqItem({ q, a }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className={`lp-faq-item${open ? ' lp-faq-item--open' : ''}`}>
-      <button className="lp-faq-q" onClick={() => setOpen(v => !v)}>
+    <div className={`lp-faq-item${open ? ' open' : ''}`}>
+      <button className="lp-faq-q" type="button" onClick={() => setOpen(v => !v)}>
         <span>{q}</span>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points={open ? '18 15 12 9 6 15' : '6 9 12 15 18 9'} />
+          <polyline points={open ? '18 15 12 9 6 15' : '6 9 12 15 18 9'}/>
         </svg>
       </button>
-      {open && <div className="lp-faq-a">{a}</div>}
+      {open && <p className="lp-faq-a">{a}</p>}
     </div>
   );
 }
 
-/* ─── Main component ────────────────────────────────────────────────────── */
+function TestimonialCarousel() {
+  const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const next = useCallback(() => setActive(v => (v + 1) % TESTIMONIALS.length), []);
+  const prev = useCallback(() => setActive(v => (v - 1 + TESTIMONIALS.length) % TESTIMONIALS.length), []);
+
+  useEffect(() => {
+    if (paused) return;
+    const t = setInterval(next, 5000);
+    return () => clearInterval(t);
+  }, [paused, next]);
+
+  const t = TESTIMONIALS[active];
+  return (
+    <div className="lp-carousel" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+      <div className="lp-carousel__track">
+        <div className="lp-carousel__slide" key={active}>
+          <div className="lp-carousel__stars">{'★'.repeat(5)}</div>
+          <p className="lp-carousel__text">"{t.text}"</p>
+          <div className="lp-carousel__author">
+            <div className="lp-carousel__avatar" style={{background:`linear-gradient(135deg,${t.color},${t.color}99)`}}>{t.initials}</div>
+            <div>
+              <p className="lp-carousel__name">{t.name}</p>
+              <p className="lp-carousel__role">{t.role} — {t.school}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="lp-carousel__controls">
+        <button type="button" className="lp-carousel__btn" onClick={prev} aria-label="Précédent">‹</button>
+        <div className="lp-carousel__dots">
+          {TESTIMONIALS.map((_, i) => (
+            <button key={i} type="button" className={`lp-carousel__dot${i === active ? ' active' : ''}`} onClick={() => setActive(i)} aria-label={`Témoignage ${i+1}`} />
+          ))}
+        </div>
+        <button type="button" className="lp-carousel__btn" onClick={next} aria-label="Suivant">›</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Main ───────────────────────────────────────────────────────────────── */
 export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeRole, setActiveRole] = useState(0);
+  const { ref: featRef, inView: featInView } = useInView();
+  const { ref: lmsRef, inView: lmsInView } = useInView();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60);
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
+    const fn = () => setScrolled(window.scrollY > 60);
+    window.addEventListener('scroll', fn);
+    return () => window.removeEventListener('scroll', fn);
   }, []);
-
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
   return (
@@ -171,32 +413,28 @@ export default function LandingPage() {
       <Helmet>
         <html lang="fr" />
         <title>NovaBulletin — Logiciel de gestion scolaire pour les écoles d'Afrique</title>
-        <meta name="description" content="NovaBulletin remplace Excel pour la gestion des bulletins scolaires. Calcul automatique des moyennes, bulletins PDF en 1 clic, envoi WhatsApp aux parents. Conçu pour les écoles du Togo et d'Afrique francophone." />
-        <meta name="keywords" content="logiciel bulletin scolaire, gestion notes scolaires, bulletin scolaire PDF, application école Togo, gestion scolaire numérique Afrique" />
+        <meta name="description" content="NovaBulletin remplace Excel pour la gestion des bulletins scolaires. Calcul automatique des moyennes, bulletins PDF en 1 clic, envoi WhatsApp aux parents. LMS intégré. Conçu pour les écoles du Togo et d'Afrique francophone." />
         <link rel="canonical" href={SITE_URL} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={SITE_URL} />
         <meta property="og:title" content="NovaBulletin — Logiciel de gestion scolaire pour les écoles d'Afrique" />
-        <meta property="og:description" content="Fini Excel. NovaBulletin calcule les moyennes, génère les bulletins PDF et les envoie aux parents sur WhatsApp. 3 jours → 30 minutes." />
+        <meta property="og:description" content="Fini Excel. NovaBulletin calcule les moyennes, génère les bulletins PDF et les envoie aux parents sur WhatsApp. LMS inclus. 3 jours → 30 minutes." />
         <meta property="og:image" content={OG_IMAGE} />
-        <meta property="og:locale" content="fr_TG" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:image" content={OG_IMAGE} />
       </Helmet>
 
-      {/* ── NAVBAR ─────────────────────────────────────────────────────── */}
+      {/* ─── NAVBAR ──────────────────────────────────────────────────── */}
       <nav className={`lp-nav${scrolled ? ' lp-nav--scrolled' : ''}`}>
         <div className="lp-nav__inner">
           <Link to="/" className="lp-nav__brand">
-            <img src={logoIcon} alt="NovaBulletin" className="lp-nav__logo" />
+            <img src={logoIcon} alt="NovaBulletin" width="34" height="34" />
             <span>NovaBulletin</span>
           </Link>
           <ul className={`lp-nav__links${menuOpen ? ' lp-nav__links--open' : ''}`}>
-            <li><a href="#features" onClick={() => setMenuOpen(false)}>Fonctionnalités</a></li>
-            <li><a href="#how" onClick={() => setMenuOpen(false)}>Comment ça marche</a></li>
-            <li><a href="#roles" onClick={() => setMenuOpen(false)}>Pour qui</a></li>
-            <li><a href="#comparison" onClick={() => setMenuOpen(false)}>Comparaison</a></li>
-            <li><a href="#faq" onClick={() => setMenuOpen(false)}>FAQ</a></li>
+            {[['#features','Fonctionnalités'],['#lms','LMS'],['#how','Comment ça marche'],['#roles','Pour qui'],['#comparison','Comparaison'],['#faq','FAQ']].map(([h,l]) => (
+              <li key={h}><a href={h} onClick={() => setMenuOpen(false)}>{l}</a></li>
+            ))}
           </ul>
           <div className="lp-nav__ctas">
             <Link to="/login" className="lp-btn lp-btn--ghost">Se connecter</Link>
@@ -208,183 +446,112 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* ── HERO ───────────────────────────────────────────────────────── */}
+      {/* ─── HERO ────────────────────────────────────────────────────── */}
       <section className="lp-hero">
         <div className="lp-hero__bg" aria-hidden="true">
-          <div className="lp-hero__blob lp-hero__blob--1" />
-          <div className="lp-hero__blob lp-hero__blob--2" />
-          <div className="lp-hero__blob lp-hero__blob--3" />
-          <div className="lp-hero__grid" />
+          <div className="lp-blob lp-blob--1" /><div className="lp-blob lp-blob--2" /><div className="lp-blob lp-blob--3" />
+          <div className="lp-grid-overlay" />
         </div>
         <div className="lp-container lp-hero__inner">
-          <div className="lp-hero__text">
-            <div className="lp-hero__pill">
-              <span className="lp-hero__pill-dot" />
-              🌍 Conçu pour les écoles d'Afrique francophone
-            </div>
-            <h1 className="lp-hero__title">
-              Fini Excel pour vos<br />
-              <span className="lp-hero__gradient">bulletins scolaires.</span>
-            </h1>
-            <p className="lp-hero__sub">
-              NovaBulletin calcule les moyennes <strong>automatiquement</strong>, génère les bulletins PDF en <strong>1 clic</strong> et les envoie aux parents directement sur <strong>WhatsApp</strong>.<br /><br />
-              Ce qui vous prenait <del>3 à 5 jours</del> ne prend désormais que <strong>30 minutes</strong>.
+          <div className="lp-hero__left">
+            <div className="lp-hero__pill"><span className="lp-pill-dot" />🌍 Conçu pour les écoles d'Afrique francophone</div>
+            <h1>Fini Excel.<br/><span className="lp-grad-text">Le bulletin scolaire entre dans le 21e siècle.</span></h1>
+            <p className="lp-hero__desc">
+              NovaBulletin calcule les moyennes <strong>automatiquement</strong>, génère les bulletins PDF en <strong>1 clic</strong> et les envoie aux parents directement sur <strong>WhatsApp</strong>. LMS intégré pour les cours, devoirs et quiz.<br/><br/>
+              Ce qui vous prenait <span className="lp-strike">3 à 5 jours</span> ne prend désormais que <strong style={{color:'#FFB547'}}>30 minutes.</strong>
             </p>
-            <div className="lp-hero__actions">
-              <Link to="/register-school" className="lp-btn lp-btn--hero">
-                Essayer ce trimestre gratuitement →
-              </Link>
-              <a href="#how" className="lp-btn lp-btn--outline">
-                ▶ Voir comment ça marche
-              </a>
+            <div className="lp-hero__btns">
+              <Link to="/register-school" className="lp-btn lp-btn--cta">Essayer gratuitement ce trimestre →</Link>
+              <a href="#how" className="lp-btn lp-btn--ghost-white">▶ Comment ça marche</a>
             </div>
-            <div className="lp-hero__trust">
-              <div className="lp-hero__trust-item">✅ Essai un trimestre complet</div>
-              <div className="lp-hero__trust-item">🤝 Payez seulement si satisfait</div>
-              <div className="lp-hero__trust-item">❌ Sans engagement</div>
+            <div className="lp-hero__badges">
+              <span>✅ 0 engagement</span><span>🤝 Payez si satisfait</span><span>📱 Mobile first</span>
             </div>
           </div>
-
-          <div className="lp-hero__visual">
-            {/* Browser mockup */}
-            <div className="lp-browser">
-              <div className="lp-browser__bar">
-                <div className="lp-browser__dots">
-                  <span style={{background:'#ef4444'}} /><span style={{background:'#f59e0b'}} /><span style={{background:'#10b981'}} />
-                </div>
-                <div className="lp-browser__url">novabulletin.app/admin</div>
+          <div className="lp-hero__right">
+            <div className="lp-hero__illus-wrap">
+              <IllustrationHero />
+              <div className="lp-float-card lp-float-card--1">
+                <span>📱</span>
+                <div><strong>WhatsApp envoyé !</strong><p>245 parents notifiés</p></div>
               </div>
-              <div className="lp-browser__content">
-                {/* Dashboard header */}
-                <div className="lp-db__header">
-                  <div>
-                    <p className="lp-db__label">Tableau de bord</p>
-                    <p className="lp-db__title">Trimestre 2 — 2025/2026</p>
-                  </div>
-                  <button className="lp-db__publish">✨ Publier les bulletins</button>
-                </div>
-                {/* KPI cards */}
-                <div className="lp-db__kpis">
-                  {[['245','Élèves','#dbeafe','#1d4ed8'],['12','Classes','#dcfce7','#16a34a'],['98%','Publiés','#fce7f3','#be185d'],['87%','Frais recouvrés','#fef3c7','#d97706']].map(([v,l,bg,col]) => (
-                    <div key={l} className="lp-db__kpi" style={{'--kpi-bg':bg,'--kpi-col':col}}>
-                      <strong>{v}</strong><span>{l}</span>
-                    </div>
-                  ))}
-                </div>
-                {/* Progress bars */}
-                <div className="lp-db__section-title">Progression par classe</div>
-                {[['6ème A',92,28],['5ème B',78,24],['Terminale C',100,18],['CM2',65,31]].map(([cls,pct,n]) => (
-                  <div key={cls} className="lp-db__bar-row">
-                    <span className="lp-db__bar-label">{cls}</span>
-                    <div className="lp-db__bar-track">
-                      <div className="lp-db__bar-fill" style={{width:`${pct}%`}} />
-                    </div>
-                    <span className="lp-db__bar-pct">{pct}%</span>
-                    <span className="lp-db__bar-n">{n} él.</span>
-                  </div>
-                ))}
-                {/* Recent bulletins */}
-                <div className="lp-db__section-title" style={{marginTop:'0.75rem'}}>Bulletins récents</div>
-                {[['Kofi M.','15.4/20','✅ Envoyé'],['Yao A.','17.2/20','✅ Envoyé'],['Ama K.','13.8/20','🔒 Frais impayés'],['Sena D.','11.5/20','✅ Envoyé']].map(([n,m,s]) => (
-                  <div key={n} className="lp-db__row">
-                    <div className="lp-db__avatar">{n[0]}</div>
-                    <span className="lp-db__name">{n}</span>
-                    <span className="lp-db__avg">{m}</span>
-                    <span className={`lp-db__status ${s.includes('🔒') ? 'lp-db__status--hold' : 'lp-db__status--ok'}`}>{s}</span>
-                  </div>
-                ))}
+              <div className="lp-float-card lp-float-card--2">
+                <span>✅</span>
+                <div><strong>Bulletins publiés</strong><p>Trimestre 2 — 12 classes</p></div>
               </div>
-            </div>
-
-            {/* Floating notification cards */}
-            <div className="lp-hero__notif lp-hero__notif--wa">
-              <span className="lp-notif-icon">📱</span>
-              <div>
-                <p><strong>WhatsApp</strong> — NovaBulletin</p>
-                <p>Bulletin de Kofi reçu ✓✓</p>
-                <p className="lp-notif-time">Il y a 2 min</p>
-              </div>
-            </div>
-            <div className="lp-hero__notif lp-hero__notif--mail">
-              <span className="lp-notif-icon">✉️</span>
-              <div>
-                <p><strong>Email</strong> envoyé à 245 parents</p>
-                <p className="lp-notif-time">Trimestre 2 publié</p>
+              <div className="lp-float-card lp-float-card--3">
+                <span>💰</span>
+                <div><strong>Recouvrement 87%</strong><p>+12% vs trimestre 1</p></div>
               </div>
             </div>
           </div>
         </div>
-
-        {/* Scroll indicator */}
-        <a href="#stats" className="lp-hero__scroll" aria-label="Défiler">
-          <div className="lp-hero__scroll-dot" />
+        <a href="#stats" className="lp-scroll-hint" aria-label="Défiler vers le bas">
+          <div className="lp-scroll-dot" />
         </a>
       </section>
 
-      {/* ── STATS ──────────────────────────────────────────────────────── */}
-      <section className="lp-stats-section" id="stats">
-        <div className="lp-container lp-stats-section__grid">
-          {STATS.map(s => <StatCard key={s.label} {...s} />)}
+      {/* ─── STATS ───────────────────────────────────────────────────── */}
+      <section className="lp-stats" id="stats">
+        <div className="lp-container lp-stats__grid">
+          <AnimStat value="3 jours" label="de travail manuel éliminés" sub="chaque trimestre" />
+          <AnimStat value="30 min" label="pour préparer un trimestre" sub="contre 3-5 jours avant" />
+          <AnimStat value="100%" label="des parents informés" sub="le jour même de la publication" />
+          <AnimStat value="0" label="erreur de calcul" sub="grâce à l'automatisation" />
         </div>
       </section>
 
-      {/* ── PROBLEM ────────────────────────────────────────────────────── */}
+      {/* ─── PROBLEM ─────────────────────────────────────────────────── */}
       <section className="lp-problem">
         <div className="lp-container">
           <div className="lp-section-head">
-            <span className="lp-section-tag">Le problème</span>
-            <h2>Est-ce que cela vous ressemble ?</h2>
-            <p>Des milliers d'écoles en Afrique passent encore des jours entiers sur Excel chaque trimestre.</p>
+            <span className="lp-tag">😩 Le Problème</span>
+            <h2>Vous en avez assez d'Excel ?</h2>
+            <p>Des milliers d'écoles en Afrique passent encore des nuits entières sur des fichiers Excel à chaque fin de trimestre.</p>
           </div>
-          <div className="lp-problem__grid">
-            <div className="lp-problem__pains">
+          <div className="lp-problem__layout">
+            <div className="lp-pain-grid">
               {[
-                ['😰','3 à 5 jours de saisie manuelle chaque trimestre — nuits, week-ends inclus.'],
-                ['💥','Une erreur dans une formule Excel passe inaperçue jusqu\'à l\'impression des bulletins.'],
-                ['📭','Des bulletins papier qui se perdent, arrivent en retard ou ne sont jamais récupérés par les parents.'],
-                ['💸','Aucun lien entre les bulletins et les frais scolaires — impossible de bloquer automatiquement les mauvais payeurs.'],
-                ['🗂️','Des fichiers Excel éparpillés sur plusieurs ordinateurs, risques de perte et confusion des versions.'],
-                ['📵','Les parents ne savent pas quand les bulletins sont disponibles — ils doivent appeler l\'école.'],
-              ].map(([icon, text]) => (
-                <div key={text} className="lp-pain-card">
-                  <span>{icon}</span><p>{text}</p>
+                ['😰','Saisie manuelle pendant 3 à 5 jours','Nuits et week-ends sacrifiés pour préparer les bulletins'],
+                ['💥','Erreurs dans les formules','Une formule cassée passe inaperçue jusqu\'à l\'impression'],
+                ['📭','Parents jamais informés à temps','Bulletins papier perdus, distribution tardive'],
+                ['💸','Frais non reliés aux bulletins','Impossible de bloquer automatiquement les mauvais payeurs'],
+                ['🗂️','Fichiers perdus ou corrompus','Excel local sans sauvegarde — catastrophe en cas de panne'],
+                ['📵','Aucun portail pour les parents','Pas de visibilité sur la scolarité de leur enfant'],
+              ].map(([icon, title, desc]) => (
+                <div className="lp-pain-item" key={title}>
+                  <div className="lp-pain-item__icon">{icon}</div>
+                  <div><strong>{title}</strong><p>{desc}</p></div>
                 </div>
               ))}
             </div>
             <div className="lp-problem__vs">
-              <div className="lp-vs-card lp-vs-card--bad">
-                <div className="lp-vs-card__header">😩 Avec Excel</div>
-                <ul>
-                  {['Saisie manuelle — heures perdues','Erreurs de formules invisibles','Papier — perte et distribution','Frais séparés — 0 automatisation','Fichiers locaux — risque de perte','Parents jamais informés en temps réel'].map(t => <li key={t}>❌ {t}</li>)}
-                </ul>
+              <div className="lp-vs-bad">
+                <h4>😩 Avec Excel</h4>
+                {['3–5 jours par trimestre','Erreurs silencieuses','Bulletins papier','Frais séparés','Fichiers locaux perdus','0 info pour les parents'].map(t => <div key={t} className="lp-vs-row lp-vs-row--bad">❌ {t}</div>)}
               </div>
-              <div className="lp-vs-arrow">
-                <div className="lp-vs-arrow__line" />
-                <span>VS</span>
-              </div>
-              <div className="lp-vs-card lp-vs-card--good">
-                <div className="lp-vs-card__header">✨ Avec NovaBulletin</div>
-                <ul>
-                  {['Automatique — 30 min par trimestre','Calcul exact, 0 erreur possible','PDF digital + WhatsApp automatique','Frais intégrés — blocage automatique','Cloud sécurisé — zéro perte','Parents informés instantanément'].map(t => <li key={t}>✅ {t}</li>)}
-                </ul>
+              <div className="lp-vs-divider"><span>VS</span></div>
+              <div className="lp-vs-good">
+                <h4>✨ Avec NovaBulletin</h4>
+                {['30 minutes automatiques','0 erreur de calcul','PDF + WhatsApp auto','Frais intégrés + blocage','Cloud sécurisé 24/7','Parents informés instantanément'].map(t => <div key={t} className="lp-vs-row lp-vs-row--good">✅ {t}</div>)}
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── FEATURES ───────────────────────────────────────────────────── */}
-      <section className="lp-features" id="features">
+      {/* ─── FEATURES ────────────────────────────────────────────────── */}
+      <section className="lp-features" id="features" ref={featRef}>
         <div className="lp-container">
           <div className="lp-section-head">
-            <span className="lp-section-tag">Fonctionnalités</span>
-            <h2>Tout ce dont votre école a besoin — en un seul outil</h2>
-            <p>NovaBulletin remplace Excel, les imprimantes et les appels téléphoniques aux parents. Une plateforme complète, accessible depuis n'importe quel appareil.</p>
+            <span className="lp-tag">⚡ Fonctionnalités</span>
+            <h2>Tout ce dont votre école a besoin</h2>
+            <p>Une plateforme complète qui remplace Excel, les imprimantes et les appels aux parents.</p>
           </div>
-          <div className="lp-features__grid">
-            {FEATURES.map(f => (
-              <div key={f.title} className="lp-feat-card">
-                <div className="lp-feat-card__icon" style={{background: f.color, color: f.iconColor}}>{f.icon}</div>
+          <div className={`lp-feat-grid${featInView ? ' animated' : ''}`}>
+            {[...FEATURES_ROW1, ...FEATURES_ROW2].map((f, i) => (
+              <div className="lp-feat-card" key={f.title} style={{'--delay': `${i * 80}ms`}}>
+                <div className="lp-feat-icon" style={{background: f.color, color: f.iconColor}}>{f.icon}</div>
                 <h3>{f.title}</h3>
                 <p>{f.desc}</p>
               </div>
@@ -393,95 +560,152 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── HOW IT WORKS ───────────────────────────────────────────────── */}
+      {/* ─── LMS ─────────────────────────────────────────────────────── */}
+      <section className="lp-lms" id="lms" ref={lmsRef}>
+        <div className="lp-lms__bg" aria-hidden="true"><div className="lp-blob lp-blob--lms1"/><div className="lp-blob lp-blob--lms2"/></div>
+        <div className="lp-container lp-lms__inner">
+          <div className={`lp-lms__text${lmsInView ? ' animated' : ''}`}>
+            <span className="lp-tag lp-tag--light">🎓 Module LMS</span>
+            <h2>NovaBulletin, c'est aussi une plateforme d'apprentissage complète</h2>
+            <p>Au-delà des bulletins, NovaBulletin embarque un <strong>LMS (Learning Management System)</strong> complet. Cours en ligne, devoirs, quiz, emplois du temps — tout en un seul outil.</p>
+            <div className="lp-lms__features">
+              {LMS_FEATURES.map(f => (
+                <div className="lp-lms__feat" key={f.title}>
+                  <span className="lp-lms__feat-icon">{f.icon}</span>
+                  <div>
+                    <strong>{f.title}</strong>
+                    <p>{f.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Link to="/register-school" className="lp-btn lp-btn--cta" style={{marginTop:'2rem',display:'inline-flex'}}>
+              Découvrir le LMS gratuitement →
+            </Link>
+          </div>
+          <div className="lp-lms__visual">
+            <IllustrationLMS />
+            <div className="lp-lms__teacher">
+              <IllustrationTeacher />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── HOW IT WORKS ────────────────────────────────────────────── */}
       <section className="lp-how" id="how">
         <div className="lp-container">
           <div className="lp-section-head">
-            <span className="lp-section-tag">Comment ça marche</span>
+            <span className="lp-tag">🚀 Démarrage</span>
             <h2>Opérationnel en moins d'une journée</h2>
-            <p>Pas d'installation, pas de serveur à gérer, pas de formation longue. Votre école est opérationnelle en 4 étapes simples.</p>
+            <p>Pas d'installation, pas de serveur, pas de formation longue. 4 étapes simples.</p>
           </div>
           <div className="lp-how__steps">
             {STEPS.map((s, i) => (
-              <div key={s.num} className="lp-how__step">
-                <div className="lp-how__step-num">
-                  <span>{s.num}</span>
-                </div>
-                {i < STEPS.length - 1 && <div className="lp-how__step-line" />}
-                <div className="lp-how__step-icon">{s.icon}</div>
+              <div className="lp-how__step" key={s.num}>
+                <div className="lp-how__step-num"><span>{s.num}</span></div>
+                {i < STEPS.length - 1 && <div className="lp-how__connector" />}
+                <div className="lp-how__icon">{s.icon}</div>
                 <h3>{s.title}</h3>
                 <p>{s.desc}</p>
-                <div className="lp-how__detail">{s.detail}</div>
+                <div className="lp-how__tags">{s.tags.map(t => <span key={t}>{t}</span>)}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── ROLES ──────────────────────────────────────────────────────── */}
+      {/* ─── WHATSAPP SHOWCASE ───────────────────────────────────────── */}
+      <section className="lp-whatsapp">
+        <div className="lp-container lp-whatsapp__inner">
+          <div className="lp-whatsapp__text">
+            <span className="lp-tag">📱 WhatsApp</span>
+            <h2>Les parents reçoivent les bulletins sur <span className="lp-grad-text">WhatsApp</span></h2>
+            <p>Dès que vous publiez les bulletins, chaque parent reçoit <strong>instantanément</strong> le bulletin de son enfant sur WhatsApp. Plus besoin d'imprimer, de distribuer ou d'appeler l'école.</p>
+            <div className="lp-whatsapp__points">
+              {[
+                ['📤','Envoi automatique dès la publication'],
+                ['📎','Lien vers le PDF du bulletin'],
+                ['💬','Message personnalisé avec les infos clés'],
+                ['🔒','Bloqué automatiquement si frais impayés'],
+                ['✉️','Email de secours si pas de WhatsApp'],
+              ].map(([icon, text]) => (
+                <div className="lp-wa-point" key={text}>
+                  <span>{icon}</span><p>{text}</p>
+                </div>
+              ))}
+            </div>
+            <Link to="/register-school" className="lp-btn lp-btn--cta" style={{marginTop:'1.5rem',display:'inline-flex'}}>
+              Essayer gratuitement →
+            </Link>
+          </div>
+          <div className="lp-whatsapp__phone">
+            <IllustrationWhatsapp />
+            <div className="lp-wa-badge">
+              <div className="lp-wa-badge__dot" />
+              <span>100% des parents informés</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── ROLES ───────────────────────────────────────────────────── */}
       <section className="lp-roles" id="roles">
         <div className="lp-container">
           <div className="lp-section-head">
-            <span className="lp-section-tag">Pour qui ?</span>
-            <h2>Une plateforme pensée pour chaque acteur</h2>
-            <p>Chaque utilisateur dispose d'un espace dédié adapté à ses besoins spécifiques.</p>
+            <span className="lp-tag">👥 Pour qui ?</span>
+            <h2>Un espace dédié pour chaque acteur</h2>
+            <p>Chaque utilisateur accède uniquement à ce dont il a besoin.</p>
           </div>
           <div className="lp-roles__tabs">
             {ROLES.map((r, i) => (
-              <button
-                key={r.title}
-                className={`lp-roles__tab${activeRole === i ? ' lp-roles__tab--active' : ''}`}
-                onClick={() => setActiveRole(i)}
-                style={activeRole === i ? {'--tab-color': r.color} : {}}
-              >
+              <button key={r.title} type="button"
+                className={`lp-role-tab${activeRole === i ? ' active' : ''}`}
+                style={activeRole === i ? {'--rc': r.color} : {}}
+                onClick={() => setActiveRole(i)}>
                 {r.icon} {r.title}
               </button>
             ))}
           </div>
-          <div className="lp-roles__panel">
-            {ROLES.map((r, i) => (
-              <div key={r.title} className={`lp-role-panel${activeRole === i ? ' lp-role-panel--active' : ''}`}>
-                <div className="lp-role-panel__left">
-                  <div className="lp-role-panel__icon">{r.icon}</div>
-                  <h3>{r.title}</h3>
-                  <p>{r.desc}</p>
-                  <Link to="/register-school" className="lp-btn lp-btn--primary" style={{marginTop:'1rem',display:'inline-flex'}}>
-                    Essayer gratuitement →
-                  </Link>
-                </div>
-                <ul className="lp-role-panel__list">
-                  {r.features.map(f => (
-                    <li key={f}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={r.color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
+          {ROLES.map((r, i) => activeRole === i && (
+            <div className="lp-role-panel" key={r.title} style={{'--rc': r.color}}>
+              <div className="lp-role-panel__info">
+                <div className="lp-role-panel__icon">{r.icon}</div>
+                <h3>{r.title}</h3>
+                <p>{r.desc}</p>
+                <Link to="/register-school" className="lp-btn lp-btn--primary" style={{marginTop:'1.25rem',display:'inline-flex'}}>
+                  Commencer gratuitement →
+                </Link>
               </div>
-            ))}
-          </div>
+              <ul className="lp-role-panel__list">
+                {r.features.map(f => (
+                  <li key={f}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={r.color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* ── COMPARISON ─────────────────────────────────────────────────── */}
+      {/* ─── COMPARISON ──────────────────────────────────────────────── */}
       <section className="lp-comparison" id="comparison">
         <div className="lp-container">
           <div className="lp-section-head">
-            <span className="lp-section-tag">Comparaison</span>
+            <span className="lp-tag">📊 Comparaison</span>
             <h2>Pourquoi choisir NovaBulletin ?</h2>
-            <p>Comparez NovaBulletin aux alternatives et voyez par vous-même.</p>
+            <p>Comparez par vous-même — aucun autre logiciel ne fait tout ce que NovaBulletin fait pour les écoles africaines.</p>
           </div>
-          <div className="lp-comparison__wrap">
+          <div className="lp-table-wrap">
             <table className="lp-table">
               <thead>
                 <tr>
                   <th>Fonctionnalité</th>
                   <th>Excel / Manuel</th>
                   <th>Autres logiciels</th>
-                  <th className="lp-table__nova">
-                    <img src={logoIcon} alt="" width="16" height="16" />
-                    NovaBulletin
-                  </th>
+                  <th className="lp-table__nova-head"><img src={logoIcon} alt="" width="16" height="16"/> NovaBulletin</th>
                 </tr>
               </thead>
               <tbody>
@@ -489,8 +713,8 @@ export default function LandingPage() {
                   <tr key={row.feature}>
                     <td className="lp-table__feat">{row.feature}</td>
                     <td className="lp-table__bad">{row.excel}</td>
-                    <td>{row.autres}</td>
-                    <td className="lp-table__nova lp-table__good">{row.nova}</td>
+                    <td className="lp-table__other">{row.autres}</td>
+                    <td className="lp-table__nova">{row.nova}</td>
                   </tr>
                 ))}
               </tbody>
@@ -499,166 +723,115 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── TESTIMONIALS ───────────────────────────────────────────────── */}
+      {/* ─── TESTIMONIALS ────────────────────────────────────────────── */}
       <section className="lp-testimonials">
         <div className="lp-container">
           <div className="lp-section-head">
-            <span className="lp-section-tag">Témoignages</span>
-            <h2>Ce que disent les écoles qui utilisent NovaBulletin</h2>
+            <span className="lp-tag lp-tag--dark">⭐ Témoignages</span>
+            <h2 style={{color:'#fff'}}>Ce que disent les écoles qui utilisent NovaBulletin</h2>
+            <p style={{color:'#a5b4fc'}}>De vraies histoires, de vraies écoles, de vrais résultats.</p>
           </div>
-          <div className="lp-testimonials__grid">
-            {TESTIMONIALS.map(t => (
-              <div key={t.name} className="lp-testi-card">
-                <StarRating n={t.rating} />
-                <p className="lp-testi-card__text">"{t.text}"</p>
-                <div className="lp-testi-card__author">
-                  <div className="lp-testi-card__avatar">{t.initials}</div>
-                  <div>
-                    <p className="lp-testi-card__name">{t.name}</p>
-                    <p className="lp-testi-card__school">{t.school}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <TestimonialCarousel />
         </div>
       </section>
 
-      {/* ── PRICING ────────────────────────────────────────────────────── */}
+      {/* ─── PRICING ─────────────────────────────────────────────────── */}
       <section className="lp-pricing" id="pricing">
         <div className="lp-container">
           <div className="lp-section-head">
-            <span className="lp-section-tag">Tarif</span>
+            <span className="lp-tag">💎 Tarif</span>
             <h2>Simple, transparent, sans risque</h2>
-            <p>Un seul modèle : essayez un trimestre complet. Payez seulement si vous êtes satisfait.</p>
+            <p>Un seul modèle : essayez un trimestre entier. Payez seulement si vous êtes satisfait.</p>
           </div>
-          <div className="lp-pricing__cards">
-            <div className="lp-pricing__card lp-pricing__card--highlight">
-              <div className="lp-pricing__best">⭐ Offre unique</div>
-              <h3>Essai sans engagement</h3>
-              <div className="lp-pricing__price">
-                <span className="lp-pricing__amount">Gratuit</span>
-                <span className="lp-pricing__period">pendant 1 trimestre complet</span>
-              </div>
-              <p className="lp-pricing__promise">
-                Utilisez toutes les fonctionnalités pendant un trimestre entier.
-                Si vous êtes satisfait à la fin, vous payez. Sinon, vous revenez à Excel.
-                <strong> Aucun frais. Aucune carte bancaire requise.</strong>
-              </p>
-              <div className="lp-pricing__includes">
-                {[
-                  '✅ Accès complet à toutes les fonctionnalités',
-                  '✅ Nombre d\'élèves et de classes illimité',
-                  '✅ Bulletins PDF avec logo de votre école',
-                  '✅ Envoi WhatsApp & Email aux parents',
-                  '✅ Gestion complète des frais scolaires',
-                  '✅ Support WhatsApp prioritaire inclus',
-                  '✅ Import/export CSV des données',
-                  '✅ Formation et guide de démarrage offerts',
-                ].map(i => <div key={i} className="lp-pricing__include">{i}</div>)}
-              </div>
-              <Link to="/register-school" className="lp-btn lp-btn--hero lp-btn--wide" style={{marginTop:'1.5rem'}}>
-                Commencer maintenant — C'est gratuit →
-              </Link>
-              <p className="lp-pricing__sub-note">Paiement en FCFA (TMoney, Flooz, virement) — tarif communiqué à la fin du trimestre</p>
+          <div className="lp-price-card">
+            <div className="lp-price-card__badge">🤝 Notre engagement unique</div>
+            <h3>Essai complet — 1 trimestre entier</h3>
+            <div className="lp-price-amount">
+              <strong>Gratuit</strong><span>pendant tout votre premier trimestre</span>
             </div>
+            <p className="lp-price-promise">
+              Utilisez <strong>toutes</strong> les fonctionnalités pendant un trimestre complet.
+              Si vous êtes satisfait à la fin, vous payez. Sinon, vous revenez à Excel.
+              <strong> Aucun frais. Aucune carte bancaire requise.</strong>
+            </p>
+            <div className="lp-price-includes">
+              {['✅ Accès complet à toutes les fonctionnalités','✅ Élèves et classes illimités','✅ Bulletins PDF avec logo de votre école','✅ Envoi WhatsApp & Email automatique','✅ Gestion complète des frais scolaires','✅ LMS complet (cours, devoirs, quiz)','✅ Support WhatsApp prioritaire inclus','✅ Formation et guide de démarrage offerts'].map(i => (
+                <div key={i} className="lp-price-include">{i}</div>
+              ))}
+            </div>
+            <Link to="/register-school" className="lp-btn lp-btn--cta lp-btn--wide" style={{marginTop:'2rem',fontSize:'1.05rem',padding:'1.1rem'}}>
+              Commencer maintenant — C'est gratuit →
+            </Link>
+            <p className="lp-price-note">Paiement en FCFA · TMoney · Flooz · Virement · Tarif communiqué en fin de trimestre</p>
           </div>
         </div>
       </section>
 
-      {/* ── FAQ ────────────────────────────────────────────────────────── */}
+      {/* ─── FAQ ─────────────────────────────────────────────────────── */}
       <section className="lp-faq" id="faq">
         <div className="lp-container">
           <div className="lp-section-head">
-            <span className="lp-section-tag">Questions fréquentes</span>
-            <h2>Tout ce que vous voulez savoir</h2>
+            <span className="lp-tag">❓ FAQ</span>
+            <h2>Questions fréquentes</h2>
+            <p>Tout ce que vous voulez savoir avant de vous lancer.</p>
           </div>
           <div className="lp-faq__list">
             {FAQS.map(f => <FaqItem key={f.q} {...f} />)}
           </div>
-          <div className="lp-faq__cta">
+          <div className="lp-faq__footer">
             <p>Vous avez une autre question ?</p>
-            <a href="mailto:felixatoma2@gmail.com" className="lp-btn lp-btn--ghost">📧 Nous contacter</a>
+            <a href="mailto:felixatoma2@gmail.com" className="lp-btn lp-btn--primary">📧 Nous écrire</a>
           </div>
         </div>
       </section>
 
-      {/* ── FINAL CTA ──────────────────────────────────────────────────── */}
+      {/* ─── CTA ─────────────────────────────────────────────────────── */}
       <section className="lp-cta">
-        <div className="lp-cta__bg" aria-hidden="true">
-          <div className="lp-cta__blob" />
-        </div>
+        <div className="lp-cta__bg"><div className="lp-blob lp-blob--cta"/></div>
         <div className="lp-container lp-cta__inner">
           <div className="lp-cta__badge">🚀 Rejoignez les écoles qui modernisent leur gestion</div>
           <h2>Prêt à dire adieu à Excel ?</h2>
-          <p>Inscrivez votre école dès aujourd'hui. Premier trimestre entièrement gratuit.<br />Payez seulement si NovaBulletin vous convient.</p>
-          <div className="lp-cta__actions">
-            <Link to="/register-school" className="lp-btn lp-btn--hero">
-              Inscrire mon école gratuitement →
-            </Link>
-            <Link to="/login" className="lp-btn lp-btn--outline-white">
-              Déjà inscrit ? Se connecter
-            </Link>
+          <p>Inscrivez votre école dès aujourd'hui. Premier trimestre entièrement gratuit.<br/>Payez seulement si NovaBulletin vous convient.</p>
+          <div className="lp-cta__btns">
+            <Link to="/register-school" className="lp-btn lp-btn--cta">Inscrire mon école gratuitement →</Link>
+            <Link to="/login" className="lp-btn lp-btn--ghost-white">Déjà inscrit ? Se connecter</Link>
           </div>
           <div className="lp-cta__trust">
-            <span>✅ Sans engagement</span>
-            <span>🔒 Données sécurisées</span>
-            <span>📱 Fonctionne sur mobile</span>
-            <span>🌍 Conçu pour le Togo & l'Afrique</span>
+            {['✅ Sans engagement','🔒 Données sécurisées','📱 100% mobile','🌍 Togo · Bénin · CI · Sénégal · Ghana'].map(t => <span key={t}>{t}</span>)}
           </div>
         </div>
       </section>
 
-      {/* ── FOOTER ─────────────────────────────────────────────────────── */}
+      {/* ─── FOOTER ──────────────────────────────────────────────────── */}
       <footer className="lp-footer">
-        <div className="lp-container lp-footer__inner">
+        <div className="lp-container lp-footer__top">
           <div className="lp-footer__brand">
-            <div className="lp-footer__logo">
-              <img src={logoIcon} alt="NovaBulletin" width="40" height="40" />
-              <span>NovaBulletin</span>
-            </div>
+            <div className="lp-footer__logo"><img src={logoIcon} alt="NovaBulletin" width="42" height="42"/><span>NovaBulletin</span></div>
             <p>Le logiciel de gestion scolaire moderne conçu pour les écoles d'Afrique francophone.</p>
-            <p className="lp-footer__made">Fait avec ❤️ au Togo</p>
+            <p className="lp-footer__tagline">Fait avec ❤️ au Togo</p>
             <a href="mailto:felixatoma2@gmail.com" className="lp-footer__email">📧 felixatoma2@gmail.com</a>
           </div>
-
-          <div className="lp-footer__links">
+          <div className="lp-footer__cols">
             <div>
               <h4>Produit</h4>
-              <a href="#features">Fonctionnalités</a>
-              <a href="#how">Comment ça marche</a>
-              <a href="#roles">Pour qui</a>
-              <a href="#comparison">Comparaison</a>
-              <a href="#pricing">Tarif</a>
-              <a href="#faq">FAQ</a>
+              {[['#features','Fonctionnalités'],['#lms','Module LMS'],['#how','Comment ça marche'],['#roles','Pour qui'],['#comparison','Comparaison'],['#pricing','Tarif']].map(([h,l]) => <a key={h} href={h}>{l}</a>)}
             </div>
             <div>
               <h4>Démarrer</h4>
               <Link to="/register-school">Inscrire mon école</Link>
               <Link to="/login">Se connecter</Link>
-            </div>
-            <div>
-              <h4>Légal</h4>
               <Link to="/legal/tos">Conditions d'utilisation</Link>
-              <Link to="/legal/privacy">Politique de confidentialité</Link>
+              <Link to="/legal/privacy">Confidentialité</Link>
             </div>
             <div>
               <h4>Nous servons</h4>
-              <span>🇹🇬 Togo</span>
-              <span>🇧🇯 Bénin</span>
-              <span>🇨🇮 Côte d'Ivoire</span>
-              <span>🇸🇳 Sénégal</span>
-              <span>🇬🇭 Ghana</span>
-              <span>🇨🇲 Cameroun</span>
+              {['🇹🇬 Togo','🇧🇯 Bénin','🇨🇮 Côte d\'Ivoire','🇸🇳 Sénégal','🇬🇭 Ghana','🇨🇲 Cameroun'].map(c => <span key={c}>{c}</span>)}
             </div>
           </div>
         </div>
         <div className="lp-footer__bottom">
           <p>© {new Date().getFullYear()} NovaBulletin. Tous droits réservés.</p>
-          <p>
-            <Link to="/legal/tos">CGU</Link>
-            <Link to="/legal/privacy">Confidentialité</Link>
-          </p>
+          <div><Link to="/legal/tos">CGU</Link><Link to="/legal/privacy">Confidentialité</Link></div>
         </div>
       </footer>
     </div>
