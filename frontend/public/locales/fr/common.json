@@ -28,13 +28,22 @@
     "mockExams":        "Examens blancs",
     "mockExamFiches":   "Fiches d'exam. blancs",
     "mockExamResults":  "Résultats exam. blancs",
-    "bulkImport":       "Importation CSV"
+    "bulkImport":       "Importation CSV",
+    "attendance":       "Présences",
+    "staff":            "Personnel",
+    "calendar":         "Calendrier",
+    "disciplinary":     "Discipline",
+    "alumni":           "Anciens Élèves",
+    "transfers":        "Transferts",
+    "inventory":        "Inventaire",
+    "schoolDocuments":  "Documents"
   },
 
   "section": {
     "school":   "ÉCOLE",
     "pedagogy": "PÉDAGOGIE",
     "finance":  "FINANCES",
+    "records":  "REGISTRES",
     "system":   "SYSTÈME",
     "classes":  "CLASSES"
   },

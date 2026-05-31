@@ -3,6 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { studentsService } from '../../../services/studentsService';
 import { feesService } from '../../../services/feesService';
 import { disciplinaryService } from '../../../services/disciplinaryService';
+import { transfersService } from '../../../services/transfersService';
+import { alumniService } from '../../../services/alumniService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Card from '../../../components/common/Card/Card';
@@ -74,6 +76,18 @@ function AdminStudentProfilePage() {
   const { data: disciplinaryRecords = [] } = useQuery({
     queryKey: ['disciplinary-student', id],
     queryFn: () => disciplinaryService.listByStudent(id).then((r) => r.data),
+    enabled: !!id,
+  });
+
+  const { data: transfers = [] } = useQuery({
+    queryKey: ['transfers-student', id],
+    queryFn: () => transfersService.list({ studentId: id }).then((r) => r.data),
+    enabled: !!id,
+  });
+
+  const { data: alumniRecord } = useQuery({
+    queryKey: ['alumni-student', id],
+    queryFn: () => alumniService.findByStudent(id).then((r) => r.data).catch(() => null),
     enabled: !!id,
   });
 
@@ -422,6 +436,66 @@ function AdminStudentProfilePage() {
             </div>
           )}
         </Card>
+
+        {/* ── Transferts ── */}
+        {transfers.length > 0 && (
+          <Card className="asp-section asp-section--full">
+            <h3 className="asp-section__title">Transferts</h3>
+            <div className="asp-transfers">
+              {transfers.map((t) => (
+                <div key={t.id} className={`asp-transfer asp-transfer--${t.direction.toLowerCase()}`}>
+                  <span className={`asp-transfer__badge asp-transfer__badge--${t.direction.toLowerCase()}`}>
+                    {t.direction === 'IN' ? '↓ Entrée' : '↑ Sortie'}
+                  </span>
+                  <span className="asp-transfer__school">{t.otherSchool}</span>
+                  <span className="asp-transfer__date">
+                    {new Date(t.transferDate).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  </span>
+                  {t.reason && <span className="asp-transfer__reason">{t.reason}</span>}
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
+        {/* ── Dossier Alumni ── */}
+        {alumniRecord && (
+          <Card className="asp-section asp-section--full">
+            <h3 className="asp-section__title">Dossier Alumni</h3>
+            <div className="asp-alumni">
+              <div className="asp-alumni__row">
+                <span className="asp-alumni__label">Promotion</span>
+                <strong>{alumniRecord.graduationYear}</strong>
+              </div>
+              {alumniRecord.lastClass && (
+                <div className="asp-alumni__row">
+                  <span className="asp-alumni__label">Dernière classe</span>
+                  <span>{alumniRecord.lastClass}</span>
+                </div>
+              )}
+              {alumniRecord.examType && (
+                <div className="asp-alumni__row">
+                  <span className="asp-alumni__label">{alumniRecord.examType}</span>
+                  <span className={`asp-alumni__result ${alumniRecord.examResult === 'Ajourné' ? 'fail' : 'pass'}`}>
+                    {alumniRecord.examResult ?? '—'}
+                  </span>
+                </div>
+              )}
+              {alumniRecord.furtherEducation && (
+                <div className="asp-alumni__row">
+                  <span className="asp-alumni__label">Poursuite</span>
+                  <span>{alumniRecord.furtherEducation}</span>
+                </div>
+              )}
+              {alumniRecord.contactPhone && (
+                <div className="asp-alumni__row">
+                  <span className="asp-alumni__label">Contact</span>
+                  <span>{alumniRecord.contactPhone}</span>
+                </div>
+              )}
+            </div>
+          </Card>
+        )}
 
       </div>
     </AppShell>

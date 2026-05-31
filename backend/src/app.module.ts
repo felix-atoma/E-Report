@@ -43,6 +43,9 @@ import { SchoolDocumentsModule } from './modules/school-documents/school-documen
 import { StaffProfilesModule } from './modules/staff-profiles/staff-profiles.module';
 import { CalendarModule } from './modules/calendar/calendar.module';
 import { DisciplinaryModule } from './modules/disciplinary/disciplinary.module';
+import { AlumniModule } from './modules/alumni/alumni.module';
+import { TransfersModule } from './modules/transfers/transfers.module';
+import { InventoryModule } from './modules/inventory/inventory.module';
 
 @Module({
   imports: [
@@ -94,6 +97,9 @@ import { DisciplinaryModule } from './modules/disciplinary/disciplinary.module';
     StaffProfilesModule,
     CalendarModule,
     DisciplinaryModule,
+    AlumniModule,
+    TransfersModule,
+    InventoryModule,
   ],
   providers: [
     // JWT guard applied globally — use @Public() to opt out

@@ -83,6 +83,9 @@ import MockExamResultsPage    from '../pages/shared/MockExamResultsPage/MockExam
 import StaffDirectoryPage     from '../pages/admin/StaffDirectoryPage/StaffDirectoryPage';
 import CalendarPage           from '../pages/admin/CalendarPage/CalendarPage';
 import DisciplinaryPage       from '../pages/admin/DisciplinaryPage/DisciplinaryPage';
+import AlumniPage             from '../pages/admin/AlumniPage/AlumniPage';
+import TransfersPage          from '../pages/admin/TransfersPage/TransfersPage';
+import InventoryPage          from '../pages/admin/InventoryPage/InventoryPage';
 
 function AppRouter() {
   return (
@@ -132,6 +135,9 @@ function AppRouter() {
       <Route path="/admin/staff"         element={<ProtectedRoute roles={['ADMIN']}><StaffDirectoryPage /></ProtectedRoute>} />
       <Route path="/admin/calendar"      element={<ProtectedRoute roles={['ADMIN']}><CalendarPage /></ProtectedRoute>} />
       <Route path="/admin/disciplinary"  element={<ProtectedRoute roles={['ADMIN']}><DisciplinaryPage /></ProtectedRoute>} />
+      <Route path="/admin/alumni"        element={<ProtectedRoute roles={['ADMIN']}><AlumniPage /></ProtectedRoute>} />
+      <Route path="/admin/transfers"     element={<ProtectedRoute roles={['ADMIN']}><TransfersPage /></ProtectedRoute>} />
+      <Route path="/admin/inventory"     element={<ProtectedRoute roles={['ADMIN']}><InventoryPage /></ProtectedRoute>} />
 
       {/* Bursar */}
       <Route path="/bursar"              element={<ProtectedRoute roles={['BURSAR']}><BursarDashboardPage /></ProtectedRoute>} />

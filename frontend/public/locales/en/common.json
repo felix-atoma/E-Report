@@ -28,13 +28,22 @@
     "mockExams":        "Mock Exams",
     "mockExamFiches":   "Mock Exam Sheets",
     "mockExamResults":  "Mock Exam Results",
-    "bulkImport":       "CSV Import"
+    "bulkImport":       "CSV Import",
+    "attendance":       "Attendance",
+    "staff":            "Staff",
+    "calendar":         "Calendar",
+    "disciplinary":     "Disciplinary",
+    "alumni":           "Alumni",
+    "transfers":        "Transfers",
+    "inventory":        "Inventory",
+    "schoolDocuments":  "Documents"
   },
 
   "section": {
     "school":   "SCHOOL",
     "pedagogy": "PEDAGOGY",
     "finance":  "FINANCE",
+    "records":  "RECORDS",
     "system":   "SYSTEM",
     "classes":  "CLASSES"
   },

@@ -27,6 +27,15 @@ const NAV = {
     { divider: true,              sectionKey: 'section.finance' },
     { to: '/admin/fees',          icon: 'coins',     labelKey: 'nav.fees' },
     { to: '/admin/payments',      icon: 'card',      labelKey: 'nav.payments' },
+    { divider: true,              sectionKey: 'section.records' },
+    { to: '/admin/attendance',       icon: 'attendance',  labelKey: 'nav.attendance' },
+    { to: '/admin/staff',            icon: 'briefcase',   labelKey: 'nav.staff' },
+    { to: '/admin/calendar',         icon: 'calendar',    labelKey: 'nav.calendar' },
+    { to: '/admin/disciplinary',     icon: 'shield',      labelKey: 'nav.disciplinary' },
+    { to: '/admin/alumni',           icon: 'graduation',  labelKey: 'nav.alumni' },
+    { to: '/admin/transfers',        icon: 'transfer',    labelKey: 'nav.transfers' },
+    { to: '/admin/inventory',        icon: 'inventory',   labelKey: 'nav.inventory' },
+    { to: '/admin/school-documents', icon: 'folder',      labelKey: 'nav.schoolDocuments' },
     { divider: true,              sectionKey: 'section.system' },
     { to: '/admin/notifications', icon: 'bell',      labelKey: 'nav.notifications' },
     { to: '/admin/analytics',     icon: 'chart',     labelKey: 'nav.analytics' },
@@ -211,6 +220,51 @@ const ICONS = {
   close: (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
       <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  ),
+  attendance: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+    </svg>
+  ),
+  briefcase: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="7" width="20" height="14" rx="2"/>
+      <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+      <line x1="12" y1="12" x2="12" y2="12"/>
+    </svg>
+  ),
+  calendar: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+      <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
+  ),
+  shield: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    </svg>
+  ),
+  graduation: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+      <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+    </svg>
+  ),
+  transfer: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+      <path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+    </svg>
+  ),
+  inventory: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 8h14M5 8a2 2 0 1 1-4 0V6c0-1.1.9-2 2-2h16a2 2 0 0 1 2 2v2a2 2 0 1 1-4 0M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8m-9 4h4"/>
+    </svg>
+  ),
+  folder: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
     </svg>
   ),
 };

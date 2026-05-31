@@ -189,6 +189,9 @@ model Institution {
   schoolDocuments   SchoolDocument[]
   staffProfiles     StaffProfile[]
   calendarEvents    CalendarEvent[]
+  alumniRecords     AlumniRecord[]
+  studentTransfers  StudentTransfer[]
+  inventoryItems    InventoryItem[]
 }
 
 model User {
@@ -383,6 +386,8 @@ model Student {
   quizAttempts    QuizAttempt[]
   mockExamGrades  MockExamGrade[]
   attendances     Attendance[]
+  alumniRecord    AlumniRecord?
+  transfers       StudentTransfer[]
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -1196,4 +1201,95 @@ enum DisciplinaryType {
   NOTE
   COMMENDATION
   OTHER
+}
+
+// ─── Alumni, Transfers, Inventory ─────────────────────────────────────────
+
+enum TransferDirection {
+  IN
+  OUT
+}
+
+enum InventoryCategory {
+  FURNITURE
+  EQUIPMENT
+  BOOK
+  SPORT
+  LAB
+  IT
+  OTHER
+}
+
+enum InventoryCondition {
+  EXCELLENT
+  GOOD
+  FAIR
+  POOR
+  DAMAGED
+}
+
+model AlumniRecord {
+  id                 String   @id @default(uuid())
+  studentId          String   @unique
+  institutionId      String
+  graduationYear     Int
+  lastClass          String?
+  diplomaNumber      String?
+  examType           String?
+  examSession        String?
+  examResult         String?
+  nationalExamCenter String?
+  furtherEducation   String?
+  currentEmployer    String?
+  contactEmail       String?
+  contactPhone       String?
+  notes              String?  @db.Text
+
+  student     Student     @relation(fields: [studentId], references: [id])
+  institution Institution @relation(fields: [institutionId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model StudentTransfer {
+  id              String            @id @default(uuid())
+  studentId       String
+  institutionId   String
+  direction       TransferDirection
+  otherSchool     String
+  transferDate    DateTime          @db.Date
+  academicYear    String?
+  reason          String?
+  documentUrl     String?
+  notes           String?           @db.Text
+  processedById   String?
+  processedByName String?
+
+  student     Student     @relation(fields: [studentId], references: [id])
+  institution Institution @relation(fields: [institutionId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model InventoryItem {
+  id            String             @id @default(uuid())
+  institutionId String
+  name          String
+  category      InventoryCategory  @default(OTHER)
+  quantity      Int                @default(1)
+  condition     InventoryCondition @default(GOOD)
+  location      String?
+  serialNumber  String?
+  purchaseDate  DateTime?          @db.Date
+  purchaseValue Float?
+  supplier      String?
+  notes         String?
+  isActive      Boolean            @default(true)
+
+  institution Institution @relation(fields: [institutionId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

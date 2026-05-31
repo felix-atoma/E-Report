@@ -394,3 +394,23 @@
   .asp-kpis        { grid-template-columns: 1fr 1fr !important; }
   .asp-attend-kpis { grid-template-columns: 1fr 1fr !important; }
 }
+
+/* ── Transfers ── */
+.asp-transfers { display: flex; flex-direction: column; gap: .5rem; }
+.asp-transfer { display: flex; align-items: center; gap: .75rem; padding: .5rem .75rem; border-radius: 8px; font-size: .875rem; flex-wrap: wrap; }
+.asp-transfer--in  { background: #f0fdf4; }
+.asp-transfer--out { background: #fff7ed; }
+.asp-transfer__badge { font-size: .7rem; font-weight: 700; padding: .15rem .45rem; border-radius: 999px; }
+.asp-transfer__badge--in  { background: #dcfce7; color: #15803d; }
+.asp-transfer__badge--out { background: #fee2e2; color: #dc2626; }
+.asp-transfer__school { font-weight: 600; color: #111827; flex: 1; }
+.asp-transfer__date { font-size: .78rem; color: #6b7280; }
+.asp-transfer__reason { font-size: .78rem; color: #9ca3af; font-style: italic; width: 100%; }
+
+/* ── Alumni ── */
+.asp-alumni { display: flex; flex-direction: column; gap: .375rem; }
+.asp-alumni__row { display: flex; justify-content: space-between; align-items: center; padding: .3rem 0; border-bottom: 1px solid #f9fafb; font-size: .875rem; }
+.asp-alumni__label { color: #6b7280; font-weight: 500; }
+.asp-alumni__result { font-weight: 700; padding: .1rem .4rem; border-radius: 6px; }
+.asp-alumni__result.pass { background: #dcfce7; color: #15803d; }
+.asp-alumni__result.fail { background: #fee2e2; color: #dc2626; }
