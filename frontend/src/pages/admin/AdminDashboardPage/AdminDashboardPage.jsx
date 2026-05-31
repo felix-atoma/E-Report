@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { analyticsService } from '../../../services/analyticsService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
@@ -92,6 +93,13 @@ function AdminDashboardPage() {
     refetchOnMount: 'always',
   });
 
+  const { data: records } = useQuery({
+    queryKey: ['analytics', 'records-summary'],
+    queryFn: () => analyticsService.recordsSummary().then((r) => r.data),
+    staleTime: 0,
+    refetchOnMount: 'always',
+  });
+
   if (loadingOverview) return <AppShell title={t('dash.title')}><Loading /></AppShell>;
 
   const collectionRate =
@@ -169,6 +177,44 @@ function AdminDashboardPage() {
           </Card>
         )}
       </div>
+      {/* ── School Records Summary ── */}
+      {records && (
+        <div className="dashboard-records">
+          <h3 className="dashboard-records__title">Registres Scolaires</h3>
+          <div className="dashboard-records__grid">
+            <Link to="/admin/disciplinary" className={`rec-tile ${records.disciplinaryUnresolved > 0 ? 'rec-tile--warn' : 'rec-tile--ok'}`}>
+              <span className="rec-tile__value">{records.disciplinaryUnresolved}</span>
+              <span className="rec-tile__label">Incidents non résolus</span>
+            </Link>
+            <Link to="/admin/library" className={`rec-tile ${records.overdueLoans > 0 ? 'rec-tile--alert' : 'rec-tile--ok'}`}>
+              <span className="rec-tile__value">{records.overdueLoans}</span>
+              <span className="rec-tile__label">Prêts en retard</span>
+            </Link>
+            <Link to="/admin/health" className="rec-tile rec-tile--info">
+              <span className="rec-tile__value">{records.healthThisMonth}</span>
+              <span className="rec-tile__label">Visites médicales ce mois</span>
+            </Link>
+            <Link to="/admin/alumni" className="rec-tile rec-tile--blue">
+              <span className="rec-tile__value">{records.alumniCount}</span>
+              <span className="rec-tile__label">Anciens élèves</span>
+            </Link>
+            <Link to="/admin/transfers" className="rec-tile rec-tile--blue">
+              <span className="rec-tile__value">{records.transfersThisYear}</span>
+              <span className="rec-tile__label">Transferts cette année</span>
+            </Link>
+            <Link to="/admin/inventory" className="rec-tile rec-tile--info">
+              <span className="rec-tile__value">{records.inventoryActive}</span>
+              <span className="rec-tile__label">Articles inventaire</span>
+            </Link>
+            {records.examTotal > 0 && (
+              <Link to="/admin/national-exams" className={`rec-tile ${records.examPassRate >= 50 ? 'rec-tile--ok' : 'rec-tile--warn'}`}>
+                <span className="rec-tile__value">{records.examPassRate}%</span>
+                <span className="rec-tile__label">Taux réussite examens</span>
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 }

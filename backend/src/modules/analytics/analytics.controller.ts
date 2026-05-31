@@ -34,6 +34,13 @@ export class AnalyticsController {
     return this.service.getReportStats(user.institutionId, academicYear);
   }
 
+  @Get('records-summary')
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'School-database module summary counts' })
+  getRecordsSummary(@CurrentUser() user: any) {
+    return this.service.getRecordsSummary(user.institutionId);
+  }
+
   @Get('class-stats')
   @Roles(Role.ADMIN, Role.TEACHER)
   @ApiOperation({ summary: 'Class progress statistics compared to previous term' })

@@ -6,4 +6,5 @@ export const analyticsService = {
   reportStats: (params) => api.get('/analytics/report-stats', { params }),
   classStats: (classId, academicYear, termNumber) =>
     api.get('/analytics/class-stats', { params: { classId, academicYear, termNumber } }),
+  recordsSummary: () => api.get('/analytics/records-summary'),
 };

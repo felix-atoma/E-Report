@@ -4,6 +4,8 @@
 .alumni-page__subtitle { font-size: .85rem; color: #6b7280; margin: 0; }
 .alumni-page__btn-add { background: #1e2a78; color: #fff; border: none; border-radius: 8px; padding: .6rem 1.2rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
 .alumni-page__btn-add:hover { background: #162060; }
+.alumni-page__btn-csv { background: #fff; color: #374151; border: 1px solid #e5e7eb; border-radius: 8px; padding: .6rem 1rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.alumni-page__btn-csv:hover { background: #f9fafb; }
 
 .alumni-page__filters { display: flex; gap: .75rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
 .alumni-page__search { flex: 1; min-width: 200px; border: 1px solid #e5e7eb; border-radius: 8px; padding: .5rem .875rem; font-size: .875rem; }

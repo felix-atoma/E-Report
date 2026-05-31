@@ -4,6 +4,8 @@
 .inv-page__subtitle { font-size: .85rem; color: #6b7280; margin: 0; }
 .inv-page__btn-add { background: #1e2a78; color: #fff; border: none; border-radius: 8px; padding: .6rem 1.2rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
 .inv-page__btn-add:hover { background: #162060; }
+.inv-page__btn-csv { background: #fff; color: #374151; border: 1px solid #e5e7eb; border-radius: 8px; padding: .6rem 1rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.inv-page__btn-csv:hover { background: #f9fafb; }
 
 .inv-page__summary { display: flex; gap: .625rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
 .inv-summary-card { display: flex; flex-direction: column; align-items: center; gap: .125rem; background: #f9fafb; border: 1px solid #f3f4f6; border-radius: 10px; padding: .625rem 1rem; min-width: 70px; }

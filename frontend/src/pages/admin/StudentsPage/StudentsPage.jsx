@@ -1,4 +1,5 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useCallback } from 'react';
+import { downloadCSV } from '../../../utils/csvExport';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -528,7 +529,32 @@ function StudentsPage() {
       <PageHeader
         title="Élèves"
         subtitle={`${students.length} élève${students.length !== 1 ? 's' : ''}`}
-        actions={<Button icon="+" onClick={openCreate}>Nouvel élève</Button>}
+        actions={
+          <div style={{ display: 'flex', gap: '.5rem' }}>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                const rows = filtered.map((s) => ({
+                  Matricule: s.admissionNumber,
+                  Nom: s.user?.name ?? '',
+                  Sexe: s.sex ?? '',
+                  'Date naissance': s.dateOfBirth ? new Date(s.dateOfBirth).toLocaleDateString('fr-FR') : '',
+                  'Date inscription': s.enrollmentDate ? new Date(s.enrollmentDate).toLocaleDateString('fr-FR') : '',
+                  Statut: s.studentStatus ?? 'ACTIVE',
+                  Classe: s.classes?.[0]?.class?.name ?? '',
+                  Ville: s.city ?? '',
+                  'Tél père': s.fatherPhone ?? '',
+                  'Tél mère': s.motherPhone ?? '',
+                  'Contact urgence': s.emergencyContactPhone ?? '',
+                }));
+                downloadCSV(rows, `eleves-${new Date().toISOString().slice(0,10)}.csv`);
+              }}
+            >
+              ↓ CSV
+            </Button>
+            <Button icon="+" onClick={openCreate}>Nouvel élève</Button>
+          </div>
+        }
       />
 
       <div className="students-page__toolbar">

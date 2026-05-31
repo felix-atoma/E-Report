@@ -4,6 +4,8 @@
 .ner-page__subtitle { font-size: .85rem; color: #6b7280; margin: 0; }
 .ner-page__btn-add { background: #1e2a78; color: #fff; border: none; border-radius: 8px; padding: .6rem 1.2rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
 .ner-page__btn-add:hover { background: #162060; }
+.ner-page__btn-csv { background: #fff; color: #374151; border: 1px solid #e5e7eb; border-radius: 8px; padding: .6rem 1rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.ner-page__btn-csv:hover { background: #f9fafb; }
 
 /* Summary */
 .ner-summary { display: flex; gap: .75rem; flex-wrap: wrap; margin-bottom: 1.25rem; }

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { alumniService } from '../../../services/alumniService';
+import { downloadCSV } from '../../../utils/csvExport';
 import './AlumniPage.css';
 
 const EXAM_TYPES = ['CEPD', 'BEPC', 'BAC', 'BTS', 'Autre'];
@@ -109,9 +110,32 @@ export default function AlumniPage() {
           <h1 className="alumni-page__title">Anciens Élèves</h1>
           <p className="alumni-page__subtitle">{alumni.length} diplômé(s) enregistré(s)</p>
         </div>
-        <button className="alumni-page__btn-add" onClick={() => openPanel()}>
-          + Ajouter
-        </button>
+        <div style={{ display: 'flex', gap: '.5rem' }}>
+          <button
+            className="alumni-page__btn-csv"
+            onClick={() => {
+              const rows = alumni.map((a) => ({
+                Matricule: a.student?.admissionNumber ?? '',
+                Nom: a.student?.user?.name ?? '',
+                Promotion: a.graduationYear,
+                'Dernière classe': a.lastClass ?? '',
+                "Type d'examen": a.examType ?? '',
+                Session: a.examSession ?? '',
+                Résultat: a.examResult ?? '',
+                'N° Diplôme': a.diplomaNumber ?? '',
+                'Poursuite études': a.furtherEducation ?? '',
+                Téléphone: a.contactPhone ?? '',
+                Email: a.contactEmail ?? '',
+              }));
+              downloadCSV(rows, `anciens-eleves-${new Date().toISOString().slice(0,10)}.csv`);
+            }}
+          >
+            ↓ CSV
+          </button>
+          <button className="alumni-page__btn-add" onClick={() => openPanel()}>
+            + Ajouter
+          </button>
+        </div>
       </div>
 
       <div className="alumni-page__filters">

@@ -57,3 +57,22 @@
 @media (max-width: 360px) {
   .dashboard-stats { grid-template-columns: 1fr; }
 }
+
+/* ── School Records Summary ── */
+.dashboard-records { margin-top: 1.5rem; }
+.dashboard-records__title { font-size: .7rem; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .08em; margin: 0 0 .75rem; }
+.dashboard-records__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: .625rem; }
+
+.rec-tile { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .25rem; padding: .875rem .5rem; border-radius: 12px; text-decoration: none; text-align: center; transition: transform .12s, box-shadow .12s; }
+.rec-tile:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.1); }
+.rec-tile__value { font-size: 1.6rem; font-weight: 900; line-height: 1; }
+.rec-tile__label { font-size: .68rem; font-weight: 600; line-height: 1.3; }
+
+.rec-tile--ok    { background: #f0fdf4; color: #15803d; }
+.rec-tile--warn  { background: #fff7ed; color: #c2410c; }
+.rec-tile--alert { background: #fee2e2; color: #dc2626; }
+.rec-tile--info  { background: #f0f9ff; color: #0369a1; }
+.rec-tile--blue  { background: #eef2ff; color: #1e2a78; }
+
+@media (max-width: 640px) { .dashboard-records__grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 360px) { .dashboard-records__grid { grid-template-columns: repeat(2, 1fr); } }

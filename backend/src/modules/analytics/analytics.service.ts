@@ -58,6 +58,44 @@ export class AnalyticsService {
     return { draft, review, published, total: draft + review + published };
   }
 
+  async getRecordsSummary(institutionId: string) {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfYear  = new Date(now.getFullYear(), 0, 1);
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    const [
+      disciplinaryUnresolved,
+      overdueLoans,
+      healthThisMonth,
+      alumniCount,
+      transfersThisYear,
+      inventoryActive,
+      examAdmis,
+      examTotal,
+    ] = await Promise.all([
+      this.prisma.disciplinaryRecord.count({ where: { institutionId, resolved: false } }),
+      this.prisma.libraryLoan.count({ where: { institutionId, isReturned: false, dueDate: { lt: today } } }),
+      this.prisma.healthRecord.count({ where: { institutionId, date: { gte: startOfMonth } } }),
+      this.prisma.alumniRecord.count({ where: { institutionId } }),
+      this.prisma.studentTransfer.count({ where: { institutionId, transferDate: { gte: startOfYear } } }),
+      this.prisma.inventoryItem.count({ where: { institutionId, isActive: true } }),
+      this.prisma.nationalExamResult.count({ where: { institutionId, result: 'ADMIS' } }),
+      this.prisma.nationalExamResult.count({ where: { institutionId } }),
+    ]);
+
+    return {
+      disciplinaryUnresolved,
+      overdueLoans,
+      healthThisMonth,
+      alumniCount,
+      transfersThisYear,
+      inventoryActive,
+      examPassRate: examTotal > 0 ? Math.round((examAdmis / examTotal) * 100) : null,
+      examTotal,
+    };
+  }
+
   async getClassStats(institutionId: string, classId: string, academicYear: string, termNumber: number) {
     const [currentReports, previousReports] = await Promise.all([
       this.prisma.reportCard.findMany({

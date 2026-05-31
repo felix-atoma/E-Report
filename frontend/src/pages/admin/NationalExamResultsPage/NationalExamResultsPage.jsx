@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { nationalExamResultsService } from '../../../services/nationalExamResultsService';
+import { downloadCSV } from '../../../utils/csvExport';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import './NationalExamResultsPage.css';
 
@@ -142,7 +143,30 @@ export default function NationalExamResultsPage() {
             <h1 className="ner-page__title">Examens Nationaux</h1>
             <p className="ner-page__subtitle">CEPD, BEPC, BAC, BTS, CAP — résultats officiels</p>
           </div>
-          <button className="ner-page__btn-add" onClick={openPanel}>+ Ajouter un résultat</button>
+          <div style={{ display: 'flex', gap: '.5rem' }}>
+            <button
+              className="ner-page__btn-csv"
+              onClick={() => {
+                const rows = results.map((r) => ({
+                  Matricule: r.student?.admissionNumber ?? '',
+                  Nom: r.student?.user?.name ?? '',
+                  Examen: r.examType,
+                  Session: r.session,
+                  'Année scolaire': r.academicYear,
+                  Série: r.series ?? '',
+                  Résultat: r.result,
+                  Mention: r.mention ?? '',
+                  Score: r.totalScore ?? '',
+                  Centre: r.center ?? '',
+                  'N° Table': r.registrationNumber ?? '',
+                }));
+                downloadCSV(rows, `examens-nationaux-${new Date().toISOString().slice(0,10)}.csv`);
+              }}
+            >
+              ↓ CSV
+            </button>
+            <button className="ner-page__btn-add" onClick={openPanel}>+ Ajouter un résultat</button>
+          </div>
         </div>
 
         {/* Summary bar */}

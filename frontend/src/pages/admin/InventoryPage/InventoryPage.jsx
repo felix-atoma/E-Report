@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { inventoryService } from '../../../services/inventoryService';
+import { downloadCSV } from '../../../utils/csvExport';
 import './InventoryPage.css';
 
 const CATEGORIES = [
@@ -147,7 +148,29 @@ export default function InventoryPage() {
             {summary ? `${summary.totalItems} article(s) · Valeur estimée : ${summary.totalValue.toLocaleString('fr-FR')} FCFA` : '—'}
           </p>
         </div>
-        <button className="inv-page__btn-add" onClick={() => openPanel()}>+ Ajouter</button>
+        <div style={{ display: 'flex', gap: '.5rem' }}>
+          <button
+            className="inv-page__btn-csv"
+            onClick={() => {
+              const rows = items.map((i) => ({
+                Désignation: i.name,
+                Catégorie: catLabel(i.category),
+                Quantité: i.quantity,
+                État: CONDITIONS.find((c) => c.value === i.condition)?.label ?? i.condition,
+                Emplacement: i.location ?? '',
+                'N° série': i.serialNumber ?? '',
+                Fournisseur: i.supplier ?? '',
+                "Date d'achat": i.purchaseDate ? new Date(i.purchaseDate).toLocaleDateString('fr-FR') : '',
+                'Valeur unitaire (FCFA)': i.purchaseValue ?? '',
+                Actif: i.isActive ? 'Oui' : 'Non',
+              }));
+              downloadCSV(rows, `inventaire-${new Date().toISOString().slice(0,10)}.csv`);
+            }}
+          >
+            ↓ CSV
+          </button>
+          <button className="inv-page__btn-add" onClick={() => openPanel()}>+ Ajouter</button>
+        </div>
       </div>
 
       {/* Summary stats */}
