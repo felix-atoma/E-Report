@@ -19,12 +19,19 @@ export class HealthController {
 
   @Get('db')
   async dbCheck() {
-    try {
-      await this.prisma.$queryRaw`SELECT 1`;
-      const count = await this.prisma.user.count();
-      return { db: 'ok', userCount: count };
-    } catch (err: any) {
-      return { db: 'error', message: err?.message, code: err?.code };
+    const results: Record<string, any> = {};
+    for (const [key, fn] of Object.entries({
+      users: () => this.prisma.user.count(),
+      institutions: () => this.prisma.institution.count(),
+      refreshTokens: () => this.prisma.refreshToken.count(),
+      institutionStatus: () => this.prisma.institution.findFirst({ select: { status: true } }),
+    })) {
+      try {
+        results[key] = await (fn as () => Promise<any>)();
+      } catch (err: any) {
+        results[key] = { error: err?.message, code: err?.code };
+      }
     }
+    return results;
   }
 }
