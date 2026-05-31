@@ -35,6 +35,9 @@ const NAV = {
     { to: '/admin/alumni',           icon: 'graduation',  labelKey: 'nav.alumni' },
     { to: '/admin/transfers',        icon: 'transfer',    labelKey: 'nav.transfers' },
     { to: '/admin/inventory',        icon: 'inventory',   labelKey: 'nav.inventory' },
+    { to: '/admin/national-exams',   icon: 'exam_nat',    labelKey: 'nav.nationalExams' },
+    { to: '/admin/library',          icon: 'library',     labelKey: 'nav.library' },
+    { to: '/admin/health',           icon: 'health',      labelKey: 'nav.health' },
     { to: '/admin/school-documents', icon: 'folder',      labelKey: 'nav.schoolDocuments' },
     { divider: true,              sectionKey: 'section.system' },
     { to: '/admin/notifications', icon: 'bell',      labelKey: 'nav.notifications' },
@@ -265,6 +268,24 @@ const ICONS = {
   folder: (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+    </svg>
+  ),
+  exam_nat: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+      <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+      <line x1="12" y1="17" x2="12" y2="20"/>
+    </svg>
+  ),
+  library: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+    </svg>
+  ),
+  health: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
     </svg>
   ),
 };

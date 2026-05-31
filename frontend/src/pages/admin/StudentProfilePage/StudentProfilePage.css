@@ -414,3 +414,11 @@
 .asp-alumni__result { font-weight: 700; padding: .1rem .4rem; border-radius: 6px; }
 .asp-alumni__result.pass { background: #dcfce7; color: #15803d; }
 .asp-alumni__result.fail { background: #fee2e2; color: #dc2626; }
+
+/* ── Health Records ── */
+.asp-health-records { display: flex; flex-direction: column; gap: .5rem; }
+.asp-health-row { display: flex; align-items: center; gap: .625rem; padding: .4rem .5rem; border-radius: 8px; background: #f9fafb; font-size: .85rem; flex-wrap: wrap; }
+.asp-health-row__date { color: #6b7280; font-size: .78rem; white-space: nowrap; }
+.asp-health-row__badge { font-size: .7rem; font-weight: 700; padding: .12rem .4rem; border-radius: 5px; }
+.asp-health-row__complaint { color: #374151; flex: 1; }
+.asp-health-row__treatment { color: #6b7280; font-style: italic; font-size: .8rem; }

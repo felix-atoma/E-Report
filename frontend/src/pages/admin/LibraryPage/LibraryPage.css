@@ -1,0 +1,75 @@
+.lib-page { padding: 1.5rem; max-width: 1200px; margin: 0 auto; }
+.lib-page__header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap; }
+.lib-page__title { font-size: 1.5rem; font-weight: 700; color: #1e2a78; margin: 0 0 .25rem; }
+.lib-page__subtitle { font-size: .85rem; color: #6b7280; margin: 0; }
+.lib-page__overdue-hint { color: #dc2626; font-weight: 600; }
+.lib-page__btn-add { background: #1e2a78; color: #fff; border: none; border-radius: 8px; padding: .6rem 1.2rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.lib-page__btn-add:hover { background: #162060; }
+
+/* Filters */
+.lib-page__filters { display: flex; gap: .75rem; margin-bottom: 1.25rem; flex-wrap: wrap; align-items: center; }
+.lib-page__tabs { display: flex; gap: .375rem; }
+.lib-page__tab { border: 1px solid #e5e7eb; background: #fff; border-radius: 8px; padding: .4rem .875rem; font-size: .875rem; font-weight: 600; cursor: pointer; color: #6b7280; }
+.lib-page__tab.active { background: #1e2a78; color: #fff; border-color: #1e2a78; }
+.lib-page__search { flex: 1; min-width: 200px; border: 1px solid #e5e7eb; border-radius: 8px; padding: .5rem .875rem; font-size: .875rem; }
+
+.lib-page__loading, .lib-page__empty { text-align: center; color: #9ca3af; padding: 3rem 1rem; }
+.lib-page__empty-icon { font-size: 3rem; display: block; margin-bottom: .75rem; }
+
+/* Table */
+.lib-page__table-wrap { overflow-x: auto; }
+.lib-table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+.lib-table th { text-align: left; padding: .625rem .875rem; background: #f9fafb; border-bottom: 1px solid #f3f4f6; font-size: .75rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: .04em; }
+.lib-table td { padding: .625rem .875rem; border-bottom: 1px solid #f9fafb; vertical-align: middle; }
+.lib-table__row--overdue { background: #fff7f7; }
+.lib-table__book { font-weight: 600; color: #111827; }
+.lib-table__due--late { color: #dc2626; font-weight: 600; }
+.lib-table__overdue-badge { margin-left: .4rem; background: #fee2e2; color: #b91c1c; font-size: .68rem; font-weight: 700; padding: .1rem .35rem; border-radius: 4px; vertical-align: middle; }
+.lib-table__condition { color: #6b7280; font-size: .8rem; }
+.lib-table__actions { display: flex; gap: .375rem; }
+.lib-table__btn-return { border: 1px solid #dbeafe; background: #eff6ff; color: #1d4ed8; border-radius: 6px; padding: .25rem .5rem; font-size: .78rem; cursor: pointer; font-weight: 600; }
+.lib-table__btn-return:hover { background: #dbeafe; }
+.lib-table__btn-del { border: 1px solid #fee2e2; background: #fff; color: #dc2626; border-radius: 6px; padding: .25rem .4rem; font-size: .78rem; cursor: pointer; }
+.lib-table__btn-del:hover { background: #fee2e2; }
+
+.lib-badge { font-size: .72rem; font-weight: 700; padding: .15rem .5rem; border-radius: 6px; }
+.lib-badge--active { color: #1d4ed8; background: #dbeafe; }
+.lib-badge--returned { color: #15803d; background: #dcfce7; }
+
+/* Return Dialog */
+.lib-dialog-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+.lib-dialog { background: #fff; border-radius: 12px; padding: 1.5rem; width: 100%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
+.lib-dialog__title { font-size: 1.1rem; font-weight: 700; color: #1e2a78; margin: 0 0 .5rem; }
+.lib-dialog__book { color: #6b7280; font-size: .875rem; margin: 0 0 1rem; }
+.lib-dialog__group { display: flex; flex-direction: column; gap: .375rem; margin-bottom: 1rem; }
+.lib-dialog__group label { font-size: .82rem; font-weight: 600; color: #374151; }
+.lib-dialog__group input { border: 1px solid #e5e7eb; border-radius: 8px; padding: .5rem .75rem; font-size: .875rem; width: 100%; box-sizing: border-box; }
+.lib-dialog__group input:focus { outline: none; border-color: #1e2a78; }
+.lib-dialog__footer { display: flex; gap: .75rem; }
+.lib-dialog__btn-cancel { flex: 1; border: 1px solid #e5e7eb; background: #fff; border-radius: 8px; padding: .6rem; font-weight: 600; cursor: pointer; }
+.lib-dialog__btn-confirm { flex: 2; background: #1e2a78; color: #fff; border: none; border-radius: 8px; padding: .6rem; font-weight: 600; cursor: pointer; }
+.lib-dialog__btn-confirm:disabled { opacity: .6; cursor: not-allowed; }
+
+/* Panel */
+.lib-panel-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 200; display: flex; justify-content: flex-end; }
+.lib-panel { width: 480px; max-width: 100vw; background: #fff; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; box-shadow: -4px 0 24px rgba(0,0,0,.12); }
+.lib-panel__header { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid #f3f4f6; }
+.lib-panel__header h2 { font-size: 1.1rem; font-weight: 700; color: #1e2a78; margin: 0; }
+.lib-panel__close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #6b7280; }
+
+.lib-panel__form { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; flex: 1; }
+.lib-panel__group { display: flex; flex-direction: column; gap: .375rem; }
+.lib-panel__group label { font-size: .82rem; font-weight: 600; color: #374151; }
+.lib-panel__group input,
+.lib-panel__group select,
+.lib-panel__group textarea { border: 1px solid #e5e7eb; border-radius: 8px; padding: .5rem .75rem; font-size: .875rem; font-family: inherit; width: 100%; box-sizing: border-box; }
+.lib-panel__group input:focus,
+.lib-panel__group select:focus,
+.lib-panel__group textarea:focus { outline: none; border-color: #1e2a78; box-shadow: 0 0 0 3px rgba(30,42,120,.1); }
+.lib-panel__error { font-size: .75rem; color: #dc2626; }
+.lib-panel__row2 { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+
+.lib-panel__footer { display: flex; gap: .75rem; padding-top: .5rem; }
+.lib-panel__btn-cancel { flex: 1; border: 1px solid #e5e7eb; background: #fff; border-radius: 8px; padding: .6rem; font-weight: 600; cursor: pointer; }
+.lib-panel__btn-save { flex: 2; background: #1e2a78; color: #fff; border: none; border-radius: 8px; padding: .6rem; font-weight: 600; cursor: pointer; }
+.lib-panel__btn-save:disabled { opacity: .6; cursor: not-allowed; }

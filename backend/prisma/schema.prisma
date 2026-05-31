@@ -192,6 +192,9 @@ model Institution {
   alumniRecords     AlumniRecord[]
   studentTransfers  StudentTransfer[]
   inventoryItems    InventoryItem[]
+  nationalExamResults NationalExamResult[]
+  libraryLoans      LibraryLoan[]
+  healthRecords     HealthRecord[]
 }
 
 model User {
@@ -388,6 +391,9 @@ model Student {
   attendances     Attendance[]
   alumniRecord    AlumniRecord?
   transfers       StudentTransfer[]
+  nationalExamResults NationalExamResult[]
+  libraryLoans    LibraryLoan[]
+  healthRecords   HealthRecord[]
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -1288,6 +1294,105 @@ model InventoryItem {
   notes         String?
   isActive      Boolean            @default(true)
 
+  institution Institution @relation(fields: [institutionId], references: [id])
+  loans       LibraryLoan[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─── National Exam Results, Library, Health Records ──────────────────────────
+
+enum NationalExamType {
+  CEPD
+  BEPC
+  BAC
+  BTS
+  CAP
+  OTHER
+}
+
+enum NationalExamResultStatus {
+  ADMIS
+  AJOURNE
+  ABSENT
+  ELIMINE
+}
+
+model NationalExamResult {
+  id                 String                  @id @default(uuid())
+  institutionId      String
+  studentId          String
+  examType           NationalExamType
+  session            String
+  academicYear       String
+  registrationNumber String?
+  center             String?
+  series             String?
+  result             NationalExamResultStatus
+  mention            String?
+  totalScore         Float?
+  notes              String?
+
+  student     Student     @relation(fields: [studentId], references: [id])
+  institution Institution @relation(fields: [institutionId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([studentId, examType, session])
+}
+
+model LibraryLoan {
+  id            String    @id @default(uuid())
+  institutionId String
+  itemId        String
+  studentId     String?
+  borrowerName  String?
+  borrowerId    String?
+  loanDate      DateTime  @db.Date
+  dueDate       DateTime  @db.Date
+  returnDate    DateTime? @db.Date
+  isReturned    Boolean   @default(false)
+  conditionOut  String?
+  conditionIn   String?
+  notes         String?
+  issuedByName  String?
+  issuedById    String?
+
+  institution Institution  @relation(fields: [institutionId], references: [id])
+  item        InventoryItem @relation(fields: [itemId], references: [id])
+  student     Student?      @relation(fields: [studentId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum HealthVisitType {
+  CONSULTATION
+  ACCIDENT
+  VACCINATION
+  DRESSING
+  EVACUATION
+  OTHER
+}
+
+model HealthRecord {
+  id                 String          @id @default(uuid())
+  institutionId      String
+  studentId          String
+  date               DateTime        @db.Date
+  visitType          HealthVisitType @default(CONSULTATION)
+  complaint          String?
+  diagnosis          String?
+  treatment          String?
+  referredToHospital Boolean         @default(false)
+  hospital           String?
+  attendedByName     String?
+  attendedById       String?
+  notes              String?         @db.Text
+
+  student     Student     @relation(fields: [studentId], references: [id])
   institution Institution @relation(fields: [institutionId], references: [id])
 
   createdAt DateTime @default(now())

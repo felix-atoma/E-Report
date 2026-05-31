@@ -5,6 +5,9 @@ import { feesService } from '../../../services/feesService';
 import { disciplinaryService } from '../../../services/disciplinaryService';
 import { transfersService } from '../../../services/transfersService';
 import { alumniService } from '../../../services/alumniService';
+import { nationalExamResultsService } from '../../../services/nationalExamResultsService';
+import { libraryService } from '../../../services/libraryService';
+import { healthRecordsService } from '../../../services/healthRecordsService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Card from '../../../components/common/Card/Card';
@@ -88,6 +91,24 @@ function AdminStudentProfilePage() {
   const { data: alumniRecord } = useQuery({
     queryKey: ['alumni-student', id],
     queryFn: () => alumniService.findByStudent(id).then((r) => r.data).catch(() => null),
+    enabled: !!id,
+  });
+
+  const { data: nationalExamResults = [] } = useQuery({
+    queryKey: ['national-exams-student', id],
+    queryFn: () => nationalExamResultsService.listByStudent(id).then((r) => r.data),
+    enabled: !!id,
+  });
+
+  const { data: libraryLoans = [] } = useQuery({
+    queryKey: ['library-loans-student', id],
+    queryFn: () => libraryService.listByStudent(id).then((r) => r.data),
+    enabled: !!id,
+  });
+
+  const { data: healthRecords = [] } = useQuery({
+    queryKey: ['health-records-student', id],
+    queryFn: () => healthRecordsService.listByStudent(id).then((r) => r.data),
     enabled: !!id,
   });
 
@@ -496,6 +517,138 @@ function AdminStudentProfilePage() {
             </div>
           </Card>
         )}
+
+        {/* ── Résultats aux examens nationaux ── */}
+        <Card className="asp-section asp-section--full">
+          <h3 className="asp-section__title">Résultats aux examens nationaux</h3>
+          {nationalExamResults.length === 0 ? (
+            <p className="asp-empty">Aucun résultat d'examen national enregistré.</p>
+          ) : (
+            <div className="asp-table-wrap">
+              <table className="asp-table">
+                <thead>
+                  <tr>
+                    <th>Examen</th>
+                    <th>Session</th>
+                    <th>Année</th>
+                    <th>Série</th>
+                    <th>Résultat</th>
+                    <th>Mention</th>
+                    <th>Score</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {nationalExamResults.map((r) => {
+                    const resultColors = {
+                      ADMIS:   { color: '#15803d', bg: '#dcfce7' },
+                      AJOURNE: { color: '#b45309', bg: '#fef3c7' },
+                      ABSENT:  { color: '#6b7280', bg: '#f3f4f6' },
+                      ELIMINE: { color: '#b91c1c', bg: '#fee2e2' },
+                    };
+                    const resultLabels = { ADMIS: 'Admis', AJOURNE: 'Ajourné', ABSENT: 'Absent', ELIMINE: 'Éliminé' };
+                    const cfg = resultColors[r.result] ?? resultColors.ABSENT;
+                    return (
+                      <tr key={r.id}>
+                        <td><strong>{r.examType}</strong></td>
+                        <td>{r.session}</td>
+                        <td>{r.academicYear}</td>
+                        <td>{r.series ?? '—'}</td>
+                        <td>
+                          <span style={{ fontSize: '.72rem', fontWeight: 700, padding: '.15rem .5rem', borderRadius: 6, color: cfg.color, background: cfg.bg }}>
+                            {resultLabels[r.result] ?? r.result}
+                          </span>
+                        </td>
+                        <td>{r.mention ?? '—'}</td>
+                        <td>{r.totalScore != null ? r.totalScore : '—'}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
+
+        {/* ── Prêts bibliothèque ── */}
+        <Card className="asp-section asp-section--full">
+          <h3 className="asp-section__title">Prêts bibliothèque</h3>
+          {libraryLoans.length === 0 ? (
+            <p className="asp-empty">Aucun prêt bibliothèque enregistré.</p>
+          ) : (
+            <div className="asp-table-wrap">
+              <table className="asp-table">
+                <thead>
+                  <tr>
+                    <th>Livre</th>
+                    <th>Date prêt</th>
+                    <th>Échéance</th>
+                    <th>Statut</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {libraryLoans.map((loan) => {
+                    const isOverdue = !loan.isReturned && new Date(loan.dueDate) < new Date();
+                    return (
+                      <tr key={loan.id}>
+                        <td><strong>{loan.item?.name ?? loan.itemId}</strong></td>
+                        <td>{loan.loanDate ? new Date(loan.loanDate).toLocaleDateString('fr-FR') : '—'}</td>
+                        <td className={isOverdue ? 'asp-text--danger' : ''}>
+                          {loan.dueDate ? new Date(loan.dueDate).toLocaleDateString('fr-FR') : '—'}
+                          {isOverdue && ' (retard)'}
+                        </td>
+                        <td>
+                          {loan.isReturned ? (
+                            <Badge variant="success">Rendu</Badge>
+                          ) : (
+                            <Badge variant={isOverdue ? 'danger' : 'info'}>En cours</Badge>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
+
+        {/* ── Dossier médical ── */}
+        <Card className="asp-section asp-section--full">
+          <h3 className="asp-section__title">Dossier médical</h3>
+          {healthRecords.length === 0 ? (
+            <p className="asp-empty">Aucune visite médicale enregistrée.</p>
+          ) : (
+            <div className="asp-health-records">
+              {healthRecords.map((rec) => {
+                const visitBadge = {
+                  CONSULTATION: { label: 'Consultation', color: '#1d4ed8', bg: '#dbeafe' },
+                  ACCIDENT:     { label: 'Accident',     color: '#b91c1c', bg: '#fee2e2' },
+                  VACCINATION:  { label: 'Vaccination',  color: '#15803d', bg: '#dcfce7' },
+                  DRESSING:     { label: 'Pansement',    color: '#a16207', bg: '#fef3c7' },
+                  EVACUATION:   { label: 'Évacuation',   color: '#c2410c', bg: '#ffedd5' },
+                  OTHER:        { label: 'Autre',        color: '#6b7280', bg: '#f3f4f6' },
+                };
+                const cfg = visitBadge[rec.visitType] ?? visitBadge.OTHER;
+                return (
+                  <div key={rec.id} className="asp-health-row">
+                    <span className="asp-health-row__date">
+                      {rec.date ? new Date(rec.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
+                    </span>
+                    <span className="asp-health-row__badge" style={{ color: cfg.color, background: cfg.bg }}>
+                      {cfg.label}
+                    </span>
+                    {rec.complaint && (
+                      <span className="asp-health-row__complaint">{rec.complaint}</span>
+                    )}
+                    {rec.treatment && (
+                      <span className="asp-health-row__treatment">→ {rec.treatment}</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Card>
 
       </div>
     </AppShell>

@@ -36,6 +36,9 @@
     "alumni":           "Alumni",
     "transfers":        "Transfers",
     "inventory":        "Inventory",
+    "nationalExams":    "National Exams",
+    "library":          "Library",
+    "health":           "Health",
     "schoolDocuments":  "Documents"
   },
 

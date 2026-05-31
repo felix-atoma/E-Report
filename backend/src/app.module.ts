@@ -46,6 +46,9 @@ import { DisciplinaryModule } from './modules/disciplinary/disciplinary.module';
 import { AlumniModule } from './modules/alumni/alumni.module';
 import { TransfersModule } from './modules/transfers/transfers.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
+import { NationalExamResultsModule } from './modules/national-exam-results/national-exam-results.module';
+import { LibraryModule } from './modules/library/library.module';
+import { HealthRecordsModule } from './modules/health-records/health-records.module';
 
 @Module({
   imports: [
@@ -100,6 +103,9 @@ import { InventoryModule } from './modules/inventory/inventory.module';
     AlumniModule,
     TransfersModule,
     InventoryModule,
+    NationalExamResultsModule,
+    LibraryModule,
+    HealthRecordsModule,
   ],
   providers: [
     // JWT guard applied globally — use @Public() to opt out
