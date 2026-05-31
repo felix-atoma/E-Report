@@ -5,7 +5,7 @@ services:
     region: frankfurt      # closest to West Africa
     plan: free
     rootDir: backend
-    buildCommand: npm install && npm run build && npx prisma generate && npx prisma db push
+    buildCommand: npm install && npm run build && npx prisma generate && DATABASE_URL=$DIRECT_URL npx prisma db push
     startCommand: node dist/main
     healthCheckPath: /api/health
 
