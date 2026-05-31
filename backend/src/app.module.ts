@@ -38,6 +38,8 @@ import { AssignmentsModule } from './modules/assignments/assignments.module';
 import { QuizzesModule } from './modules/quizzes/quizzes.module';
 import { SuperAdminModule } from './modules/superadmin/superadmin.module';
 import { MockExamsModule } from './modules/mock-exams/mock-exams.module';
+import { AttendanceModule } from './modules/attendance/attendance.module';
+import { SchoolDocumentsModule } from './modules/school-documents/school-documents.module';
 
 @Module({
   imports: [
@@ -84,6 +86,8 @@ import { MockExamsModule } from './modules/mock-exams/mock-exams.module';
     QuizzesModule,
     SuperAdminModule,
     MockExamsModule,
+    AttendanceModule,
+    SchoolDocumentsModule,
   ],
   providers: [
     // JWT guard applied globally — use @Public() to opt out

@@ -185,6 +185,8 @@ model Institution {
   assignments       Assignment[]
   quizzes           Quiz[]
   mockExams         MockExam[]
+  attendances       Attendance[]
+  schoolDocuments   SchoolDocument[]
 }
 
 model User {
@@ -261,6 +263,7 @@ model Class {
   assignments     Assignment[]
   quizzes         Quiz[]
   mockExams       MockExam[]
+  attendances     Attendance[]
 
   sortOrder       Int      @default(0)
   isActive        Boolean  @default(true)
@@ -292,6 +295,7 @@ model Subject {
   quizzes         Quiz[]
   mockExamGrades        MockExamGrade[]
   mockExamSubjectFiches MockExamSubjectFiche[]
+  attendances     Attendance[]
 
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
@@ -351,6 +355,7 @@ model Student {
   assignmentSubmissions AssignmentSubmission[]
   quizAttempts    QuizAttempt[]
   mockExamGrades  MockExamGrade[]
+  attendances     Attendance[]
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -1010,4 +1015,63 @@ model MockExamSubjectFiche {
   updatedAt    DateTime  @updatedAt
 
   @@unique([mockExamId, subjectId])
+}
+
+// ─── School as a Database — Records Modules ───────────────────────────────
+
+model Attendance {
+  id          String   @id @default(uuid())
+  studentId   String
+  classId     String
+  subjectId   String?
+  date        DateTime @db.Date
+  status      AttendanceStatus @default(PRESENT)
+  note        String?
+  recordedBy  String?
+
+  student     Student  @relation(fields: [studentId], references: [id])
+  class       Class    @relation(fields: [classId], references: [id])
+  subject     Subject? @relation(fields: [subjectId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([studentId, classId, date])
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
+}
+
+model SchoolDocument {
+  id            String   @id @default(uuid())
+  institutionId String
+  title         String
+  category      DocumentCategory @default(OTHER)
+  fileUrl       String
+  fileSize      Int?
+  mimeType      String?
+  description   String?
+  uploadedById  String?
+  isPublic      Boolean  @default(false)
+
+  institution   Institution @relation(fields: [institutionId], references: [id])
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+enum DocumentCategory {
+  CIRCULAR
+  REPORT
+  CONTRACT
+  SCHEDULE
+  FINANCIAL
+  EXAM
+  STAFF
+  STUDENT
+  OTHER
 }
