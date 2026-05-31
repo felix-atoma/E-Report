@@ -4,11 +4,21 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as Handlebars from 'handlebars';
 
-// Lazy-load puppeteer to avoid startup cost
-let puppeteer: typeof import('puppeteer') | null = null;
-async function getPuppeteer() {
-  if (!puppeteer) puppeteer = await import('puppeteer');
-  return puppeteer;
+async function launchBrowser() {
+  if (process.env.NODE_ENV === 'production') {
+    const chromium = (await import('@sparticuz/chromium')).default;
+    const pup = (await import('puppeteer-core')).default;
+    return pup.launch({
+      args: chromium.args,
+      executablePath: await chromium.executablePath(),
+      headless: true,
+    });
+  }
+  const pup = (await import('puppeteer')).default;
+  return pup.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+  });
 }
 
 const CONDUCT_LABELS: Record<string, string> = {
@@ -57,11 +67,7 @@ export class PdfService {
     const outputPath = path.join(this.outputDir, filename);
 
     try {
-      const pup = await getPuppeteer();
-      const browser = await pup.launch({
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-      });
+      const browser = await launchBrowser();
       const page = await browser.newPage();
       await page.setContent(html, { waitUntil: 'networkidle0' });
       await page.pdf({
