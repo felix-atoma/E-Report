@@ -5,7 +5,7 @@ services:
     region: frankfurt      # closest to West Africa
     plan: free
     rootDir: backend
-    buildCommand: apt-get install -y libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libpango-1.0-0 libcairo2 fonts-liberation libasound2t64 libx11-6 libxcb1 libxext6 && npm install && PUPPETEER_CACHE_DIR=.puppeteer-cache npx puppeteer browsers install chrome && npm run build && npx prisma generate && DATABASE_URL=$DIRECT_URL npx prisma db push
+    buildCommand: wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor > /usr/share/keyrings/google-chrome.gpg && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && apt-get update -qq && apt-get install -y google-chrome-stable && npm install && npm run build && npx prisma generate && DATABASE_URL=$DIRECT_URL npx prisma db push
     startCommand: node dist/main
     healthCheckPath: /api/health
 
@@ -15,8 +15,8 @@ services:
         value: production
       - key: GLOBAL_PREFIX
         value: api
-      - key: PUPPETEER_CACHE_DIR
-        value: .puppeteer-cache
+      - key: PUPPETEER_EXECUTABLE_PATH
+        value: /usr/bin/google-chrome-stable
       - key: PUPPETEER_SKIP_DOWNLOAD
         value: "true"
 
