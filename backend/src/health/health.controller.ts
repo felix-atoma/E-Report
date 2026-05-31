@@ -21,7 +21,8 @@ export class HealthController {
   async dbCheck() {
     try {
       await this.prisma.$queryRaw`SELECT 1`;
-      return { db: 'ok' };
+      const count = await this.prisma.user.count();
+      return { db: 'ok', userCount: count };
     } catch (err: any) {
       return { db: 'error', message: err?.message, code: err?.code };
     }
