@@ -25,11 +25,15 @@ export class HealthController {
       institutions: () => this.prisma.institution.count(),
       refreshTokens: () => this.prisma.refreshToken.count(),
       institutionStatus: () => this.prisma.institution.findFirst({ select: { status: true } }),
+      userNewFields: () => this.prisma.user.findFirst({
+        select: { id: true, mustChangePassword: true, otpHash: true, otpExpiresAt: true },
+      }),
+      userFindUnique: () => this.prisma.user.findFirst({ take: 1 }),
     })) {
       try {
         results[key] = await (fn as () => Promise<any>)();
       } catch (err: any) {
-        results[key] = { error: err?.message, code: err?.code };
+        results[key] = { error: err?.message?.slice(0, 200), code: err?.code };
       }
     }
     return results;
