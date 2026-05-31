@@ -366,7 +366,7 @@ function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
               <NavLink
                 key={item.to}
                 to={item.to}
-                end={item.to.split('/').length <= 2}
+                end
                 onClick={onMobileClose}
                 className={({ isActive }) =>
                   `sidebar__link${isActive ? ' sidebar__link--active' : ''}`

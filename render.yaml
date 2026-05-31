@@ -10,38 +10,136 @@ services:
     healthCheckPath: /api/health
 
     envVars:
-      # ── Static values ──────────────────────────────────────────────────────
+      # ── Runtime ──────────────────────────────────────────────────────────────
       - key: NODE_ENV
         value: production
       - key: GLOBAL_PREFIX
         value: api
+
+      # ── Database (set in Render dashboard) ───────────────────────────────────
+      # DATABASE_URL  → Supabase Transaction (pooled) connection string
+      # DIRECT_URL    → Supabase Session (direct) connection string
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+
+      # ── Auth ─────────────────────────────────────────────────────────────────
       - key: JWT_EXPIRES_IN
         value: 15m
       - key: JWT_REFRESH_EXPIRES_IN
         value: 7d
       - key: BCRYPT_SALT_ROUNDS
-        value: 12
-      - key: UPLOADS_DIR
-        value: uploads
-
-      # ── Set these manually in the Render dashboard ──────────────────────────
-      # DATABASE_URL   → Supabase Transaction (pooled) connection string
-      # DIRECT_URL     → Supabase Session (direct) connection string
-      # JWT_SECRET     → long random string (32+ chars)
-      # JWT_REFRESH_SECRET → different long random string
-      # FRONTEND_URL   → your Vercel frontend URL  e.g. https://novabulletin.vercel.app
-      # BASE_URL       → this Render service URL   e.g. https://novabulletin-api.onrender.com
-      # MAIL_FROM      → sender address
-      # SENDGRID_API_KEY or SMTP_* → email credentials
-      - key: DATABASE_URL
-        sync: false
-      - key: DIRECT_URL
-        sync: false
+        value: "12"
       - key: JWT_SECRET
         sync: false
       - key: JWT_REFRESH_SECRET
         sync: false
+
+      # ── URLs (set in Render dashboard) ───────────────────────────────────────
+      # FRONTEND_URL  → https://e-report-frontend.vercel.app
+      # BASE_URL      → https://e-report-y4g9.onrender.com
+      # APP_URL       → same as BASE_URL (used by payment service)
       - key: FRONTEND_URL
         sync: false
       - key: BASE_URL
+        sync: false
+      - key: APP_URL
+        sync: false
+
+      # ── Storage ───────────────────────────────────────────────────────────────
+      - key: STORAGE_PROVIDER
+        value: LOCAL
+      - key: STORAGE_LOCAL_PATH
+        value: ./uploads
+      - key: UPLOADS_DIR
+        value: uploads
+
+      # ── Email ─────────────────────────────────────────────────────────────────
+      - key: EMAIL_PROVIDER
+        value: SENDGRID
+      - key: MAIL_FROM
+        sync: false
+      - key: SENDGRID_API_KEY
+        sync: false
+
+      # ── Google OAuth ──────────────────────────────────────────────────────────
+      # GOOGLE_CALLBACK_URL → https://e-report-y4g9.onrender.com/api/auth/google/callback
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_CALLBACK_URL
+        sync: false
+
+      # ── WhatsApp / Twilio ─────────────────────────────────────────────────────
+      - key: WHATSAPP_PROVIDER
+        value: TWILIO
+      - key: WHATSAPP_TEMPLATE_NAME_FR
+        value: bulletin_disponible_fr
+      - key: WHATSAPP_TEMPLATE_NAME_EN
+        value: bulletin_available_en
+      - key: WHATSAPP_PHONE_NUMBER_ID
+        sync: false
+      - key: WHATSAPP_ACCESS_TOKEN
+        sync: false
+      - key: WHATSAPP_BUSINESS_ACCOUNT_ID
+        sync: false
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_WHATSAPP_FROM
+        sync: false
+
+      # ── Payments ──────────────────────────────────────────────────────────────
+      - key: NOTCHPAY_ENVIRONMENT
+        value: test
+      - key: NOTCHPAY_PUBLIC_KEY
+        sync: false
+      - key: NOTCHPAY_SECRET_KEY
+        sync: false
+      - key: NOTCHPAY_HASH_KEY
+        sync: false
+
+      # ── AI Assistant ──────────────────────────────────────────────────────────
+      - key: ANTHROPIC_API_KEY
+        sync: false
+
+      # ── Error monitoring ──────────────────────────────────────────────────────
+      - key: SENTRY_DSN
+        sync: false
+
+      # ── Defaults ──────────────────────────────────────────────────────────────
+      - key: DEFAULT_LANGUAGE
+        value: fr
+      - key: DEFAULT_CURRENCY
+        value: XOF
+      - key: DEFAULT_TERM_SYSTEM
+        value: TRIMESTRE
+      - key: FEE_GATE_ENABLED_DEFAULT
+        value: "true"
+      - key: NOTIFICATION_RETRY_ATTEMPTS
+        value: "3"
+      - key: NOTIFICATION_RETRY_DELAY_MINUTES
+        value: "15"
+
+      # ── Rate limiting ─────────────────────────────────────────────────────────
+      - key: THROTTLE_TTL
+        value: "60"
+      - key: THROTTLE_LIMIT
+        value: "100"
+
+      # ── Platform owner alerts ─────────────────────────────────────────────────
+      - key: OWNER_EMAIL
+        sync: false
+      - key: OWNER_WHATSAPP
+        sync: false
+
+      # ── Redis / BullMQ (add when provisioned) ─────────────────────────────────
+      - key: REDIS_HOST
+        sync: false
+      - key: REDIS_PORT
+        value: "6379"
+      - key: REDIS_PASSWORD
         sync: false

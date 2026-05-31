@@ -16,6 +16,7 @@ export class AttendanceService {
         create: {
           studentId: entry.studentId,
           classId: dto.classId,
+          institutionId,
           subjectId: dto.subjectId ?? null,
           date,
           status: entry.status,

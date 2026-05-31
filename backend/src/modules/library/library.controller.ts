@@ -1,21 +1,23 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { LibraryService } from './library.service';
 import { CreateLoanDto } from './dto/create-loan.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { Role } from '../../common/enums/role.enum';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 @Controller('library')
 export class LibraryController {
   constructor(private readonly service: LibraryService) {}
 
   @Get()
-  @Roles('ADMIN', 'TEACHER')
+  @Roles(Role.ADMIN, Role.TEACHER)
   list(
-    @Req() req,
+    @CurrentUser() user: any,
     @Query('isReturned') isReturned?: string,
     @Query('search') search?: string,
     @Query('overdue') overdue?: string,
   ) {
-    return this.service.list(req.user.institutionId, {
+    return this.service.list(user.institutionId, {
       isReturned: isReturned !== undefined ? isReturned === 'true' : undefined,
       search,
       overdue: overdue === 'true',
@@ -23,30 +25,30 @@ export class LibraryController {
   }
 
   @Get('student/:studentId')
-  @Roles('ADMIN', 'TEACHER')
-  listByStudent(@Param('studentId') studentId: string, @Req() req) {
-    return this.service.listByStudent(studentId, req.user.institutionId);
+  @Roles(Role.ADMIN, Role.TEACHER)
+  listByStudent(@Param('studentId') studentId: string, @CurrentUser() user: any) {
+    return this.service.listByStudent(studentId, user.institutionId);
   }
 
   @Post()
-  @Roles('ADMIN', 'TEACHER')
-  create(@Body() dto: CreateLoanDto, @Req() req) {
-    return this.service.create(dto, req.user.institutionId, req.user.name, req.user.id);
+  @Roles(Role.ADMIN, Role.TEACHER)
+  create(@Body() dto: CreateLoanDto, @CurrentUser() user: any) {
+    return this.service.create(dto, user.institutionId, user.name, user.sub);
   }
 
   @Patch(':id/return')
-  @Roles('ADMIN', 'TEACHER')
+  @Roles(Role.ADMIN, Role.TEACHER)
   returnLoan(
     @Param('id') id: string,
     @Body('conditionIn') conditionIn: string,
-    @Req() req,
+    @CurrentUser() user: any,
   ) {
-    return this.service.returnLoan(id, req.user.institutionId, conditionIn);
+    return this.service.returnLoan(id, user.institutionId, conditionIn);
   }
 
   @Delete(':id')
-  @Roles('ADMIN')
-  remove(@Param('id') id: string, @Req() req) {
-    return this.service.remove(id, req.user.institutionId);
+  @Roles(Role.ADMIN)
+  remove(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.service.remove(id, user.institutionId);
   }
 }

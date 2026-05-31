@@ -235,6 +235,146 @@ const IllustrationTeacher = () => (
   </svg>
 );
 
+const IllustrationDashboard = () => (
+  <svg viewBox="0 0 560 380" xmlns="http://www.w3.org/2000/svg" className="lp-illus lp-illus--dashboard" aria-hidden="true">
+    {/* browser frame */}
+    <rect width="560" height="380" rx="12" fill="#dde3ee"/>
+    {/* title bar */}
+    <rect width="560" height="36" rx="12" fill="#c9d1e0"/>
+    <rect y="24" width="560" height="12" fill="#c9d1e0"/>
+    <circle cx="18" cy="18" r="5" fill="#ef4444" opacity=".8"/>
+    <circle cx="33" cy="18" r="5" fill="#fbbf24" opacity=".8"/>
+    <circle cx="48" cy="18" r="5" fill="#22c55e" opacity=".8"/>
+    <rect x="64" y="8" width="432" height="20" rx="10" fill="white" opacity=".8"/>
+    <text x="280" y="22" textAnchor="middle" fontSize="8.5" fill="#6b7280">🔒 novabulletin.app/admin/dashboard</text>
+    {/* sidebar */}
+    <rect x="0" y="36" width="56" height="344" fill="#080f28"/>
+    <rect x="10" y="48" width="36" height="36" rx="8" fill="#1E2A78"/>
+    <text x="28" y="72" textAnchor="middle" fontSize="17" fontWeight="900" fill="white">N</text>
+    <line x1="10" y1="92" x2="46" y2="92" stroke="rgba(255,255,255,.12)" strokeWidth="1"/>
+    <rect x="6" y="100" width="44" height="28" rx="7" fill="rgba(59,130,246,.3)"/>
+    <text x="28" y="120" textAnchor="middle" fontSize="15">🏠</text>
+    {['👥','📊','💰','📋','📅','⚙️'].map((ico, i) => (
+      <text key={i} x="28" y={152+i*30} textAnchor="middle" fontSize="13">{ico}</text>
+    ))}
+    {/* main bg */}
+    <rect x="56" y="36" width="504" height="344" fill="#f1f5fb"/>
+    {/* top header */}
+    <rect x="56" y="36" width="504" height="44" fill="white"/>
+    <rect x="56" y="80" width="504" height="1" fill="#e5e7eb"/>
+    <text x="72" y="57" fontSize="13" fontWeight="800" fill="#111827">Tableau de bord</text>
+    <text x="72" y="73" fontSize="8.5" fill="#9ca3af">Collège Saint-Michel, Lomé · Trim. 2 · 2025–2026</text>
+    <circle cx="541" cy="58" r="14" fill="#dbeafe"/>
+    <text x="541" y="63" textAnchor="middle" fontSize="9" fontWeight="800" fill="#1E2A78">AD</text>
+    {/* stats cards */}
+    {[
+      {v:'428',l:'Élèves actifs',c:'#1d4ed8',x:66},
+      {v:'12',l:'Classes',c:'#16a34a',x:192},
+      {v:'96%',l:'Bulletins publiés',c:'#ea580c',x:318},
+      {v:'87%',l:'Frais recouvrés',c:'#7c3aed',x:444},
+    ].map(({v,l,c,x}) => (
+      <g key={x}>
+        <rect x={x} y="88" width="118" height="62" rx="10" fill="white" stroke="#eaecf0" strokeWidth="1"/>
+        <rect x={x} y="88" width="118" height="3" rx="1" fill={c} opacity=".4"/>
+        <text x={x+11} y="108" fontSize="8.5" fill={c}>{l}</text>
+        <text x={x+11} y="139" fontSize="22" fontWeight="900" fill={c}>{v}</text>
+      </g>
+    ))}
+    {/* bar chart card */}
+    <rect x="66" y="160" width="228" height="132" rx="10" fill="white" stroke="#eaecf0" strokeWidth="1"/>
+    <text x="78" y="177" fontSize="9" fontWeight="700" fill="#111827">Moyennes par classe</text>
+    <rect x="66" y="182" width="228" height="1" fill="#f3f4f6"/>
+    {[{c:'6A',h:64,m:'14.2',col:'#3b82f6'},{c:'6B',h:50,m:'13.1',col:'#6366f1'},{c:'5A',h:78,m:'15.8',col:'#8b5cf6'},{c:'5B',h:42,m:'12.4',col:'#06b6d4'},{c:'4A',h:60,m:'14.0',col:'#10b981'}].map(({c,h,m,col},i) => (
+      <g key={i}>
+        <rect x={82+i*38} y={280-h} width="24" height={h} rx="3" fill={col} opacity=".82"/>
+        <text x={94+i*38} y="289" textAnchor="middle" fontSize="7" fill="#6b7280">{c}</text>
+        <text x={94+i*38} y={274-h} textAnchor="middle" fontSize="7" fontWeight="700" fill="#374151">{m}</text>
+      </g>
+    ))}
+    {/* bulletins table card */}
+    <rect x="306" y="160" width="250" height="132" rx="10" fill="white" stroke="#eaecf0" strokeWidth="1"/>
+    <text x="318" y="177" fontSize="9" fontWeight="700" fill="#111827">Bulletins récents</text>
+    <rect x="306" y="182" width="250" height="1" fill="#f3f4f6"/>
+    <text x="318" y="196" fontSize="7.5" fill="#9ca3af" fontWeight="600">ÉLÈVE</text>
+    <text x="452" y="196" fontSize="7.5" fill="#9ca3af" fontWeight="600">MOY.</text>
+    <text x="516" y="196" textAnchor="middle" fontSize="7.5" fill="#9ca3af" fontWeight="600">ÉTAT</text>
+    {[{n:'Kofi Mensah — 6A',m:'15.4',ok:true},{n:'Afi Dossou — 5B',m:'12.1',ok:true},{n:'Edem Kodjo — 4A',m:'17.2',ok:true},{n:'Sena Fiatowo — 3A',m:'14.8',ok:true},{n:'Kwame Asante — 6B',m:'9.3',ok:false}].map(({n,m,ok},i) => (
+      <g key={i}>
+        <rect x="306" y={200+i*20} width="250" height="20" fill={i%2===0?'#f9fafb':'white'}/>
+        <text x="318" y={214+i*20} fontSize="7.5" fill="#374151">{n}</text>
+        <text x="452" y={214+i*20} fontSize="7.5" fontWeight="800" fill={ok?'#1E2A78':'#dc2626'}>{m}/20</text>
+        <circle cx="516" cy={210+i*20} r="5" fill={ok?'#22c55e':'#ef4444'} opacity=".8"/>
+      </g>
+    ))}
+    {/* activity footer */}
+    <rect x="56" y="300" width="504" height="80" fill="white"/>
+    <rect x="56" y="300" width="504" height="1" fill="#e5e7eb"/>
+    <text x="72" y="316" fontSize="9" fontWeight="700" fill="#111827">⚡ Activité récente</text>
+    {[{t:'📄 Bulletin de Kofi Mensah publié — envoyé sur WhatsApp à 245 parents',a:'2 min'},{t:'💰 Paiement 25 000 FCFA enregistré — Afi Dossou · TMoney',a:'15 min'},{t:'✏️ Fiche Mathématiques 6A signée numériquement par Prof. Kodjo Agbé',a:'1h'}].map(({t,a},i) => (
+      <g key={i}>
+        <text x="72" y={332+i*16} fontSize="7.5" fill="#4b5563">{t}</text>
+        <text x="548" y={332+i*16} textAnchor="end" fontSize="7" fill="#9ca3af">{a}</text>
+      </g>
+    ))}
+  </svg>
+);
+
+const IllustrationMobileApp = () => (
+  <svg viewBox="0 0 220 430" xmlns="http://www.w3.org/2000/svg" className="lp-illus lp-illus--mobile" aria-hidden="true">
+    {/* phone shell */}
+    <rect x="8" y="0" width="204" height="430" rx="30" fill="#1f2937" stroke="#374151" strokeWidth="1.5"/>
+    <rect x="14" y="6" width="192" height="418" rx="26" fill="#f8fafc"/>
+    {/* notch */}
+    <rect x="76" y="6" width="68" height="18" rx="9" fill="#1f2937"/>
+    {/* app header */}
+    <rect x="14" y="6" width="192" height="62" rx="26" fill="#1E2A78"/>
+    <rect x="14" y="44" width="192" height="24" fill="#1E2A78"/>
+    <text x="110" y="33" textAnchor="middle" fontSize="9" fontWeight="800" fill="white">📝 Fiche de notes</text>
+    <text x="110" y="50" textAnchor="middle" fontSize="8" fill="#93c5fd">6ème A · Mathématiques · Trim. 2</text>
+    {/* column headers */}
+    <rect x="14" y="68" width="192" height="22" fill="#dde3ee"/>
+    <text x="28" y="83" fontSize="7.5" fontWeight="700" fill="#4b5563">Élève</text>
+    <text x="115" y="83" textAnchor="middle" fontSize="7.5" fontWeight="700" fill="#4b5563">Devoir</text>
+    <text x="150" y="83" textAnchor="middle" fontSize="7.5" fontWeight="700" fill="#4b5563">Compo</text>
+    <text x="188" y="83" textAnchor="middle" fontSize="7.5" fontWeight="700" fill="#1d4ed8">Moy.</text>
+    {/* student rows */}
+    {[{n:'Kofi M.',d:'14',c:'16',m:'15.2',col:'#16a34a'},{n:'Afi D.',d:'12',c:'10',m:'11.2',col:'#d97706'},{n:'Edem K.',d:'18',c:'17',m:'17.6',col:'#16a34a'},{n:'Sena F.',d:'09',c:'11',m:'10.2',col:'#d97706'},{n:'Kwame A.',d:'07',c:'08',m:'7.6',col:'#dc2626'},{n:'Abena T.',d:'15',c:'14',m:'14.6',col:'#16a34a'},{n:'Yao B.',d:'13',c:'12',m:'12.6',col:'#d97706'}].map(({n,d,c,m,col},i) => (
+      <g key={i}>
+        <rect x="14" y={90+i*27} width="192" height="27" fill={i%2===0?'#fff':'#f8fafb'}/>
+        <text x="27" y={108+i*27} fontSize="8" fontWeight="600" fill="#111827">{n}</text>
+        <rect x="101" y={93+i*27} width="26" height="16" rx="4" fill="#f3f4f6" stroke="#e5e7eb" strokeWidth="1"/>
+        <text x="114" y={105+i*27} textAnchor="middle" fontSize="8" fontWeight="700" fill="#374151">{d}</text>
+        <rect x="134" y={93+i*27} width="26" height="16" rx="4" fill="#f3f4f6" stroke="#e5e7eb" strokeWidth="1"/>
+        <text x="147" y={105+i*27} textAnchor="middle" fontSize="8" fontWeight="700" fill="#374151">{c}</text>
+        <rect x="168" y={93+i*27} width="32" height="16" rx="5" fill={col+'22'}/>
+        <text x="184" y={105+i*27} textAnchor="middle" fontSize="8.5" fontWeight="900" fill={col}>{m}</text>
+      </g>
+    ))}
+    {/* stats bar */}
+    <rect x="14" y="279" width="192" height="30" fill="#eef2ff"/>
+    <text x="27" y="292" fontSize="8" fill="#4b5563">Moy. classe :</text>
+    <text x="108" y="292" fontSize="9" fontWeight="900" fill="#1E2A78">12.4 / 20</text>
+    <text x="27" y="303" fontSize="7" fill="#6b7280">28 élèves · 6 matières saisies</text>
+    {/* sign button */}
+    <rect x="22" y="317" width="176" height="32" rx="10" fill="#1E2A78"/>
+    <text x="110" y="337" textAnchor="middle" fontSize="9" fontWeight="800" fill="white">✍️ Signer et soumettre</text>
+    {/* confirmation */}
+    <rect x="22" y="357" width="176" height="22" rx="7" fill="#dcfce7" stroke="#86efac" strokeWidth="1"/>
+    <text x="110" y="372" textAnchor="middle" fontSize="8" fontWeight="700" fill="#16a34a">✅ Soumis · Visible par l'admin</text>
+    {/* bottom nav */}
+    <rect x="14" y="384" width="192" height="40" fill="white"/>
+    <rect x="14" y="384" width="192" height="1" fill="#e5e7eb"/>
+    {[{ico:'🏠',x:44},{ico:'📝',x:86,a:true},{ico:'📊',x:134},{ico:'👤',x:180}].map(({ico,x,a},i) => (
+      <g key={i}>
+        {a && <rect x={x-14} y="387" width="28" height="28" rx="7" fill="#eff6ff"/>}
+        <text x={x} y="408" textAnchor="middle" fontSize="14">{ico}</text>
+      </g>
+    ))}
+    {/* home indicator */}
+    <rect x="78" y="422" width="64" height="3" rx="2" fill="#374151" opacity=".4"/>
+  </svg>
+);
+
 /* ── Data ───────────────────────────────────────────────────────────────── */
 const FEATURES_ROW1 = [
   { icon: '🧮', color: '#dbeafe', iconColor: '#1d4ed8', title: 'Calcul automatique', desc: 'Moyennes, coefficients, rangs calculés instantanément. Zéro formule Excel, zéro erreur.' },
@@ -242,9 +382,9 @@ const FEATURES_ROW1 = [
   { icon: '📱', color: '#fce7f3', iconColor: '#be185d', title: 'WhatsApp & Email', desc: 'Parents informés instantanément par WhatsApp. Distribution automatique dès la publication.' },
 ];
 const FEATURES_ROW2 = [
+  { icon: '📝', color: '#fff7ed', iconColor: '#ea580c', title: 'Fiches de notes numériques', desc: 'Chaque enseignant dispose d\'une fiche numérique sur son téléphone. Saisie mobile, calcul auto et signature électronique. Zéro papier, zéro perte.' },
   { icon: '💰', color: '#fef3c7', iconColor: '#d97706', title: 'Frais scolaires', desc: 'Gestion intégrée des cotisations. Blocage automatique des bulletins si frais impayés.' },
   { icon: '📊', color: '#ede9fe', iconColor: '#7c3aed', title: 'Analytics temps réel', desc: 'Taux de recouvrement, progression par classe, bulletins publiés vs en attente — en direct.' },
-  { icon: '☁️', color: '#f0fdf4', iconColor: '#15803d', title: 'Cloud sécurisé', desc: 'Données sauvegardées en temps réel. Accès depuis n\'importe quel appareil, n\'importe où.' },
 ];
 
 const LMS_FEATURES = [
@@ -264,22 +404,38 @@ const STEPS = [
 ];
 
 const ROLES = [
-  { icon: '🏫', title: 'Administrateur', color: '#1E2A78', desc: 'Vision complète de votre établissement.', features: ['Tableau de bord analytique complet','Gestion classes, matières, enseignants','Création et gestion des comptes','Paramétrage des frais scolaires','Personnalisation des bulletins','Publication en 1 clic','Suivi du taux de recouvrement','Statistiques par classe et trimestre'] },
-  { icon: '👨‍🏫', title: 'Enseignant', color: '#0369a1', desc: 'Gérez vos notes et cours depuis votre téléphone.', features: ['Saisie des notes sur mobile','Calcul automatique des moyennes','Appréciations par élève','Signature numérique des fiches','Dépôt de cours et documents','Publication de devoirs et quiz','Gestion emploi du temps','Correction examens blancs'] },
+  { icon: '🏫', title: 'Administrateur', color: '#1E2A78', desc: 'Vision complète de votre établissement.', features: ['Tableau de bord analytique complet','Gestion classes, matières, enseignants','Bulletins PDF + publication en 1 clic','Paramétrage des frais scolaires','Registre présences, santé, bibliothèque','Inventaire, alumni, examens nationaux','Documents officiels & profils du personnel','Exportation CSV de toutes les données'] },
+  { icon: '👨‍🏫', title: 'Enseignant', color: '#0369a1', desc: 'Votre fiche de notes numérique toujours dans votre poche.', features: ['📝 Fiche numérique sur mobile','Saisie des notes en temps réel','Calcul automatique des moyennes','Appréciations par élève','Signature électronique de la fiche','Dépôt de cours et documents','Publication de devoirs et quiz','Correction examens blancs'] },
   { icon: '💼', title: 'Économe', color: '#d97706', desc: 'Gérez les frais sans paperasse.', features: ['Enregistrement paiements (TMoney, Flooz, cash)','Vue impayés en temps réel','Génération de reçus PDF','Suivi par cotisation et période','Rapport financier exportable','Statistiques de recouvrement','Bulletins retenus automatiquement','Accès multi-établissement'] },
   { icon: '👨‍👩‍👧', title: 'Parent', color: '#15803d', desc: 'Suivez la scolarité de vos enfants.', features: ['Bulletins sur WhatsApp & Email','Portail parent 24h/24','Progression trimestre par trimestre','Historique complet des bulletins','Paiement frais en ligne','Consulter cours et devoirs LMS','Annonces de l\'école','Notifications instantanées'] },
 ];
 
 const TESTIMONIALS = [
-  { name: 'Kodjo Agbenyéga', role: 'Directeur', school: 'Collège Sainte-Marie, Lomé', text: 'Avant NovaBulletin, nous passions 5 jours à préparer les bulletins chaque trimestre. Maintenant c\'est 30 minutes. Les parents adorent recevoir les bulletins sur WhatsApp. C\'est une révolution pour notre école.', initials: 'KA', color: '#1E2A78' },
-  { name: 'Mme Afi Dossou', role: 'Directrice', school: 'École Primaire Les Colibris, Lomé', text: 'Le système de blocage automatique pour frais impayés a transformé notre recouvrement. Nous avons récupéré 40% de créances supplémentaires en un seul trimestre. Je recommande à toutes les écoles.', initials: 'AD', color: '#16a34a' },
-  { name: 'Prof. Edem Kodjo', role: 'Enseignant de Mathématiques', school: 'Lycée Technique de Kara', text: 'Je saisie mes notes depuis mon téléphone entre deux cours. C\'est rapide, intuitif. La signature numérique des fiches est une fonctionnalité que j\'adore. Je ne reviendrai jamais à Excel.', initials: 'EK', color: '#7c3aed' },
-  { name: 'Sena Fiatowo', role: 'Parent d\'élève', school: 'Lomé, Togo', text: 'Recevoir le bulletin de ma fille sur WhatsApp le jour même, c\'est fantastique ! Je peux suivre sa progression en temps réel depuis mon téléphone. Merci NovaBulletin.', initials: 'SF', color: '#d97706' },
-  { name: 'M. Kwame Asante', role: 'Proviseur', school: 'Lycée International de Cotonou', text: 'La gestion des frais scolaires intégrée aux bulletins est exactement ce dont nous avions besoin. Tout est centralisé, l\'économe et l\'admin voient les mêmes informations en temps réel.', initials: 'KW', color: '#be185d' },
+  { name: 'Kodjo Agbenyéga', role: 'Directeur', school: 'Collège Sainte-Marie, Lomé', text: 'Avant NovaBulletin, nous passions 5 jours à préparer les bulletins chaque trimestre. Maintenant c\'est 30 minutes. Les parents adorent recevoir les bulletins sur WhatsApp. C\'est une révolution pour notre école.', initials: 'KA', color: '#1E2A78', photo: 'https://i.pravatar.cc/100?img=68' },
+  { name: 'Mme Afi Dossou', role: 'Directrice', school: 'École Primaire Les Colibris, Lomé', text: 'Le système de blocage automatique pour frais impayés a transformé notre recouvrement. Nous avons récupéré 40% de créances supplémentaires en un seul trimestre. Je recommande à toutes les écoles.', initials: 'AD', color: '#16a34a', photo: 'https://i.pravatar.cc/100?img=47' },
+  { name: 'Prof. Edem Kodjo', role: 'Enseignant de Mathématiques', school: 'Lycée Technique de Kara', text: 'Je saisie mes notes depuis mon téléphone entre deux cours. C\'est rapide, intuitif. La signature numérique des fiches est une fonctionnalité que j\'adore. Je ne reviendrai jamais à Excel.', initials: 'EK', color: '#7c3aed', photo: 'https://i.pravatar.cc/100?img=12' },
+  { name: 'Sena Fiatowo', role: 'Parent d\'élève', school: 'Lomé, Togo', text: 'Recevoir le bulletin de ma fille sur WhatsApp le jour même, c\'est fantastique ! Je peux suivre sa progression en temps réel depuis mon téléphone. Merci NovaBulletin.', initials: 'SF', color: '#d97706', photo: 'https://i.pravatar.cc/100?img=44' },
+  { name: 'M. Kwame Asante', role: 'Proviseur', school: 'Lycée International de Cotonou', text: 'La gestion des frais scolaires intégrée aux bulletins est exactement ce dont nous avions besoin. Tout est centralisé, l\'économe et l\'admin voient les mêmes informations en temps réel.', initials: 'KW', color: '#be185d', photo: 'https://i.pravatar.cc/100?img=52' },
+];
+
+const DATABASE_MODULES = [
+  { icon: '📋', color: '#dbeafe', iconColor: '#1d4ed8', title: 'Présences quotidiennes', desc: 'Appel journalier par classe et matière. Suivi des absences, retards et exclusions par élève.' },
+  { icon: '🚨', color: '#fee2e2', iconColor: '#dc2626', title: 'Dossiers disciplinaires', desc: 'Avertissements, suspensions, exclusions. Historique complet avec suivi des sanctions.' },
+  { icon: '🏥', color: '#f0fdf4', iconColor: '#16a34a', title: 'Infirmerie & Santé', desc: 'Registre des visites, accidents, vaccinations et évacuations — avec compte rendu médical.' },
+  { icon: '📖', color: '#fef9c3', iconColor: '#d97706', title: 'Bibliothèque', desc: 'Prêts de livres et matériels. Relances automatiques pour les retours en retard.' },
+  { icon: '🏷️', color: '#ede9fe', iconColor: '#7c3aed', title: 'Inventaire scolaire', desc: 'Mobiliers, équipements, matériel informatique et sportif. État, valeur, emplacement.' },
+  { icon: '🎓', color: '#ecfdf5', iconColor: '#059669', title: 'Examens nationaux', desc: 'Résultats CEPD, BEPC, BAC, BTS, CAP. Taux de réussite par session, série, année.' },
+  { icon: '🏫', color: '#e0f2fe', iconColor: '#0369a1', title: 'Anciens élèves (Alumni)', desc: 'Base des diplômés avec filière choisie, employeur, contacts et numéro de diplôme.' },
+  { icon: '🔄', color: '#fce7f3', iconColor: '#be185d', title: 'Transferts d\'élèves', desc: 'Entrées et sorties. Direction, motif, école d\'origine ou de destination, justificatif.' },
+  { icon: '📅', color: '#fff7ed', iconColor: '#ea580c', title: 'Calendrier scolaire', desc: 'Vacances, examens, réunions, événements sportifs et culturels. Vue partagée.' },
+  { icon: '📁', color: '#f1f5f9', iconColor: '#475569', title: 'Documents officiels', desc: 'Circulaires, contrats, rapports, emplois du temps. Archivage numérique sécurisé.' },
+  { icon: '👤', color: '#f5f3ff', iconColor: '#6d28d9', title: 'Profils du personnel', desc: 'Dossiers RH complets : diplômes, contrat, expérience, contacts d\'urgence.' },
 ];
 
 const FAQS = [
   { q: 'Est-ce que je dois payer pour essayer ?', a: 'Non. Utilisez NovaBulletin pendant tout un trimestre complet. Si vous êtes satisfait à la fin du trimestre, vous payez. Sinon, vous revenez à votre ancien système. Aucun engagement, aucune carte bancaire requise dès le départ.' },
+  { q: 'Comment fonctionnent les fiches numériques des enseignants ?', a: 'Chaque enseignant a accès à sa propre fiche de notes numérique depuis son téléphone. Il saisit les notes (interrogations, devoirs, compositions), les moyennes se calculent automatiquement, et il signe électroniquement la fiche. L\'administration voit tout en temps réel — aucune retranscription manuelle, aucune perte de fiche papier.' },
+  { q: 'NovaBulletin remplace-t-il tous les registres papier ?', a: 'Oui. NovaBulletin centralise 11 registres : présences, santé, bibliothèque, inventaire, anciens élèves, transferts, dossiers disciplinaires, examens nationaux, calendrier, documents officiels et profils du personnel. Chaque donnée est sécurisée, consultable instantanément et exportable en CSV.' },
   { q: 'Combien de temps faut-il pour configurer l\'école ?', a: 'Environ 30 minutes pour une école de taille moyenne. Vous pouvez importer vos élèves depuis un fichier Excel ou CSV en quelques clics. Notre équipe vous accompagne à chaque étape via WhatsApp.' },
   { q: 'Les enseignants doivent-ils être formés ?', a: 'L\'interface est conçue pour être intuitive sur mobile. La plupart des enseignants maîtrisent la plateforme en moins de 10 minutes. Nous fournissons un guide de démarrage rapide et un support WhatsApp dédié.' },
   { q: 'Que se passe-t-il si un parent n\'utilise pas WhatsApp ?', a: 'NovaBulletin envoie aussi les bulletins par email. Si le parent n\'a ni WhatsApp ni email, l\'admin peut imprimer le bulletin PDF directement depuis la plateforme, comme avant.' },
@@ -288,13 +444,16 @@ const FAQS = [
 ];
 
 const COMPARISON = [
+  { feature: 'Fiches de notes numériques (mobile)', excel: '❌ Papier + saisie double', autres: '⚠️ PC uniquement', nova: '✅ Mobile + signature élec.' },
   { feature: 'Calcul automatique des moyennes', excel: '❌ Formules manuelles', autres: '⚠️ Partiel', nova: '✅ 100% automatique' },
   { feature: 'Bulletins PDF avec logo école', excel: '❌ Mise en page manuelle', autres: '✅ Oui', nova: '✅ En 1 clic' },
   { feature: 'Envoi WhatsApp aux parents', excel: '❌ Non', autres: '❌ Non', nova: '✅ Automatique' },
   { feature: 'Gestion frais scolaires intégrée', excel: '❌ Fichier séparé', autres: '⚠️ Module payant', nova: '✅ Intégré + blocage auto' },
-  { feature: 'Portail parent mobile', excel: '❌ Non', autres: '⚠️ Basique', nova: '✅ Application complète' },
+  { feature: 'Registre des présences numérique', excel: '❌ Cahier papier', autres: '⚠️ Optionnel', nova: '✅ Par classe & matière' },
+  { feature: 'Santé, bibliothèque, inventaire', excel: '❌ Non', autres: '❌ Non', nova: '✅ 11 modules intégrés' },
+  { feature: 'Anciens élèves & transferts', excel: '❌ Non', autres: '❌ Non', nova: '✅ Inclus' },
+  { feature: 'Résultats examens nationaux', excel: '❌ Fichier séparé', autres: '❌ Non', nova: '✅ CEPD, BEPC, BAC, BTS' },
   { feature: 'LMS (cours, devoirs, quiz)', excel: '❌ Non', autres: '⚠️ Option payante', nova: '✅ Inclus' },
-  { feature: 'Examens blancs & palmarès', excel: '❌ Non', autres: '❌ Non', nova: '✅ Inclus' },
   { feature: 'Analytics tableau de bord', excel: '⚠️ Tableaux manuels', autres: '✅ Oui', nova: '✅ Temps réel' },
   { feature: 'Adapté Afrique francophone', excel: '❌ Non', autres: '❌ Non', nova: '✅ Conçu pour Togo+' },
   { feature: 'Prix', excel: '~0 (heures perdues)', autres: '50k–200k FCFA/mois', nova: '✅ Payez si satisfait' },
@@ -372,7 +531,7 @@ function TestimonialCarousel() {
           <div className="lp-carousel__stars">{'★'.repeat(5)}</div>
           <p className="lp-carousel__text">"{t.text}"</p>
           <div className="lp-carousel__author">
-            <div className="lp-carousel__avatar" style={{background:`linear-gradient(135deg,${t.color},${t.color}99)`}}>{t.initials}</div>
+            <img src={t.photo} alt={t.name} className="lp-carousel__avatar lp-carousel__avatar--photo" onError={e=>{e.currentTarget.style.background=`linear-gradient(135deg,${t.color},${t.color}99)`;e.currentTarget.alt=t.initials}}/>
             <div>
               <p className="lp-carousel__name">{t.name}</p>
               <p className="lp-carousel__role">{t.role} — {t.school}</p>
@@ -397,19 +556,29 @@ function TestimonialCarousel() {
 export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const [activeRole, setActiveRole] = useState(0);
   const { ref: featRef, inView: featInView } = useInView();
   const { ref: lmsRef, inView: lmsInView } = useInView();
 
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 60);
-    window.addEventListener('scroll', fn);
+    const fn = () => {
+      const y = window.scrollY;
+      setScrolled(y > 60);
+      const d = document.documentElement;
+      setScrollProgress(Math.min(100, Math.round((y / (d.scrollHeight - d.clientHeight)) * 100)));
+    };
+    window.addEventListener('scroll', fn, {passive: true});
     return () => window.removeEventListener('scroll', fn);
   }, []);
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
   return (
     <div className="lp">
+      <div className="lp-progress" aria-hidden="true" style={{width:`${scrollProgress}%`}}/>
+      {scrolled && (
+        <button type="button" className="lp-back-to-top" onClick={() => window.scrollTo({top:0,behavior:'smooth'})} aria-label="Retour en haut">↑</button>
+      )}
       <Helmet>
         <html lang="fr" />
         <title>NovaBulletin — Logiciel de gestion scolaire pour les écoles d'Afrique</title>
@@ -432,7 +601,7 @@ export default function LandingPage() {
             <span>NovaBulletin</span>
           </Link>
           <ul className={`lp-nav__links${menuOpen ? ' lp-nav__links--open' : ''}`}>
-            {[['#features','Fonctionnalités'],['#lms','LMS'],['#how','Comment ça marche'],['#roles','Pour qui'],['#comparison','Comparaison'],['#faq','FAQ']].map(([h,l]) => (
+            {[['#features','Fonctionnalités'],['#lms','LMS'],['#database','Base de données'],['#how','Démarrage'],['#roles','Pour qui'],['#comparison','Comparaison'],['#faq','FAQ']].map(([h,l]) => (
               <li key={h}><a href={h} onClick={() => setMenuOpen(false)}>{l}</a></li>
             ))}
           </ul>
@@ -457,20 +626,42 @@ export default function LandingPage() {
             <div className="lp-hero__pill"><span className="lp-pill-dot" />🌍 Conçu pour les écoles d'Afrique francophone</div>
             <h1>Fini Excel.<br/><span className="lp-grad-text">Le bulletin scolaire entre dans le 21e siècle.</span></h1>
             <p className="lp-hero__desc">
-              NovaBulletin calcule les moyennes <strong>automatiquement</strong>, génère les bulletins PDF en <strong>1 clic</strong> et les envoie aux parents directement sur <strong>WhatsApp</strong>. LMS intégré pour les cours, devoirs et quiz.<br/><br/>
-              Ce qui vous prenait <span className="lp-strike">3 à 5 jours</span> ne prend désormais que <strong style={{color:'#FFB547'}}>30 minutes.</strong>
+              NovaBulletin calcule les moyennes <strong>automatiquement</strong>, génère les bulletins PDF en <strong>1 clic</strong> et les envoie aux parents sur <strong>WhatsApp</strong>. LMS intégré pour les cours, devoirs et quiz.<br/><br/>
+              Et bien plus : présences, santé, bibliothèque, inventaire, examens nationaux, anciens élèves — <strong style={{color:'#FFB547'}}>NovaBulletin est la base de données complète de votre école.</strong>
             </p>
             <div className="lp-hero__btns">
               <Link to="/register-school" className="lp-btn lp-btn--cta">Essayer gratuitement ce trimestre →</Link>
               <a href="#how" className="lp-btn lp-btn--ghost-white">▶ Comment ça marche</a>
             </div>
             <div className="lp-hero__badges">
-              <span>✅ 0 engagement</span><span>🤝 Payez si satisfait</span><span>📱 Mobile first</span>
+              <span>✅ 0 engagement</span><span>🤝 Payez si satisfait</span><span>📱 Mobile first</span><span>📝 Fiches 100% numériques</span>
+            </div>
+            <div className="lp-store-badges">
+              <div className="lp-store-badge">
+                <span className="lp-store-badge__soon">Bientôt</span>
+                <svg className="lp-store-badge__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M3 20.5v-17A1.5 1.5 0 0 1 5.14 2.08l13.5 8a1.5 1.5 0 0 1 0 2.84l-13.5 8A1.5 1.5 0 0 1 3 19.5z"/>
+                </svg>
+                <div>
+                  <span className="lp-store-badge__sub">Disponible sur</span>
+                  <span className="lp-store-badge__name">Google Play</span>
+                </div>
+              </div>
+              <div className="lp-store-badge">
+                <span className="lp-store-badge__soon">Bientôt</span>
+                <svg className="lp-store-badge__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.37 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                </svg>
+                <div>
+                  <span className="lp-store-badge__sub">Télécharger sur</span>
+                  <span className="lp-store-badge__name">App Store</span>
+                </div>
+              </div>
             </div>
           </div>
           <div className="lp-hero__right">
             <div className="lp-hero__illus-wrap">
-              <IllustrationHero />
+              <IllustrationDashboard />
               <div className="lp-float-card lp-float-card--1">
                 <span>📱</span>
                 <div><strong>WhatsApp envoyé !</strong><p>245 parents notifiés</p></div>
@@ -496,8 +687,8 @@ export default function LandingPage() {
         <div className="lp-container lp-stats__grid">
           <AnimStat value="3 jours" label="de travail manuel éliminés" sub="chaque trimestre" />
           <AnimStat value="30 min" label="pour préparer un trimestre" sub="contre 3-5 jours avant" />
+          <AnimStat value="11" label="modules base de données" sub="présences, santé, alumni, inventaire…" />
           <AnimStat value="100%" label="des parents informés" sub="le jour même de la publication" />
-          <AnimStat value="0" label="erreur de calcul" sub="grâce à l'automatisation" />
         </div>
       </section>
 
@@ -514,10 +705,12 @@ export default function LandingPage() {
               {[
                 ['😰','Saisie manuelle pendant 3 à 5 jours','Nuits et week-ends sacrifiés pour préparer les bulletins'],
                 ['💥','Erreurs dans les formules','Une formule cassée passe inaperçue jusqu\'à l\'impression'],
+                ['📝','Fiches papier perdues ou illisibles','Les fiches de notes des profs égarées, retranscrites à la main, sources d\'erreurs'],
                 ['📭','Parents jamais informés à temps','Bulletins papier perdus, distribution tardive'],
                 ['💸','Frais non reliés aux bulletins','Impossible de bloquer automatiquement les mauvais payeurs'],
                 ['🗂️','Fichiers perdus ou corrompus','Excel local sans sauvegarde — catastrophe en cas de panne'],
                 ['📵','Aucun portail pour les parents','Pas de visibilité sur la scolarité de leur enfant'],
+                ['🗃️','Registres papier éparpillés','Présences, santé, prêts de livres, inventaire — introuvables en cas de besoin'],
               ].map(([icon, title, desc]) => (
                 <div className="lp-pain-item" key={title}>
                   <div className="lp-pain-item__icon">{icon}</div>
@@ -528,12 +721,12 @@ export default function LandingPage() {
             <div className="lp-problem__vs">
               <div className="lp-vs-bad">
                 <h4>😩 Avec Excel</h4>
-                {['3–5 jours par trimestre','Erreurs silencieuses','Bulletins papier','Frais séparés','Fichiers locaux perdus','0 info pour les parents'].map(t => <div key={t} className="lp-vs-row lp-vs-row--bad">❌ {t}</div>)}
+                {['3–5 jours par trimestre','Fiches papier perdues/illisibles','Erreurs silencieuses','Bulletins papier','Frais séparés','Fichiers locaux perdus','0 info pour les parents','Registres papier éparpillés'].map(t => <div key={t} className="lp-vs-row lp-vs-row--bad">❌ {t}</div>)}
               </div>
               <div className="lp-vs-divider"><span>VS</span></div>
               <div className="lp-vs-good">
                 <h4>✨ Avec NovaBulletin</h4>
-                {['30 minutes automatiques','0 erreur de calcul','PDF + WhatsApp auto','Frais intégrés + blocage','Cloud sécurisé 24/7','Parents informés instantanément'].map(t => <div key={t} className="lp-vs-row lp-vs-row--good">✅ {t}</div>)}
+                {['30 minutes automatiques','Fiches numériques sur mobile','0 erreur de calcul','PDF + WhatsApp auto','Frais intégrés + blocage','Cloud sécurisé 24/7','Parents informés instantanément','Base de données : 11 modules'].map(t => <div key={t} className="lp-vs-row lp-vs-row--good">✅ {t}</div>)}
               </div>
             </div>
           </div>
@@ -550,12 +743,42 @@ export default function LandingPage() {
           </div>
           <div className={`lp-feat-grid${featInView ? ' animated' : ''}`}>
             {[...FEATURES_ROW1, ...FEATURES_ROW2].map((f, i) => (
-              <div className="lp-feat-card" key={f.title} style={{'--delay': `${i * 80}ms`}}>
+              <div className="lp-feat-card" key={f.title} style={{'--delay': `${i * 80}ms`, '--accent': f.iconColor, '--accent-bg': f.color}}>
                 <div className="lp-feat-icon" style={{background: f.color, color: f.iconColor}}>{f.icon}</div>
                 <h3>{f.title}</h3>
                 <p>{f.desc}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── FICHE CALLOUT ───────────────────────────────────────────── */}
+      <section className="lp-fiche">
+        <div className="lp-container lp-fiche__inner">
+          <div className="lp-fiche__badge">📝</div>
+          <div className="lp-fiche__body">
+            <h3>Chaque enseignant a sa fiche numérique — sur son téléphone</h3>
+            <p>
+              Fini les fiches papier perdues, illisibles ou retranscrites à la main.
+              Sur NovaBulletin, <strong>chaque professeur saisit ses notes directement depuis son mobile</strong>,
+              les moyennes se calculent seules et il signe électroniquement sa fiche.
+              L'administration voit tout en temps réel.
+            </p>
+            <div className="lp-fiche__points">
+              {[
+                ['✏️','Saisie des notes sur mobile, n\'importe où'],
+                ['🔢','Calcul automatique des moyennes & coefficients'],
+                ['✍️','Signature numérique de la fiche de notes'],
+                ['📡','Synchronisation instantanée avec le tableau de bord admin'],
+                ['🔒','Chaque prof voit uniquement ses classes et matières'],
+              ].map(([icon, text]) => (
+                <span key={text} className="lp-fiche__point"><span>{icon}</span>{text}</span>
+              ))}
+            </div>
+          </div>
+          <div className="lp-fiche__visual">
+            <IllustrationMobileApp />
           </div>
         </div>
       </section>
@@ -588,6 +811,41 @@ export default function LandingPage() {
             <div className="lp-lms__teacher">
               <IllustrationTeacher />
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── DATABASE ────────────────────────────────────────────────── */}
+      <section className="lp-database" id="database">
+        <div className="lp-container">
+          <div className="lp-section-head">
+            <span className="lp-tag">🗄️ Base de Données Scolaire</span>
+            <h2>NovaBulletin, c'est aussi <span className="lp-grad-text">la mémoire de votre école</span></h2>
+            <p>Centralisez tous les registres de votre établissement. Fini les cahiers perdus, les classeurs éparpillés et les données inaccessibles.</p>
+          </div>
+          <div className="lp-db-banner">
+            <div className="lp-db-banner__icon">🗄️</div>
+            <div className="lp-db-banner__text">
+              <strong>Pour les écoles qui n'ont pas de base de données</strong>
+              <p>Présences · Santé · Bibliothèque · Inventaire · Examens nationaux · Alumni · Transferts · Dossiers disciplinaires · Calendrier · Documents · Personnel</p>
+            </div>
+            <div className="lp-db-banner__stat">
+              <strong>11</strong>
+              <span>modules de gestion des données</span>
+            </div>
+          </div>
+          <div className="lp-db-grid">
+            {DATABASE_MODULES.map((m, i) => (
+              <div className="lp-db-card" key={m.title} style={{'--delay': `${i * 55}ms`}}>
+                <div className="lp-db-card__icon" style={{background: m.color, color: m.iconColor}}>{m.icon}</div>
+                <h3>{m.title}</h3>
+                <p>{m.desc}</p>
+              </div>
+            ))}
+          </div>
+          <div className="lp-db-cta">
+            <p>Toutes ces données sont <strong>exportables en CSV</strong>, consultables instantanément et isolées par école — chaque établissement voit uniquement ses propres données.</p>
+            <Link to="/register-school" className="lp-btn lp-btn--primary">Centraliser les données de mon école →</Link>
           </div>
         </div>
       </section>
@@ -645,6 +903,56 @@ export default function LandingPage() {
               <div className="lp-wa-badge__dot" />
               <span>100% des parents informés</span>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── GALLERY ─────────────────────────────────────────────────── */}
+      <section className="lp-gallery">
+        <div className="lp-container">
+          <div className="lp-section-head">
+            <span className="lp-tag">📸 En action</span>
+            <h2>NovaBulletin dans les établissements</h2>
+            <p>Des écoles du Togo, du Bénin et de Côte d'Ivoire font confiance à NovaBulletin chaque trimestre.</p>
+          </div>
+          <div className="lp-gallery__grid">
+            <div className="lp-gallery__item lp-gallery__item--tall">
+              <img src="https://picsum.photos/seed/nb-class-hall/640/820" alt="Enseignant avec ses élèves en classe" className="lp-gallery__img" loading="lazy"/>
+              <div className="lp-gallery__overlay">
+                <div className="lp-gallery__badge">🏫 En classe</div>
+                <p className="lp-gallery__label">Notes saisies en temps réel sur mobile</p>
+              </div>
+            </div>
+            <div className="lp-gallery__col">
+              <div className="lp-gallery__item">
+                <img src="https://picsum.photos/seed/nb-teacher-phone/640/390" alt="Professeur utilisant NovaBulletin sur son téléphone" className="lp-gallery__img" loading="lazy"/>
+                <div className="lp-gallery__overlay">
+                  <div className="lp-gallery__badge">📝 Fiche numérique</div>
+                  <p className="lp-gallery__label">Saisie et signature sur mobile</p>
+                </div>
+              </div>
+              <div className="lp-gallery__item">
+                <img src="https://picsum.photos/seed/nb-parent-whatsapp/640/390" alt="Parent recevant le bulletin sur WhatsApp" className="lp-gallery__img" loading="lazy"/>
+                <div className="lp-gallery__overlay">
+                  <div className="lp-gallery__badge">📱 WhatsApp</div>
+                  <p className="lp-gallery__label">Bulletin reçu le jour même</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="lp-gallery__strip">
+            {[
+              {seed:'nb-strip-a',label:'Administration simplifiée'},
+              {seed:'nb-strip-b',label:'Bulletins PDF professionnels'},
+              {seed:'nb-strip-c',label:'Suivi des présences'},
+              {seed:'nb-strip-d',label:'Gestion des frais'},
+              {seed:'nb-strip-e',label:'Base de données scolaire'},
+            ].map(({seed,label}) => (
+              <div className="lp-gallery__strip-item" key={seed}>
+                <img src={`https://picsum.photos/seed/${seed}/280/180`} alt={label} className="lp-gallery__strip-img" loading="lazy"/>
+                <span>{label}</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -755,7 +1063,7 @@ export default function LandingPage() {
               <strong> Aucun frais. Aucune carte bancaire requise.</strong>
             </p>
             <div className="lp-price-includes">
-              {['✅ Accès complet à toutes les fonctionnalités','✅ Élèves et classes illimités','✅ Bulletins PDF avec logo de votre école','✅ Envoi WhatsApp & Email automatique','✅ Gestion complète des frais scolaires','✅ LMS complet (cours, devoirs, quiz)','✅ Support WhatsApp prioritaire inclus','✅ Formation et guide de démarrage offerts'].map(i => (
+              {['✅ Accès complet à toutes les fonctionnalités','✅ Élèves et classes illimités','✅ Bulletins PDF avec logo de votre école','✅ Envoi WhatsApp & Email automatique','✅ Gestion complète des frais scolaires','✅ LMS complet (cours, devoirs, quiz)','✅ Base de données : 11 modules de registres','✅ Export CSV de toutes vos données','✅ Support WhatsApp prioritaire inclus','✅ Formation et guide de démarrage offerts'].map(i => (
                 <div key={i} className="lp-price-include">{i}</div>
               ))}
             </div>
@@ -810,11 +1118,33 @@ export default function LandingPage() {
             <p>Le logiciel de gestion scolaire moderne conçu pour les écoles d'Afrique francophone.</p>
             <p className="lp-footer__tagline">Fait avec ❤️ au Togo</p>
             <a href="mailto:felixatoma2@gmail.com" className="lp-footer__email">📧 felixatoma2@gmail.com</a>
+            <div className="lp-store-badges lp-store-badges--footer">
+              <div className="lp-store-badge lp-store-badge--sm">
+                <span className="lp-store-badge__soon">Bientôt</span>
+                <svg className="lp-store-badge__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M3 20.5v-17A1.5 1.5 0 0 1 5.14 2.08l13.5 8a1.5 1.5 0 0 1 0 2.84l-13.5 8A1.5 1.5 0 0 1 3 19.5z"/>
+                </svg>
+                <div>
+                  <span className="lp-store-badge__sub">Disponible sur</span>
+                  <span className="lp-store-badge__name">Google Play</span>
+                </div>
+              </div>
+              <div className="lp-store-badge lp-store-badge--sm">
+                <span className="lp-store-badge__soon">Bientôt</span>
+                <svg className="lp-store-badge__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.37 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                </svg>
+                <div>
+                  <span className="lp-store-badge__sub">Télécharger sur</span>
+                  <span className="lp-store-badge__name">App Store</span>
+                </div>
+              </div>
+            </div>
           </div>
           <div className="lp-footer__cols">
             <div>
               <h4>Produit</h4>
-              {[['#features','Fonctionnalités'],['#lms','Module LMS'],['#how','Comment ça marche'],['#roles','Pour qui'],['#comparison','Comparaison'],['#pricing','Tarif']].map(([h,l]) => <a key={h} href={h}>{l}</a>)}
+              {[['#features','Fonctionnalités'],['#lms','Module LMS'],['#database','Base de données'],['#how','Comment ça marche'],['#roles','Pour qui'],['#comparison','Comparaison'],['#pricing','Tarif']].map(([h,l]) => <a key={h} href={h}>{l}</a>)}
             </div>
             <div>
               <h4>Démarrer</h4>

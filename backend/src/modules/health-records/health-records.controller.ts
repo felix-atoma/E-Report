@@ -1,48 +1,49 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { HealthRecordsService } from './health-records.service';
 import { CreateHealthRecordDto } from './dto/create-health-record.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { HealthVisitType } from '@prisma/client';
+import { Role } from '../../common/enums/role.enum';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 @Controller('health-records')
 export class HealthRecordsController {
   constructor(private readonly service: HealthRecordsService) {}
 
   @Get()
-  @Roles('ADMIN', 'TEACHER')
+  @Roles(Role.ADMIN, Role.TEACHER)
   list(
-    @Req() req,
+    @CurrentUser() user: any,
     @Query('search') search?: string,
-    @Query('type') type?: HealthVisitType,
+    @Query('type') type?: string,
   ) {
-    return this.service.list(req.user.institutionId, { search, type });
+    return this.service.list(user.institutionId, { search, type: type as any });
   }
 
   @Get('student/:studentId')
-  @Roles('ADMIN', 'TEACHER')
-  listByStudent(@Param('studentId') studentId: string, @Req() req) {
-    return this.service.listByStudent(studentId, req.user.institutionId);
+  @Roles(Role.ADMIN, Role.TEACHER)
+  listByStudent(@Param('studentId') studentId: string, @CurrentUser() user: any) {
+    return this.service.listByStudent(studentId, user.institutionId);
   }
 
   @Post()
-  @Roles('ADMIN', 'TEACHER')
-  create(@Body() dto: CreateHealthRecordDto, @Req() req) {
-    return this.service.create(dto, req.user.institutionId, req.user.name, req.user.id);
+  @Roles(Role.ADMIN, Role.TEACHER)
+  create(@Body() dto: CreateHealthRecordDto, @CurrentUser() user: any) {
+    return this.service.create(dto, user.institutionId, user.name, user.sub);
   }
 
   @Patch(':id')
-  @Roles('ADMIN', 'TEACHER')
+  @Roles(Role.ADMIN, Role.TEACHER)
   update(
     @Param('id') id: string,
     @Body() dto: Partial<CreateHealthRecordDto>,
-    @Req() req,
+    @CurrentUser() user: any,
   ) {
-    return this.service.update(id, dto, req.user.institutionId);
+    return this.service.update(id, dto, user.institutionId);
   }
 
   @Delete(':id')
-  @Roles('ADMIN')
-  remove(@Param('id') id: string, @Req() req) {
-    return this.service.remove(id, req.user.institutionId);
+  @Roles(Role.ADMIN)
+  remove(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.service.remove(id, user.institutionId);
   }
 }

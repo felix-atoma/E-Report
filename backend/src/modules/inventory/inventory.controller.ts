@@ -1,51 +1,52 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 import { CreateInventoryItemDto } from './dto/create-inventory-item.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { InventoryCategory, InventoryCondition } from '@prisma/client';
+import { Role } from '../../common/enums/role.enum';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 @Controller('inventory')
 export class InventoryController {
   constructor(private readonly service: InventoryService) {}
 
   @Get()
-  @Roles('ADMIN', 'TEACHER')
+  @Roles(Role.ADMIN, Role.TEACHER)
   list(
-    @Req() req,
-    @Query('category') category?: InventoryCategory,
-    @Query('condition') condition?: InventoryCondition,
+    @CurrentUser() user: any,
+    @Query('category') category?: string,
+    @Query('condition') condition?: string,
     @Query('search') search?: string,
     @Query('isActive') isActive?: string,
   ) {
-    return this.service.list(req.user.institutionId, {
-      category,
-      condition,
+    return this.service.list(user.institutionId, {
+      category: category as any,
+      condition: condition as any,
       search,
       isActive: isActive !== undefined ? isActive !== 'false' : undefined,
     });
   }
 
   @Get('summary')
-  @Roles('ADMIN')
-  summary(@Req() req) {
-    return this.service.summary(req.user.institutionId);
+  @Roles(Role.ADMIN)
+  summary(@CurrentUser() user: any) {
+    return this.service.summary(user.institutionId);
   }
 
   @Post()
-  @Roles('ADMIN')
-  create(@Body() dto: CreateInventoryItemDto, @Req() req) {
-    return this.service.create(dto, req.user.institutionId);
+  @Roles(Role.ADMIN)
+  create(@Body() dto: CreateInventoryItemDto, @CurrentUser() user: any) {
+    return this.service.create(dto, user.institutionId);
   }
 
   @Patch(':id')
-  @Roles('ADMIN')
-  update(@Param('id') id: string, @Body() dto: Partial<CreateInventoryItemDto>, @Req() req) {
-    return this.service.update(id, dto, req.user.institutionId);
+  @Roles(Role.ADMIN)
+  update(@Param('id') id: string, @Body() dto: Partial<CreateInventoryItemDto>, @CurrentUser() user: any) {
+    return this.service.update(id, dto, user.institutionId);
   }
 
   @Delete(':id')
-  @Roles('ADMIN')
-  remove(@Param('id') id: string, @Req() req) {
-    return this.service.remove(id, req.user.institutionId);
+  @Roles(Role.ADMIN)
+  remove(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.service.remove(id, user.institutionId);
   }
 }
