@@ -4,12 +4,16 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as Handlebars from 'handlebars';
 
-async function launchBrowser() {
+let _browser: import('puppeteer').Browser | null = null;
+
+async function getBrowser() {
+  if (_browser) {
+    try { await _browser.version(); return _browser; } catch { _browser = null; }
+  }
   const pup = (await import('puppeteer')).default;
-  const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH || undefined;
-  return pup.launch({
+  _browser = await pup.launch({
     headless: true,
-    executablePath,
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
@@ -18,6 +22,7 @@ async function launchBrowser() {
       '--single-process',
     ],
   });
+  return _browser;
 }
 
 const CONDUCT_LABELS: Record<string, string> = {
@@ -66,9 +71,9 @@ export class PdfService {
     const outputPath = path.join(this.outputDir, filename);
 
     try {
-      const browser = await launchBrowser();
+      const browser = await getBrowser();
       const page = await browser.newPage();
-      await page.setContent(html, { waitUntil: 'networkidle0' });
+      await page.setContent(html, { waitUntil: 'domcontentloaded' });
       await page.pdf({
         path: outputPath,
         format: 'A4',

@@ -38,6 +38,11 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         runtimeCaching: [
           {
+            // PDF generation — long-running, bypass service worker entirely
+            urlPattern: /^https?:\/\/.*\/api\/reports\/.*\/pdf/i,
+            handler: 'NetworkOnly',
+          },
+          {
             // API — network first, fall back to cache for 24h
             urlPattern: /^https?:\/\/.*\/api\/.*/i,
             handler: 'NetworkFirst',
