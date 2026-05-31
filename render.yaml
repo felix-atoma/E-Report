@@ -5,7 +5,7 @@ services:
     region: frankfurt      # closest to West Africa
     plan: free
     rootDir: backend
-    buildCommand: npm install && npm run build && npx prisma generate && DATABASE_URL=$DIRECT_URL npx prisma db push
+    buildCommand: apt-get install -y libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libpango-1.0-0 libcairo2 fonts-liberation libasound2t64 libx11-6 libxcb1 libxext6 && npm install && PUPPETEER_CACHE_DIR=.puppeteer-cache npx puppeteer browsers install chrome && npm run build && npx prisma generate && DATABASE_URL=$DIRECT_URL npx prisma db push
     startCommand: node dist/main
     healthCheckPath: /api/health
 
@@ -15,6 +15,10 @@ services:
         value: production
       - key: GLOBAL_PREFIX
         value: api
+      - key: PUPPETEER_CACHE_DIR
+        value: .puppeteer-cache
+      - key: PUPPETEER_SKIP_DOWNLOAD
+        value: "true"
 
       # ── Database (set in Render dashboard) ───────────────────────────────────
       # DATABASE_URL  → Supabase Transaction (pooled) connection string

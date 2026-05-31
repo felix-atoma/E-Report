@@ -5,19 +5,18 @@ import * as path from 'path';
 import * as Handlebars from 'handlebars';
 
 async function launchBrowser() {
-  if (process.env.NODE_ENV === 'production') {
-    const chromium = (await import('@sparticuz/chromium')).default;
-    const pup = (await import('puppeteer-core')).default;
-    return pup.launch({
-      args: chromium.args,
-      executablePath: await chromium.executablePath(),
-      headless: true,
-    });
-  }
   const pup = (await import('puppeteer')).default;
+  const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH || undefined;
   return pup.launch({
     headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+    executablePath,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      '--single-process',
+    ],
   });
 }
 
