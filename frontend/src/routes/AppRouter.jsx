@@ -71,6 +71,7 @@ import StudentLMSPage         from '../pages/student/StudentLMSPage/StudentLMSPa
 
 import ProfilePage            from '../pages/shared/ProfilePage/ProfilePage';
 import PrintReportCardPage   from '../pages/shared/PrintReportCardPage/PrintReportCardPage';
+import AnnualReportPage      from '../pages/shared/AnnualReportPage/AnnualReportPage';
 import GoogleCallbackPage    from '../pages/auth/GoogleCallbackPage/GoogleCallbackPage';
 import MockExamsPage          from '../pages/teacher/MockExamsPage/MockExamsPage';
 import MockExamGradePage      from '../pages/teacher/MockExamGradePage/MockExamGradePage';
@@ -200,6 +201,7 @@ function AppRouter() {
       {/* Shared */}
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
       <Route path="/reports/:id/print" element={<ProtectedRoute><PrintReportCardPage /></ProtectedRoute>} />
+      <Route path="/reports/annual/:studentId/:academicYear" element={<ProtectedRoute><AnnualReportPage /></ProtectedRoute>} />
       <Route path="/mock-exams/:id/fiche"          element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamFichePage /></ProtectedRoute>} />
       <Route path="/mock-exams/:id/fiche/print"    element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamFichePrintPage /></ProtectedRoute>} />
       <Route path="/mock-exams/:id/releve"         element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamRelevePage /></ProtectedRoute>} />

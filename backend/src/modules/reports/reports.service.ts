@@ -559,6 +559,98 @@ export class ReportsService {
     return { pdfUrl: updated?.pdfUrl };
   }
 
+  async getAnnualReport(studentId: string, academicYear: string, institutionId: string) {
+    const student = await this.prisma.student.findFirst({
+      where: { id: studentId, institutionId },
+      include: { user: { select: { name: true, profileImage: true } } },
+    });
+    if (!student) throw new NotFoundException('Student not found');
+
+    const reports = await this.prisma.reportCard.findMany({
+      where: { studentId, academicYear, status: 'PUBLISHED', class: { institutionId } },
+      include: {
+        class: { select: { name: true } },
+        grades: { include: { subject: { select: { nameFr: true, passMark: true } } } },
+      },
+      orderBy: { termNumber: 'asc' },
+    });
+
+    if (!reports.length) throw new NotFoundException('No published reports found for this year');
+
+    const institution = await this.prisma.institution.findUnique({
+      where: { id: institutionId },
+      select: { name: true, country: true, countryMotto: true, address: true, phone: true, motto: true, logo: true, crest: true, stamp: true, brandingSettings: true },
+    });
+
+    // Build subject map: subjectId → { name, coef, termAverages }
+    const subjectMap = new Map<string, { nameFr: string; coefficient: number; passMark: number; termAverages: (number | null)[] }>();
+    const termCount = reports.length;
+
+    for (const report of reports) {
+      const idx = report.termNumber - 1;
+      for (const g of report.grades) {
+        if (!subjectMap.has(g.subjectId)) {
+          subjectMap.set(g.subjectId, {
+            nameFr: g.subject.nameFr,
+            coefficient: g.coefficient,
+            passMark: g.subject.passMark,
+            termAverages: Array(termCount).fill(null),
+          });
+        }
+        const entry = subjectMap.get(g.subjectId)!;
+        entry.coefficient = g.coefficient; // use latest coef
+        if (idx < termCount) entry.termAverages[idx] = g.moyenneMatiere ?? g.score ?? null;
+      }
+    }
+
+    const subjects = Array.from(subjectMap.values()).map((s) => {
+      const validAvgs = s.termAverages.filter((a) => a !== null) as number[];
+      const annualAvg = validAvgs.length > 0
+        ? Math.round((validAvgs.reduce((a, b) => a + b, 0) / validAvgs.length) * 100) / 100
+        : null;
+      return { ...s, annualAverage: annualAvg };
+    }).sort((a, b) => b.coefficient - a.coefficient);
+
+    const lastTerm = reports[reports.length - 1];
+
+    return {
+      student: {
+        id: student.id,
+        name: student.user?.name ?? student.admissionNumber,
+        admissionNumber: student.admissionNumber,
+        dateOfBirth: student.dateOfBirth,
+        profileImage: student.user?.profileImage ?? null,
+      },
+      class: reports[0].class,
+      institution,
+      academicYear,
+      termSystem: lastTerm.termType,
+      terms: reports.map((r) => ({
+        termNumber: r.termNumber,
+        termName: r.termName,
+        overallAverage: r.overallAverage,
+        classRank: r.classRank,
+        classSize: r.classSize,
+        classHighest: r.classHighest,
+        classLowest: r.classLowest,
+        classAverage: r.classAverage,
+        mention: r.mention,
+        conductRating: r.conductRating,
+        attendanceAbsentHours: r.attendanceAbsentHours,
+        attendanceLate: r.attendanceLate,
+        warnings: r.warnings,
+        commendations: r.commendations,
+        honorCouncil: r.honorCouncil,
+        teacherComment: r.teacherComment,
+        principalComment: r.principalComment,
+      })),
+      subjects,
+      annualAverage: lastTerm.annualAverage,
+      councilDecision: lastTerm.councilDecision,
+      mention: lastTerm.mention,
+    };
+  }
+
   async bulkPublish(
     classId: string,
     academicYear: string,

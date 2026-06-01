@@ -206,6 +206,11 @@ function ReportCardsPage() {
               </Button>
             ) : null
           )}
+          {r.status === 'PUBLISHED' && r.academicYear && (
+            <Link to={`/reports/annual/${r.studentId}/${r.academicYear}`} target="_blank" rel="noreferrer">
+              <Button size="sm" variant="ghost" title="Voir le relevé annuel de cet élève">📋 Annuel</Button>
+            </Link>
+          )}
         </div>
       ),
     },

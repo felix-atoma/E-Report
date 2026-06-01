@@ -102,6 +102,19 @@ export class ReportsController {
     return this.service.publish(id, user.institutionId, user.id, user.role);
   }
 
+  @Get('annual')
+  @Roles(Role.ADMIN, Role.TEACHER, Role.PARENT, Role.STUDENT)
+  @ApiOperation({ summary: 'Get annual report card aggregated across all terms' })
+  @ApiQuery({ name: 'studentId', required: true })
+  @ApiQuery({ name: 'academicYear', required: true })
+  getAnnualReport(
+    @Query('studentId') studentId: string,
+    @Query('academicYear') academicYear: string,
+    @CurrentUser() user: any,
+  ) {
+    return this.service.getAnnualReport(studentId, academicYear, user.institutionId);
+  }
+
   @Post('bulk-publish')
   @Roles(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
