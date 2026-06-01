@@ -7,6 +7,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import * as path from 'path';
 import { PrismaModule } from './prisma/prisma.module';
+import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { AuthModule } from './modules/auth/auth.module';
@@ -66,6 +67,7 @@ import { HealthRecordsModule } from './modules/health-records/health-records.mod
       }],
     }),
     PrismaModule,
+    CloudinaryModule,
     AuthModule,
     UsersModule,
     InstitutionsModule,

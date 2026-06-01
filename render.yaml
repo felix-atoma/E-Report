@@ -53,10 +53,18 @@ services:
 
       # ── Storage ───────────────────────────────────────────────────────────────
       - key: STORAGE_PROVIDER
-        value: LOCAL
+        value: CLOUDINARY
       - key: STORAGE_LOCAL_PATH
         value: ./uploads
       - key: UPLOADS_DIR
+
+      # ── Cloudinary ────────────────────────────────────────────────────────────
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
         value: uploads
 
       # ── Email ─────────────────────────────────────────────────────────────────

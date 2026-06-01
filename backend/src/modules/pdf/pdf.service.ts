@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as Handlebars from 'handlebars';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 let _browser: import('puppeteer').Browser | null = null;
 
@@ -44,7 +45,10 @@ export class PdfService {
   private readonly baseUrl: string;
   private readonly template: HandlebarsTemplateDelegate;
 
-  constructor(config: ConfigService) {
+  constructor(
+    config: ConfigService,
+    private readonly cloudinary: CloudinaryService,
+  ) {
     this.outputDir = path.resolve(
       process.cwd(),
       config.get<string>('UPLOADS_DIR', 'uploads'),
@@ -99,10 +103,20 @@ export class PdfService {
         printBackground: true,
         margin: { top: '15mm', bottom: '15mm', left: '12mm', right: '12mm' },
       });
-      await browser.close();
+      await page.close();
     } catch (err) {
       this.logger.error('Puppeteer PDF generation failed', err);
       throw err;
+    }
+
+    if (this.cloudinary.enabled) {
+      try {
+        const url = await this.cloudinary.uploadFile(outputPath, 'novabulletin/pdfs', 'raw');
+        try { fs.unlinkSync(outputPath); } catch {}
+        return url;
+      } catch (err) {
+        this.logger.error('Cloudinary PDF upload failed, falling back to local URL', err);
+      }
     }
 
     return `${this.baseUrl}/uploads/report-card-pdfs/${filename}`;
