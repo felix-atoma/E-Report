@@ -385,6 +385,7 @@ html{scroll-behavior:smooth}
 /* ── Responsive ─────────────────────────────────────────────────────────── */
 @media(max-width:1024px){
   .lp-hero__left h1{font-size:2.5rem}
+  .lp-hero__inner{gap:2.5rem}
   .lp-gallery__strip{grid-template-columns:repeat(3,1fr)}
   .lp-feat-grid{grid-template-columns:repeat(2,1fr)}
   .lp-how__steps{grid-template-columns:repeat(2,1fr)}
@@ -393,12 +394,15 @@ html{scroll-behavior:smooth}
   .lp-lms__visual{order:-1}
   .lp-whatsapp__phone{order:-1}
   .lp-role-panel{grid-template-columns:1fr}
-  .lp-role-panel__list{grid-template-columns:1fr}
+  .lp-role-panel__list{grid-template-columns:1fr 1fr}
   .lp-footer__cols{grid-template-columns:repeat(3,1fr)}
   .lp-db-grid{grid-template-columns:repeat(3,1fr)}
   .lp-fiche__inner{grid-template-columns:1fr;gap:2rem}
   .lp-fiche__badge{display:none}
   .lp-fiche__visual{order:3}
+  .lp-stats__grid{grid-template-columns:repeat(2,1fr)}
+  .lp-anim-stat::after{display:none}
+  .lp-whatsapp__phone{align-items:flex-start}
 }
 
 @media(max-width:768px){
@@ -453,4 +457,129 @@ html{scroll-behavior:smooth}
   .lp-footer__cols{grid-template-columns:1fr 1fr}
   .lp-illus--hero{max-width:320px}
   .lp-gallery__strip{grid-template-columns:1fr 1fr}
+}
+
+/* ── Global overflow guard ─────────────────────────────────────────────── */
+.lp{overflow-x:hidden}
+
+/* ── 640 px — large phones / small tablets ────────────────────────────── */
+@media(max-width:640px){
+  /* Hero float cards: pull inside viewport */
+  .lp-float-card{min-width:150px;padding:.6rem .9rem;font-size:.75rem}
+  .lp-float-card strong{font-size:.76rem}
+  .lp-float-card p{font-size:.68rem}
+  .lp-float-card--1{top:6%;right:0}
+  .lp-float-card--2{display:none}
+  .lp-float-card--3{bottom:4%;right:0}
+  .lp-hero__illus-wrap{overflow:hidden;width:100%;padding-bottom:1.5rem}
+
+  /* Store badges: stack on small phones */
+  .lp-store-badges{flex-direction:row;flex-wrap:wrap;gap:.625rem}
+  .lp-store-badge{flex:1;min-width:140px}
+
+  /* Sections: tighter vertical padding */
+  .lp-features,.lp-lms,.lp-how,.lp-whatsapp,.lp-roles,
+  .lp-gallery,.lp-comparison,.lp-testimonials,.lp-pricing,
+  .lp-faq,.lp-database{padding:4rem 0}
+  .lp-fiche{padding:3.5rem 0}
+  .lp-cta{padding:5rem 0}
+
+  /* Problem vs-panel */
+  .lp-vs-bad,.lp-vs-good{padding:1.25rem 1.25rem}
+
+  /* Role panel */
+  .lp-role-panel{padding:1.75rem 1.25rem;gap:1.5rem}
+  .lp-role-panel__icon{font-size:2.75rem}
+  .lp-role-panel__info h3{font-size:1.15rem}
+
+  /* Pricing */
+  .lp-price-includes{grid-template-columns:1fr}
+
+  /* DB banner */
+  .lp-db-grid{grid-template-columns:repeat(2,1fr)}
+
+  /* FAQ */
+  .lp-faq-q{padding:1rem 1.25rem;font-size:.9rem}
+
+  /* Footer */
+  .lp-footer__top{gap:2rem}
+  .lp-footer__cols{grid-template-columns:1fr 1fr}
+
+  /* Fiche mockup: allow it to shrink */
+  .lp-fiche__mockup{min-width:0;width:100%}
+  .lp-fiche__mockup-row{grid-template-columns:1fr .6fr .6fr;font-size:.72rem}
+  .lp-fiche__mockup-row > :nth-child(4),
+  .lp-fiche__mockup-row > :nth-child(5){display:none}
+
+  /* Back-to-top: keep clear of content */
+  .lp-back-to-top{bottom:1.25rem;right:1.25rem;width:42px;height:42px}
+
+  /* Carousel */
+  .lp-carousel{padding:1.75rem 1rem}
+  .lp-carousel__text{font-size:.9rem}
+  .lp-carousel__stars{font-size:1.1rem}
+
+  /* Stats */
+  .lp-anim-stat strong{font-size:2rem}
+  .lp-anim-stat{padding:1.5rem .75rem}
+}
+
+/* ── 360 px — tiny phones ──────────────────────────────────────────────── */
+@media(max-width:360px){
+  .lp-container{padding:0 1rem}
+  .lp-hero__left h1{font-size:1.55rem}
+  .lp-hero__desc{font-size:.88rem}
+  .lp-hero{padding:5rem 0 2.5rem}
+  .lp-section-head h2{font-size:1.4rem}
+  .lp-section-head p{font-size:.92rem}
+
+  .lp-stats__grid{grid-template-columns:1fr 1fr}
+  .lp-anim-stat strong{font-size:1.75rem}
+  .lp-anim-stat span{font-size:.78rem}
+
+  /* Feature cards: full-width, less padding */
+  .lp-feat-card{padding:1.5rem 1.25rem}
+
+  /* DB */
+  .lp-db-grid{grid-template-columns:1fr}
+
+  /* Gallery strip */
+  .lp-gallery__strip{grid-template-columns:1fr}
+
+  /* Roles */
+  .lp-role-tab{padding:.4rem .75rem;font-size:.72rem}
+  .lp-role-panel{padding:1.25rem 1rem}
+
+  /* Pricing */
+  .lp-price-amount strong{font-size:2.5rem}
+  .lp-price-card{padding:1.5rem 1rem}
+
+  /* Store badges */
+  .lp-store-badge{min-width:0;padding:.6rem .875rem}
+  .lp-store-badge__name{font-size:.8rem}
+
+  /* CTA */
+  .lp-cta__inner h2{font-size:1.5rem}
+  .lp-cta__inner p{font-size:.95rem}
+
+  /* Footer */
+  .lp-footer__cols{grid-template-columns:1fr}
+  .lp-footer{padding:3rem 0 0}
+
+  /* Nav */
+  .lp-nav__inner{padding:0 1rem}
+
+  /* Float cards: hide all on tiny screens */
+  .lp-float-card--1,.lp-float-card--3{display:none}
+
+  /* Carousel */
+  .lp-carousel{padding:1.5rem .875rem}
+  .lp-carousel__controls{gap:1rem}
+  .lp-carousel__btn{width:34px;height:34px;font-size:1.1rem}
+
+  /* How steps */
+  .lp-how__step-num{width:50px;height:50px;font-size:.95rem}
+
+  /* Fiche */
+  .lp-fiche__visual{display:none}
 }
