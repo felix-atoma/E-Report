@@ -10,4 +10,5 @@ export const reportsService = {
   regeneratePdf: (id) => api.post(`/reports/${id}/pdf`),
   titulaireUpsert: (data) => api.put('/reports/titulaire', data),
   bulkZip: (dto) => api.post('/reports/bulk-zip', dto, { responseType: 'blob' }),
+  bulkPublish: (dto) => api.post('/reports/bulk-publish', dto),
 };

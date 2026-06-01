@@ -102,6 +102,17 @@ export class ReportsController {
     return this.service.publish(id, user.institutionId, user.id, user.role);
   }
 
+  @Post('bulk-publish')
+  @Roles(Role.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Publish all REVIEW bulletins for a class in one click (Admin only)' })
+  bulkPublish(
+    @Body() dto: { classId: string; academicYear: string; termNumber: number },
+    @CurrentUser() user: any,
+  ) {
+    return this.service.bulkPublish(dto.classId, dto.academicYear, dto.termNumber, user.institutionId);
+  }
+
   @Post('bulk-zip')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Download all published bulletins as a ZIP (by class or whole school)' })

@@ -559,6 +559,37 @@ export class ReportsService {
     return { pdfUrl: updated?.pdfUrl };
   }
 
+  async bulkPublish(
+    classId: string,
+    academicYear: string,
+    termNumber: number,
+    institutionId: string,
+  ): Promise<{ published: number; skipped: number }> {
+    const candidates = await this.prisma.reportCard.findMany({
+      where: { classId, academicYear, termNumber, status: 'REVIEW', class: { institutionId } },
+      select: { id: true },
+    });
+
+    if (!candidates.length) {
+      return { published: 0, skipped: 0 };
+    }
+
+    let published = 0;
+    let skipped = 0;
+
+    for (const { id } of candidates) {
+      try {
+        await this.publish(id, institutionId, '', Role.ADMIN);
+        published++;
+      } catch (err) {
+        this.logger.warn(`bulkPublish: skipped report ${id} — ${err?.message}`);
+        skipped++;
+      }
+    }
+
+    return { published, skipped };
+  }
+
   async bulkZip(dto: BulkZipDto, institutionId: string): Promise<Buffer> {
     const reports = await this.prisma.reportCard.findMany({
       where: {

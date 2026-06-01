@@ -39,6 +39,8 @@ function ReportCardsPage() {
   const [termFilter, setTerm]      = useState('');
   const [confirmPublish, setConfirmPublish] = useState(null);
   const [zipping, setZipping] = useState(false);
+  const [bulkPublishing, setBulkPublishing] = useState(false);
+  const [confirmBulkPublish, setConfirmBulkPublish] = useState(false);
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ['reports'],
@@ -96,6 +98,27 @@ function ReportCardsPage() {
   ];
 
   const canZip = isAdmin && yearFilter && termFilter;
+  const canBulkPublish = isAdmin && classFilter && yearFilter && termFilter;
+  const reviewCount = filtered.filter((r) => r.status === 'REVIEW').length;
+
+  const handleBulkPublish = async () => {
+    setBulkPublishing(true);
+    setConfirmBulkPublish(false);
+    try {
+      const res = await reportsService.bulkPublish({
+        classId: classFilter,
+        academicYear: yearFilter,
+        termNumber: Number(termFilter),
+      });
+      const { published, skipped } = res.data;
+      qc.invalidateQueries({ queryKey: ['reports'] });
+      toast.success(`${published} bulletin${published !== 1 ? 's' : ''} publié${published !== 1 ? 's' : ''} ! Les notifications WhatsApp/Email partent dans 2 min.${skipped > 0 ? ` (${skipped} ignorés)` : ''}`);
+    } catch (e) {
+      toast.error(e?.response?.data?.message ?? 'Erreur lors de la publication groupée');
+    } finally {
+      setBulkPublishing(false);
+    }
+  };
 
   const handleBulkZip = async () => {
     if (!canZip) return;
@@ -233,9 +256,18 @@ function ReportCardsPage() {
           onChange={(e) => setTerm(e.target.value)}
           className="reports-page__filter"
         />
-        {isAdmin && (
+        {isAdmin && canBulkPublish && reviewCount > 0 && (
           <Button
             variant="primary"
+            onClick={() => setConfirmBulkPublish(true)}
+            disabled={bulkPublishing}
+          >
+            {bulkPublishing ? '⏳ Publication…' : `🚀 Publier tout (${reviewCount})`}
+          </Button>
+        )}
+        {isAdmin && (
+          <Button
+            variant="ghost"
             onClick={handleBulkZip}
             disabled={!canZip || zipping}
             title={!yearFilter || !termFilter ? 'Sélectionnez une année et un trimestre' : classFilter ? 'Télécharger les bulletins de cette classe en ZIP' : 'Télécharger tous les bulletins de l\'école en ZIP'}
@@ -260,6 +292,16 @@ function ReportCardsPage() {
         title="Publier le bulletin"
         message={`Publier le bulletin de ${confirmPublish?.student?.user?.name ?? confirmPublish?.student?.admissionNumber ?? '…'} (${confirmPublish?.termName ?? ''}) ? Cette action est irréversible.`}
         confirmLabel="Publier"
+        variant="primary"
+      />
+      <ConfirmDialog
+        open={confirmBulkPublish}
+        onClose={() => setConfirmBulkPublish(false)}
+        onConfirm={handleBulkPublish}
+        loading={bulkPublishing}
+        title="Publier tous les bulletins"
+        message={`Publier les ${reviewCount} bulletin${reviewCount !== 1 ? 's' : ''} en statut "En révision" pour cette classe ? Les parents recevront une notification WhatsApp et email dans les 2 minutes. Cette action est irréversible.`}
+        confirmLabel={`Publier ${reviewCount} bulletin${reviewCount !== 1 ? 's' : ''}`}
         variant="primary"
       />
     </AppShell>
