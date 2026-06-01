@@ -44,12 +44,13 @@ export default defineConfig({
           },
           {
             // API — network first, fall back to cache for 24h
+            // 60s timeout to survive Render free-tier cold starts (~30-60s)
             urlPattern: /^https?:\/\/.*\/api\/.*/i,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',
               expiration: { maxEntries: 100, maxAgeSeconds: 86400 },
-              networkTimeoutSeconds: 10,
+              networkTimeoutSeconds: 60,
             },
           },
           {
@@ -68,7 +69,7 @@ export default defineConfig({
           },
         ],
         navigateFallback: '/offline.html',
-        navigateFallbackDenylist: [/^\/api/, /^\/uploads/],
+        navigateFallbackDenylist: [/^\/api/, /^\/uploads/, /^\/reports/],
       },
     }),
   ],
