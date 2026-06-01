@@ -233,12 +233,12 @@ function ReportCardsPage() {
           onChange={(e) => setTerm(e.target.value)}
           className="reports-page__filter"
         />
-        {canZip && (
+        {isAdmin && (
           <Button
             variant="primary"
             onClick={handleBulkZip}
-            disabled={zipping}
-            title={classFilter ? 'Télécharger tous les bulletins de cette classe en ZIP' : 'Télécharger tous les bulletins de l\'école en ZIP'}
+            disabled={!canZip || zipping}
+            title={!yearFilter || !termFilter ? 'Sélectionnez une année et un trimestre' : classFilter ? 'Télécharger les bulletins de cette classe en ZIP' : 'Télécharger tous les bulletins de l\'école en ZIP'}
           >
             {zipping ? '⏳ Génération…' : `📦 ZIP ${classFilter ? 'Classe' : 'École'}`}
           </Button>
