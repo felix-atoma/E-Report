@@ -102,14 +102,6 @@ export class ReportsController {
     return this.service.publish(id, user.institutionId, user.id, user.role);
   }
 
-  @Post(':id/pdf')
-  @Roles(Role.ADMIN)
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Regenerate PDF for a published report card (Admin only)' })
-  regeneratePdf(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.service.regeneratePdf(id, user.institutionId);
-  }
-
   @Post('bulk-zip')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Download all published bulletins as a ZIP (by class or whole school)' })
@@ -123,5 +115,13 @@ export class ReportsController {
       'Content-Length': buffer.length,
     });
     res.end(buffer);
+  }
+
+  @Post(':id/pdf')
+  @Roles(Role.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Regenerate PDF for a published report card (Admin only)' })
+  regeneratePdf(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.service.regeneratePdf(id, user.institutionId);
   }
 }
