@@ -13,7 +13,6 @@ async function getBrowser() {
   const pup = (await import('puppeteer')).default;
   _browser = await pup.launch({
     headless: true,
-    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
