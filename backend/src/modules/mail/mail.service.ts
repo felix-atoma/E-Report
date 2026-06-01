@@ -21,12 +21,16 @@ export interface MailPayload {
 export class MailService {
   private readonly logger = new Logger(MailService.name);
   private readonly fromEmail: string;
+  private readonly from: { name: string; email: string };
+  private readonly fromSmtp: string;
   private readonly ownerEmail: string;
   private readonly provider: 'sendgrid' | 'smtp' | 'none';
   private smtpTransport: nodemailer.Transporter | null = null;
 
   constructor(private readonly config: ConfigService) {
     this.fromEmail = config.get<string>('MAIL_FROM', 'noreply@novabulletin.local');
+    this.from = { name: 'NovaBulletin', email: this.fromEmail };
+    this.fromSmtp = `NovaBulletin <${this.fromEmail}>`;
     this.ownerEmail = config.get<string>('OWNER_EMAIL', OWNER_EMAIL_DEFAULT);
     const sendgridKey = config.get<string>('SENDGRID_API_KEY', '');
     const smtpHost = config.get<string>('SMTP_HOST', '');
@@ -63,13 +67,13 @@ export class MailService {
       if (this.provider === 'sendgrid') {
         await sgMail.send({
           to: payload.to,
-          from: this.fromEmail,
+          from: this.from,
           subject,
           html,
         });
       } else if (this.provider === 'smtp' && this.smtpTransport) {
         await this.smtpTransport.sendMail({
-          from: this.fromEmail,
+          from: this.fromSmtp,
           to: payload.to,
           subject,
           html,
@@ -101,9 +105,9 @@ export class MailService {
 
     try {
       if (this.provider === 'sendgrid') {
-        await sgMail.send({ to, from: this.fromEmail, subject, html });
+        await sgMail.send({ to, from: this.from, subject, html });
       } else if (this.provider === 'smtp' && this.smtpTransport) {
-        await this.smtpTransport.sendMail({ from: this.fromEmail, to, subject, html });
+        await this.smtpTransport.sendMail({ from: this.fromSmtp, to, subject, html });
       } else {
         this.logger.log(`[DEV EMAIL] Password reset for ${to}: ${resetUrl}`);
       }
@@ -152,9 +156,9 @@ export class MailService {
     this.logger.log(`Sending school registration notification to owner: ${to}`);
     try {
       if (this.provider === 'sendgrid') {
-        await sgMail.send({ to, from: this.fromEmail, subject, html });
+        await sgMail.send({ to, from: this.from, subject, html });
       } else if (this.provider === 'smtp' && this.smtpTransport) {
-        await this.smtpTransport.sendMail({ from: this.fromEmail, to, subject, html });
+        await this.smtpTransport.sendMail({ from: this.fromSmtp, to, subject, html });
       } else {
         this.logger.log(
           `[DEV EMAIL] School registration — ${schoolName} (${city}) — admin: ${adminEmail}`,
@@ -193,9 +197,9 @@ export class MailService {
     this.logger.log(`Sending approval email to admin: ${adminEmail}`);
     try {
       if (this.provider === 'sendgrid') {
-        await sgMail.send({ to: adminEmail, from: this.fromEmail, subject, html });
+        await sgMail.send({ to: adminEmail, from: this.from, subject, html });
       } else if (this.provider === 'smtp' && this.smtpTransport) {
-        await this.smtpTransport.sendMail({ from: this.fromEmail, to: adminEmail, subject, html });
+        await this.smtpTransport.sendMail({ from: this.fromSmtp, to: adminEmail, subject, html });
       } else {
         this.logger.log(`[DEV EMAIL] Approval email → ${adminEmail} (${schoolName})`);
         return true;
@@ -334,9 +338,9 @@ export class MailService {
 
     try {
       if (this.provider === 'sendgrid') {
-        await sgMail.send({ to, from: this.fromEmail, subject, html });
+        await sgMail.send({ to, from: this.from, subject, html });
       } else if (this.provider === 'smtp' && this.smtpTransport) {
-        await this.smtpTransport.sendMail({ from: this.fromEmail, to, subject, html });
+        await this.smtpTransport.sendMail({ from: this.fromSmtp, to, subject, html });
       } else {
         this.logger.log(`[DEV OTP] To: ${to} | Name: ${name} | OTP: ${otp}`);
         return true;
