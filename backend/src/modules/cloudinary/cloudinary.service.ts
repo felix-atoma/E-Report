@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
+import { v2 as cloudinary, UploadApiResponse, UploadApiErrorResponse } from 'cloudinary';
 import { Readable } from 'stream';
 
 @Injectable()
@@ -44,7 +44,7 @@ export class CloudinaryService {
     return new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         { folder, public_id: publicId, resource_type: resourceType, use_filename: false },
-        (err, result) => {
+        (err: UploadApiErrorResponse | undefined, result: UploadApiResponse | undefined) => {
           if (err || !result) return reject(err ?? new Error('Cloudinary upload failed'));
           resolve(result.secure_url);
         },
