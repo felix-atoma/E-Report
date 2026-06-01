@@ -14,6 +14,15 @@ import StatusPill from '../../../components/common/StatusPill/StatusPill';
 import ConfirmDialog from '../../../components/common/ConfirmDialog/ConfirmDialog';
 import './ReportCardsPage.css';
 
+function downloadBlob(blob, filename) {
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  window.URL.revokeObjectURL(url);
+}
+
 const STATUS_OPTIONS = [
   { value: 'DRAFT',     label: 'Brouillon' },
   { value: 'REVIEW',    label: 'En révision' },
@@ -24,9 +33,12 @@ function ReportCardsPage() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
   const qc = useQueryClient();
-  const [classFilter, setClass]   = useState('');
-  const [statusFilter, setStatus] = useState('');
+  const [classFilter, setClass]    = useState('');
+  const [statusFilter, setStatus]  = useState('');
+  const [yearFilter, setYear]      = useState('');
+  const [termFilter, setTerm]      = useState('');
   const [confirmPublish, setConfirmPublish] = useState(null);
+  const [zipping, setZipping] = useState(false);
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ['reports'],
@@ -62,13 +74,50 @@ function ReportCardsPage() {
 
   const filtered = useMemo(() => {
     return reports.filter((r) => {
-      const matchClass  = !classFilter  || r.classId === classFilter;
-      const matchStatus = !statusFilter || r.status  === statusFilter;
-      return matchClass && matchStatus;
+      const matchClass  = !classFilter  || r.classId     === classFilter;
+      const matchStatus = !statusFilter || r.status      === statusFilter;
+      const matchYear   = !yearFilter   || r.academicYear === yearFilter;
+      const matchTerm   = !termFilter   || String(r.termNumber) === termFilter;
+      return matchClass && matchStatus && matchYear && matchTerm;
     });
-  }, [reports, classFilter, statusFilter]);
+  }, [reports, classFilter, statusFilter, yearFilter, termFilter]);
 
   const classOptions = classes.map((c) => ({ value: c.id, label: c.name }));
+
+  const yearOptions = useMemo(() => {
+    const years = [...new Set(reports.map((r) => r.academicYear).filter(Boolean))].sort().reverse();
+    return years.map((y) => ({ value: y, label: y }));
+  }, [reports]);
+
+  const termOptions = [
+    { value: '1', label: 'Trimestre 1' },
+    { value: '2', label: 'Trimestre 2' },
+    { value: '3', label: 'Trimestre 3' },
+  ];
+
+  const canZip = isAdmin && yearFilter && termFilter;
+
+  const handleBulkZip = async () => {
+    if (!canZip) return;
+    setZipping(true);
+    try {
+      const res = await reportsService.bulkZip({
+        academicYear: yearFilter,
+        termNumber: Number(termFilter),
+        ...(classFilter ? { classId: classFilter } : {}),
+      });
+      const scope = classFilter
+        ? (classes.find((c) => c.id === classFilter)?.name ?? 'classe')
+        : 'ecole';
+      downloadBlob(res.data, `bulletins-${yearFilter}-T${termFilter}-${scope}.zip`);
+      toast.success('ZIP téléchargé avec succès !');
+    } catch (e) {
+      const msg = e?.response?.data?.message ?? e?.message ?? 'Erreur lors de la génération du ZIP';
+      toast.error(msg);
+    } finally {
+      setZipping(false);
+    }
+  };
 
   const columns = [
     {
@@ -168,6 +217,32 @@ function ReportCardsPage() {
           onChange={(e) => setStatus(e.target.value)}
           className="reports-page__filter"
         />
+        <Select
+          id="year-filter"
+          value={yearFilter}
+          placeholder="Année scolaire"
+          options={yearOptions}
+          onChange={(e) => setYear(e.target.value)}
+          className="reports-page__filter"
+        />
+        <Select
+          id="term-filter"
+          value={termFilter}
+          placeholder="Trimestre"
+          options={termOptions}
+          onChange={(e) => setTerm(e.target.value)}
+          className="reports-page__filter"
+        />
+        {canZip && (
+          <Button
+            variant="primary"
+            onClick={handleBulkZip}
+            disabled={zipping}
+            title={classFilter ? 'Télécharger tous les bulletins de cette classe en ZIP' : 'Télécharger tous les bulletins de l\'école en ZIP'}
+          >
+            {zipping ? '⏳ Génération…' : `📦 ZIP ${classFilter ? 'Classe' : 'École'}`}
+          </Button>
+        )}
       </div>
 
       <Table

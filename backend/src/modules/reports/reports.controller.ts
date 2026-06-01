@@ -9,12 +9,15 @@ import {
   Post,
   Put,
   Query,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ReportsService } from './reports.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
 import { TitulaireEntryDto } from './dto/titulaire-entry.dto';
+import { BulkZipDto } from './dto/bulk-zip.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Role } from '../../common/enums/role.enum';
@@ -105,5 +108,20 @@ export class ReportsController {
   @ApiOperation({ summary: 'Regenerate PDF for a published report card (Admin only)' })
   regeneratePdf(@Param('id') id: string, @CurrentUser() user: any) {
     return this.service.regeneratePdf(id, user.institutionId);
+  }
+
+  @Post('bulk-zip')
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Download all published bulletins as a ZIP (by class or whole school)' })
+  async bulkZip(@Body() dto: BulkZipDto, @CurrentUser() user: any, @Res() res: Response) {
+    const buffer = await this.service.bulkZip(dto, user.institutionId);
+    const scope = dto.classId ? 'classe' : 'ecole';
+    const filename = `bulletins-${dto.academicYear}-T${dto.termNumber}-${scope}.zip`;
+    res.set({
+      'Content-Type': 'application/zip',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+      'Content-Length': buffer.length,
+    });
+    res.end(buffer);
   }
 }

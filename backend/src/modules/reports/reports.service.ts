@@ -6,12 +6,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import * as archiver from 'archiver';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PdfService } from '../pdf/pdf.service';
 import { Role } from '../../common/enums/role.enum';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
 import { TitulaireEntryDto } from './dto/titulaire-entry.dto';
+import { BulkZipDto } from './dto/bulk-zip.dto';
 
 function computeMention(avg: number): string {
   if (avg >= 18) return 'Excellent';
@@ -555,6 +557,96 @@ export class ReportsService {
 
     const updated = await this.prisma.reportCard.findUnique({ where: { id }, select: { pdfUrl: true } });
     return { pdfUrl: updated?.pdfUrl };
+  }
+
+  async bulkZip(dto: BulkZipDto, institutionId: string): Promise<Buffer> {
+    const reports = await this.prisma.reportCard.findMany({
+      where: {
+        status: 'PUBLISHED',
+        academicYear: dto.academicYear,
+        termNumber: dto.termNumber,
+        class: { institutionId },
+        ...(dto.classId ? { classId: dto.classId } : {}),
+      },
+      include: {
+        student: { include: { user: { select: { name: true, profileImage: true } } } },
+        class: { select: { name: true } },
+        grades: { include: { subject: { select: { nameFr: true, passMark: true } } } },
+      },
+      orderBy: [{ class: { name: 'asc' } }, { student: { admissionNumber: 'asc' } }],
+    });
+
+    if (!reports.length) throw new NotFoundException('Aucun bulletin publié trouvé pour ces critères');
+
+    const institution = await this.prisma.institution.findUnique({
+      where: { id: institutionId },
+      select: { name: true, country: true, countryMotto: true, address: true, phone: true, motto: true, logo: true, crest: true, stamp: true, brandingSettings: true },
+    });
+    if (!institution) throw new NotFoundException('Institution introuvable');
+
+    // Fetch all grade fiches once per class
+    const classCombos = [...new Set(reports.map((r) => `${r.classId}|${r.academicYear}|${r.termNumber}`))];
+    const fichesByCombo = new Map<string, Map<string, any>>();
+    for (const combo of classCombos) {
+      const [cId, ay, tn] = combo.split('|');
+      const fiches = await this.prisma.gradeFiche.findMany({
+        where: { classId: cId, academicYear: ay, termNumber: Number(tn) },
+      });
+      fichesByCombo.set(combo, new Map(fiches.map((f) => [f.subjectId, f])));
+    }
+
+    // Build ZIP in memory
+    return new Promise((resolve, reject) => {
+      const zip = archiver('zip', { zlib: { level: 6 } });
+      const chunks: Buffer[] = [];
+      zip.on('data', (c: Buffer) => chunks.push(c));
+      zip.on('end', () => resolve(Buffer.concat(chunks)));
+      zip.on('error', reject);
+
+      const addNext = async (idx: number) => {
+        if (idx >= reports.length) { zip.finalize(); return; }
+        const r = reports[idx];
+        try {
+          const ficheKey = `${r.classId}|${r.academicYear}|${r.termNumber}`;
+          const ficheMap = fichesByCombo.get(ficheKey) ?? new Map();
+          const buf = await this.pdf.generateReportCardPdfBuffer({
+            report: {
+              id: r.id, termName: (r as any).termName, academicYear: r.academicYear, termNumber: r.termNumber,
+              overallAverage: (r as any).overallAverage, classRank: (r as any).classRank, classSize: (r as any).classSize,
+              classHighest: (r as any).classHighest ?? null, classLowest: (r as any).classLowest ?? null,
+              classAverage: (r as any).classAverage ?? null, mention: (r as any).mention,
+              conductRating: (r as any).conductRating, teacherComment: (r as any).teacherComment,
+              principalComment: (r as any).principalComment, attendanceDays: (r as any).attendanceDays,
+              attendancePresent: (r as any).attendancePresent, attendanceLate: (r as any).attendanceLate ?? null,
+              attendanceAbsent: (r as any).attendanceAbsent ?? null, attendanceAbsentHours: (r as any).attendanceAbsentHours ?? null,
+              honorCouncil: (r as any).honorCouncil ?? null, commendations: (r as any).commendations ?? null,
+              warnings: (r as any).warnings ?? null, annualAverage: (r as any).annualAverage ?? null,
+              councilDecision: (r as any).councilDecision ?? null,
+            },
+            student: { admissionNumber: r.student.admissionNumber, dateOfBirth: (r.student as any).dateOfBirth, user: r.student.user },
+            className: r.class.name,
+            grades: r.grades.map((g: any) => ({
+              score: g.score, moyenneMatiere: g.moyenneMatiere, coefficient: g.coefficient, weightedScore: g.weightedScore,
+              noteInterro1: g.noteInterro1, noteInterro2: g.noteInterro2, noteInterro3: g.noteInterro3, noteInterro4: g.noteInterro4,
+              noteDevoir: g.noteDevoir, noteComposition: g.noteComposition, rangMatiere: g.rangMatiere,
+              appreciation: g.appreciation, teacherComment: g.teacherComment, teacherName: g.teacherName,
+              ficheSignedAt: ficheMap.get(g.subjectId)?.signedAt ?? null,
+              signatureData: ficheMap.get(g.subjectId)?.signatureData ?? null,
+              subject: { nameFr: g.subject.nameFr, passMark: g.subject.passMark },
+            })),
+            institution,
+          });
+          const safeName = (r.student.user?.name ?? r.student.admissionNumber).replace(/[^a-zA-ZÀ-ÿ0-9\s\-]/g, '').trim();
+          const folder = dto.classId ? '' : `${r.class.name}/`;
+          zip.append(buf, { name: `${folder}${safeName}.pdf` });
+        } catch (err) {
+          this.logger.error(`ZIP: skipping report ${r.id}`, err);
+        }
+        await addNext(idx + 1);
+      };
+
+      addNext(0).catch(reject);
+    });
   }
 
   private async ensureEditable(id: string, institutionId: string, userId: string, role: Role) {

@@ -65,6 +65,25 @@ export class PdfService {
     this.template = Handlebars.compile(templateSrc);
   }
 
+  async generateReportCardPdfBuffer(reportData: ReportCardData): Promise<Buffer> {
+    const html = this.buildHtml(reportData);
+    try {
+      const browser = await getBrowser();
+      const page = await browser.newPage();
+      await page.setContent(html, { waitUntil: 'domcontentloaded' });
+      const buf = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        margin: { top: '15mm', bottom: '15mm', left: '12mm', right: '12mm' },
+      });
+      await page.close();
+      return Buffer.from(buf);
+    } catch (err) {
+      this.logger.error('Puppeteer PDF buffer generation failed', err);
+      throw err;
+    }
+  }
+
   async generateReportCardPdf(reportData: ReportCardData): Promise<string> {
     const html = this.buildHtml(reportData);
     const filename = `report-${reportData.report.id}-${Date.now()}.pdf`;
