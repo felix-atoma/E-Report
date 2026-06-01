@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import * as archiver from 'archiver';
+import archiver = require('archiver');
 import { PrismaService } from '../../prisma/prisma.service';
 import { PdfService } from '../pdf/pdf.service';
 import { Role } from '../../common/enums/role.enum';
