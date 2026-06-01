@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NovaBulletin — Manuel de Formation Commerciale</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+  :root {
+    --navy: #1E2A78;
+    --navy-dark: #0f1a52;
+    --orange: #FF7A59;
+    --pink: #E94F8A;
+    --green: #16a34a;
+    --red: #dc2626;
+    --gray: #6b7280;
+    --light: #f8fafc;
+    --border: #e5e7eb;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+    color: #1f2937;
+    font-size: 10pt;
+    line-height: 1.6;
+    background: #f0f2f5;
+  }
+
+  /* ── Page wrapper ── */
+  .page {
+    width: 210mm;
+    margin: 0 auto;
+    background: #fff;
+    box-shadow: 0 0 40px rgba(0,0,0,.15);
+  }
+
+  /* ── Cover page ── */
+  .cover {
+    min-height: 297mm;
+    background: linear-gradient(155deg, #020d30 0%, #0f1a52 40%, #1E2A78 70%, #1d4ed8 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20mm;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    page-break-after: always;
+  }
+
+  .cover::before {
+    content: '';
+    position: absolute;
+    width: 400px; height: 400px;
+    background: #FF7A59;
+    opacity: .06;
+    border-radius: 50%;
+    top: -100px; right: -100px;
+    filter: blur(80px);
+  }
+
+  .cover__logo {
+    width: 72px; height: 72px;
+    background: rgba(255,255,255,.12);
+    border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem;
+    margin: 0 auto 1.5rem;
+    border: 2px solid rgba(255,255,255,.2);
+  }
+
+  .cover__brand {
+    font-size: 2.8rem;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -.02em;
+    margin-bottom: .5rem;
+  }
+
+  .cover__brand span { color: #FFB547; }
+
+  .cover__tagline {
+    font-size: 1rem;
+    color: #a5b4fc;
+    margin-bottom: 4rem;
+    font-weight: 500;
+  }
+
+  .cover__title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #fff;
+    background: rgba(255,255,255,.1);
+    border: 1.5px solid rgba(255,255,255,.2);
+    border-radius: 14px;
+    padding: 1rem 2.5rem;
+    margin-bottom: 1rem;
+    letter-spacing: -.01em;
+  }
+
+  .cover__subtitle {
+    font-size: .95rem;
+    color: #c7d2fe;
+    margin-bottom: 5rem;
+  }
+
+  .cover__footer {
+    font-size: .8rem;
+    color: rgba(255,255,255,.4);
+    border-top: 1px solid rgba(255,255,255,.1);
+    padding-top: 1rem;
+    width: 100%;
+    text-align: center;
+  }
+
+  .cover__badges {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 4rem;
+    flex-wrap: wrap;
+  }
+
+  .cover__badge {
+    display: flex; align-items: center; gap: .5rem;
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 999px;
+    padding: .4rem 1rem;
+    font-size: .78rem;
+    color: #c7d2fe;
+    font-weight: 600;
+  }
+
+  .cover__badge .dot { width: 8px; height: 8px; background: #4ade80; border-radius: 50%; }
+
+  /* ── Sections ── */
+  .section {
+    padding: 14mm 16mm;
+    page-break-inside: avoid;
+  }
+
+  .section--shaded { background: var(--light); }
+  .section--navy {
+    background: linear-gradient(155deg, #0f1a52, #1E2A78);
+    color: #fff;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: .75rem;
+    border-bottom: 3px solid var(--navy);
+  }
+
+  .section--navy .section-header { border-bottom-color: rgba(255,255,255,.2); }
+
+  .section-num {
+    width: 36px; height: 36px;
+    background: var(--navy);
+    color: #fff;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .85rem;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+
+  .section--navy .section-num { background: rgba(255,255,255,.15); }
+
+  .section-title {
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: var(--navy);
+    letter-spacing: -.01em;
+  }
+
+  .section--navy .section-title { color: #fff; }
+
+  /* ── Subsections ── */
+  .sub-title {
+    font-size: .95rem;
+    font-weight: 800;
+    color: var(--navy);
+    margin: 1.25rem 0 .625rem;
+    display: flex; align-items: center; gap: .5rem;
+  }
+
+  .sub-title::before {
+    content: '';
+    display: block;
+    width: 4px; height: 16px;
+    background: var(--orange);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* ── Text ── */
+  p { margin-bottom: .75rem; color: #374151; }
+  .section--navy p { color: #c7d2fe; }
+
+  /* ── Cards grid ── */
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: .875rem; margin: 1rem 0; }
+  .cards--2 { grid-template-columns: repeat(2, 1fr); }
+  .cards--4 { grid-template-columns: repeat(4, 1fr); }
+
+  .card {
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent, var(--navy));
+    border-radius: 12px 12px 0 0;
+  }
+
+  .card__icon { font-size: 1.5rem; margin-bottom: .5rem; display: block; }
+  .card__title { font-size: .875rem; font-weight: 800; color: #111827; margin-bottom: .375rem; }
+  .card__text { font-size: .78rem; color: var(--gray); line-height: 1.55; margin: 0; }
+
+  /* ── Feature list ── */
+  .feat-list { list-style: none; display: flex; flex-direction: column; gap: .5rem; margin: .75rem 0; }
+  .feat-list li {
+    display: flex; align-items: flex-start; gap: .625rem;
+    font-size: .875rem; color: #374151;
+    padding: .5rem .75rem;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .feat-list li .icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+  .feat-list li strong { color: #111827; display: block; font-size: .875rem; }
+  .feat-list li span { font-size: .78rem; color: var(--gray); }
+
+  /* ── Steps ── */
+  .steps { display: flex; flex-direction: column; gap: .75rem; margin: 1rem 0; }
+  .step {
+    display: flex; align-items: flex-start; gap: 1rem;
+    padding: .875rem 1rem;
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+
+  .step__num {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--navy), #1d4ed8);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900;
+    font-size: .85rem;
+    flex-shrink: 0;
+  }
+
+  .step__content strong { font-size: .9rem; color: #111827; display: block; margin-bottom: 2px; }
+  .step__content span { font-size: .8rem; color: var(--gray); }
+
+  /* ── Comparison table ── */
+  .compare { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: .82rem; border-radius: 10px; overflow: hidden; }
+  .compare thead tr { background: linear-gradient(135deg, #0f1a52, #1E2A78); }
+  .compare th { padding: .75rem 1rem; color: #a5b4fc; font-size: .78rem; font-weight: 700; text-align: left; }
+  .compare th.nova { color: #FFB547; }
+  .compare td { padding: .65rem 1rem; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+  .compare tbody tr:last-child td { border-bottom: none; }
+  .compare tbody tr:hover td { background: #f9fafb; }
+  .compare .feature { font-weight: 700; color: #111827; }
+  .compare .bad { color: var(--red); }
+  .compare .meh { color: #d97706; }
+  .compare .good { color: var(--green); font-weight: 700; background: linear-gradient(135deg, #fff9f0, #fff5e6); border-left: 3px solid var(--orange); }
+
+  /* ── Objection box ── */
+  .objection {
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: .875rem;
+    overflow: hidden;
+  }
+
+  .objection__q {
+    background: #fef2f2;
+    border-bottom: 1px solid #fecaca;
+    padding: .75rem 1rem;
+    font-size: .875rem;
+    font-weight: 700;
+    color: #991b1b;
+    display: flex; align-items: center; gap: .5rem;
+  }
+
+  .objection__a {
+    padding: .875rem 1rem;
+    font-size: .85rem;
+    color: #374151;
+    border-left: 3px solid var(--green);
+  }
+
+  .objection__a strong { color: var(--green); }
+
+  /* ── Highlight box ── */
+  .highlight {
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    border: 1.5px solid #bfdbfe;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+  }
+
+  .highlight--orange {
+    background: linear-gradient(135deg, #fff9f0, #fff3e0);
+    border-color: #fdba74;
+  }
+
+  .highlight--green {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border-color: #86efac;
+  }
+
+  .highlight__title {
+    font-size: .875rem;
+    font-weight: 800;
+    color: var(--navy);
+    margin-bottom: .5rem;
+    display: flex; align-items: center; gap: .5rem;
+  }
+
+  .highlight--orange .highlight__title { color: #c2410c; }
+  .highlight--green .highlight__title { color: var(--green); }
+
+  .highlight p { font-size: .85rem; margin: 0; }
+
+  /* ── Pill ── */
+  .pill {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: .72rem;
+    font-weight: 700;
+    background: #eff6ff;
+    color: var(--navy);
+    border: 1px solid #bfdbfe;
+    margin: 2px;
+  }
+
+  .pill--green { background: #f0fdf4; color: var(--green); border-color: #86efac; }
+  .pill--orange { background: #fff9f0; color: #c2410c; border-color: #fdba74; }
+
+  /* ── Role panel ── */
+  .role-panel {
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .role-panel__header {
+    display: flex; align-items: center; gap: .875rem;
+    margin-bottom: 1rem;
+    padding-bottom: .75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .role-panel__icon { font-size: 2rem; }
+  .role-panel__name { font-size: 1rem; font-weight: 900; color: #111827; }
+  .role-panel__desc { font-size: .8rem; color: var(--gray); margin: 0; }
+
+  .role-panel__args { display: flex; flex-direction: column; gap: .4rem; }
+  .role-panel__arg {
+    display: flex; align-items: flex-start; gap: .5rem;
+    font-size: .82rem; color: #374151;
+  }
+  .role-panel__arg::before { content: '✓'; color: var(--green); font-weight: 900; flex-shrink: 0; }
+
+  /* ── Demo script ── */
+  .demo-step {
+    display: flex; gap: 1rem;
+    padding: .875rem 1rem;
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    margin-bottom: .625rem;
+  }
+
+  .demo-step__time {
+    font-size: .72rem;
+    font-weight: 800;
+    color: var(--orange);
+    background: #fff9f0;
+    border: 1px solid #fdba74;
+    border-radius: 6px;
+    padding: 3px 8px;
+    white-space: nowrap;
+    align-self: flex-start;
+    margin-top: 2px;
+  }
+
+  .demo-step__content strong { font-size: .88rem; color: #111827; display: block; margin-bottom: 3px; }
+  .demo-step__content p { font-size: .8rem; color: var(--gray); margin: 0; }
+  .demo-step__content em { color: var(--navy); font-style: italic; font-size: .8rem; }
+
+  /* ── Page header ── */
+  .doc-header {
+    background: var(--navy);
+    padding: 6mm 16mm;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .doc-header__brand { color: #fff; font-weight: 900; font-size: 1rem; }
+  .doc-header__brand span { color: #FFB547; }
+  .doc-header__label { color: #a5b4fc; font-size: .78rem; }
+
+  /* ── TOC ── */
+  .toc { padding: 14mm 16mm; page-break-after: always; }
+  .toc__title { font-size: 1.4rem; font-weight: 900; color: var(--navy); margin-bottom: 1.5rem; }
+  .toc__item {
+    display: flex;
+    align-items: center;
+    padding: .625rem 1rem;
+    border-radius: 8px;
+    margin-bottom: .375rem;
+    text-decoration: none;
+    color: #374151;
+    font-size: .9rem;
+  }
+  .toc__item:hover { background: var(--light); }
+  .toc__num { font-weight: 900; color: var(--navy); width: 28px; flex-shrink: 0; }
+  .toc__name { flex: 1; font-weight: 600; }
+  .toc__dots { flex: 1; border-bottom: 1px dotted var(--border); margin: 0 .5rem; }
+
+  /* ── Quote ── */
+  .quote {
+    border-left: 4px solid var(--orange);
+    padding: .75rem 1rem;
+    background: #fff9f0;
+    border-radius: 0 8px 8px 0;
+    margin: 1rem 0;
+    font-style: italic;
+    font-size: .88rem;
+    color: #374151;
+  }
+
+  .quote cite { display: block; font-style: normal; font-size: .78rem; color: var(--gray); margin-top: .25rem; }
+
+  /* ── Checklist ── */
+  .checklist { list-style: none; display: flex; flex-direction: column; gap: .375rem; margin: .75rem 0; }
+  .checklist li { display: flex; gap: .625rem; font-size: .875rem; color: #374151; align-items: flex-start; }
+  .checklist li::before { content: '☐'; color: var(--navy); font-size: 1rem; flex-shrink: 0; line-height: 1.3; }
+
+  /* ── Pricing table ── */
+  .pricing { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+  .price-card {
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .price-card--featured { border-color: var(--navy); }
+  .price-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--accent, var(--border)); }
+  .price-card__name { font-size: .85rem; font-weight: 800; color: #111827; margin-bottom: .5rem; text-transform: uppercase; letter-spacing: .03em; }
+  .price-card__price { font-size: 1.6rem; font-weight: 900; color: var(--navy); line-height: 1; margin-bottom: .25rem; }
+  .price-card__period { font-size: .72rem; color: var(--gray); margin-bottom: 1rem; }
+  .price-card__features { list-style: none; text-align: left; font-size: .78rem; color: #374151; display: flex; flex-direction: column; gap: .375rem; }
+  .price-card__features li::before { content: '✓ '; color: var(--green); font-weight: 900; }
+
+  /* ── Print ── */
+  @media print {
+    body { background: #fff; }
+    .page { box-shadow: none; width: 100%; }
+    .section { page-break-inside: avoid; }
+    .cover { page-break-after: always; }
+    .toc { page-break-after: always; }
+    a { color: inherit; text-decoration: none; }
+  }
+
+  @page { margin: 0; size: A4; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ═══════════════════════════════════════════════════════════ COVER -->
+<div class="cover">
+  <div class="cover__logo">📊</div>
+  <div class="cover__brand">Nova<span>Bulletin</span></div>
+  <div class="cover__tagline">La gestion scolaire numérique pour l'Afrique francophone</div>
+
+  <div class="cover__title">Manuel de Formation Commerciale</div>
+  <div class="cover__subtitle">Guide complet pour les agents commerciaux sur le terrain</div>
+
+  <div class="cover__badges">
+    <div class="cover__badge"><span class="dot"></span> Version 1.0 — 2026</div>
+    <div class="cover__badge">🌍 Marché Togolais &amp; Francophone</div>
+    <div class="cover__badge">📱 100% Cloud &amp; Mobile</div>
+    <div class="cover__badge">🔒 Usage Interne Uniquement</div>
+  </div>
+
+  <div class="cover__footer">
+    NovaBulletin — Document confidentiel — Réservé aux équipes commerciales
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ DOC HEADER -->
+<div class="doc-header">
+  <div class="doc-header__brand">Nova<span>Bulletin</span></div>
+  <div class="doc-header__label">Manuel de Formation Commerciale — v1.0</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ TABLE OF CONTENTS -->
+<div class="toc">
+  <div class="toc__title">📑 Table des matières</div>
+
+  <div class="toc__item"><span class="toc__num">1</span><span class="toc__name">Présentation de NovaBulletin</span><span class="toc__dots"></span></div>
+  <div class="toc__item"><span class="toc__num">2</span><span class="toc__name">Le problème que nous résolvons</span><span class="toc__dots"></span></div>
+  <div class="toc__item"><span class="toc__num">3</span><span class="toc__name">Fonctionnalités clés — ce que vous vendez</span><span class="toc__dots"></span></div>
+  <div class="toc__item"><span class="toc__num">4</span><span class="toc__name">Flux de travail complet</span><span class="toc__dots"></span></div>
+  <div class="toc__item"><span class="toc__num">5</span><span class="toc__name">Avantages par interlocuteur</span><span class="toc__dots"></span></div>
+  <div class="toc__item"><span class="toc__num">6</span><span class="toc__name">NovaBulletin vs la concurrence</span><span class="toc__dots"></span></div>
+  <div class="toc__item"><span class="toc__num">7</span><span class="toc__name">Objections courantes &amp; réponses</span><span class="toc__dots"></span></div>
+  <div class="toc__item"><span class="toc__num">8</span><span class="toc__name">Script de démonstration (15 min)</span><span class="toc__dots"></span></div>
+  <div class="toc__item"><span class="toc__num">9</span><span class="toc__name">Tarification &amp; processus d'inscription</span><span class="toc__dots"></span></div>
+  <div class="toc__item"><span class="toc__num">10</span><span class="toc__name">Checklist du bon agent commercial</span><span class="toc__dots"></span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ SECTION 1 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">1</div>
+    <div class="section-title">Présentation de NovaBulletin</div>
+  </div>
+
+  <p><strong>NovaBulletin</strong> est une plateforme numérique de gestion scolaire conçue spécifiquement pour les établissements d'enseignement de l'Afrique francophone — en particulier le Togo. Elle remplace complètement les bulletins papier, les cahiers de notes, et les SMS manuels par une solution cloud moderne, accessible depuis n'importe quel téléphone ou ordinateur.</p>
+
+  <div class="highlight">
+    <div class="highlight__title">💡 Message clé à retenir</div>
+    <p>NovaBulletin, c'est <strong>toute la vie scolaire d'un établissement en un seul endroit</strong> : notes, bulletins, frais scolaires, présences, communications avec les parents — le tout automatisé, professionnel, et disponible 24h/24.</p>
+  </div>
+
+  <div class="sub-title">Qui sommes-nous ?</div>
+  <p>NovaBulletin est développé par une équipe de développeurs togolais qui comprend les réalités du terrain local : coupures d'internet, parents sur WhatsApp, écoles avec peu de personnel administratif, frais scolaires impayés. La solution est pensée <strong>par des Africains, pour des écoles africaines</strong>.</p>
+
+  <div class="sub-title">Notre mission</div>
+  <p>Permettre à chaque école — petite ou grande, publique ou privée — d'offrir à ses parents et élèves l'expérience numérique qu'ils méritent, sans formation technique complexe ni investissement matériel important.</p>
+
+  <div class="cards cards--2" style="margin-top:1rem;">
+    <div class="card" style="--accent:#1E2A78">
+      <span class="card__icon">🎯</span>
+      <div class="card__title">Cible principale</div>
+      <p class="card__text">Écoles primaires, collèges, lycées, établissements d'enseignement technique et professionnel — privés ou publics — au Togo et en Afrique francophone.</p>
+    </div>
+    <div class="card" style="--accent:#FF7A59">
+      <span class="card__icon">📊</span>
+      <div class="card__title">Chiffres clés</div>
+      <p class="card__text">Des milliers d'élèves gérés, des centaines de bulletins générés en quelques clics, 0 papier perdu, 0 bulletin non remis.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ SECTION 2 -->
+<div class="section section--shaded">
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <div class="section-title">Le problème que nous résolvons</div>
+  </div>
+
+  <p>Avant NovaBulletin, voici ce que vivent les écoles togolaises chaque trimestre. <strong>Reconnaissez ces situations lors de votre visite — elles ouvriront la conversation.</strong></p>
+
+  <div class="cards" style="margin-top:1rem;">
+    <div class="card" style="--accent:#dc2626">
+      <span class="card__icon">📋</span>
+      <div class="card__title">Bulletins papier chronophages</div>
+      <p class="card__text">Le secrétaire passe des jours à recopier les notes à la main. Une erreur de calcul et tout le bulletin est à refaire. Les parents attendent des semaines.</p>
+    </div>
+    <div class="card" style="--accent:#dc2626">
+      <span class="card__icon">💸</span>
+      <div class="card__title">Frais scolaires impayés</div>
+      <p class="card__text">Impossible de savoir qui a payé, qui ne l'a pas fait. Les bulletins sont remis à tous, même aux élèves dont les parents doivent encore de l'argent.</p>
+    </div>
+    <div class="card" style="--accent:#dc2626">
+      <span class="card__icon">📱</span>
+      <div class="card__title">Zéro communication parent</div>
+      <p class="card__text">Les parents ne savent pas que le bulletin est prêt. Certains ne viennent jamais chercher le bulletin. D'autres demandent les notes par téléphone, une par une.</p>
+    </div>
+    <div class="card" style="--accent:#dc2626">
+      <span class="card__icon">🔓</span>
+      <div class="card__title">Bulletins falsifiés</div>
+      <p class="card__text">Des élèves modifient leurs bulletins papier avant de les montrer aux parents. Aucun moyen de vérifier l'authenticité d'un bulletin.</p>
+    </div>
+    <div class="card" style="--accent:#dc2626">
+      <span class="card__icon">🗂️</span>
+      <div class="card__title">Archives perdues</div>
+      <p class="card__text">Les cahiers de notes des années précédentes sont introuvables. Un parent demande le bulletin de son enfant de l'année passée — impossible.</p>
+    </div>
+    <div class="card" style="--accent:#dc2626">
+      <span class="card__icon">😤</span>
+      <div class="card__title">Professeurs surchargés</div>
+      <p class="card__text">Les profs saisissent leurs notes sur papier, les donnent au secrétaire, qui les ressaisit sur Excel, qui les recalcule manuellement. Triple travail.</p>
+    </div>
+  </div>
+
+  <div class="highlight highlight--orange" style="margin-top:1.5rem;">
+    <div class="highlight__title">🔥 Argument de vente puissant</div>
+    <p>Demandez au directeur : <em>"Combien de temps votre secrétaire passe-t-il à préparer les bulletins chaque trimestre ?"</em> La réponse est généralement entre <strong>2 et 4 semaines de travail intensif</strong>. NovaBulletin réduit cela à <strong>2 heures maximum</strong>.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ SECTION 3 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">3</div>
+    <div class="section-title">Fonctionnalités clés — ce que vous vendez</div>
+  </div>
+
+  <p>NovaBulletin couvre <strong>l'intégralité de la vie administrative et pédagogique</strong> d'un établissement. Voici les modules à mettre en avant selon votre interlocuteur.</p>
+
+  <div class="sub-title">📊 Gestion des bulletins &amp; notes</div>
+  <ul class="feat-list">
+    <li>
+      <span class="icon">✅</span>
+      <div>
+        <strong>Saisie des notes en ligne par les professeurs</strong>
+        <span>Chaque prof entre ses notes (interrogations, devoirs, composition) depuis son téléphone. Les moyennes sont calculées automatiquement.</span>
+      </div>
+    </li>
+    <li>
+      <span class="icon">✅</span>
+      <div>
+        <strong>Bulletin professionnel avec logo et couleurs de l'école</strong>
+        <span>Le bulletin PDF intègre le logo, le cachet, les couleurs et la devise de votre établissement. Meilleur qu'un bulletin imprimé !</span>
+      </div>
+    </li>
+    <li>
+      <span class="icon">✅</span>
+      <div>
+        <strong>Relevé annuel automatique</strong>
+        <span>En fin d'année, la plateforme génère automatiquement le relevé annuel avec les moyennes de tous les trimestres et la décision du conseil.</span>
+      </div>
+    </li>
+    <li>
+      <span class="icon">✅</span>
+      <div>
+        <strong>Code de sécurité anti-fraude</strong>
+        <span>Chaque bulletin a un code unique. Parents et employeurs peuvent vérifier l'authenticité sur novabulletin.com/verify.</span>
+      </div>
+    </li>
+    <li>
+      <span class="icon">✅</span>
+      <div>
+        <strong>Téléchargement PDF instantané</strong>
+        <span>Le bulletin est disponible en PDF en 1 clic. Plus besoin d'attendre la distribution papier.</span>
+      </div>
+    </li>
+  </ul>
+
+  <div class="sub-title">💬 Notifications automatiques</div>
+  <ul class="feat-list">
+    <li>
+      <span class="icon">✅</span>
+      <div>
+        <strong>WhatsApp automatique à chaque publication</strong>
+        <span>Dès que le bulletin est publié, le parent reçoit un message WhatsApp avec le lien de téléchargement. Aucune action manuelle requise.</span>
+      </div>
+    </li>
+    <li>
+      <span class="icon">✅</span>
+      <div>
+        <strong>Email avec pièce jointe PDF</strong>
+        <span>En même temps que WhatsApp, le bulletin est envoyé par email aux parents qui ont une adresse email.</span>
+      </div>
+    </li>
+    <li>
+      <span class="icon">✅</span>
+      <div>
+        <strong>Publication groupée d'une classe entière en 1 clic</strong>
+        <span>L'administrateur publie tous les bulletins d'une classe simultanément. Tous les parents sont notifiés en moins de 2 minutes.</span>
+      </div>
+    </li>
+  </ul>
+
+  <div class="sub-title">💰 Gestion des frais scolaires</div>
+  <ul class="feat-list">
+    <li>
+      <span class="icon">✅</span>
+      <div>
+        <strong>Portail de paiement intégré (Mobile Money)</strong>
+        <span>Les parents paient les frais scolaires directement via Orange Money, Moov Money ou Wave depuis l'application.</span>
+      </div>
+    </li>
+    <li>
+      <span class="icon">✅</span>
+      <div>
+        <strong>Blocage automatique des bulletins impayés</strong>
+        <span>Si un parent n'a pas payé, son enfant ne reçoit pas le bulletin — jusqu'au règlement. Ce "frais gate" est optionnel et configurable.</span>
+      </div>
+    </li>
+    <li>
+      <span class="icon">✅</span>
+      <div>
+        <strong>Tableau de bord des paiements en temps réel</strong>
+        <span>Le responsable financier voit en temps réel qui a payé, qui doit combien, le total collecté ce mois.</span>
+      </div>
+    </li>
+  </ul>
+
+  <div class="sub-title">📅 Présences &amp; vie scolaire</div>
+  <ul class="feat-list">
+    <li>
+      <span class="icon">✅</span>
+      <div>
+        <strong>Gestion des absences et retards</strong>
+        <span>Saisie quotidienne des présences par classe. Les statistiques d'assiduité apparaissent directement sur le bulletin.</span>
+      </div>
+    </li>
+    <li>
+      <span class="icon">✅</span>
+      <div>
+        <strong>Sanctions disciplinaires</strong>
+        <span>Enregistrement des avertissements, blâmes, exclusions. Historique complet par élève.</span>
+      </div>
+    </li>
+  </ul>
+
+  <div class="sub-title">📚 Espace numérique d'apprentissage (LMS)</div>
+  <ul class="feat-list">
+    <li>
+      <span class="icon">✅</span>
+      <div>
+        <strong>Cours en ligne et documents</strong>
+        <span>Les professeurs partagent leurs fiches de cours, exercices, et documents directement sur la plateforme.</span>
+      </div>
+    </li>
+    <li>
+      <span class="icon">✅</span>
+      <div>
+        <strong>Devoirs et quiz interactifs</strong>
+        <span>Création de devoirs en ligne avec correction automatique des QCM. Résultats visibles par l'élève et ses parents.</span>
+      </div>
+    </li>
+  </ul>
+
+  <div class="sub-title">📈 Analyses et rapports</div>
+  <ul class="feat-list">
+    <li>
+      <span class="icon">✅</span>
+      <div>
+        <strong>Tableau de bord de direction</strong>
+        <span>Vue globale de l'établissement : taux de réussite, moyennes par classe, élèves en difficulté, taux de paiement des frais.</span>
+      </div>
+    </li>
+    <li>
+      <span class="icon">✅</span>
+      <div>
+        <strong>Téléchargement ZIP de toute une école</strong>
+        <span>En 1 clic, téléchargez tous les bulletins d'une classe ou de toute l'école dans un fichier ZIP.</span>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ SECTION 4 -->
+<div class="section section--shaded">
+  <div class="section-header">
+    <div class="section-num">4</div>
+    <div class="section-title">Flux de travail complet — De la note au parent</div>
+  </div>
+
+  <p>Comprendre ce flux vous permettra de répondre à toutes les questions techniques et de faire une démonstration fluide.</p>
+
+  <div class="sub-title">⚙️ Configuration initiale (une seule fois)</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step__num">1</div>
+      <div class="step__content">
+        <strong>L'école s'inscrit sur NovaBulletin</strong>
+        <span>Le directeur ou le gestionnaire crée le compte de l'établissement, ajoute le logo, les couleurs, la devise de l'école.</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step__num">2</div>
+      <div class="step__content">
+        <strong>Création des classes, matières et professeurs</strong>
+        <span>L'administrateur configure toutes les classes (6ème A, 5ème B…), les matières avec leurs coefficients, et crée les comptes professeurs.</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step__num">3</div>
+      <div class="step__content">
+        <strong>Import des élèves et parents</strong>
+        <span>Les élèves sont importés via un fichier Excel ou saisis manuellement. Les numéros WhatsApp des parents sont enregistrés.</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step__num">4</div>
+      <div class="step__content">
+        <strong>Définition des frais scolaires</strong>
+        <span>Le gestionnaire configure les montants (inscription, scolarité, cantine…) et les échéances de paiement.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sub-title">📝 Chaque trimestre — Saisie des notes</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step__num">5</div>
+      <div class="step__content">
+        <strong>Le professeur saisit ses notes</strong>
+        <span>Depuis son téléphone, le prof entre les notes d'interrogation, devoir et composition pour chaque élève. Les moyennes sont calculées instantanément.</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step__num">6</div>
+      <div class="step__content">
+        <strong>Le prof titulaire valide et signe</strong>
+        <span>Le professeur principal entre les appréciations générales, les absences, la conduite. Il signe électroniquement la fiche de notes.</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step__num">7</div>
+      <div class="step__content">
+        <strong>L'administrateur révise et publie</strong>
+        <span>Le directeur ou l'admin vérifie les bulletins, les valide et les publie. Il peut publier toute une classe en 1 seul clic.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sub-title">📱 Distribution automatique aux parents</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step__num">8</div>
+      <div class="step__content">
+        <strong>Notification WhatsApp instantanée</strong>
+        <span>À la seconde où le bulletin est publié, le parent reçoit un WhatsApp : "Bonjour, le bulletin de votre enfant est disponible. Cliquez ici pour le télécharger."</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step__num">9</div>
+      <div class="step__content">
+        <strong>Le parent consulte et télécharge</strong>
+        <span>Le parent clique sur le lien, se connecte à son espace, voit le bulletin, le télécharge en PDF ou l'imprime chez lui.</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step__num">10</div>
+      <div class="step__content">
+        <strong>Bulletin bloqué si frais impayés</strong>
+        <span>Si le parent n'a pas payé les frais scolaires, il voit le message "Bulletin disponible après règlement des frais." Il peut payer directement en ligne.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ SECTION 5 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">5</div>
+    <div class="section-title">Avantages par interlocuteur</div>
+  </div>
+
+  <p>Selon qui vous rencontrez dans l'école, adaptez votre discours. Voici les arguments clés pour chaque profil.</p>
+
+  <div class="role-panel">
+    <div class="role-panel__header">
+      <div class="role-panel__icon">👨‍💼</div>
+      <div>
+        <div class="role-panel__name">Le Directeur / Chef d'établissement</div>
+        <p class="role-panel__desc">Préoccupé par : l'image de l'école, la gestion du personnel, les résultats scolaires, la conformité administrative.</p>
+      </div>
+    </div>
+    <div class="role-panel__args">
+      <div class="role-panel__arg">Image professionnelle : votre école aura des bulletins numériques avec votre logo et vos couleurs, comme les grandes écoles internationales.</div>
+      <div class="role-panel__arg">Gain de temps immense : réduire la préparation des bulletins de 3 semaines à 2 heures libère votre personnel pour d'autres tâches.</div>
+      <div class="role-panel__arg">Tableau de bord complet : voyez en temps réel les performances de chaque classe, les taux de réussite, les élèves en difficulté.</div>
+      <div class="role-panel__arg">Zéro falsification : chaque bulletin a un code de sécurité unique vérifiable en ligne. Vos bulletins sont infalsifiables.</div>
+      <div class="role-panel__arg">Archives permanentes : accédez aux bulletins de n'importe quelle année passée en 3 clics, même 10 ans après.</div>
+      <div class="role-panel__arg">Conformité : toutes les données des élèves sont stockées de manière sécurisée et sauvegardées automatiquement.</div>
+    </div>
+  </div>
+
+  <div class="role-panel">
+    <div class="role-panel__header">
+      <div class="role-panel__icon">💼</div>
+      <div>
+        <div class="role-panel__name">Le Gestionnaire / Responsable financier</div>
+        <p class="role-panel__desc">Préoccupé par : le recouvrement des frais, la trésorerie, les rapprochements comptables.</p>
+      </div>
+    </div>
+    <div class="role-panel__args">
+      <div class="role-panel__arg">Recouvrement forcé : les bulletins des élèves qui n'ont pas payé sont automatiquement bloqués. Le parent paie pour avoir accès.</div>
+      <div class="role-panel__arg">Paiement Mobile Money : les parents paient directement depuis leur téléphone via Orange Money, Moov Money ou Wave. Fini les espèces perdues.</div>
+      <div class="role-panel__arg">Tableau de bord financier : voyez en temps réel les montants collectés, les impayés, les exemptions. Un seul écran pour tout comprendre.</div>
+      <div class="role-panel__arg">Export comptable : exportez tous les paiements en Excel pour votre comptabilité mensuelle en 1 clic.</div>
+      <div class="role-panel__arg">Réduction des détournements : les paiements arrivent directement sur le compte de l'école, aucun intermédiaire.</div>
+    </div>
+  </div>
+
+  <div class="role-panel">
+    <div class="role-panel__header">
+      <div class="role-panel__icon">👩‍🏫</div>
+      <div>
+        <div class="role-panel__name">Les Professeurs</div>
+        <p class="role-panel__desc">Préoccupés par : la charge de travail administrative, la saisie des notes, les parents qui les contactent directement.</p>
+      </div>
+    </div>
+    <div class="role-panel__args">
+      <div class="role-panel__arg">Saisie des notes depuis le téléphone : plus besoin de se déplacer au secrétariat. Le prof saisit ses notes n'importe où, même chez lui.</div>
+      <div class="role-panel__arg">Calculs automatiques : moyennes, coefficients, rangs — tout est calculé sans erreur. Plus de nuit blanche à vérifier les calculs.</div>
+      <div class="role-panel__arg">Partage de cours et devoirs : les profs envoient leurs cours et exercices aux élèves directement sur la plateforme.</div>
+      <div class="role-panel__arg">Moins d'appels des parents : les parents ont accès à toutes les informations en ligne. Moins de coups de fil intempestifs.</div>
+    </div>
+  </div>
+
+  <div class="role-panel">
+    <div class="role-panel__header">
+      <div class="role-panel__icon">👨‍👩‍👦</div>
+      <div>
+        <div class="role-panel__name">Les Parents d'élèves</div>
+        <p class="role-panel__desc">Préoccupés par : connaître les résultats de leurs enfants, ne pas manquer des informations importantes.</p>
+      </div>
+    </div>
+    <div class="role-panel__args">
+      <div class="role-panel__arg">Bulletin reçu instantanément sur WhatsApp : plus d'attente, plus de déplacement à l'école juste pour chercher un bulletin.</div>
+      <div class="role-panel__arg">Accès 24h/24 à tous les bulletins : un parent peut consulter les résultats de son enfant à minuit si besoin.</div>
+      <div class="role-panel__arg">Paiement des frais depuis le téléphone : Orange Money, Moov Money — le parent paie en 2 minutes sans se déplacer.</div>
+      <div class="role-panel__arg">Historique complet : tous les bulletins des années précédentes sont accessibles. Jamais de bulletin perdu.</div>
+      <div class="role-panel__arg">Suivi des absences en temps réel : le parent sait combien de fois son enfant a été absent ce trimestre.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ SECTION 6 -->
+<div class="section section--shaded">
+  <div class="section-header">
+    <div class="section-num">6</div>
+    <div class="section-title">NovaBulletin vs la concurrence</div>
+  </div>
+
+  <p>Lorsqu'on vous demande "En quoi êtes-vous différent ?", voici le tableau comparatif à utiliser.</p>
+
+  <table class="compare">
+    <thead>
+      <tr>
+        <th>Fonctionnalité</th>
+        <th>Bulletins papier</th>
+        <th>Excel / Word</th>
+        <th class="nova">⭐ NovaBulletin</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="feature">Calcul automatique des moyennes</td>
+        <td class="bad">✗ Manuel</td>
+        <td class="meh">△ Partiel</td>
+        <td class="good">✓ 100% automatique</td>
+      </tr>
+      <tr>
+        <td class="feature">Notification parents</td>
+        <td class="bad">✗ Distribution physique</td>
+        <td class="bad">✗ Aucune</td>
+        <td class="good">✓ WhatsApp + Email auto</td>
+      </tr>
+      <tr>
+        <td class="feature">Paiement frais scolaires</td>
+        <td class="bad">✗ Espèces uniquement</td>
+        <td class="bad">✗ Aucune</td>
+        <td class="good">✓ Mobile Money intégré</td>
+      </tr>
+      <tr>
+        <td class="feature">Blocage bulletins impayés</td>
+        <td class="bad">✗ Impossible</td>
+        <td class="bad">✗ Impossible</td>
+        <td class="good">✓ Automatique</td>
+      </tr>
+      <tr>
+        <td class="feature">Anti-falsification bulletins</td>
+        <td class="bad">✗ Facile à falsifier</td>
+        <td class="bad">✗ Facile à falsifier</td>
+        <td class="good">✓ Code de sécurité unique</td>
+      </tr>
+      <tr>
+        <td class="feature">Archives permanentes</td>
+        <td class="bad">✗ Papiers perdus</td>
+        <td class="meh">△ Fichiers corrompus</td>
+        <td class="good">✓ Cloud, 10 ans garantis</td>
+      </tr>
+      <tr>
+        <td class="feature">Accès depuis téléphone</td>
+        <td class="bad">✗ Non</td>
+        <td class="bad">✗ Difficile</td>
+        <td class="good">✓ 100% mobile</td>
+      </tr>
+      <tr>
+        <td class="feature">Relevé annuel automatique</td>
+        <td class="bad">✗ Manuel</td>
+        <td class="meh">△ Semi-manuel</td>
+        <td class="good">✓ Généré automatiquement</td>
+      </tr>
+      <tr>
+        <td class="feature">Gestion des présences</td>
+        <td class="bad">✗ Cahier séparé</td>
+        <td class="bad">✗ Non</td>
+        <td class="good">✓ Intégré au bulletin</td>
+      </tr>
+      <tr>
+        <td class="feature">Coût de mise en oeuvre</td>
+        <td class="meh">△ Papier + impression</td>
+        <td class="bad">✗ Formation longue</td>
+        <td class="good">✓ Abordable, sans matériel</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="highlight highlight--green" style="margin-top:1.25rem;">
+    <div class="highlight__title">💪 Notre avantage décisif</div>
+    <p>NovaBulletin est la <strong>seule solution du marché africain</strong> qui combine bulletins numériques + paiement Mobile Money + notifications WhatsApp en une seule plateforme. Nos concurrents étrangers (solutions européennes ou américaines) ne gèrent pas Orange Money, ne connaissent pas le système trimestriel togolais, et coûtent 10 fois plus cher.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ SECTION 7 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">7</div>
+    <div class="section-title">Objections courantes &amp; réponses</div>
+  </div>
+
+  <p>Ces objections reviendront sur le terrain. <strong>Préparez-vous à y répondre sans hésitation.</strong></p>
+
+  <div class="objection">
+    <div class="objection__q">❓ "Internet ne fonctionne pas bien chez nous. Comment ça va marcher ?"</div>
+    <div class="objection__a">
+      <strong>Réponse :</strong> NovaBulletin fonctionne avec une connexion 3G basique. La saisie des notes et la consultation des bulletins utilisent très peu de données. Les professeurs peuvent saisir leurs notes en mode hors ligne et synchroniser quand la connexion est disponible. Et pour les parents, WhatsApp fonctionne partout au Togo — et c'est le seul outil dont ils ont besoin.
+    </div>
+  </div>
+
+  <div class="objection">
+    <div class="objection__q">❓ "Nos professeurs ne savent pas utiliser les ordinateurs."</div>
+    <div class="objection__a">
+      <strong>Réponse :</strong> NovaBulletin est conçu pour être utilisé <strong>depuis un téléphone simple</strong>. Si un professeur sait envoyer un WhatsApp, il sait utiliser NovaBulletin. L'interface est en français, avec des boutons très clairs. De plus, nous fournissons une formation complète lors de l'installation. La plupart des écoles sont opérationnelles en moins d'une journée.
+    </div>
+  </div>
+
+  <div class="objection">
+    <div class="objection__q">❓ "Nous n'avons pas le budget pour ça."</div>
+    <div class="objection__a">
+      <strong>Réponse :</strong> Calculons ensemble ce que vous dépensez actuellement : papier pour les bulletins, impression, heures de travail du secrétariat pendant 3 semaines, corrections d'erreurs... NovaBulletin coûte moins cher que vos dépenses actuelles en papier et main d'oeuvre. De plus, le système de blocage des frais impayés permet à la plupart de nos écoles de <strong>récupérer en 1 trimestre l'équivalent de 2 ans d'abonnement</strong> en frais impayés.
+    </div>
+  </div>
+
+  <div class="objection">
+    <div class="objection__q">❓ "Les parents n'ont pas tous WhatsApp."</div>
+    <div class="objection__a">
+      <strong>Réponse :</strong> Plus de 85% des parents togolais utilisent WhatsApp. Pour les autres, NovaBulletin envoie aussi des emails. Et l'administrateur peut toujours imprimer le bulletin PDF et le distribuer physiquement pour les rares cas sans smartphone. L'école conserve le choix.
+    </div>
+  </div>
+
+  <div class="objection">
+    <div class="objection__q">❓ "Et si les données de nos élèves sont piratées ?"</div>
+    <div class="objection__a">
+      <strong>Réponse :</strong> NovaBulletin utilise les mêmes standards de sécurité que les banques : connexions chiffrées HTTPS, mots de passe cryptés, accès par rôles (un parent ne voit que son enfant). Les données sont hébergées sur des serveurs professionnels en Europe avec sauvegarde quotidienne. C'est infiniment plus sécurisé qu'un cahier de notes qui peut être volé ou perdu.
+    </div>
+  </div>
+
+  <div class="objection">
+    <div class="objection__q">❓ "Nous utilisons déjà Excel, ça nous suffit."</div>
+    <div class="objection__a">
+      <strong>Réponse :</strong> Excel ne notifie pas les parents, ne bloque pas les bulletins des impayés, ne génère pas de PDF professionnel avec votre logo, et ne protège pas contre les falsifications. Excel, c'est un outil pour calculer des chiffres — NovaBulletin est un système complet de gestion scolaire. La question n'est pas "Excel ou NovaBulletin" mais "Voulez-vous rester manuel ou passer au numérique ?"
+    </div>
+  </div>
+
+  <div class="objection">
+    <div class="objection__q">❓ "Et si votre entreprise ferme demain ?"</div>
+    <div class="objection__a">
+      <strong>Réponse :</strong> C'est une bonne question. C'est pourquoi nous fournissons à chaque école la possibilité d'exporter toutes leurs données à tout moment en un clic : élèves, notes, bulletins, paiements. Vous n'êtes jamais prisonnier de notre plateforme. De plus, NovaBulletin est une entreprise togolaise qui comprend les besoins locaux — nous sommes là pour durer.
+    </div>
+  </div>
+
+  <div class="objection">
+    <div class="objection__q">❓ "On peut tester avant de payer ?"</div>
+    <div class="objection__a">
+      <strong>Réponse :</strong> Oui, absolument ! Nous proposons une période d'essai gratuite pour permettre à l'école de tester toutes les fonctionnalités. Nous vous accompagnons pendant cette période avec une formation et un support dédié. Vous ne payez qu'une fois convaincu.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ SECTION 8 -->
+<div class="section section--shaded">
+  <div class="section-header">
+    <div class="section-num">8</div>
+    <div class="section-title">Script de démonstration — 15 minutes</div>
+  </div>
+
+  <p>Lorsque vous avez l'attention d'un décideur, suivez ce script. Utilisez votre téléphone ou un ordinateur pour montrer la plateforme en direct.</p>
+
+  <div class="highlight highlight--orange">
+    <div class="highlight__title">⚠️ Avant de commencer</div>
+    <p>Assurez-vous d'avoir : (1) un compte de démonstration NovaBulletin actif, (2) quelques données d'exemple pré-chargées (élèves fictifs, notes, bulletins), (3) votre téléphone chargé avec internet actif.</p>
+  </div>
+
+  <div style="margin-top:1rem;">
+    <div class="demo-step">
+      <div class="demo-step__time">0–2 min</div>
+      <div class="demo-step__content">
+        <strong>🎯 L'accroche — Le problème en chiffres</strong>
+        <p>Commencez par : <em>"Directeur, combien de temps votre secrétaire passe à préparer les bulletins ce trimestre ?"</em>. Laissez-le répondre. Puis : <em>"Avec NovaBulletin, je vais vous montrer comment faire ça en 2 heures, et que les parents reçoivent les bulletins sur WhatsApp le jour même."</em></p>
+      </div>
+    </div>
+
+    <div class="demo-step">
+      <div class="demo-step__time">2–4 min</div>
+      <div class="demo-step__content">
+        <strong>📊 Le tableau de bord administrateur</strong>
+        <p>Montrez le tableau de bord : <em>"Voici ce que voit le directeur chaque matin : combien de bulletins publiés, combien de frais collectés, quels élèves sont en difficulté."</em> Insistez sur la simplicité visuelle.</p>
+      </div>
+    </div>
+
+    <div class="demo-step">
+      <div class="demo-step__time">4–7 min</div>
+      <div class="demo-step__content">
+        <strong>📝 Saisie des notes par un professeur</strong>
+        <p>Depuis l'onglet professeur : <em>"Voici comment un prof entre ses notes depuis son téléphone. Il tape la note, appuie sur Enregistrer — la moyenne est calculée automatiquement."</em>. Saisissez 2-3 notes en direct pour montrer la fluidité.</p>
+      </div>
+    </div>
+
+    <div class="demo-step">
+      <div class="demo-step__time">7–10 min</div>
+      <div class="demo-step__content">
+        <strong>📄 Publication et aperçu du bulletin PDF</strong>
+        <p>Publiez le bulletin d'un élève fictif. Montrez le PDF qui se génère : <em>"Regardez — votre logo, vos couleurs, le cachet de l'école, toutes les matières, les rangs. C'est prêt à imprimer ou à envoyer."</em> Puis montrez le code anti-falsification.</p>
+      </div>
+    </div>
+
+    <div class="demo-step">
+      <div class="demo-step__time">10–12 min</div>
+      <div class="demo-step__content">
+        <strong>💬 La notification WhatsApp</strong>
+        <p>Montrez le journal des notifications : <em>"Dès que vous publiez, le parent reçoit ce message sur WhatsApp avec le lien direct vers le bulletin. Même à minuit, même pendant les vacances."</em>. Si possible, envoyez un vrai message de test à votre propre numéro pour le montrer en direct.</p>
+      </div>
+    </div>
+
+    <div class="demo-step">
+      <div class="demo-step__time">12–14 min</div>
+      <div class="demo-step__content">
+        <strong>💰 Le blocage des frais impayés</strong>
+        <p>Montrez l'écran de gestion des frais : <em>"Ici, le gestionnaire voit qui a payé, qui ne l'a pas fait. Et si un parent n'a pas payé, son enfant reçoit ce message au lieu du bulletin."</em>. Montrez le message de blocage. Regardez la réaction — c'est souvent là que les directeurs disent "c'est exactement ce dont j'ai besoin !"</p>
+      </div>
+    </div>
+
+    <div class="demo-step">
+      <div class="demo-step__time">14–15 min</div>
+      <div class="demo-step__content">
+        <strong>🤝 La conclusion — L'appel à l'action</strong>
+        <p><em>"Directeur, votre prochaine publication de bulletins est dans [X semaines/mois]. Nous pouvons avoir votre école configurée et opérationnelle en 2 jours, avant cette date. Est-ce que vous voulez qu'on commence dès cette semaine ?"</em></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="quote">
+    "Ne demandez jamais 'Qu'est-ce que vous en pensez ?' — Demandez toujours 'Quand voulez-vous commencer ?'"
+    <cite>— Règle d'or de la vente terrain</cite>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ SECTION 9 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">9</div>
+    <div class="section-title">Tarification &amp; processus d'inscription</div>
+  </div>
+
+  <p>NovaBulletin propose une tarification simple et transparente, adaptée à la taille de l'établissement. Les prix sont exprimés en <strong>FCFA par an</strong>.</p>
+
+  <div class="pricing">
+    <div class="price-card" style="--accent:#6b7280">
+      <div class="price-card__name">Starter</div>
+      <div class="price-card__price">Sur devis</div>
+      <div class="price-card__period">Pour les petites écoles</div>
+      <ul class="price-card__features">
+        <li>Jusqu'à 100 élèves</li>
+        <li>Bulletins numériques</li>
+        <li>Notifications WhatsApp</li>
+        <li>Gestion des frais</li>
+        <li>Support par email</li>
+      </ul>
+    </div>
+    <div class="price-card price-card--featured" style="--accent:#FF7A59">
+      <div class="price-card__name">Pro ⭐</div>
+      <div class="price-card__price">Sur devis</div>
+      <div class="price-card__period">Le plus populaire</div>
+      <ul class="price-card__features">
+        <li>Jusqu'à 500 élèves</li>
+        <li>Tout le plan Starter</li>
+        <li>LMS (cours &amp; devoirs)</li>
+        <li>Analyses avancées</li>
+        <li>Relevé annuel PDF</li>
+        <li>Export ZIP bulletins</li>
+        <li>Support prioritaire</li>
+      </ul>
+    </div>
+    <div class="price-card" style="--accent:#1E2A78">
+      <div class="price-card__name">Établissement</div>
+      <div class="price-card__price">Sur devis</div>
+      <div class="price-card__period">Pour les grands établissements</div>
+      <ul class="price-card__features">
+        <li>Élèves illimités</li>
+        <li>Tout le plan Pro</li>
+        <li>Multi-campus</li>
+        <li>Intégration comptable</li>
+        <li>Formation sur site</li>
+        <li>Account manager dédié</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="highlight highlight--green">
+    <div class="highlight__title">🎁 Offre de lancement</div>
+    <p>Les <strong>50 premières écoles</strong> bénéficient d'un tarif préférentiel et d'une formation gratuite sur site. Mentionnez-le systématiquement pour créer un sentiment d'urgence.</p>
+  </div>
+
+  <div class="sub-title">📋 Processus d'inscription en 3 étapes</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step__num">1</div>
+      <div class="step__content">
+        <strong>Recueillez les informations de base</strong>
+        <span>Nom de l'école, nombre d'élèves approximatif, nombre de classes, nom et numéro du directeur/gestionnaire, email de contact.</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step__num">2</div>
+      <div class="step__content">
+        <strong>Soumettez le dossier à l'équipe NovaBulletin</strong>
+        <span>Transmettez les informations collectées à votre responsable commercial. Un devis personnalisé sera préparé dans les 24 heures.</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step__num">3</div>
+      <div class="step__content">
+        <strong>Signature et configuration</strong>
+        <span>Une fois le devis accepté, l'équipe technique configure l'école en 48h et forme l'administrateur sur place ou en ligne.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ SECTION 10 -->
+<div class="section section--navy">
+  <div class="section-header">
+    <div class="section-num" style="background:rgba(255,255,255,.15)">10</div>
+    <div class="section-title">Checklist du bon agent commercial</div>
+  </div>
+
+  <p style="color:#c7d2fe">Avant chaque visite, vérifiez que vous avez tout ce qu'il faut pour réussir.</p>
+
+  <div class="cards cards--2" style="margin-top:1rem;">
+    <div class="card" style="--accent:#FF7A59;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15)">
+      <span class="card__icon">📱</span>
+      <div class="card__title" style="color:#fff">Avant la visite</div>
+      <ul class="checklist" style="margin:0;">
+        <li style="color:#c7d2fe">Compte démo NovaBulletin actif et à jour</li>
+        <li style="color:#c7d2fe">Données d'exemple pré-chargées dans le démo</li>
+        <li style="color:#c7d2fe">Téléphone chargé à 100%</li>
+        <li style="color:#c7d2fe">Connexion internet testée</li>
+        <li style="color:#c7d2fe">Cartes de visite</li>
+        <li style="color:#c7d2fe">Fiche de collecte d'informations vierge</li>
+        <li style="color:#c7d2fe">Connaître le nom du directeur</li>
+      </ul>
+    </div>
+
+    <div class="card" style="--accent:#4ade80;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15)">
+      <span class="card__icon">✅</span>
+      <div class="card__title" style="color:#fff">Pendant la visite</div>
+      <ul class="checklist" style="margin:0;">
+        <li style="color:#c7d2fe">Commencer par écouter les problèmes de l'école</li>
+        <li style="color:#c7d2fe">Adapter le discours au profil de l'interlocuteur</li>
+        <li style="color:#c7d2fe">Montrer, ne pas seulement parler</li>
+        <li style="color:#c7d2fe">Laisser l'interlocuteur toucher/essayer la démo</li>
+        <li style="color:#c7d2fe">Noter toutes les objections soulevées</li>
+        <li style="color:#c7d2fe">Proposer systématiquement une date de démarrage</li>
+        <li style="color:#c7d2fe">Recueillir le contact du décideur final</li>
+      </ul>
+    </div>
+
+    <div class="card" style="--accent:#a5b4fc;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15)">
+      <span class="card__icon">📞</span>
+      <div class="card__title" style="color:#fff">Après la visite</div>
+      <ul class="checklist" style="margin:0;">
+        <li style="color:#c7d2fe">Envoyer un WhatsApp de remerciement dans l'heure</li>
+        <li style="color:#c7d2fe">Transmettre le rapport de visite à votre responsable</li>
+        <li style="color:#c7d2fe">Relancer dans 48h si pas de réponse</li>
+        <li style="color:#c7d2fe">Faire une 2ème visite si nécessaire avec le devis</li>
+        <li style="color:#c7d2fe">Documenter les objections non résolues</li>
+      </ul>
+    </div>
+
+    <div class="card" style="--accent:#FFB547;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15)">
+      <span class="card__icon">🏆</span>
+      <div class="card__title" style="color:#fff">Les règles d'or</div>
+      <ul class="checklist" style="margin:0;">
+        <li style="color:#c7d2fe">Toujours demander "Quand pouvez-vous commencer ?"</li>
+        <li style="color:#c7d2fe">Ne jamais mentir sur les fonctionnalités</li>
+        <li style="color:#c7d2fe">Un directeur convaincu vaut 5 prospects</li>
+        <li style="color:#c7d2fe">La démo en live vaut 100 explications verbales</li>
+        <li style="color:#c7d2fe">Mentionner l'offre de lancement à chaque visite</li>
+        <li style="color:#c7d2fe">La confiance se construit, ne pas forcer la vente</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="background:rgba(255,183,71,.1);border:1.5px solid rgba(255,183,71,.3);border-radius:14px;padding:1.25rem;margin-top:1.5rem;">
+    <div style="font-size:.95rem;font-weight:800;color:#FFB547;margin-bottom:.75rem;">⭐ Les 5 arguments qui ferment une vente</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.625rem;">
+      <div style="background:rgba(255,255,255,.06);border-radius:8px;padding:.75rem;font-size:.82rem;color:#e0e7ff;">
+        <strong style="color:#fff;display:block;margin-bottom:3px;">1. Le gain de temps</strong>
+        "3 semaines de travail → 2 heures avec NovaBulletin"
+      </div>
+      <div style="background:rgba(255,255,255,.06);border-radius:8px;padding:.75rem;font-size:.82rem;color:#e0e7ff;">
+        <strong style="color:#fff;display:block;margin-bottom:3px;">2. Le recouvrement des frais</strong>
+        "Les bulletins bloqués forcent les parents à payer"
+      </div>
+      <div style="background:rgba(255,255,255,.06);border-radius:8px;padding:.75rem;font-size:.82rem;color:#e0e7ff;">
+        <strong style="color:#fff;display:block;margin-bottom:3px;">3. L'image professionnelle</strong>
+        "Votre école aura le même niveau que les grandes écoles"
+      </div>
+      <div style="background:rgba(255,255,255,.06);border-radius:8px;padding:.75rem;font-size:.82rem;color:#e0e7ff;">
+        <strong style="color:#fff;display:block;margin-bottom:3px;">4. Le WhatsApp automatique</strong>
+        "Les parents reçoivent le bulletin en 1 seconde"
+      </div>
+      <div style="background:rgba(255,255,255,.06);border-radius:8px;padding:.75rem;font-size:.82rem;color:#e0e7ff;grid-column:1/-1;text-align:center;">
+        <strong style="color:#FFB547;display:block;margin-bottom:3px;">5. L'anti-falsification</strong>
+        "Chaque bulletin a un code unique. Impossible à falsifier. Vérifiable par n'importe qui en ligne."
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ BACK COVER -->
+<div class="cover" style="min-height:80mm;padding:12mm;">
+  <div class="cover__brand" style="font-size:1.8rem;margin-bottom:.5rem;">Nova<span>Bulletin</span></div>
+  <div style="color:#a5b4fc;font-size:.9rem;margin-bottom:2rem;">La gestion scolaire numérique pour l'Afrique francophone</div>
+
+  <div style="display:flex;gap:2rem;justify-content:center;flex-wrap:wrap;margin-bottom:2rem;">
+    <div style="text-align:center;color:#c7d2fe;font-size:.82rem;">
+      <div style="font-size:1.5rem;margin-bottom:.25rem;">🌐</div>
+      <div style="font-weight:700;color:#fff;">Site web</div>
+      <div>novabulletin.com</div>
+    </div>
+    <div style="text-align:center;color:#c7d2fe;font-size:.82rem;">
+      <div style="font-size:1.5rem;margin-bottom:.25rem;">📱</div>
+      <div style="font-weight:700;color:#fff;">WhatsApp commercial</div>
+      <div>À compléter</div>
+    </div>
+    <div style="text-align:center;color:#c7d2fe;font-size:.82rem;">
+      <div style="font-size:1.5rem;margin-bottom:.25rem;">📧</div>
+      <div style="font-weight:700;color:#fff;">Email</div>
+      <div>contact@novabulletin.com</div>
+    </div>
+  </div>
+
+  <div class="cover__footer">Document confidentiel — Usage interne — NovaBulletin 2026 — Tous droits réservés</div>
+</div>
+
+</div><!-- end .page -->
+</body>
+</html>
