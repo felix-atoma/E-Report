@@ -54,8 +54,24 @@ async function bootstrap() {
   if (!frontendUrl && config.get<string>('NODE_ENV') === 'production') {
     throw new Error('FRONTEND_URL must be set in production');
   }
+
+  // Build allowed origins list: FRONTEND_URL (comma-separated) + dev defaults
+  const allowedOrigins = new Set<string>([
+    'http://localhost:5173',
+    'http://localhost:8081',
+    'http://localhost:19006',
+  ]);
+  if (frontendUrl) {
+    frontendUrl.split(',').map(o => o.trim()).filter(Boolean).forEach(o => allowedOrigins.add(o));
+  }
+
   app.enableCors({
-    origin: frontendUrl || 'http://localhost:5173',
+    origin: (origin, cb) => {
+      // Allow requests with no origin (native mobile apps, Postman, curl)
+      if (!origin) return cb(null, true);
+      if (allowedOrigins.has(origin)) return cb(null, true);
+      cb(new Error(`CORS: origin ${origin} not allowed`));
+    },
     credentials: true,
   });
 

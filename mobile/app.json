@@ -37,7 +37,10 @@
       ]
     ],
     "extra": {
-      "apiUrl": "http://localhost:4000/api"
+      "apiUrl": "https://e-report-y4g9.onrender.com/api",
+      "eas": {
+        "projectId": "novabulletin-mobile"
+      }
     }
   }
 }
