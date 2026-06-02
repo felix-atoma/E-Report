@@ -2,9 +2,8 @@ import { StyleSheet, View } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { radius, shadow, spacing } from '../../theme';
 
-export default function Card({ children, style, padded = true }) {
+export default function Card({ children, style, padded = true, accent }) {
   const { colors } = useTheme();
-
   return (
     <View
       style={[
@@ -13,8 +12,9 @@ export default function Card({ children, style, padded = true }) {
         {
           backgroundColor: colors.bg,
           borderColor: colors.border,
-          padding: padded ? spacing.lg : 0,
         },
+        accent && { borderLeftWidth: 4, borderLeftColor: accent },
+        padded && styles.padded,
         style,
       ]}
     >
@@ -25,8 +25,12 @@ export default function Card({ children, style, padded = true }) {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     borderWidth: 1,
     marginBottom: spacing.md,
+    overflow: 'hidden',
+  },
+  padded: {
+    padding: spacing.lg,
   },
 });

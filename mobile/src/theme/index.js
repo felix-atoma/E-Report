@@ -1,8 +1,9 @@
-// Design tokens — mirrors src/styles/settings/ from the web app.
-// Dynamic school branding overrides these at runtime via ThemeContext.
+// Design tokens — Dynamic school branding overrides at runtime via ThemeContext.
 
 export const colors = {
   primary: '#1e40af',
+  primaryLight: '#3b82f6',
+  primaryDark: '#1e3a8a',
   secondary: '#64748b',
   accent: '#f59e0b',
   success: '#10b981',
@@ -10,21 +11,22 @@ export const colors = {
   warning: '#f59e0b',
   info: '#3b82f6',
 
-  text: '#1f2937',
-  textMuted: '#6b7280',
+  text: '#0f172a',
+  textMuted: '#64748b',
+  textLight: '#94a3b8',
   textInverse: '#ffffff',
 
   bg: '#ffffff',
-  bgSubtle: '#f9fafb',
-  bgMuted: '#f3f4f6',
+  bgSubtle: '#f8fafc',
+  bgMuted: '#f1f5f9',
 
-  border: '#e5e7eb',
-  borderStrong: '#d1d5db',
+  border: '#e2e8f0',
+  borderStrong: '#cbd5e1',
 
   statusPaid: '#10b981',
   statusPartial: '#f59e0b',
   statusUnpaid: '#ef4444',
-  statusExempt: '#6b7280',
+  statusExempt: '#64748b',
 };
 
 export const spacing = {
@@ -38,12 +40,13 @@ export const spacing = {
 };
 
 export const fontSize = {
-  xs: 12,
-  sm: 14,
-  md: 16,
-  lg: 18,
-  xl: 24,
-  '2xl': 32,
+  xs: 11,
+  sm: 13,
+  md: 15,
+  lg: 17,
+  xl: 22,
+  '2xl': 28,
+  '3xl': 36,
 };
 
 export const fontWeight = {
@@ -51,39 +54,41 @@ export const fontWeight = {
   medium: '500',
   semibold: '600',
   bold: '700',
+  extrabold: '800',
 };
 
 export const radius = {
-  sm: 4,
-  md: 8,
-  lg: 12,
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
   full: 9999,
 };
 
 export const shadow = {
   sm: {
-    shadowColor: '#000',
+    shadowColor: '#0f172a',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
     elevation: 2,
   },
   md: {
-    shadowColor: '#000',
+    shadowColor: '#0f172a',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
     elevation: 4,
   },
   lg: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 15,
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 20,
     elevation: 8,
   },
 };
 
-// Merged theme object for convenience
 const theme = { colors, spacing, fontSize, fontWeight, radius, shadow };
 export default theme;

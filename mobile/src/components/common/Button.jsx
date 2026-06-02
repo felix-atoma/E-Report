@@ -14,29 +14,30 @@ export default function Button({
 }) {
   const { colors } = useTheme();
 
-  const variantStyles = {
-    primary: { bg: colors.primary, text: colors.textInverse, border: colors.primary },
-    secondary: { bg: colors.bgMuted, text: colors.text, border: colors.border },
-    danger: { bg: colors.danger, text: colors.textInverse, border: colors.danger },
-    ghost: { bg: 'transparent', text: colors.primary, border: 'transparent' },
-    outline: { bg: 'transparent', text: colors.primary, border: colors.primary },
+  const variants = {
+    primary:   { bg: colors.primary,   text: '#fff',          border: colors.primary },
+    secondary: { bg: colors.bgMuted,   text: colors.text,     border: colors.border },
+    danger:    { bg: colors.danger,    text: '#fff',          border: colors.danger },
+    success:   { bg: colors.success,   text: '#fff',          border: colors.success },
+    ghost:     { bg: 'transparent',    text: colors.primary,  border: 'transparent' },
+    outline:   { bg: 'transparent',    text: colors.primary,  border: colors.primary },
   };
 
-  const sizeStyles = {
-    sm: { py: spacing.xs, px: spacing.sm, font: fontSize.sm },
-    md: { py: spacing.sm + 2, px: spacing.md, font: fontSize.md },
-    lg: { py: spacing.md, px: spacing.lg, font: fontSize.lg },
+  const sizes = {
+    sm: { py: spacing.xs + 2, px: spacing.md, font: fontSize.sm, radius: radius.md },
+    md: { py: spacing.sm + 4, px: spacing.lg, font: fontSize.md, radius: radius.md },
+    lg: { py: spacing.md,     px: spacing.xl, font: fontSize.lg, radius: radius.lg },
   };
 
-  const v = variantStyles[variant] ?? variantStyles.primary;
-  const s = sizeStyles[size] ?? sizeStyles.md;
+  const v = variants[variant] ?? variants.primary;
+  const s = sizes[size] ?? sizes.md;
   const isDisabled = disabled || loading;
 
   return (
     <TouchableOpacity
       onPress={onPress}
       disabled={isDisabled}
-      activeOpacity={0.8}
+      activeOpacity={0.75}
       style={[
         styles.base,
         {
@@ -44,6 +45,7 @@ export default function Button({
           borderColor: v.border,
           paddingVertical: s.py,
           paddingHorizontal: s.px,
+          borderRadius: s.radius,
           opacity: isDisabled ? 0.5 : 1,
           width: fullWidth ? '100%' : undefined,
         },
@@ -61,15 +63,14 @@ export default function Button({
 
 const styles = StyleSheet.create({
   base: {
-    borderRadius: radius.md,
-    borderWidth: 1,
+    borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
     gap: spacing.sm,
   },
   label: {
-    fontWeight: fontWeight.medium,
+    fontWeight: fontWeight.semibold,
     textAlign: 'center',
   },
 });

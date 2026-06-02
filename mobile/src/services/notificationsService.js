@@ -5,4 +5,6 @@ export const notificationsService = {
   getUnreadCount: () => api.get('/notifications/unread-count'),
   markRead: (id) => api.patch(`/notifications/${id}/read`),
   markAllRead: () => api.post('/notifications/mark-all-read'),
+  held: () => api.get('/notifications/held'),
+  forceSend: (id) => api.patch(`/notifications/${id}/force-send`),
 };

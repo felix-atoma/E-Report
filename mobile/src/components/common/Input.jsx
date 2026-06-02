@@ -14,6 +14,7 @@ export default function Input({
   ...rest
 }) {
   const { colors } = useTheme();
+  const hasError = !!error;
 
   return (
     <View style={styles.wrapper}>
@@ -24,44 +25,47 @@ export default function Input({
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor={colors.textMuted}
+        placeholderTextColor={colors.textLight ?? colors.textMuted}
         secureTextEntry={secureTextEntry}
         autoCapitalize={autoCapitalize}
         keyboardType={keyboardType}
         style={[
           styles.input,
           {
-            borderColor: error ? colors.danger : colors.border,
+            borderColor: hasError ? colors.danger : colors.border,
             color: colors.text,
-            backgroundColor: colors.bg,
+            backgroundColor: colors.bgSubtle,
           },
+          hasError && styles.inputError,
         ]}
         {...rest}
       />
-      {error && (
-        <Text style={[styles.error, { color: colors.danger }]}>{error}</Text>
+      {hasError && (
+        <Text style={[styles.errorText, { color: colors.danger }]}>{error}</Text>
       )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
-    marginBottom: spacing.md,
-  },
+  wrapper: { marginBottom: spacing.md },
   label: {
     fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
+    fontWeight: fontWeight.semibold,
     marginBottom: spacing.xs,
+    color: '#374151',
   },
   input: {
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderRadius: radius.md,
-    paddingVertical: spacing.sm + 2,
+    paddingVertical: spacing.sm + 4,
     paddingHorizontal: spacing.md,
     fontSize: fontSize.md,
   },
-  error: {
+  inputError: {
+    borderWidth: 1.5,
+  },
+  errorText: {
     fontSize: fontSize.xs,
     marginTop: spacing.xs,
   },

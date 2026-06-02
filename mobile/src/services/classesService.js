@@ -1,6 +1,6 @@
 import api from './api';
 
 export const classesService = {
-  getAll: () => api.get('/classes'),
+  getAll: (params) => api.get('/classes', { params }),
   getById: (id) => api.get(`/classes/${id}`),
 };

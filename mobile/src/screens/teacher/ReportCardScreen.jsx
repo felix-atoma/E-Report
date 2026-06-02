@@ -34,26 +34,40 @@ export default function TeacherReportCardScreen({ route, navigation }) {
   // Re-fetch every time this screen gains focus (e.g. returning from GradeEntry)
   useFocusEffect(fetchReport);
 
+  async function handleSubmit() {
+    Alert.alert(
+      'Soumettre pour révision',
+      'Envoyer ce bulletin en révision avant publication ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        { text: 'Soumettre', onPress: async () => {
+          setPublishing(true);
+          try {
+            await reportsService.submit(reportId);
+            fetchReport();
+          } catch (err) {
+            Alert.alert('Erreur', err.response?.data?.message ?? 'Impossible de soumettre.');
+          } finally { setPublishing(false); }
+        }},
+      ],
+    );
+  }
+
   async function handlePublish() {
     Alert.alert(
       'Publier le bulletin',
-      'Une fois publié, le bulletin sera visible par les parents (si les frais sont réglés). Continuer ?',
+      'Le bulletin sera visible par les parents (si les frais sont réglés). Continuer ?',
       [
         { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Publier',
-          onPress: async () => {
-            setPublishing(true);
-            try {
-              await reportsService.update(reportId, { status: 'PUBLISHED' });
-              fetchReport();
-            } catch (err) {
-              Alert.alert('Erreur', err.response?.data?.message ?? 'Impossible de publier.');
-            } finally {
-              setPublishing(false);
-            }
-          },
-        },
+        { text: 'Publier', onPress: async () => {
+          setPublishing(true);
+          try {
+            await reportsService.publish(reportId);
+            fetchReport();
+          } catch (err) {
+            Alert.alert('Erreur', err.response?.data?.message ?? 'Impossible de publier.');
+          } finally { setPublishing(false); }
+        }},
       ],
     );
   }
@@ -116,6 +130,21 @@ export default function TeacherReportCardScreen({ route, navigation }) {
           )}
         </Card>
 
+        {/* Edit metadata button — always visible for editable reports */}
+        {canEdit && (
+          <TouchableOpacity
+            activeOpacity={0.8}
+            style={[styles.metaBtn, { backgroundColor: colors.bgMuted, borderColor: colors.border }]}
+            onPress={() => navigation.navigate('EditReportMetadata', { reportId: report.id })}
+          >
+            <Ionicons name="information-circle-outline" size={18} color={colors.textMuted} />
+            <Text style={[styles.metaBtnText, { color: colors.textMuted }]}>
+              Modifier les appréciations & absences
+            </Text>
+            <Ionicons name="chevron-forward" size={14} color={colors.textMuted} />
+          </TouchableOpacity>
+        )}
+
         {/* Action buttons for editable reports */}
         {canEdit && (
           <View style={styles.actions}>
@@ -125,24 +154,40 @@ export default function TeacherReportCardScreen({ route, navigation }) {
               onPress={() => navigation.navigate('GradeEntry', { reportId: report.id, classId: report.classId ?? report.class?.id })}
             >
               <Ionicons name="create-outline" size={18} color="#fff" />
-              <Text style={styles.editBtnText}>Modifier les notes</Text>
+              <Text style={styles.editBtnText}>Modifier</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              activeOpacity={0.85}
-              disabled={publishing}
-              style={[styles.publishBtn, { backgroundColor: colors.success }]}
-              onPress={handlePublish}
-            >
-              {publishing ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <>
-                  <Ionicons name="checkmark-circle-outline" size={18} color="#fff" />
-                  <Text style={styles.editBtnText}>Publier</Text>
-                </>
-              )}
-            </TouchableOpacity>
+            {report.status === 'DRAFT' && (
+              <TouchableOpacity
+                activeOpacity={0.85}
+                disabled={publishing}
+                style={[styles.publishBtn, { backgroundColor: '#f59e0b' }]}
+                onPress={handleSubmit}
+              >
+                {publishing ? <ActivityIndicator size="small" color="#fff" /> : (
+                  <>
+                    <Ionicons name="eye-outline" size={18} color="#fff" />
+                    <Text style={styles.editBtnText}>Soumettre</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            )}
+
+            {(report.status === 'REVIEW' || report.status === 'DRAFT') && (
+              <TouchableOpacity
+                activeOpacity={0.85}
+                disabled={publishing}
+                style={[styles.publishBtn, { backgroundColor: colors.success }]}
+                onPress={handlePublish}
+              >
+                {publishing ? <ActivityIndicator size="small" color="#fff" /> : (
+                  <>
+                    <Ionicons name="checkmark-circle-outline" size={18} color="#fff" />
+                    <Text style={styles.editBtnText}>Publier</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            )}
           </View>
         )}
 
@@ -239,6 +284,12 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
   },
   editBtnText: { color: '#fff', fontSize: fontSize.sm, fontWeight: fontWeight.semibold },
+  metaBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
+    borderRadius: radius.md, borderWidth: 1,
+    paddingVertical: spacing.sm + 2, paddingHorizontal: spacing.md, marginBottom: spacing.sm,
+  },
+  metaBtnText: { flex: 1, fontSize: fontSize.sm },
   sectionTitle: { fontSize: fontSize.md, fontWeight: fontWeight.semibold, marginBottom: spacing.sm },
   tableHeader: { flexDirection: 'row', paddingVertical: spacing.sm, paddingHorizontal: spacing.md },
   tableRow: { flexDirection: 'row', paddingVertical: spacing.sm, paddingHorizontal: spacing.md, borderTopWidth: 1 },

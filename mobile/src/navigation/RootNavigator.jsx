@@ -5,6 +5,7 @@ import AuthNavigator from './AuthNavigator';
 import ParentNavigator from './ParentNavigator';
 import StudentNavigator from './StudentNavigator';
 import TeacherNavigator from './TeacherNavigator';
+import BursarNavigator from './BursarNavigator';
 
 export default function RootNavigator() {
   const { user, loading } = useAuth();
@@ -25,9 +26,10 @@ export default function RootNavigator() {
       return <ParentNavigator />;
     case 'STUDENT':
       return <StudentNavigator />;
+    case 'BURSAR':
+      return <BursarNavigator />;
     case 'TEACHER':
     case 'ADMIN':
-    case 'BURSAR':
       return <TeacherNavigator />;
     default:
       return <AuthNavigator />;
