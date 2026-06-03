@@ -1414,7 +1414,14 @@ export default function LandingPage() {
           </div>
           <div className="lp-faq__footer">
             <p>{t('Vous avez une autre question ?','Have another question?')}</p>
-            <a href="mailto:felixatoma2@gmail.com" className="lp-btn lp-btn--primary">📧 {t('Nous écrire','Contact us')}</a>
+            <a
+              href="https://mail.google.com/mail/?view=cm&fs=1&to=felixatoma2@gmail.com&su=NovaBulletin%20-%20Question"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="lp-btn lp-btn--primary"
+            >
+              📧 {t('Nous écrire','Contact us')}
+            </a>
           </div>
         </div>
       </section>
@@ -1487,7 +1494,7 @@ export default function LandingPage() {
             <div className="lp-footer__logo"><img src={logoIcon} alt="NovaBulletin" width="42" height="42"/><span>NovaBulletin</span></div>
             <p>{t('Le logiciel de gestion scolaire moderne conçu pour les écoles d\'Afrique francophone.','The modern school management software built for Francophone African schools.')}</p>
             <p className="lp-footer__tagline">{t('Fait avec ❤️ au Togo','Made with ❤️ in Togo')}</p>
-            <a href="mailto:felixatoma2@gmail.com" className="lp-footer__email">📧 felixatoma2@gmail.com</a>
+            <a href="https://mail.google.com/mail/?view=cm&fs=1&to=felixatoma2@gmail.com" target="_blank" rel="noopener noreferrer" className="lp-footer__email">📧 felixatoma2@gmail.com</a>
             <div className="lp-footer__socials">
               <a href="https://facebook.com/novabulletin" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="lp-footer__social-link">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.413c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
