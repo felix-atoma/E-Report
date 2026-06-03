@@ -1,6 +1,5 @@
 import { useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { MeshDistortMaterial } from '@react-three/drei';
 
 function Orb() {
   const meshRef = useRef();
@@ -26,15 +25,14 @@ function Orb() {
       <pointLight position={[0, 3, 1]} intensity={0.6} color="#ffffff" />
       <mesh ref={meshRef} scale={1.18}>
         <icosahedronGeometry args={[1, 2]} />
-        <MeshDistortMaterial
+        <meshStandardMaterial
           color="#f97316"
-          distort={0.28}
-          speed={2.2}
           metalness={0.55}
           roughness={0.08}
+          emissive="#c2410c"
+          emissiveIntensity={0.15}
           transparent
           opacity={0.92}
-          envMapIntensity={1}
         />
       </mesh>
     </>

@@ -1,6 +1,5 @@
 import { useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { MeshDistortMaterial } from '@react-three/drei';
 
 function CentralOrb() {
   const mesh = useRef();
@@ -13,14 +12,12 @@ function CentralOrb() {
   return (
     <mesh ref={mesh}>
       <icosahedronGeometry args={[0.52, 2]} />
-      <MeshDistortMaterial
+      <meshStandardMaterial
         color="#f97316"
-        distort={0.32}
-        speed={3.5}
         metalness={0.65}
         roughness={0.05}
         emissive="#ea580c"
-        emissiveIntensity={0.12}
+        emissiveIntensity={0.18}
       />
     </mesh>
   );
