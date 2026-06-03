@@ -1,0 +1,41 @@
+<svg width="100%" viewBox="0 0 690 330" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>500 - Something went wrong</title>
+  <rect x="0" y="0" width="680" height="320" rx="16" fill="#FFFBF0" stroke="#F5C97A" stroke-width="1.5"/>
+  <ellipse cx="185" cy="305" rx="70" ry="9" fill="#E8C96A" opacity="0.3"/>
+  <rect x="148" y="248" width="22" height="40" rx="6" fill="#F5C97A" stroke="#C9950A" stroke-width="2"/>
+  <rect x="195" y="248" width="22" height="40" rx="6" fill="#F5C97A" stroke="#C9950A" stroke-width="2"/>
+  <ellipse cx="159" cy="290" rx="16" ry="8" fill="#C9950A"/>
+  <ellipse cx="206" cy="290" rx="16" ry="8" fill="#C9950A"/>
+  <rect x="138" y="170" width="90" height="82" rx="10" fill="#F5C97A" stroke="#C9950A" stroke-width="2"/>
+  <line x1="160" y1="186" x2="160" y2="240" stroke="#C9950A" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="206" y1="186" x2="206" y2="240" stroke="#C9950A" stroke-width="1.5" stroke-linecap="round"/>
+  <rect x="168" y="202" width="30" height="20" rx="4" fill="#C9950A" opacity="0.5"/>
+  <circle cx="183" cy="212" r="5" fill="#FFFBF0"/>
+  <path d="M138 192 Q108 182 92 166" fill="none" stroke="#F5C97A" stroke-width="14" stroke-linecap="round"/>
+  <path d="M138 192 Q108 182 92 166" fill="none" stroke="#C9950A" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="87" cy="162" r="11" fill="#F5C97A" stroke="#C9950A" stroke-width="2"/>
+  <path d="M228 192 Q258 180 272 164" fill="none" stroke="#F5C97A" stroke-width="14" stroke-linecap="round"/>
+  <path d="M228 192 Q258 180 272 164" fill="none" stroke="#C9950A" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="277" cy="160" r="11" fill="#F5C97A" stroke="#C9950A" stroke-width="2"/>
+  <rect x="140" y="108" width="86" height="72" rx="12" fill="#F5C97A" stroke="#C9950A" stroke-width="2"/>
+  <line x1="183" y1="108" x2="183" y2="84" stroke="#C9950A" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="183" cy="78" r="9" fill="#FF6B35" stroke="#C9950A" stroke-width="1.5"/>
+  <circle cx="183" cy="78" r="4" fill="#FFFBF0" opacity="0.6"/>
+  <line x1="156" y1="130" x2="168" y2="142" stroke="#C9950A" stroke-width="3" stroke-linecap="round"/>
+  <line x1="168" y1="130" x2="156" y2="142" stroke="#C9950A" stroke-width="3" stroke-linecap="round"/>
+  <line x1="196" y1="130" x2="208" y2="142" stroke="#C9950A" stroke-width="3" stroke-linecap="round"/>
+  <line x1="208" y1="130" x2="196" y2="142" stroke="#C9950A" stroke-width="3" stroke-linecap="round"/>
+  <path d="M162 158 Q169 153 176 158 Q183 163 190 158 Q197 153 202 158" fill="none" stroke="#C9950A" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="162" cy="96" r="10" fill="#FFFBF0" stroke="#C9950A" stroke-width="1.5"/>
+  <circle cx="153" cy="84" r="8" fill="#FFFBF0" stroke="#C9950A" stroke-width="1.5"/>
+  <circle cx="146" cy="74" r="6" fill="#FFFBF0" stroke="#C9950A" stroke-width="1.5"/>
+  <circle cx="204" cy="95" r="10" fill="#FFFBF0" stroke="#C9950A" stroke-width="1.5"/>
+  <circle cx="213" cy="83" r="8" fill="#FFFBF0" stroke="#C9950A" stroke-width="1.5"/>
+  <circle cx="220" cy="73" r="6" fill="#FFFBF0" stroke="#C9950A" stroke-width="1.5"/>
+  <path d="M232 122 L244 110 L238 124 L252 116" fill="none" stroke="#FF6B35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M112 130 L98 122 L105 135 L90 128" fill="none" stroke="#FF6B35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="320" y="110" fill="#C9950A" font-family="sans-serif" font-size="52" font-weight="500">500</text>
+  <text x="320" y="148" fill="#141413" font-family="sans-serif" font-size="18" font-weight="500">Something went wrong</text>
+  <text x="320" y="176" fill="#3d3d3a" font-family="sans-serif" font-size="13">Our server had a meltdown.</text>
+  <text x="320" y="196" fill="#3d3d3a" font-family="sans-serif" font-size="13">We're already fixing it — hang tight!</text>
+</svg>

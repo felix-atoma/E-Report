@@ -1,13 +1,27 @@
-import { Link } from 'react-router-dom';
-import './NotFoundPage.css';
+import { Link, useNavigate } from 'react-router-dom';
+import '../ErrorPages.css';
 
 function NotFoundPage() {
+  const navigate = useNavigate();
   return (
-    <div className="error-page">
-      <span className="error-page__code">404</span>
-      <h1 className="error-page__title">Page introuvable</h1>
-      <p className="error-page__desc">Cette page n&apos;existe pas ou a été déplacée.</p>
-      <Link to="/" className="error-page__btn">Retour à l&apos;accueil</Link>
+    <div className="err">
+      <div className="err__card">
+        <img src="/error-404.svg" alt="404 — Page introuvable" className="err__illustration" />
+        <div className="err__body">
+          <h1 className="err__title">Page introuvable</h1>
+          <p className="err__desc">
+            Cette page a disparu dans les airs. Même notre fantôme ne la trouve plus.
+          </p>
+          <div className="err__actions">
+            <button className="err__btn err__btn--secondary" onClick={() => navigate(-1)}>
+              ← Retour
+            </button>
+            <Link to="/" className="err__btn err__btn--primary">
+              Accueil
+            </Link>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

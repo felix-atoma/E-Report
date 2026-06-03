@@ -1,0 +1,33 @@
+<svg width="100%" viewBox="0 0 690 330" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>404 - Page not found</title>
+  <rect x="0" y="0" width="680" height="320" rx="16" fill="#F3F0FF" stroke="#AFA9EC" stroke-width="1.5"/>
+  <circle cx="48" cy="48" r="3" fill="#7F77DD" opacity="0.4"/>
+  <circle cx="78" cy="90" r="2" fill="#AFA9EC" opacity="0.5"/>
+  <circle cx="55" cy="130" r="2" fill="#7F77DD" opacity="0.35"/>
+  <circle cx="40" cy="200" r="2.5" fill="#AFA9EC" opacity="0.4"/>
+  <circle cx="72" cy="250" r="2" fill="#7F77DD" opacity="0.3"/>
+  <circle cx="255" cy="48" r="2" fill="#AFA9EC" opacity="0.4"/>
+  <circle cx="240" cy="100" r="2" fill="#7F77DD" opacity="0.35"/>
+  <circle cx="260" cy="160" r="1.5" fill="#AFA9EC" opacity="0.4"/>
+  <circle cx="238" cy="220" r="2" fill="#7F77DD" opacity="0.3"/>
+  <ellipse cx="160" cy="308" rx="50" ry="8" fill="#AFA9EC" opacity="0.2"/>
+  <path d="M112 200 Q112 140 160 140 Q208 140 208 200 L208 285 Q194 272 180 285 Q166 298 160 285 Q154 272 140 285 Q126 298 112 285 Z" fill="#E8E5FF" stroke="#7F77DD" stroke-width="2"/>
+  <ellipse cx="160" cy="178" rx="28" ry="20" fill="#FFFFFF" opacity="0.45"/>
+  <path d="M112 215 Q88 207 78 220 Q68 233 85 236" fill="none" stroke="#7F77DD" stroke-width="9" stroke-linecap="round"/>
+  <path d="M208 215 Q232 207 242 220 Q252 233 235 236" fill="none" stroke="#7F77DD" stroke-width="9" stroke-linecap="round"/>
+  <circle cx="143" cy="178" r="13" fill="white" stroke="#7F77DD" stroke-width="1.5"/>
+  <circle cx="177" cy="178" r="13" fill="white" stroke="#7F77DD" stroke-width="1.5"/>
+  <circle cx="146" cy="180" r="7" fill="#534AB7"/>
+  <circle cx="180" cy="180" r="7" fill="#534AB7"/>
+  <circle cx="148" cy="177" r="3" fill="white"/>
+  <circle cx="182" cy="177" r="3" fill="white"/>
+  <ellipse cx="160" cy="208" rx="10" ry="8" fill="#534AB7" opacity="0.7"/>
+  <text x="48" y="185" font-family="sans-serif" font-size="32" font-weight="500" fill="#AFA9EC" opacity="0.55">?</text>
+  <text x="240" y="175" font-family="sans-serif" font-size="26" font-weight="500" fill="#AFA9EC" opacity="0.5">?</text>
+  <text x="62" y="255" font-family="sans-serif" font-size="20" font-weight="500" fill="#AFA9EC" opacity="0.4">?</text>
+  <text x="238" y="248" font-family="sans-serif" font-size="20" font-weight="500" fill="#AFA9EC" opacity="0.35">?</text>
+  <text x="320" y="110" fill="#7F77DD" font-family="sans-serif" font-size="52" font-weight="500">404</text>
+  <text x="320" y="148" fill="#141413" font-family="sans-serif" font-size="18" font-weight="500">Page not found</text>
+  <text x="320" y="176" fill="#3d3d3a" font-family="sans-serif" font-size="13">Boo! This page has vanished into thin air.</text>
+  <text x="320" y="196" fill="#3d3d3a" font-family="sans-serif" font-size="13">Even our ghost can't find it.</text>
+</svg>
