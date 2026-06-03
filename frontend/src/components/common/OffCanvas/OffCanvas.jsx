@@ -3,6 +3,13 @@ import './OffCanvas.css';
 
 const OffCanvas3DOrb = lazy(() => import('./OffCanvas3DOrb'));
 
+const canWebGL = (() => {
+  try {
+    const c = document.createElement('canvas');
+    return !!(c.getContext('webgl2') || c.getContext('webgl') || c.getContext('experimental-webgl'));
+  } catch { return false; }
+})();
+
 let orbFailed = false;
 class OrbErrorBoundary extends Component {
   state = { failed: false };
@@ -31,7 +38,7 @@ function OffCanvas({ open, onClose, title, subtitle, children, size = 'md', foot
 
         {/* 3D Header */}
         <div className="offcanvas__header">
-          {!orbFailed && (
+          {canWebGL && !orbFailed && (
             <OrbErrorBoundary>
               <Suspense fallback={null}>
                 <OffCanvas3DOrb size={120} />

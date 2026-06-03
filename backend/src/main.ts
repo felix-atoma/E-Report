@@ -52,7 +52,7 @@ async function bootstrap() {
 
   const frontendUrl = config.get<string>('FRONTEND_URL');
   if (!frontendUrl && config.get<string>('NODE_ENV') === 'production') {
-    throw new Error('FRONTEND_URL must be set in production');
+    console.warn('⚠️  FRONTEND_URL not set — falling back to hardcoded allowed origins');
   }
 
   // Build allowed origins list: FRONTEND_URL (comma-separated) + dev defaults
