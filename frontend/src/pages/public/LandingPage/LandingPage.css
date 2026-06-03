@@ -25,7 +25,8 @@ html{scroll-behavior:smooth}
 
 /* ── Scroll UI ──────────────────────────────────────────────────────────── */
 .lp-progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#FF7A59,#E94F8A,#7c3aed);z-index:9999;transition:width .12s linear;pointer-events:none;border-radius:0 3px 3px 0}
-.lp-back-to-top{position:fixed;bottom:2rem;right:2rem;width:46px;height:46px;border-radius:50%;background:#1E2A78;color:#fff;border:none;cursor:pointer;font-size:1.25rem;display:flex;align-items:center;justify-content:center;z-index:900;box-shadow:0 6px 20px rgba(30,42,120,.4);transition:all .25s;animation:lp-pop .3s ease;font-family:inherit;line-height:1}
+/* Back-to-top sits above the WhatsApp float button (52px button + 1.5rem bottom + .6rem gap) */
+.lp-back-to-top{position:fixed;bottom:6rem;right:1.5rem;width:46px;height:46px;border-radius:50%;background:#1E2A78;color:#fff;border:none;cursor:pointer;font-size:1.25rem;display:flex;align-items:center;justify-content:center;z-index:901;box-shadow:0 6px 20px rgba(30,42,120,.4);transition:all .25s;animation:lp-pop .3s ease;font-family:inherit;line-height:1}
 .lp-back-to-top:hover{background:#FF7A59;transform:translateY(-4px);box-shadow:0 12px 32px rgba(255,122,89,.5)}
 
 /* ── Store badges ───────────────────────────────────────────────────────── */
@@ -583,7 +584,7 @@ section[id]{scroll-margin-top:110px}
   .lp-fiche__mockup-row > :nth-child(5){display:none}
 
   /* Back-to-top: keep clear of content */
-  .lp-back-to-top{bottom:1.25rem;right:1.25rem;width:42px;height:42px}
+  .lp-back-to-top{bottom:5.5rem;right:1rem;width:42px;height:42px}
 
   /* Carousel */
   .lp-carousel{padding:1.75rem 1rem}
