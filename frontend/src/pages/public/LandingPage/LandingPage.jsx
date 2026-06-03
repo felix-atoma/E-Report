@@ -730,11 +730,44 @@ export default function LandingPage() {
 
       {/* ─── NAVBAR ──────────────────────────────────────────────────── */}
       <nav className={`lp-nav${scrolled ? ' lp-nav--scrolled' : ''}`}>
-        <div className="lp-nav__inner">
+        {/* Row 1: brand + language + CTAs */}
+        <div className="lp-nav__top">
           <Link to="/" className="lp-nav__brand">
-            <img src={logoIcon} alt="NovaBulletin" width="34" height="34" />
+            <img src={logoIcon} alt="NovaBulletin" width="32" height="32" />
             <span>NovaBulletin</span>
           </Link>
+
+          <div className="lp-lang">
+            <button
+              className={`lp-lang__btn${isFr ? ' lp-lang__btn--active' : ''}`}
+              onClick={() => setLanguage('fr')}
+              aria-label="Français"
+              title="Français"
+            >
+              {FLAG_FR}<span>FR</span>
+            </button>
+            <button
+              className={`lp-lang__btn${!isFr ? ' lp-lang__btn--active' : ''}`}
+              onClick={() => setLanguage('en')}
+              aria-label="English"
+              title="English"
+            >
+              {FLAG_GB}<span>EN</span>
+            </button>
+          </div>
+
+          <div className="lp-nav__ctas">
+            <Link to="/login" className="lp-btn lp-btn--ghost">{t('Se connecter','Log in')}</Link>
+            <Link to="/register-school" className="lp-btn lp-btn--primary">{t('Commencer gratuitement →','Start for free →')}</Link>
+          </div>
+
+          <button className="lp-nav__hamburger" onClick={() => setMenuOpen(v => !v)} aria-label="Menu">
+            <span /><span /><span />
+          </button>
+        </div>
+
+        {/* Row 2: navigation links */}
+        <div className={`lp-nav__bottom${menuOpen ? ' mobile-open' : ''}`}>
           <ul className={`lp-nav__links${menuOpen ? ' lp-nav__links--open' : ''}`}>
             {[
               ['#features', t('Fonctionnalités','Features')],
@@ -749,32 +782,6 @@ export default function LandingPage() {
               <li key={h}><a href={h} onClick={() => setMenuOpen(false)}>{l}</a></li>
             ))}
           </ul>
-          <div className="lp-nav__ctas">
-            {/* Language toggle */}
-            <div className="lp-lang">
-              <button
-                className={`lp-lang__btn${isFr ? ' lp-lang__btn--active' : ''}`}
-                onClick={() => setLanguage('fr')}
-                aria-label="Français"
-                title="Français"
-              >
-                {FLAG_FR}<span>FR</span>
-              </button>
-              <button
-                className={`lp-lang__btn${!isFr ? ' lp-lang__btn--active' : ''}`}
-                onClick={() => setLanguage('en')}
-                aria-label="English"
-                title="English"
-              >
-                {FLAG_GB}<span>EN</span>
-              </button>
-            </div>
-            <Link to="/login" className="lp-btn lp-btn--ghost">{t('Se connecter','Log in')}</Link>
-            <Link to="/register-school" className="lp-btn lp-btn--primary">{t('Commencer gratuitement →','Start for free →')}</Link>
-          </div>
-          <button className="lp-nav__hamburger" onClick={() => setMenuOpen(v => !v)} aria-label="Menu">
-            <span /><span /><span />
-          </button>
         </div>
       </nav>
 
