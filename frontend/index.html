@@ -7,29 +7,35 @@
     <!-- Primary SEO -->
     <title>NovaBulletin — Logiciel de gestion scolaire pour les écoles d'Afrique</title>
     <meta name="description" content="NovaBulletin remplace Excel pour la gestion des bulletins scolaires. Calcul automatique des moyennes, bulletins PDF en 1 clic, envoi WhatsApp aux parents. Conçu pour les écoles du Togo et d'Afrique francophone." />
-    <meta name="keywords" content="logiciel bulletin scolaire, gestion notes scolaires, bulletin scolaire PDF, application école Togo, gestion scolaire numérique, bulletin WhatsApp parents, logiciel école Afrique, remplacer Excel école, frais scolaires, gestion établissement scolaire, logiciel école Bénin, logiciel école Côte d'Ivoire, logiciel école Sénégal" />
-    <meta name="author" content="NovaBulletin" />
+    <meta name="keywords" content="logiciel bulletin scolaire, gestion notes scolaires, bulletin scolaire PDF, application école Togo, gestion scolaire numérique, bulletin WhatsApp parents, logiciel école Afrique, remplacer Excel école, frais scolaires, gestion établissement scolaire, logiciel école Bénin, logiciel école Côte d'Ivoire, logiciel école Sénégal, NovaBulletin, Felix Atoma, logiciel éducatif Afrique" />
+    <meta name="author" content="NovaBulletin — Felix Atoma, Manzaman Abalossosso, Benjamin Ngbabou" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <link rel="canonical" href="https://e-report-frontend.vercel.app/" />
+
+    <!-- Google Search Console verification -->
+    <meta name="google-site-verification" content="VolQkxD3Da5407lkhsCxmIR5QvAL5Yaq3v3tVGXDx2M" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://e-report-frontend.vercel.app/" />
     <meta property="og:title" content="NovaBulletin — Logiciel de gestion scolaire pour les écoles d'Afrique" />
     <meta property="og:description" content="Fini Excel. NovaBulletin calcule les moyennes, génère les bulletins PDF et les envoie aux parents sur WhatsApp. 3 jours de travail réduits à 30 minutes." />
-    <meta property="og:image" content="https://e-report-frontend.vercel.app/og-image.png" />
+    <meta property="og:image" content="https://e-report-frontend.vercel.app/og-image.svg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="NovaBulletin — Tableau de bord de gestion scolaire" />
     <meta property="og:locale" content="fr_TG" />
     <meta property="og:locale:alternate" content="fr_FR" />
+    <meta property="og:locale:alternate" content="en_US" />
     <meta property="og:site_name" content="NovaBulletin" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@NovaBulletin" />
+    <meta name="twitter:creator" content="@FelixAtoma" />
     <meta name="twitter:title" content="NovaBulletin — Logiciel de gestion scolaire pour les écoles d'Afrique" />
     <meta name="twitter:description" content="Fini Excel. Calcul automatique des moyennes, bulletins PDF en 1 clic, envoi WhatsApp aux parents. Essayez gratuitement." />
-    <meta name="twitter:image" content="https://e-report-frontend.vercel.app/og-image.png" />
+    <meta name="twitter:image" content="https://e-report-frontend.vercel.app/og-image.svg" />
 
     <!-- Geographic targeting -->
     <meta name="geo.region" content="TG" />
@@ -48,73 +54,274 @@
     <!-- Sitemap -->
     <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 
-    <!-- Structured Data: SoftwareApplication -->
+    <!-- ═══════════════════════════════════════════════════════════
+         STRUCTURED DATA (JSON-LD)
+         ═══════════════════════════════════════════════════════════ -->
+
+    <!-- 1. SoftwareApplication -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
+      "@id": "https://e-report-frontend.vercel.app/#software",
       "@type": "SoftwareApplication",
       "name": "NovaBulletin",
       "applicationCategory": "EducationalApplication",
+      "applicationSubCategory": "School Management Software",
       "operatingSystem": "Web, Android, iOS",
-      "description": "Logiciel de gestion scolaire pour les écoles d'Afrique francophone. Bulletins scolaires automatisés, calcul des moyennes, envoi WhatsApp aux parents, gestion des frais scolaires.",
+      "description": "Logiciel de gestion scolaire pour les écoles d'Afrique francophone. Bulletins scolaires automatisés, calcul des moyennes, envoi WhatsApp aux parents, gestion des frais scolaires, LMS intégré.",
       "url": "https://e-report-frontend.vercel.app",
-      "screenshot": "https://e-report-frontend.vercel.app/og-image.png",
+      "screenshot": "https://e-report-frontend.vercel.app/og-image.svg",
+      "inLanguage": ["fr", "en"],
       "featureList": [
         "Calcul automatique des moyennes scolaires",
         "Génération de bulletins PDF avec logo de l'école",
         "Envoi automatique des bulletins sur WhatsApp",
-        "Gestion des frais scolaires",
-        "Tableau de bord multi-rôles (admin, enseignant, parent, élève)",
+        "Gestion des frais scolaires avec blocage automatique",
+        "Tableau de bord multi-rôles (admin, enseignant, parent, élève, économe)",
+        "Fiches de notes numériques pour enseignants (mobile)",
+        "LMS intégré — cours, devoirs, quiz en ligne",
+        "11 registres scolaires numérisés",
         "Import/export CSV des élèves et notes",
-        "Statistiques et analytics de l'établissement"
+        "Statistiques et analytics en temps réel",
+        "Application mobile Android et iOS",
+        "Présences, santé, bibliothèque, inventaire"
       ],
       "offers": {
         "@type": "Offer",
         "price": "0",
         "priceCurrency": "XOF",
-        "description": "Essai gratuit — payez seulement si satisfait"
+        "description": "Essai gratuit un trimestre complet — payez seulement si satisfait",
+        "availability": "https://schema.org/InStock"
       },
       "provider": {
-        "@type": "Organization",
-        "name": "NovaBulletin",
-        "email": "felixatoma2@gmail.com",
-        "areaServed": ["TG","BJ","CI","SN","GH","CM"],
-        "url": "https://e-report-frontend.vercel.app"
-      }
+        "@id": "https://e-report-frontend.vercel.app/#organization"
+      },
+      "datePublished": "2024-01-01",
+      "softwareVersion": "2.0",
+      "releaseNotes": "Version 2 avec LMS intégré, module présences, santé, bibliothèque et application mobile"
     }
     </script>
 
-    <!-- Structured Data: Organization -->
+    <!-- 2. Organization with founders -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
+      "@id": "https://e-report-frontend.vercel.app/#organization",
       "@type": "Organization",
       "name": "NovaBulletin",
+      "legalName": "NovaBulletin",
       "url": "https://e-report-frontend.vercel.app",
-      "logo": "https://e-report-frontend.vercel.app/pwa-512.svg",
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "email": "felixatoma2@gmail.com",
-        "contactType": "customer support",
-        "availableLanguage": ["French", "English"]
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://e-report-frontend.vercel.app/pwa-512.svg",
+        "width": 512,
+        "height": 512
       },
-      "sameAs": []
+      "description": "Startup edtech togolaise spécialisée dans la digitalisation des établissements scolaires d'Afrique francophone.",
+      "foundingDate": "2024",
+      "foundingLocation": {
+        "@type": "Place",
+        "name": "Lomé, Togo"
+      },
+      "areaServed": [
+        {"@type": "Country", "name": "Togo"},
+        {"@type": "Country", "name": "Bénin"},
+        {"@type": "Country", "name": "Côte d'Ivoire"},
+        {"@type": "Country", "name": "Sénégal"},
+        {"@type": "Country", "name": "Ghana"},
+        {"@type": "Country", "name": "Cameroun"}
+      ],
+      "founders": [
+        {"@id": "https://e-report-frontend.vercel.app/#person-felix"},
+        {"@id": "https://e-report-frontend.vercel.app/#person-manzaman"},
+        {"@id": "https://e-report-frontend.vercel.app/#person-benjamin"}
+      ],
+      "contactPoint": [
+        {
+          "@type": "ContactPoint",
+          "email": "felixatoma2@gmail.com",
+          "contactType": "customer support",
+          "availableLanguage": ["French", "English"]
+        }
+      ],
+      "sameAs": [
+        "https://github.com/felix-atoma"
+      ],
+      "knowsAbout": [
+        "Gestion scolaire numérique",
+        "Bulletins scolaires",
+        "EdTech Afrique",
+        "Logiciel éducatif"
+      ]
     }
     </script>
 
-    <!-- Structured Data: WebSite with SearchAction -->
+    <!-- 3. Team — Felix Atoma -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
+      "@id": "https://e-report-frontend.vercel.app/#person-felix",
+      "@type": "Person",
+      "name": "Felix Atoma",
+      "givenName": "Felix",
+      "familyName": "Atoma",
+      "jobTitle": "Lead Developer",
+      "email": "felixatoma2@gmail.com",
+      "description": "Lead Developer de NovaBulletin. Développeur logiciel et professeur d'anglais, basé au Togo.",
+      "knowsAbout": [
+        "Développement web",
+        "React",
+        "Node.js",
+        "Gestion scolaire numérique",
+        "EdTech"
+      ],
+      "nationality": {"@type": "Country", "name": "Togo"},
+      "worksFor": {
+        "@id": "https://e-report-frontend.vercel.app/#organization"
+      },
+      "url": "https://e-report-frontend.vercel.app/#team"
+    }
+    </script>
+
+    <!-- 4. Team — Manzaman Abalossosso -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@id": "https://e-report-frontend.vercel.app/#person-manzaman",
+      "@type": "Person",
+      "name": "Manzaman Abalossosso",
+      "givenName": "Manzaman",
+      "familyName": "Abalossosso",
+      "jobTitle": "Project Manager",
+      "email": "abalossossomanzaman@gmail.com",
+      "description": "Project Manager de NovaBulletin. Professeur de sciences et data scientist, basé au Togo.",
+      "knowsAbout": [
+        "Gestion de projet",
+        "Data Science",
+        "Sciences",
+        "Éducation"
+      ],
+      "nationality": {"@type": "Country", "name": "Togo"},
+      "worksFor": {
+        "@id": "https://e-report-frontend.vercel.app/#organization"
+      },
+      "url": "https://e-report-frontend.vercel.app/#team"
+    }
+    </script>
+
+    <!-- 5. Team — Benjamin Ngbabou -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@id": "https://e-report-frontend.vercel.app/#person-benjamin",
+      "@type": "Person",
+      "name": "Benjamin Ngbabou",
+      "givenName": "Benjamin",
+      "familyName": "Ngbabou",
+      "jobTitle": "Software Developer",
+      "email": "bawiloussimngbabou1@gmail.com",
+      "description": "Développeur logiciel chez NovaBulletin. Spécialiste marketing et professeur de mathématiques, basé au Togo.",
+      "knowsAbout": [
+        "Développement logiciel",
+        "Marketing digital",
+        "Mathématiques",
+        "Éducation"
+      ],
+      "nationality": {"@type": "Country", "name": "Togo"},
+      "worksFor": {
+        "@id": "https://e-report-frontend.vercel.app/#organization"
+      },
+      "url": "https://e-report-frontend.vercel.app/#team"
+    }
+    </script>
+
+    <!-- 6. WebSite with SearchAction -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@id": "https://e-report-frontend.vercel.app/#website",
       "@type": "WebSite",
       "name": "NovaBulletin",
       "url": "https://e-report-frontend.vercel.app",
       "description": "Logiciel de gestion scolaire numérique pour les écoles d'Afrique francophone",
-      "inLanguage": "fr",
+      "inLanguage": ["fr", "en"],
       "publisher": {
-        "@type": "Organization",
-        "name": "NovaBulletin"
+        "@id": "https://e-report-frontend.vercel.app/#organization"
       }
+    }
+    </script>
+
+    <!-- 7. FAQPage — shown as rich snippets in Google results -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Est-ce que je dois payer pour essayer NovaBulletin ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Non. Utilisez NovaBulletin pendant tout un trimestre complet. Si vous êtes satisfait à la fin du trimestre, vous payez. Sinon, vous revenez à votre ancien système. Aucun engagement, aucune carte bancaire requise dès le départ."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Comment NovaBulletin envoie-t-il les bulletins aux parents sur WhatsApp ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Une fois les notes saisies et les bulletins générés, l'admin clique sur 'Envoyer'. NovaBulletin envoie automatiquement le bulletin PDF personnalisé à chaque parent sur WhatsApp via l'API officielle WhatsApp Business. Si le parent n'a pas WhatsApp, le bulletin est envoyé par email ou peut être imprimé en PDF."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "NovaBulletin fonctionne-t-il sur téléphone mobile ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Oui. NovaBulletin est une application web progressive (PWA) qui fonctionne sur ordinateur, tablette et smartphone Android/iOS. Les enseignants saisissent leurs notes directement depuis leur téléphone. Aucune installation requise — ouvrez simplement votre navigateur."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Combien de temps faut-il pour configurer l'école sur NovaBulletin ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Environ 30 minutes pour une école de taille moyenne. Vous pouvez importer vos élèves depuis un fichier Excel ou CSV en quelques clics. Notre équipe vous accompagne à chaque étape via WhatsApp."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "NovaBulletin remplace-t-il tous les registres papier de l'école ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Oui. NovaBulletin centralise 11 registres : présences, santé, bibliothèque, inventaire, anciens élèves, transferts, dossiers disciplinaires, examens nationaux (CEPD, BEPC, BAC, BTS), calendrier, documents officiels et profils du personnel."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Les données des élèves sont-elles sécurisées dans NovaBulletin ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Oui. Toutes les données sont chiffrées et hébergées sur infrastructure cloud sécurisée. Chaque école n'a accès qu'à ses propres données. La conformité RGPD est assurée."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "NovaBulletin est-il disponible au Togo, Bénin, Côte d'Ivoire et Sénégal ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Oui. NovaBulletin est conçu pour les écoles d'Afrique francophone. Il est actuellement utilisé au Togo, Bénin, Côte d'Ivoire, Sénégal, Ghana et Cameroun. L'interface est disponible en français et en anglais."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Qui a créé NovaBulletin ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "NovaBulletin a été créé par une équipe togolaise : Felix Atoma (Lead Developer), Manzaman Abalossosso (Project Manager) et Benjamin Ngbabou (Software Developer). L'équipe est basée à Lomé, Togo."
+          }
+        }
+      ]
     }
     </script>
 

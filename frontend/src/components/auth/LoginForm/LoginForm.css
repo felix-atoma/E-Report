@@ -211,19 +211,49 @@
   cursor: not-allowed;
 }
 
-/* Spinner */
+/* Spinner — 3D gyroscope */
 .login-form__spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  border-top-color: #fff;
+  position: relative;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  animation: loginSpin 0.7s linear infinite;
   flex-shrink: 0;
+  transform-style: preserve-3d;
+  perspective: 400px;
 }
 
-@keyframes loginSpin {
-  to { transform: rotate(360deg); }
+.login-form__spinner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-sizing: border-box;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-top-color: #fff;
+  border-right-color: rgba(255, 255, 255, 0.6);
+  transform: rotateX(68deg);
+  animation: login-gyro-outer 0.85s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.login-form__spinner::after {
+  content: '';
+  position: absolute;
+  inset: 20%;
+  border-radius: 50%;
+  box-sizing: border-box;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-bottom-color: rgba(255, 255, 255, 0.8);
+  transform: rotateX(-68deg);
+  animation: login-gyro-inner 1.3s cubic-bezier(0.4, 0, 0.2, 1) infinite reverse;
+}
+
+@keyframes login-gyro-outer {
+  from { transform: rotateX(68deg)  rotateZ(0deg); }
+  to   { transform: rotateX(68deg)  rotateZ(360deg); }
+}
+@keyframes login-gyro-inner {
+  from { transform: rotateX(-68deg) rotateZ(0deg); }
+  to   { transform: rotateX(-68deg) rotateZ(360deg); }
 }
 
 /* ── Forgot link — matches ZDesk .text-muted.text-center link ───────────── */

@@ -41,50 +41,63 @@ function UserForm({ form, errors, onChange, isCreate, subjects, classes, roles }
   }
 
   return (
-    <div className="user-form">
-      <Input
-        id="name" label={t('users.fullName')} required
-        value={form.name} error={errors.name}
-        placeholder={t('users.namePlaceholder')}
-        onChange={(e) => onChange('name', e.target.value)}
-      />
-      <Input
-        id="email" label={t('users.email')} type="email" required
-        value={form.email} error={errors.email}
-        onChange={(e) => onChange('email', e.target.value)}
-      />
-      {isCreate && (
-        <div className="user-form__otp-notice">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
-          Un code OTP sera envoyé à l'adresse email pour la première connexion.
+    <div>
+      <div className="oc-section">
+        <p className="oc-section__title"><span className="oc-section__title-dot" />Informations générales</p>
+        <div className="oc-fields">
+          <Input
+            id="name" label={t('users.fullName')} required
+            value={form.name} error={errors.name}
+            placeholder={t('users.namePlaceholder')}
+            onChange={(e) => onChange('name', e.target.value)}
+          />
+          <Input
+            id="email" label={t('users.email')} type="email" required
+            value={form.email} error={errors.email}
+            onChange={(e) => onChange('email', e.target.value)}
+          />
+          <Input
+            id="whatsappNumber" label={t('users.phone')}
+            value={form.whatsappNumber}
+            placeholder={t('users.phonePlaceholder')}
+            onChange={(e) => onChange('whatsappNumber', e.target.value)}
+          />
         </div>
-      )}
-      <Input
-        id="whatsappNumber" label={t('users.phone')}
-        value={form.whatsappNumber}
-        placeholder={t('users.phonePlaceholder')}
-        onChange={(e) => onChange('whatsappNumber', e.target.value)}
-      />
-      <Select
-        id="role" label={t('users.role')} required
-        value={form.role} error={errors.role}
-        placeholder={t('users.selectRole')}
-        options={roles}
-        onChange={(e) => onChange('role', e.target.value)}
-      />
+      </div>
+
+      <div className="oc-section">
+        <p className="oc-section__title"><span className="oc-section__title-dot" />Rôle &amp; accès</p>
+        <div className="oc-fields">
+          <Select
+            id="role" label={t('users.role')} required
+            value={form.role} error={errors.role}
+            placeholder={t('users.selectRole')}
+            options={roles}
+            onChange={(e) => onChange('role', e.target.value)}
+          />
+        </div>
+        {isCreate && (
+          <div className="oc-info-box" style={{ marginTop: '0.75rem' }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            Un code OTP sera envoyé à l'adresse email pour la première connexion.
+          </div>
+        )}
+      </div>
 
       {isCreate && isTeacher && (
         <>
-          {/* Subject assignment */}
-          <div className="user-form__section">
-            <div className="user-form__section-title">{t('users.subjects')}</div>
-            <div className="user-form__section-hint">
+          <div className="oc-section">
+            <p className="oc-section__title"><span className="oc-section__title-dot" />{t('users.subjects')}</p>
+            <div className="oc-info-box oc-info-box--blue" style={{ marginBottom: '0.75rem' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
               {t('users.subjectsHint')}
             </div>
             {subjects.length === 0 ? (
-              <p className="user-form__empty">—</p>
+              <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>—</p>
             ) : (
               <div className="user-form__subject-grid">
                 {subjects.map((s) => (
@@ -103,10 +116,12 @@ function UserForm({ form, errors, onChange, isCreate, subjects, classes, roles }
             )}
           </div>
 
-          {/* Main class (professeur principal) */}
-          <div className="user-form__section">
-            <div className="user-form__section-title">Classe principale <span className="user-form__optional">(optionnel)</span></div>
-            <div className="user-form__section-hint">
+          <div className="oc-section">
+            <p className="oc-section__title"><span className="oc-section__title-dot" />Classe principale <span style={{ textTransform: 'none', fontWeight: 400, opacity: 0.7 }}>(optionnel)</span></p>
+            <div className="oc-info-box oc-info-box--blue" style={{ marginBottom: '0.75rem' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
               Désigne cet enseignant comme professeur principal de la classe.
             </div>
             <select
@@ -373,6 +388,7 @@ function UsersPage() {
         open={!!modal}
         onClose={closeModal}
         title={modal === 'create' ? t('action.create') : t('action.edit')}
+        subtitle={modal === 'create' ? 'Remplissez les informations du nouvel utilisateur' : `Modifier le profil de ${selected?.name ?? ''}`}
         size="md"
         footer={
           <>

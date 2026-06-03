@@ -5,7 +5,7 @@ import logoIcon from '../../../assets/images/novaBulletin-icon.svg';
 import './LandingPage.css';
 
 const SITE_URL = 'https://e-report-frontend.vercel.app';
-const OG_IMAGE = `${SITE_URL}/og-image.png`;
+const OG_IMAGE = `${SITE_URL}/og-image.svg`;
 
 /* ── SVG Illustrations ──────────────────────────────────────────────────── */
 const IllustrationHero = () => (
@@ -434,7 +434,7 @@ const DATABASE_MODULES = [
 
 const TEAM = [
   { name: 'Felix Atoma', role: 'Lead Developer', tags: ['Software Developer', "Professeur d'Anglais"], initials: 'FA', color: '#1E2A78', colorEnd: '#3b82f6', photo: null, email: 'felixatoma2@gmail.com' },
-  { name: 'Alex Abalossosso', role: 'Project Manager', tags: ['Professeur de Science', 'Data Scientist'], initials: 'AA', color: '#7c3aed', colorEnd: '#a855f7', photo: null, email: 'abalossossomanzaman@gmail.com' },
+  { name: 'Manzaman Abalossosso', role: 'Project Manager', tags: ['Professeur de Science', 'Data Scientist'], initials: 'AA', color: '#7c3aed', colorEnd: '#a855f7', photo: null, email: 'abalossossomanzaman@gmail.com' },
   { name: 'Benjamin Ngbabou', role: 'Software Developer', tags: ['Marketing', 'Professeur de Mathématiques'], initials: 'BN', color: '#16a34a', colorEnd: '#22c55e', photo: null, email: 'bawiloussimngbabou1@gmail.com' },
 ];
 
@@ -596,7 +596,32 @@ export default function LandingPage() {
         <meta property="og:description" content="Fini Excel. NovaBulletin calcule les moyennes, génère les bulletins PDF et les envoie aux parents sur WhatsApp. LMS inclus. 3 jours → 30 minutes." />
         <meta property="og:image" content={OG_IMAGE} />
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@NovaBulletin" />
+        <meta name="twitter:creator" content="@FelixAtoma" />
         <meta name="twitter:image" content={OG_IMAGE} />
+        {/* FAQ rich snippet — Google shows these directly in search results */}
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": FAQS.map(f => ({
+            "@type": "Question",
+            "name": f.q,
+            "acceptedAnswer": { "@type": "Answer", "text": f.a }
+          }))
+        })}</script>
+        {/* Team schema — helps Google associate founders' names with NovaBulletin */}
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          "name": "NovaBulletin — Logiciel de gestion scolaire",
+          "url": SITE_URL,
+          "about": { "@id": `${SITE_URL}/#software` },
+          "mentions": [
+            { "@id": `${SITE_URL}/#person-felix` },
+            { "@id": `${SITE_URL}/#person-manzaman` },
+            { "@id": `${SITE_URL}/#person-benjamin` }
+          ]
+        })}</script>
       </Helmet>
 
       {/* ─── NAVBAR ──────────────────────────────────────────────────── */}

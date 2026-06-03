@@ -1,12 +1,65 @@
-.spinner { display: inline-flex; align-items: center; justify-content: center; }
-.spinner--sm .spinner__ring { width: 1rem; height: 1rem; border-width: 2px; }
-.spinner--md .spinner__ring { width: 1.5rem; height: 1.5rem; border-width: 2px; }
-.spinner--lg .spinner__ring { width: 2.5rem; height: 2.5rem; border-width: 3px; }
-.spinner__ring {
-  display: block;
-  border-style: solid;
-  border-color: var(--color-primary, #1e40af) transparent transparent transparent;
-  border-radius: 50%;
-  animation: spinner-spin 0.7s linear infinite;
+/* ── 3D gyroscope spinner ──────────────────────────────────────────────── */
+.spinner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 600px;
+  flex-shrink: 0;
 }
-@keyframes spinner-spin { to { transform: rotate(360deg); } }
+
+/* Sizes */
+.spinner--sm .spinner__ring { width: 18px;  height: 18px;  }
+.spinner--md .spinner__ring { width: 28px;  height: 28px;  }
+.spinner--lg .spinner__ring { width: 52px;  height: 52px;  }
+
+.spinner__ring {
+  position: relative;
+  border-radius: 50%;
+  transform-style: preserve-3d;
+}
+
+/* Outer orbit — tilted ring rotating around Z */
+.spinner__ring::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-sizing: border-box;
+  border: 2.5px solid rgba(249, 115, 22, 0.18);
+  border-top-color:   #f97316;
+  border-right-color: rgba(249, 115, 22, 0.55);
+  transform: rotateX(68deg);
+  animation: gyro-outer 0.85s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Inner orbit — opposite tilt, counter-spin */
+.spinner__ring::after {
+  content: '';
+  position: absolute;
+  inset: 18%;
+  border-radius: 50%;
+  box-sizing: border-box;
+  border: 2px solid rgba(251, 191, 36, 0.18);
+  border-bottom-color: #fbbf24;
+  border-left-color:   rgba(251, 191, 36, 0.55);
+  transform: rotateX(-68deg);
+  animation: gyro-inner 1.3s cubic-bezier(0.4, 0, 0.2, 1) infinite reverse;
+}
+
+/* sm — thinner borders */
+.spinner--sm .spinner__ring::before { border-width: 2px; }
+.spinner--sm .spinner__ring::after  { border-width: 1.5px; inset: 20%; }
+
+/* lg — thicker borders */
+.spinner--lg .spinner__ring::before { border-width: 3px; }
+.spinner--lg .spinner__ring::after  { border-width: 2.5px; inset: 16%; }
+
+@keyframes gyro-outer {
+  from { transform: rotateX(68deg)  rotateZ(0deg); }
+  to   { transform: rotateX(68deg)  rotateZ(360deg); }
+}
+
+@keyframes gyro-inner {
+  from { transform: rotateX(-68deg) rotateZ(0deg); }
+  to   { transform: rotateX(-68deg) rotateZ(360deg); }
+}

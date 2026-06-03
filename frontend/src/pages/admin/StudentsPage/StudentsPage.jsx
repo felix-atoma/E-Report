@@ -92,62 +92,70 @@ function StudentForm({ form, errors, onChange, classes, isCreate, existingAdmiss
 
   return (
     <div className="student-form">
-      <PhotoPicker
-        preview={photoPreview}
-        existingSrc={existingPhotoSrc}
-        name={form.name}
-        fileInputRef={fileInputRef}
-        onPhotoClick={onPhotoClick}
-      />
-
-      <Input
-        id="name" label="Nom complet" required
-        value={form.name} error={errors.name}
-        placeholder="ex: Kofi Ama"
-        onChange={(e) => onChange('name', e.target.value)}
-      />
-
-      {isCreate ? (
-        <div className="student-form__matricule-hint">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
-          Le numéro matricule sera généré automatiquement à la création.
-        </div>
-      ) : (
-        <div className="student-form__matricule-display">
-          <span className="student-form__matricule-label">Numéro matricule</span>
-          <span className="student-form__matricule-value">{existingAdmissionNumber}</span>
-        </div>
-      )}
-
-      <div className="student-form__row">
-        <Input
-          id="dateOfBirth" label="Date de naissance" type="date"
-          value={form.dateOfBirth} error={errors.dateOfBirth}
-          onChange={(e) => onChange('dateOfBirth', e.target.value)}
-        />
-        <Select
-          id="sex" label="Sexe"
-          value={form.sex}
-          placeholder="Sélectionner"
-          options={[{ value: 'M', label: 'Masculin' }, { value: 'F', label: 'Féminin' }]}
-          onChange={(e) => onChange('sex', e.target.value)}
+      {/* Photo row */}
+      <div className="oc-section">
+        <p className="oc-section__title"><span className="oc-section__title-dot" />Photo &amp; identité</p>
+        <PhotoPicker
+          preview={photoPreview}
+          existingSrc={existingPhotoSrc}
+          name={form.name}
+          fileInputRef={fileInputRef}
+          onPhotoClick={onPhotoClick}
         />
       </div>
-      <Select
-        id="classId" label="Classe"
-        value={form.classId} error={errors.classId}
-        placeholder="Sélectionner une classe"
-        options={classOptions}
-        onChange={(e) => onChange('classId', e.target.value)}
-      />
-      <Input
-        id="parentEmail" label="Email du parent"
-        value={form.parentEmail} error={errors.parentEmail}
-        placeholder="Optionnel — lie le compte parent"
-        onChange={(e) => onChange('parentEmail', e.target.value)}
-      />
+
+      {/* Basic info */}
+      <div className="oc-section">
+        <p className="oc-section__title"><span className="oc-section__title-dot" />Informations de base</p>
+        <div className="oc-fields">
+          <Input
+            id="name" label="Nom complet" required
+            value={form.name} error={errors.name}
+            placeholder="ex: Kofi Ama"
+            onChange={(e) => onChange('name', e.target.value)}
+          />
+          {isCreate ? (
+            <div className="oc-info-box">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              Le numéro matricule sera généré automatiquement à la création.
+            </div>
+          ) : (
+            <div className="student-form__matricule-display">
+              <span className="student-form__matricule-label">Numéro matricule</span>
+              <span className="student-form__matricule-value">{existingAdmissionNumber}</span>
+            </div>
+          )}
+          <div className="oc-fields oc-fields--row">
+            <Input
+              id="dateOfBirth" label="Date de naissance" type="date"
+              value={form.dateOfBirth} error={errors.dateOfBirth}
+              onChange={(e) => onChange('dateOfBirth', e.target.value)}
+            />
+            <Select
+              id="sex" label="Sexe"
+              value={form.sex}
+              placeholder="Sélectionner"
+              options={[{ value: 'M', label: 'Masculin' }, { value: 'F', label: 'Féminin' }]}
+              onChange={(e) => onChange('sex', e.target.value)}
+            />
+          </div>
+          <Select
+            id="classId" label="Classe"
+            value={form.classId} error={errors.classId}
+            placeholder="Sélectionner une classe"
+            options={classOptions}
+            onChange={(e) => onChange('classId', e.target.value)}
+          />
+          <Input
+            id="parentEmail" label="Email du parent"
+            value={form.parentEmail} error={errors.parentEmail}
+            placeholder="Optionnel — lie le compte parent"
+            onChange={(e) => onChange('parentEmail', e.target.value)}
+          />
+        </div>
+      </div>
 
       {/* Toggle extended fields */}
       <button
@@ -160,116 +168,130 @@ function StudentForm({ form, errors, onChange, classes, isCreate, existingAdmiss
 
       {showExtended && (
         <>
-          <div className="student-form__section-title">Statut &amp; Scolarité</div>
-          <div className="student-form__row">
-            <Select
-              id="studentStatus"
-              label="Statut"
-              value={form.studentStatus}
-              options={STUDENT_STATUS_OPTIONS}
-              onChange={(e) => onChange('studentStatus', e.target.value)}
-            />
-            <Input
-              id="previousSchool"
-              label="École précédente"
-              value={form.previousSchool}
-              placeholder="Optionnel"
-              onChange={(e) => onChange('previousSchool', e.target.value)}
-            />
-          </div>
-          <div className="student-form__row">
-            <Input
-              id="birthPlace"
-              label="Lieu de naissance"
-              value={form.birthPlace}
-              onChange={(e) => onChange('birthPlace', e.target.value)}
-            />
-            <Input
-              id="bloodType"
-              label="Groupe sanguin"
-              value={form.bloodType}
-              placeholder="ex: A+, O-, …"
-              onChange={(e) => onChange('bloodType', e.target.value)}
-            />
-          </div>
-          <Input
-            id="medicalConditions"
-            label="Conditions médicales"
-            value={form.medicalConditions}
-            placeholder="Allergies, maladies chroniques…"
-            onChange={(e) => onChange('medicalConditions', e.target.value)}
-          />
-
-          <div className="student-form__section-title">Adresse</div>
-          <div className="student-form__row">
-            <Input
-              id="address"
-              label="Adresse"
-              value={form.address}
-              onChange={(e) => onChange('address', e.target.value)}
-            />
-            <Input
-              id="city"
-              label="Ville"
-              value={form.city}
-              onChange={(e) => onChange('city', e.target.value)}
-            />
+          <div className="oc-section">
+            <p className="oc-section__title"><span className="oc-section__title-dot" />Statut &amp; Scolarité</p>
+            <div className="oc-fields">
+              <div className="oc-fields oc-fields--row">
+                <Select
+                  id="studentStatus"
+                  label="Statut"
+                  value={form.studentStatus}
+                  options={STUDENT_STATUS_OPTIONS}
+                  onChange={(e) => onChange('studentStatus', e.target.value)}
+                />
+                <Input
+                  id="previousSchool"
+                  label="École précédente"
+                  value={form.previousSchool}
+                  placeholder="Optionnel"
+                  onChange={(e) => onChange('previousSchool', e.target.value)}
+                />
+              </div>
+              <div className="oc-fields oc-fields--row">
+                <Input
+                  id="birthPlace"
+                  label="Lieu de naissance"
+                  value={form.birthPlace}
+                  onChange={(e) => onChange('birthPlace', e.target.value)}
+                />
+                <Input
+                  id="bloodType"
+                  label="Groupe sanguin"
+                  value={form.bloodType}
+                  placeholder="ex: A+, O-, …"
+                  onChange={(e) => onChange('bloodType', e.target.value)}
+                />
+              </div>
+              <Input
+                id="medicalConditions"
+                label="Conditions médicales"
+                value={form.medicalConditions}
+                placeholder="Allergies, maladies chroniques…"
+                onChange={(e) => onChange('medicalConditions', e.target.value)}
+              />
+            </div>
           </div>
 
-          <div className="student-form__section-title">Père</div>
-          <div className="student-form__row">
-            <Input
-              id="fatherName"
-              label="Nom du père"
-              value={form.fatherName}
-              onChange={(e) => onChange('fatherName', e.target.value)}
-            />
-            <Input
-              id="fatherPhone"
-              label="Téléphone père"
-              value={form.fatherPhone}
-              onChange={(e) => onChange('fatherPhone', e.target.value)}
-            />
+          <div className="oc-section">
+            <p className="oc-section__title"><span className="oc-section__title-dot" />Adresse</p>
+            <div className="oc-fields oc-fields--row">
+              <Input
+                id="address"
+                label="Adresse"
+                value={form.address}
+                onChange={(e) => onChange('address', e.target.value)}
+              />
+              <Input
+                id="city"
+                label="Ville"
+                value={form.city}
+                onChange={(e) => onChange('city', e.target.value)}
+              />
+            </div>
           </div>
 
-          <div className="student-form__section-title">Mère</div>
-          <div className="student-form__row">
-            <Input
-              id="motherName"
-              label="Nom de la mère"
-              value={form.motherName}
-              onChange={(e) => onChange('motherName', e.target.value)}
-            />
-            <Input
-              id="motherPhone"
-              label="Téléphone mère"
-              value={form.motherPhone}
-              onChange={(e) => onChange('motherPhone', e.target.value)}
-            />
+          <div className="oc-section">
+            <p className="oc-section__title"><span className="oc-section__title-dot" />Père</p>
+            <div className="oc-fields oc-fields--row">
+              <Input
+                id="fatherName"
+                label="Nom du père"
+                value={form.fatherName}
+                onChange={(e) => onChange('fatherName', e.target.value)}
+              />
+              <Input
+                id="fatherPhone"
+                label="Téléphone père"
+                value={form.fatherPhone}
+                onChange={(e) => onChange('fatherPhone', e.target.value)}
+              />
+            </div>
           </div>
 
-          <div className="student-form__section-title">Contact d'urgence</div>
-          <div className="student-form__row">
-            <Input
-              id="emergencyContactName"
-              label="Nom"
-              value={form.emergencyContactName}
-              onChange={(e) => onChange('emergencyContactName', e.target.value)}
-            />
-            <Input
-              id="emergencyContactPhone"
-              label="Téléphone"
-              value={form.emergencyContactPhone}
-              onChange={(e) => onChange('emergencyContactPhone', e.target.value)}
-            />
+          <div className="oc-section">
+            <p className="oc-section__title"><span className="oc-section__title-dot" />Mère</p>
+            <div className="oc-fields oc-fields--row">
+              <Input
+                id="motherName"
+                label="Nom de la mère"
+                value={form.motherName}
+                onChange={(e) => onChange('motherName', e.target.value)}
+              />
+              <Input
+                id="motherPhone"
+                label="Téléphone mère"
+                value={form.motherPhone}
+                onChange={(e) => onChange('motherPhone', e.target.value)}
+              />
+            </div>
           </div>
-          <Input
-            id="emergencyContactRelation"
-            label="Relation"
-            value={form.emergencyContactRelation}
-            placeholder="ex: Oncle, Tuteur…"
-            onChange={(e) => onChange('emergencyContactRelation', e.target.value)}
-          />
+
+          <div className="oc-section">
+            <p className="oc-section__title"><span className="oc-section__title-dot" />Contact d'urgence</p>
+            <div className="oc-fields">
+              <div className="oc-fields oc-fields--row">
+                <Input
+                  id="emergencyContactName"
+                  label="Nom"
+                  value={form.emergencyContactName}
+                  onChange={(e) => onChange('emergencyContactName', e.target.value)}
+                />
+                <Input
+                  id="emergencyContactPhone"
+                  label="Téléphone"
+                  value={form.emergencyContactPhone}
+                  onChange={(e) => onChange('emergencyContactPhone', e.target.value)}
+                />
+              </div>
+              <Input
+                id="emergencyContactRelation"
+                label="Relation"
+                value={form.emergencyContactRelation}
+                placeholder="ex: Oncle, Tuteur…"
+                onChange={(e) => onChange('emergencyContactRelation', e.target.value)}
+              />
+            </div>
+          </div>
         </>
       )}
     </div>
@@ -466,7 +488,8 @@ function StudentsPage() {
       studentStatus:            form.studentStatus            || undefined,
     };
     if (modal === 'create') {
-      createMutation.mutate(payload);
+      const { studentStatus: _ignored, ...createPayload } = payload;
+      createMutation.mutate(createPayload);
     } else {
       updateMutation.mutate({ id: selected.id, data: payload });
     }
@@ -604,6 +627,7 @@ function StudentsPage() {
         open={!!modal}
         onClose={closeModal}
         title={modal === 'create' ? 'Nouvel élève' : "Modifier l'élève"}
+        subtitle={modal === 'create' ? "Saisir les informations du nouvel inscrit" : `Mise à jour du dossier de ${selected?.user?.name ?? selected?.admissionNumber ?? ''}`}
         size="md"
         footer={
           <>
