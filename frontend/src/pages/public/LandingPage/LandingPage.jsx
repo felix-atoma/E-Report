@@ -432,6 +432,12 @@ const DATABASE_MODULES = [
   { icon: '👤', color: '#f5f3ff', iconColor: '#6d28d9', title: 'Profils du personnel', desc: 'Dossiers RH complets : diplômes, contrat, expérience, contacts d\'urgence.' },
 ];
 
+const TEAM = [
+  { name: 'Felix Atoma', role: 'Lead Developer', tags: ['Software Developer', "Professeur d'Anglais"], initials: 'FA', color: '#1E2A78', colorEnd: '#3b82f6', photo: null, email: 'felixatoma2@gmail.com' },
+  { name: 'Alex Abalossosso', role: 'Project Manager', tags: ['Professeur de Science', 'Data Scientist'], initials: 'AA', color: '#7c3aed', colorEnd: '#a855f7', photo: null, email: 'abalossossomanzaman@gmail.com' },
+  { name: 'Benjamin Ngbabou', role: 'Software Developer', tags: ['Marketing', 'Professeur de Mathématiques'], initials: 'BN', color: '#16a34a', colorEnd: '#22c55e', photo: null, email: 'bawiloussimngbabou1@gmail.com' },
+];
+
 const FAQS = [
   { q: 'Est-ce que je dois payer pour essayer ?', a: 'Non. Utilisez NovaBulletin pendant tout un trimestre complet. Si vous êtes satisfait à la fin du trimestre, vous payez. Sinon, vous revenez à votre ancien système. Aucun engagement, aucune carte bancaire requise dès le départ.' },
   { q: 'Comment fonctionnent les fiches numériques des enseignants ?', a: 'Chaque enseignant a accès à sa propre fiche de notes numérique depuis son téléphone. Il saisit les notes (interrogations, devoirs, compositions), les moyennes se calculent automatiquement, et il signe électroniquement la fiche. L\'administration voit tout en temps réel — aucune retranscription manuelle, aucune perte de fiche papier.' },
@@ -601,7 +607,7 @@ export default function LandingPage() {
             <span>NovaBulletin</span>
           </Link>
           <ul className={`lp-nav__links${menuOpen ? ' lp-nav__links--open' : ''}`}>
-            {[['#features','Fonctionnalités'],['#lms','LMS'],['#database','Base de données'],['#how','Démarrage'],['#roles','Pour qui'],['#comparison','Comparaison'],['#faq','FAQ']].map(([h,l]) => (
+            {[['#features','Fonctionnalités'],['#lms','LMS'],['#database','Base de données'],['#how','Démarrage'],['#roles','Pour qui'],['#comparison','Comparaison'],['#team','Équipe'],['#faq','FAQ']].map(([h,l]) => (
               <li key={h}><a href={h} onClick={() => setMenuOpen(false)}>{l}</a></li>
             ))}
           </ul>
@@ -1093,6 +1099,33 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ─── TEAM ────────────────────────────────────────────────────── */}
+      <section className="lp-team" id="team">
+        <div className="lp-container">
+          <div className="lp-section-head">
+            <span className="lp-tag">👥 L'Équipe</span>
+            <h2>Les personnes derrière NovaBulletin</h2>
+            <p>Une équipe passionnée, ancrée en Afrique, qui construit les outils que nos écoles méritent.</p>
+          </div>
+          <div className="lp-team__grid">
+            {TEAM.map(m => (
+              <div className="lp-team-card" key={m.name}>
+                {m.photo
+                  ? <img src={m.photo} alt={m.name} className="lp-team-card__photo" />
+                  : <div className="lp-team-card__avatar" style={{background:`linear-gradient(135deg,${m.color},${m.colorEnd})`}}>{m.initials}</div>
+                }
+                <p className="lp-team-card__name">{m.name}</p>
+                <p className="lp-team-card__role">{m.role}</p>
+                <div className="lp-team-card__tags">
+                  {m.tags.map(t => <span key={t} className="lp-team-card__tag">{t}</span>)}
+                </div>
+                <a href={`mailto:${m.email}`} className="lp-team-card__email">{m.email}</a>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ─── CTA ─────────────────────────────────────────────────────── */}
       <section className="lp-cta">
         <div className="lp-cta__bg"><div className="lp-blob lp-blob--cta"/></div>
@@ -1144,7 +1177,7 @@ export default function LandingPage() {
           <div className="lp-footer__cols">
             <div>
               <h4>Produit</h4>
-              {[['#features','Fonctionnalités'],['#lms','Module LMS'],['#database','Base de données'],['#how','Comment ça marche'],['#roles','Pour qui'],['#comparison','Comparaison'],['#pricing','Tarif']].map(([h,l]) => <a key={h} href={h}>{l}</a>)}
+              {[['#features','Fonctionnalités'],['#lms','Module LMS'],['#database','Base de données'],['#how','Comment ça marche'],['#roles','Pour qui'],['#comparison','Comparaison'],['#pricing','Tarif'],['#team','Équipe']].map(([h,l]) => <a key={h} href={h}>{l}</a>)}
             </div>
             <div>
               <h4>Démarrer</h4>

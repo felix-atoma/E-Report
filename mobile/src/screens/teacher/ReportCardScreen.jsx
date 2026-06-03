@@ -15,7 +15,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { reportsService } from '../../services/reportsService';
 import Card from '../../components/common/Card';
 import StatusPill from '../../components/common/StatusPill';
-import { fontSize, fontWeight, spacing } from '../../theme';
+import { fontSize, fontWeight, radius, spacing } from '../../theme';
 
 export default function TeacherReportCardScreen({ route, navigation }) {
   const { reportId } = route.params;
