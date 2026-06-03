@@ -57,9 +57,12 @@ async function bootstrap() {
 
   // Build allowed origins list: FRONTEND_URL (comma-separated) + dev defaults
   const allowedOrigins = new Set<string>([
+    'http://localhost:3000',
     'http://localhost:5173',
     'http://localhost:8081',
     'http://localhost:19006',
+    // Production Vercel deployment — always allowed even without FRONTEND_URL env var
+    'https://e-report-frontend.vercel.app',
   ]);
   if (frontendUrl) {
     frontendUrl.split(',').map(o => o.trim()).filter(Boolean).forEach(o => allowedOrigins.add(o));

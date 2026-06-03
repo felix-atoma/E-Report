@@ -3,9 +3,10 @@ import './OffCanvas.css';
 
 const OffCanvas3DOrb = lazy(() => import('./OffCanvas3DOrb'));
 
+let orbFailed = false;
 class OrbErrorBoundary extends Component {
   state = { failed: false };
-  static getDerivedStateFromError() { return { failed: true }; }
+  static getDerivedStateFromError() { orbFailed = true; return { failed: true }; }
   render() { return this.state.failed ? null : this.props.children; }
 }
 
@@ -30,11 +31,13 @@ function OffCanvas({ open, onClose, title, subtitle, children, size = 'md', foot
 
         {/* 3D Header */}
         <div className="offcanvas__header">
-          <OrbErrorBoundary>
-            <Suspense fallback={null}>
-              <OffCanvas3DOrb size={120} />
-            </Suspense>
-          </OrbErrorBoundary>
+          {!orbFailed && (
+            <OrbErrorBoundary>
+              <Suspense fallback={null}>
+                <OffCanvas3DOrb size={120} />
+              </Suspense>
+            </OrbErrorBoundary>
+          )}
 
           <div className="offcanvas__header-content">
             <h2 className="offcanvas__title">{title}</h2>
