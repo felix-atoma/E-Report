@@ -75,7 +75,17 @@ html{scroll-behavior:smooth}
 .lp-nav--scrolled .lp-nav__links a{color:#374151}
 .lp-nav__links a:hover{color:#fff}
 .lp-nav--scrolled .lp-nav__links a:hover{color:#1E2A78}
-.lp-nav__ctas{display:flex;gap:.75rem;margin-left:auto;flex-shrink:0}
+.lp-nav__ctas{display:flex;gap:.75rem;margin-left:auto;flex-shrink:0;align-items:center}
+/* ── Language toggle in navbar ── */
+.lp-lang{display:flex;gap:3px;background:rgba(255,255,255,.1);border-radius:8px;padding:3px}
+.lp-nav--scrolled .lp-lang{background:rgba(0,0,0,.06)}
+.lp-lang__btn{display:flex;align-items:center;gap:5px;padding:4px 8px;border:none;background:transparent;border-radius:6px;cursor:pointer;font-size:.78rem;font-weight:600;color:rgba(255,255,255,.7);transition:background .15s,color .15s;white-space:nowrap}
+.lp-nav--scrolled .lp-lang__btn{color:#4b5563}
+.lp-lang__btn--active{background:rgba(255,255,255,.2);color:#fff}
+.lp-nav--scrolled .lp-lang__btn--active{background:#fff;color:#1E2A78;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.lp-lang__btn:hover:not(.lp-lang__btn--active){background:rgba(255,255,255,.12);color:#fff}
+.lp-nav--scrolled .lp-lang__btn:hover:not(.lp-lang__btn--active){background:rgba(0,0,0,.06);color:#1f2937}
+.lp-lang__flag{width:20px;height:13px;border-radius:2px;display:block;box-shadow:0 0 0 1px rgba(0,0,0,.15);flex-shrink:0}
 .lp-nav .lp-btn--ghost{color:rgba(255,255,255,.85);border-color:rgba(255,255,255,.35)}
 .lp-nav .lp-btn--ghost:hover{background:rgba(255,255,255,.12);color:#fff}
 .lp-nav--scrolled .lp-btn--ghost{color:#1E2A78;border-color:#1E2A78}
