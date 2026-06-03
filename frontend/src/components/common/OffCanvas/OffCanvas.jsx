@@ -1,21 +1,6 @@
-import { useEffect, Suspense, lazy, Component } from 'react';
+import { useEffect } from 'react';
+import OffCanvas3DOrb from './OffCanvas3DOrb';
 import './OffCanvas.css';
-
-const OffCanvas3DOrb = lazy(() => import('./OffCanvas3DOrb'));
-
-const canWebGL = (() => {
-  try {
-    const c = document.createElement('canvas');
-    return !!(c.getContext('webgl2') || c.getContext('webgl') || c.getContext('experimental-webgl'));
-  } catch { return false; }
-})();
-
-let orbFailed = false;
-class OrbErrorBoundary extends Component {
-  state = { failed: false };
-  static getDerivedStateFromError() { orbFailed = true; return { failed: true }; }
-  render() { return this.state.failed ? null : this.props.children; }
-}
 
 function OffCanvas({ open, onClose, title, subtitle, children, size = 'md', footer }) {
   useEffect(() => {
@@ -36,15 +21,8 @@ function OffCanvas({ open, onClose, title, subtitle, children, size = 'md', foot
     <div className="offcanvas-overlay" onClick={onClose} role="dialog" aria-modal aria-label={title}>
       <div className={`offcanvas offcanvas--${size}`} onClick={(e) => e.stopPropagation()}>
 
-        {/* 3D Header */}
         <div className="offcanvas__header">
-          {canWebGL && !orbFailed && (
-            <OrbErrorBoundary>
-              <Suspense fallback={null}>
-                <OffCanvas3DOrb size={120} />
-              </Suspense>
-            </OrbErrorBoundary>
-          )}
+          <OffCanvas3DOrb />
 
           <div className="offcanvas__header-content">
             <h2 className="offcanvas__title">{title}</h2>

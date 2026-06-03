@@ -1,0 +1,73 @@
+.oc-orb {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 110px;
+  height: 100%;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  perspective: 400px;
+}
+
+.oc-orb__core {
+  position: absolute;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 33%, #fb923c, #f97316 55%, #c2410c);
+  box-shadow:
+    0 0 18px rgba(249,115,22,0.65),
+    0 0 40px rgba(249,115,22,0.3);
+  animation: oc-orb-float 3s ease-in-out infinite;
+  opacity: 0.88;
+}
+
+@keyframes oc-orb-float {
+  0%, 100% { transform: translateY(0)    scale(1); }
+  50%       { transform: translateY(-6px) scale(1.04); }
+}
+
+.oc-orb__ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid transparent;
+  transform-style: preserve-3d;
+}
+
+.oc-orb__ring--1 {
+  width: 74px;
+  height: 74px;
+  border-top-color: rgba(249,115,22,0.7);
+  border-right-color: rgba(249,115,22,0.2);
+  transform: rotateX(66deg);
+  animation: oc-ring-1 1.4s linear infinite;
+}
+.oc-orb__ring--2 {
+  width: 88px;
+  height: 88px;
+  border-bottom-color: rgba(251,191,36,0.6);
+  border-left-color: rgba(251,191,36,0.15);
+  transform: rotateX(-50deg) rotateZ(40deg);
+  animation: oc-ring-2 2s linear infinite reverse;
+}
+
+@keyframes oc-ring-1 {
+  from { transform: rotateX(66deg)  rotateZ(0deg); }
+  to   { transform: rotateX(66deg)  rotateZ(360deg); }
+}
+@keyframes oc-ring-2 {
+  from { transform: rotateX(-50deg) rotateZ(40deg); }
+  to   { transform: rotateX(-50deg) rotateZ(400deg); }
+}
+
+.oc-orb__glow {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(249,115,22,0.18) 0%, transparent 70%);
+  animation: oc-orb-float 3s ease-in-out infinite;
+}

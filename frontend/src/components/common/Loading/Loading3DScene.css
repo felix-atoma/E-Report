@@ -1,0 +1,107 @@
+.orb-loader {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 600px;
+}
+
+/* ── Central glowing orb ────────────────────────────────────────────────── */
+.orb-loader__core {
+  position: absolute;
+  width: 36%;
+  height: 36%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 35%, #fb923c, #f97316 55%, #c2410c);
+  box-shadow:
+    0 0 12px rgba(249,115,22,0.7),
+    0 0 28px rgba(249,115,22,0.35),
+    0 0 52px rgba(249,115,22,0.15);
+  animation: orb-core-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes orb-core-pulse {
+  0%, 100% { transform: scale(1);    box-shadow: 0 0 12px rgba(249,115,22,.7),0 0 28px rgba(249,115,22,.35); }
+  50%       { transform: scale(1.08); box-shadow: 0 0 20px rgba(249,115,22,.9),0 0 44px rgba(249,115,22,.5); }
+}
+
+/* ── Orbit rings ────────────────────────────────────────────────────────── */
+.orb-loader__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  transform-style: preserve-3d;
+}
+
+.orb-loader__ring--1 {
+  border-top-color: #f97316;
+  border-right-color: rgba(249,115,22,0.3);
+  transform: rotateX(68deg);
+  animation: ring-spin-1 1.1s linear infinite;
+}
+.orb-loader__ring--2 {
+  inset: 8%;
+  border-bottom-color: #fbbf24;
+  border-left-color: rgba(251,191,36,0.3);
+  transform: rotateX(-55deg) rotateZ(35deg);
+  animation: ring-spin-2 1.7s linear infinite reverse;
+}
+.orb-loader__ring--3 {
+  inset: 14%;
+  border-top-color: rgba(251,191,36,0.5);
+  border-left-color: rgba(249,115,22,0.2);
+  transform: rotateX(30deg) rotateZ(-50deg);
+  animation: ring-spin-3 2.2s linear infinite;
+}
+
+@keyframes ring-spin-1 {
+  from { transform: rotateX(68deg)  rotateZ(0deg); }
+  to   { transform: rotateX(68deg)  rotateZ(360deg); }
+}
+@keyframes ring-spin-2 {
+  from { transform: rotateX(-55deg) rotateZ(35deg); }
+  to   { transform: rotateX(-55deg) rotateZ(395deg); }
+}
+@keyframes ring-spin-3 {
+  from { transform: rotateX(30deg)  rotateZ(-50deg); }
+  to   { transform: rotateX(30deg)  rotateZ(310deg); }
+}
+
+/* ── Orbiting particles ─────────────────────────────────────────────────── */
+.orb-loader__dot {
+  position: absolute;
+  width: 7%;
+  height: 7%;
+  border-radius: 50%;
+  box-shadow: 0 0 6px currentColor;
+}
+
+.orb-loader__dot--1 {
+  color: #fff;
+  background: #fff;
+  animation: dot-orbit-1 1.1s linear infinite;
+}
+.orb-loader__dot--2 {
+  color: #fbbf24;
+  background: #fbbf24;
+  animation: dot-orbit-2 1.7s linear infinite;
+}
+.orb-loader__dot--3 {
+  color: #fb923c;
+  background: #fb923c;
+  animation: dot-orbit-3 2.2s linear infinite;
+}
+
+@keyframes dot-orbit-1 {
+  from { transform: rotateX(68deg)  rotateZ(0deg)   translateX(46%) rotateX(-68deg); }
+  to   { transform: rotateX(68deg)  rotateZ(360deg) translateX(46%) rotateX(-68deg); }
+}
+@keyframes dot-orbit-2 {
+  from { transform: rotateX(-55deg) rotateZ(180deg)   translateX(42%) rotateX(55deg); }
+  to   { transform: rotateX(-55deg) rotateZ(540deg)   translateX(42%) rotateX(55deg); }
+}
+@keyframes dot-orbit-3 {
+  from { transform: rotateX(30deg)  rotateZ(90deg)  translateX(38%) rotateX(-30deg); }
+  to   { transform: rotateX(30deg)  rotateZ(450deg) translateX(38%) rotateX(-30deg); }
+}
