@@ -10,6 +10,7 @@ import './Sidebar.css';
 const NAV = {
   ADMIN: [
     { to: '/admin',               icon: 'grid',      labelKey: 'nav.dashboard' },
+    { to: '/help',                icon: 'helpCircle',labelKey: 'nav.help' },
     { divider: true,              sectionKey: 'section.school' },
     { to: '/admin/users',         icon: 'users',     labelKey: 'nav.users' },
     { to: '/admin/classes',       icon: 'school',    labelKey: 'nav.classes' },
@@ -47,6 +48,7 @@ const NAV = {
   ],
   TEACHER: [
     { to: '/teacher',             icon: 'grid',      labelKey: 'nav.dashboard' },
+    { to: '/help',                icon: 'helpCircle',labelKey: 'nav.help' },
     { divider: true,              sectionKey: 'section.classes' },
     { to: '/teacher/classes',     icon: 'school',    labelKey: 'nav.myClasses' },
     { divider: true,              sectionKey: 'section.pedagogy' },
@@ -61,12 +63,14 @@ const NAV = {
   ],
   BURSAR: [
     { to: '/bursar',               icon: 'grid',      labelKey: 'nav.dashboard' },
+    { to: '/help',                 icon: 'helpCircle',labelKey: 'nav.help' },
     { to: '/bursar/fees',          icon: 'coins',     labelKey: 'nav.fees' },
     { to: '/bursar/payments',      icon: 'card',      labelKey: 'nav.payments' },
     { to: '/bursar/notifications', icon: 'bell',      labelKey: 'nav.heldBulletins' },
   ],
   PARENT: [
     { to: '/parent',                 icon: 'grid',      labelKey: 'nav.dashboard' },
+    { to: '/help',                   icon: 'helpCircle',labelKey: 'nav.help' },
     { to: '/parent/children',        icon: 'backpack',  labelKey: 'nav.myChildren' },
     { to: '/parent/bulletins',       icon: 'megaphone', labelKey: 'nav.bulletins' },
     { to: '/parent/lms',             icon: 'lms',       labelKey: 'nav.lms' },
@@ -75,6 +79,7 @@ const NAV = {
   ],
   STUDENT: [
     { to: '/student',           icon: 'grid',      labelKey: 'nav.dashboard' },
+    { to: '/help',              icon: 'helpCircle',labelKey: 'nav.help' },
     { to: '/student/reports',   icon: 'clipboard', labelKey: 'nav.myReports' },
     { to: '/student/progress',  icon: 'chart',     labelKey: 'nav.myProgress' },
     { to: '/student/bulletins', icon: 'megaphone', labelKey: 'nav.bulletins' },
@@ -270,6 +275,13 @@ const ICONS = {
       <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
     </svg>
   ),
+  helpCircle: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+      <line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+  ),
   exam_nat: (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
@@ -382,10 +394,10 @@ function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
         {/* Footer */}
         <div className="sidebar__footer">
           {!collapsed && (
-            <div className="sidebar__help-box">
+            <NavLink to="/help" onClick={onMobileClose} className="sidebar__help-box">
               <p className="sidebar__help-title">{t('help.title')}</p>
-              <p className="sidebar__help-text">{t('help.text')}</p>
-            </div>
+              <p className="sidebar__help-text">{t('help.link')}</p>
+            </NavLink>
           )}
 
           <div className="sidebar__footer-actions">

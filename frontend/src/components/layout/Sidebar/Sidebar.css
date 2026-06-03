@@ -169,12 +169,19 @@
 
 /* ── Help box ─────────────────────────────────────────────────────────── */
 .sidebar__help-box {
+  display: block;
   background: color-mix(in srgb, var(--color-primary, #f97316) 10%, transparent);
   border: 1px solid color-mix(in srgb, var(--color-primary, #f97316) 20%, transparent);
   border-radius: 8px;
   padding: 0.75rem;
   margin: 0.5rem 0.75rem;
   text-align: center;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+.sidebar__help-box:hover {
+  background: color-mix(in srgb, var(--color-primary, #f97316) 18%, transparent);
+  border-color: color-mix(in srgb, var(--color-primary, #f97316) 35%, transparent);
 }
 
 .sidebar__help-title {

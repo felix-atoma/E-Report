@@ -70,6 +70,7 @@ import StudentBulletinsPage   from '../pages/student/BulletinsPage/BulletinsPage
 import StudentLMSPage         from '../pages/student/StudentLMSPage/StudentLMSPage';
 
 import ProfilePage            from '../pages/shared/ProfilePage/ProfilePage';
+import HelpPage               from '../pages/shared/HelpPage/HelpPage';
 import PrintReportCardPage   from '../pages/shared/PrintReportCardPage/PrintReportCardPage';
 import AnnualReportPage      from '../pages/shared/AnnualReportPage/AnnualReportPage';
 import GoogleCallbackPage    from '../pages/auth/GoogleCallbackPage/GoogleCallbackPage';
@@ -199,6 +200,7 @@ function AppRouter() {
       <Route path="/admin/mock-exam-results"       element={<ProtectedRoute roles={['ADMIN']}><MockExamResultsPage /></ProtectedRoute>} />
 
       {/* Shared */}
+      <Route path="/help"    element={<ProtectedRoute><HelpPage /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
       <Route path="/reports/:id/print" element={<ProtectedRoute><PrintReportCardPage /></ProtectedRoute>} />
       <Route path="/reports/annual/:studentId/:academicYear" element={<ProtectedRoute><AnnualReportPage /></ProtectedRoute>} />

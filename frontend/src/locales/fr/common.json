@@ -39,7 +39,8 @@
     "nationalExams":    "Examens Nationaux",
     "library":          "Bibliothèque",
     "health":           "Santé",
-    "schoolDocuments":  "Documents"
+    "schoolDocuments":  "Documents",
+    "help":             "Guide d'utilisation"
   },
 
   "section": {
@@ -85,7 +86,8 @@
 
   "help": {
     "title": "Besoin d'aide ?",
-    "text":  "Contactez le support E-Report"
+    "text":  "Contactez le support E-Report",
+    "link":  "Voir le guide d'utilisation →"
   },
 
   "lang": {
