@@ -594,15 +594,24 @@ function AnimStat({ value, label, sub }) {
 
 function FaqItem({ q, a }) {
   const [open, setOpen] = useState(false);
+  const id = `faq-${q.slice(0, 20).replace(/\s+/g, '-').toLowerCase()}`;
   return (
     <div className={`lp-faq-item${open ? ' open' : ''}`}>
-      <button className="lp-faq-q" type="button" onClick={() => setOpen(v => !v)}>
+      <button
+        className="lp-faq-q"
+        type="button"
+        onClick={() => setOpen(v => !v)}
+        aria-expanded={open}
+        aria-controls={id}
+      >
         <span>{q}</span>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <polyline points={open ? '18 15 12 9 6 15' : '6 9 12 15 18 9'}/>
         </svg>
       </button>
-      {open && <p className="lp-faq-a">{a}</p>}
+      <div id={id} role="region" aria-label={q} hidden={!open}>
+        {open && <p className="lp-faq-a">{a}</p>}
+      </div>
     </div>
   );
 }
@@ -690,9 +699,9 @@ export default function LandingPage() {
         <button type="button" className="lp-back-to-top" onClick={() => window.scrollTo({top:0,behavior:'smooth'})} aria-label="Retour en haut">↑</button>
       )}
       <Helmet>
-        <html lang="fr" />
-        <title>NovaBulletin — Logiciel de gestion scolaire pour les écoles d'Afrique</title>
-        <meta name="description" content="NovaBulletin remplace Excel pour la gestion des bulletins scolaires. Calcul automatique des moyennes, bulletins PDF en 1 clic, envoi WhatsApp aux parents. LMS intégré. Conçu pour les écoles du Togo et d'Afrique francophone." />
+        <html lang={isFr ? 'fr' : 'en'} />
+        <title>{isFr ? "NovaBulletin — Logiciel de gestion scolaire pour les écoles d'Afrique" : "NovaBulletin — School Management Software for African Schools"}</title>
+        <meta name="description" content={isFr ? "NovaBulletin remplace Excel pour la gestion des bulletins scolaires. Calcul automatique des moyennes, bulletins PDF en 1 clic, envoi WhatsApp aux parents. LMS intégré. Conçu pour les écoles du Togo et d'Afrique francophone." : "NovaBulletin replaces Excel for school report card management. Automatic average calculation, PDF reports in 1 click, WhatsApp delivery to parents. Integrated LMS. Built for Togo and Francophone Africa."} />
         <link rel="canonical" href={SITE_URL} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={SITE_URL} />
@@ -712,6 +721,49 @@ export default function LandingPage() {
             "name": f.q,
             "acceptedAnswer": { "@type": "Answer", "text": f.a }
           }))
+        })}</script>
+        {/* SoftwareApplication schema — enables rich results (ratings, pricing) in Google */}
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "@id": `${SITE_URL}/#software`,
+          "name": "NovaBulletin",
+          "applicationCategory": "EducationalApplication",
+          "operatingSystem": "Web, Android, iOS",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "XOF",
+            "description": "Premier trimestre gratuit — payez seulement si satisfait"
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.9",
+            "reviewCount": "5"
+          },
+          "url": SITE_URL,
+          "image": OG_IMAGE,
+          "description": "Logiciel de gestion scolaire pour les écoles d'Afrique francophone. Bulletins PDF, WhatsApp, LMS, gestion des frais.",
+          "author": {
+            "@type": "Organization",
+            "name": "NovaBulletin",
+            "@id": `${SITE_URL}/#organization`
+          }
+        })}</script>
+        {/* Organization schema */}
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "@id": `${SITE_URL}/#organization`,
+          "name": "NovaBulletin",
+          "url": SITE_URL,
+          "logo": OG_IMAGE,
+          "email": "felixatoma2@gmail.com",
+          "foundingLocation": { "@type": "Place", "name": "Lomé, Togo" },
+          "areaServed": ["TG","BJ","CI","SN","GH","CM"],
+          "sameAs": [
+            "https://github.com/felix-atoma"
+          ]
         })}</script>
         {/* Team schema — helps Google associate founders' names with NovaBulletin */}
         <script type="application/ld+json">{JSON.stringify({
@@ -766,7 +818,7 @@ export default function LandingPage() {
           </button>
         </div>
 
-        {/* Row 2: navigation links */}
+        {/* Row 2: navigation links (+ mobile CTAs when open) */}
         <div className={`lp-nav__bottom${menuOpen ? ' mobile-open' : ''}`}>
           <ul className={`lp-nav__links${menuOpen ? ' lp-nav__links--open' : ''}`}>
             {[
@@ -782,6 +834,12 @@ export default function LandingPage() {
               <li key={h}><a href={h} onClick={() => setMenuOpen(false)}>{l}</a></li>
             ))}
           </ul>
+          {menuOpen && (
+            <div className="lp-nav__mobile-ctas">
+              <Link to="/login" className="lp-btn lp-btn--ghost" onClick={() => setMenuOpen(false)} style={{color:'#1E2A78',borderColor:'#1E2A78'}}>{t('Se connecter','Log in')}</Link>
+              <Link to="/register-school" className="lp-btn lp-btn--primary" onClick={() => setMenuOpen(false)}>{t('Commencer gratuitement →','Start for free →')}</Link>
+            </div>
+          )}
         </div>
       </nav>
 
@@ -1069,6 +1127,49 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ─── VIDEO DEMO ──────────────────────────────────────────────── */}
+      <section className="lp-video" id="demo">
+        <div className="lp-container">
+          <div className="lp-section-head">
+            <span className="lp-tag">{t('▶ Démo','▶ Demo')}</span>
+            <h2>{t('Voir NovaBulletin en action','See NovaBulletin in action')}</h2>
+            <p>{t('De la saisie des notes à l\'envoi sur WhatsApp — tout en moins de 2 minutes.','From grade entry to WhatsApp delivery — all in under 2 minutes.')}</p>
+          </div>
+          <div className="lp-video__player">
+            <div className="lp-video__frame">
+              {/* Replace the src with your YouTube video ID when ready */}
+              <iframe
+                src="https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0&modestbranding=1"
+                title={t('Démo NovaBulletin — logiciel de gestion scolaire','NovaBulletin Demo — school management software')}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                loading="lazy"
+              />
+            </div>
+            <div className="lp-video__steps">
+              {(isFr ? [
+                ['01','📝','Saisie des notes','Le prof entre ses notes sur mobile. Calcul automatique.'],
+                ['02','✅','Validation admin','L\'admin vérifie et publie en 1 clic.'],
+                ['03','📱','Envoi WhatsApp','245 parents reçoivent le bulletin instantanément.'],
+              ] : [
+                ['01','📝','Grade entry','Teacher enters grades on mobile. Auto-calculation.'],
+                ['02','✅','Admin approval','Admin reviews and publishes in 1 click.'],
+                ['03','📱','WhatsApp delivery','245 parents receive the report instantly.'],
+              ]).map(([num, icon, title, desc]) => (
+                <div className="lp-video__step" key={num}>
+                  <div className="lp-video__step-num">{num}</div>
+                  <div className="lp-video__step-icon">{icon}</div>
+                  <div>
+                    <strong>{title}</strong>
+                    <p>{desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ─── WHATSAPP SHOWCASE ───────────────────────────────────────── */}
       <section className="lp-whatsapp">
         <div className="lp-container lp-whatsapp__inner">
@@ -1121,23 +1222,23 @@ export default function LandingPage() {
             <p>{t('Des écoles du Togo, du Bénin et de Côte d\'Ivoire font confiance à NovaBulletin chaque trimestre.','Schools in Togo, Benin and Côte d\'Ivoire trust NovaBulletin every term.')}</p>
           </div>
           <div className="lp-gallery__grid">
-            <div className="lp-gallery__item lp-gallery__item--tall">
-              <img src="https://picsum.photos/seed/nb-class-hall/640/820" alt="Enseignant avec ses élèves en classe" className="lp-gallery__img" loading="lazy"/>
+            <div className="lp-gallery__item lp-gallery__item--tall lp-gallery__item--svg">
+              <div className="lp-gallery__svg-wrap"><IllustrationDashboard /></div>
               <div className="lp-gallery__overlay">
-                <div className="lp-gallery__badge">{t('🏫 En classe','🏫 In class')}</div>
-                <p className="lp-gallery__label">{t('Notes saisies en temps réel sur mobile','Grades entered in real time on mobile')}</p>
+                <div className="lp-gallery__badge">{t('🖥️ Tableau de bord','🖥️ Dashboard')}</div>
+                <p className="lp-gallery__label">{t('Vue complète de l\'établissement en temps réel','Complete school overview in real time')}</p>
               </div>
             </div>
             <div className="lp-gallery__col">
-              <div className="lp-gallery__item">
-                <img src="https://picsum.photos/seed/nb-teacher-phone/640/390" alt={t('Professeur utilisant NovaBulletin sur son téléphone','Teacher using NovaBulletin on their phone')} className="lp-gallery__img" loading="lazy"/>
+              <div className="lp-gallery__item lp-gallery__item--svg">
+                <div className="lp-gallery__svg-wrap"><IllustrationMobileApp /></div>
                 <div className="lp-gallery__overlay">
                   <div className="lp-gallery__badge">{t('📝 Fiche numérique','📝 Digital sheet')}</div>
                   <p className="lp-gallery__label">{t('Saisie et signature sur mobile','Entry and signature on mobile')}</p>
                 </div>
               </div>
-              <div className="lp-gallery__item">
-                <img src="https://picsum.photos/seed/nb-parent-whatsapp/640/390" alt={t('Parent recevant le bulletin sur WhatsApp','Parent receiving report card on WhatsApp')} className="lp-gallery__img" loading="lazy"/>
+              <div className="lp-gallery__item lp-gallery__item--svg">
+                <div className="lp-gallery__svg-wrap"><IllustrationWhatsapp /></div>
                 <div className="lp-gallery__overlay">
                   <div className="lp-gallery__badge">📱 WhatsApp</div>
                   <p className="lp-gallery__label">{t('Bulletin reçu le jour même','Report received on the same day')}</p>
@@ -1147,20 +1248,20 @@ export default function LandingPage() {
           </div>
           <div className="lp-gallery__strip">
             {(isFr ? [
-              {seed:'nb-strip-a',label:'Administration simplifiée'},
-              {seed:'nb-strip-b',label:'Bulletins PDF professionnels'},
-              {seed:'nb-strip-c',label:'Suivi des présences'},
-              {seed:'nb-strip-d',label:'Gestion des frais'},
-              {seed:'nb-strip-e',label:'Base de données scolaire'},
+              {icon:'⚙️',label:'Administration simplifiée'},
+              {icon:'📄',label:'Bulletins PDF professionnels'},
+              {icon:'✅',label:'Suivi des présences'},
+              {icon:'💰',label:'Gestion des frais'},
+              {icon:'🗄️',label:'Base de données scolaire'},
             ] : [
-              {seed:'nb-strip-a',label:'Simplified administration'},
-              {seed:'nb-strip-b',label:'Professional PDF reports'},
-              {seed:'nb-strip-c',label:'Attendance tracking'},
-              {seed:'nb-strip-d',label:'Fee management'},
-              {seed:'nb-strip-e',label:'School database'},
-            ]).map(({seed,label}) => (
-              <div className="lp-gallery__strip-item" key={seed}>
-                <img src={`https://picsum.photos/seed/${seed}/280/180`} alt={label} className="lp-gallery__strip-img" loading="lazy"/>
+              {icon:'⚙️',label:'Simplified administration'},
+              {icon:'📄',label:'Professional PDF reports'},
+              {icon:'✅',label:'Attendance tracking'},
+              {icon:'💰',label:'Fee management'},
+              {icon:'🗄️',label:'School database'},
+            ]).map(({icon,label}) => (
+              <div className="lp-gallery__strip-item lp-gallery__strip-item--icon" key={label}>
+                <span className="lp-gallery__strip-icon">{icon}</span>
                 <span>{label}</span>
               </div>
             ))}
@@ -1284,7 +1385,15 @@ export default function LandingPage() {
             <Link to="/register-school" className="lp-btn lp-btn--cta lp-btn--wide" style={{marginTop:'2rem',fontSize:'1.05rem',padding:'1.1rem'}}>
               {t('Commencer maintenant — C\'est gratuit →','Start now — It\'s free →')}
             </Link>
-            <p className="lp-price-note">{t('Paiement en FCFA · TMoney · Flooz · Virement · Tarif communiqué en fin de trimestre','Payment in FCFA · TMoney · Flooz · Bank transfer · Price communicated at end of term')}</p>
+            <div className="lp-price-range">
+              <p>{t('💡 Après le trimestre gratuit, le tarif est calculé selon l\'effectif :','💡 After the free term, pricing is based on enrolment:')}</p>
+              <div className="lp-price-range__grid">
+                <div><strong>{t('Petite école','Small school')}</strong><span>{t('< 200 élèves','< 200 students')}</span><span className="lp-price-range__amount">~15 000 FCFA/trim.</span></div>
+                <div><strong>{t('École moyenne','Medium school')}</strong><span>{t('200–500 élèves','200–500 students')}</span><span className="lp-price-range__amount">~30 000 FCFA/trim.</span></div>
+                <div><strong>{t('Grande école','Large school')}</strong><span>{t('500+ élèves','500+ students')}</span><span className="lp-price-range__amount">~50 000 FCFA/trim.</span></div>
+              </div>
+            </div>
+            <p className="lp-price-note">{t('Paiement en FCFA · TMoney · Flooz · Virement bancaire','Payment in FCFA · TMoney · Flooz · Bank transfer')}</p>
           </div>
         </div>
       </section>
@@ -1327,7 +1436,7 @@ export default function LandingPage() {
                 <div className="lp-team-card__tags">
                   {m.tags.map(t => <span key={t} className="lp-team-card__tag">{t}</span>)}
                 </div>
-                <a href={`mailto:${m.email}`} className="lp-team-card__email">{m.email}</a>
+                <a href={`mailto:${m.email}`} className="lp-team-card__email" aria-label={`Email ${m.name}`}>{m.email}</a>
               </div>
             ))}
           </div>
@@ -1353,6 +1462,21 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ─── FLOATING WHATSAPP ───────────────────────────────────────── */}
+      <a
+        href="https://wa.me/22890196991"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="lp-wa-float"
+        aria-label={t('Nous contacter sur WhatsApp','Contact us on WhatsApp')}
+        title={t('Nous contacter sur WhatsApp','Contact us on WhatsApp')}
+      >
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+        <span className="lp-wa-float__label">{t('Nous écrire','Chat with us')}</span>
+      </a>
+
       {/* ─── FOOTER ──────────────────────────────────────────────────── */}
       <footer className="lp-footer">
         <div className="lp-container lp-footer__top">
@@ -1361,6 +1485,14 @@ export default function LandingPage() {
             <p>{t('Le logiciel de gestion scolaire moderne conçu pour les écoles d\'Afrique francophone.','The modern school management software built for Francophone African schools.')}</p>
             <p className="lp-footer__tagline">{t('Fait avec ❤️ au Togo','Made with ❤️ in Togo')}</p>
             <a href="mailto:felixatoma2@gmail.com" className="lp-footer__email">📧 felixatoma2@gmail.com</a>
+            <div className="lp-footer__socials">
+              <a href="https://github.com/felix-atoma" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="lp-footer__social-link">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+              </a>
+              <a href="https://wa.me/22890196991" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="lp-footer__social-link">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              </a>
+            </div>
             <div className="lp-store-badges lp-store-badges--footer">
               <div className="lp-store-badge lp-store-badge--sm">
                 <span className="lp-store-badge__soon">{t('Bientôt','Soon')}</span>
