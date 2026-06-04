@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
@@ -21,6 +22,7 @@ export class SuperAdminService {
     private readonly mail: MailService,
     private readonly whatsapp: WhatsAppService,
     private readonly config: ConfigService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   // ─── Public: Register a new school (PENDING) ────────────────────────────────
@@ -64,6 +66,17 @@ export class SuperAdminService {
     this.whatsapp
       .sendSchoolRegistration(dto.schoolName, dto.city)
       .catch((e) => this.logger.error('WhatsApp notification failed', e));
+
+    // Real-time alert to any connected superadmin dashboards
+    this.eventEmitter.emit('school.registered', {
+      id:           institution.id,
+      name:         institution.name,
+      city:         institution.address ?? dto.city,
+      adminName:    dto.adminName,
+      adminEmail:   email,
+      studentCount: dto.declaredStudentCount ?? 0,
+      registeredAt: institution.createdAt.toISOString(),
+    });
 
     return {
       message:

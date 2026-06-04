@@ -2,10 +2,15 @@ import {
   Body,
   Controller,
   Get,
+  MessageEvent,
   Param,
   Patch,
   Post,
+  Sse,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { fromEventPattern, interval, merge, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { SuperAdminService } from './superadmin.service';
 import { RegisterInstitutionDto } from './dto/register-institution.dto';
 import { Public } from '../../common/decorators/public.decorator';
@@ -14,7 +19,10 @@ import { Role } from '../../common/enums/role.enum';
 
 @Controller('superadmin')
 export class SuperAdminController {
-  constructor(private readonly superAdminService: SuperAdminService) {}
+  constructor(
+    private readonly superAdminService: SuperAdminService,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   // Public endpoint — no JWT required
   @Public()
@@ -27,6 +35,27 @@ export class SuperAdminController {
   @Get('institutions')
   listInstitutions() {
     return this.superAdminService.listInstitutions();
+  }
+
+  // Real-time SSE stream — superadmin receives instant alerts when a school registers
+  @Roles(Role.SUPERADMIN)
+  @Sse('events')
+  sseEvents(): Observable<MessageEvent> {
+    const registrations$ = fromEventPattern<any>(
+      (handler) => this.eventEmitter.on('school.registered', handler),
+      (handler) => this.eventEmitter.off('school.registered', handler),
+    ).pipe(
+      map((payload) => ({
+        data: { type: 'school.registered', payload },
+      } as MessageEvent)),
+    );
+
+    // Heartbeat every 25 s — keeps connection alive through Render's proxy
+    const heartbeat$ = interval(25_000).pipe(
+      map(() => ({ data: { type: 'heartbeat' } } as MessageEvent)),
+    );
+
+    return merge(registrations$, heartbeat$);
   }
 
   @Roles(Role.SUPERADMIN)

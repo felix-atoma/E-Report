@@ -1,5 +1,7 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import toast from 'react-hot-toast';
 import { institutionsService } from '../../../services/institutionsService';
+import api from '../../../services/api';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import './SuperAdminPage.css';
 
@@ -212,6 +214,64 @@ function SuperAdminPage() {
   const [savingPlan, setSavingPlan] = useState({});
   const [actionLoading, setActionLoading] = useState({});
 
+  // ── Real-time new-registration alert ──────────────────────────────────────
+  const [newAlert, setNewAlert] = useState(null); // { name, city, adminEmail, registeredAt }
+  const loadRef = useRef(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) return;
+
+    const BASE = api.defaults.baseURL ?? 'https://e-report-y4g9.onrender.com/api';
+    let active = true;
+    const ctrl = new AbortController();
+
+    const connect = async () => {
+      try {
+        const res = await fetch(`${BASE}/superadmin/events`, {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: ctrl.signal,
+        });
+        if (!res.ok || !res.body) return;
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buf = '';
+
+        while (active) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, { stream: true });
+
+          const parts = buf.split('\n\n');
+          buf = parts.pop() ?? '';
+
+          for (const part of parts) {
+            const line = part.split('\n').find((l) => l.startsWith('data: '));
+            if (!line) continue;
+            try {
+              const msg = JSON.parse(line.slice(6));
+              if (msg.type === 'school.registered') {
+                const p = msg.payload;
+                setNewAlert(p);
+                toast.success(
+                  `🏫 Nouvelle inscription : ${p.name} — ${p.city}`,
+                  { duration: 8000 },
+                );
+                loadRef.current?.();
+              }
+            } catch { /* ignore parse errors */ }
+          }
+        }
+      } catch {
+        if (active) setTimeout(connect, 5000); // reconnect after 5 s
+      }
+    };
+
+    connect();
+    return () => { active = false; ctrl.abort(); };
+  }, []);
+
   const load = async () => {
     setLoading(true);
     setError('');
@@ -234,6 +294,7 @@ function SuperAdminPage() {
     }
   };
 
+  useEffect(() => { loadRef.current = load; });
   useEffect(() => { load(); }, []);
 
   // ── Stats ──────────────────────────────────────────────────────────────────
@@ -309,6 +370,30 @@ function SuperAdminPage() {
   return (
     <AppShell title="Super-Admin — Tableau de bord">
       <div className="sa-page">
+
+        {/* Real-time new-registration banner */}
+        {newAlert && (
+          <div className="sa-alert-banner">
+            <div className="sa-alert-banner__icon">🏫</div>
+            <div className="sa-alert-banner__body">
+              <strong>Nouvelle inscription reçue !</strong>
+              <span>{newAlert.name} — {newAlert.city}</span>
+              <span className="sa-alert-banner__email">{newAlert.adminEmail}</span>
+            </div>
+            <div className="sa-alert-banner__actions">
+              <button
+                className="sa-alert-banner__btn"
+                onClick={() => {
+                  setFilter('PENDING');
+                  setNewAlert(null);
+                }}
+              >
+                Voir les demandes en attente →
+              </button>
+              <button className="sa-alert-banner__close" onClick={() => setNewAlert(null)} aria-label="Fermer">✕</button>
+            </div>
+          </div>
+        )}
 
         {/* Header */}
         <div className="sa-header">
