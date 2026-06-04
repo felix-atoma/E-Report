@@ -680,18 +680,14 @@ export default function LandingPage() {
   const { ref: featRef, inView: featInView } = useInView();
   const { ref: lmsRef, inView: lmsInView }   = useInView();
 
-  // ── Font size ──────────────────────────────────────────────────────────
-  const FONT_SIZES = [14, 16, 18];
+  // ── Font size (zoom scales px, rem, em — everything) ──────────────────
+  const ZOOM_LEVELS = [0.875, 1, 1.125];
   const [fontIdx, setFontIdx] = useState(() => {
     const s = localStorage.getItem('lp-font');
     return s !== null ? Number(s) : 1;
   });
-  useEffect(() => {
-    document.documentElement.style.fontSize = `${FONT_SIZES[fontIdx]}px`;
-    return () => { document.documentElement.style.fontSize = ''; };
-  }, [fontIdx]);
   const changeFont = (dir) => setFontIdx(i => {
-    const n = Math.max(0, Math.min(FONT_SIZES.length - 1, i + dir));
+    const n = Math.max(0, Math.min(ZOOM_LEVELS.length - 1, i + dir));
     localStorage.setItem('lp-font', String(n));
     return n;
   });
@@ -759,7 +755,7 @@ export default function LandingPage() {
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
   return (
-    <div className="lp">
+    <div className="lp" style={{ zoom: ZOOM_LEVELS[fontIdx] }}>
 
       {/* ─── SEARCH OVERLAY ──────────────────────────────────────────── */}
       {searchOpen && (
@@ -900,10 +896,10 @@ export default function LandingPage() {
           {/* Accessibility toolbar */}
           <div className="lp-toolbar">
             {/* Font size */}
-            <button className="lp-toolbar__btn" onClick={() => changeFont(-1)} disabled={fontIdx === 0} aria-label="Réduire la taille du texte" title="A−">
+            <button className="lp-toolbar__btn" onClick={() => changeFont(-1)} disabled={fontIdx <= 0} aria-label="Réduire la taille du texte" title="A−">
               <span className="lp-toolbar__a lp-toolbar__a--sm">A</span><span className="lp-toolbar__minus">−</span>
             </button>
-            <button className="lp-toolbar__btn" onClick={() => changeFont(1)} disabled={fontIdx === FONT_SIZES.length - 1} aria-label="Agrandir la taille du texte" title="A+">
+            <button className="lp-toolbar__btn" onClick={() => changeFont(1)} disabled={fontIdx >= ZOOM_LEVELS.length - 1} aria-label="Agrandir la taille du texte" title="A+">
               <span className="lp-toolbar__a lp-toolbar__a--lg">A</span><span className="lp-toolbar__plus">+</span>
             </button>
 
