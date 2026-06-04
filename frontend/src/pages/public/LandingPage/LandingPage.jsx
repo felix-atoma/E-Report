@@ -434,9 +434,9 @@ const DATABASE_MODULES = [
 ];
 
 const TEAM = [
-  { name: 'Felix Atoma', role: 'Lead Developer', tags: ['Software Developer', "Professeur d'Anglais"], initials: 'FA', color: '#1E2A78', colorEnd: '#3b82f6', photo: null, email: 'felixatoma2@gmail.com' },
-  { name: 'Manzaman Abalossosso', role: 'Project Manager', tags: ['Professeur de Science', 'Data Scientist'], initials: 'AA', color: '#7c3aed', colorEnd: '#a855f7', photo: null, email: 'abalossossomanzaman@gmail.com' },
-  { name: 'Benjamin Ngbabou', role: 'Software Developer', tags: ['Marketing', 'Professeur de Mathématiques'], initials: 'BN', color: '#16a34a', colorEnd: '#22c55e', photo: null, email: 'bawiloussimngbabou1@gmail.com' },
+  { name: 'Felix Atoma', role: 'Lead Developer', tags: ['Software Developer', "Professeur d'Anglais"], initials: 'FA', color: '#1E2A78', colorEnd: '#3b82f6', photo: '/team/felix.jpg', email: 'felixatoma2@gmail.com' },
+  { name: 'Manzaman Abalossosso', role: 'Project Manager', tags: ['Professeur de Science', 'Data Scientist'], initials: 'AA', color: '#7c3aed', colorEnd: '#a855f7', photo: '/team/manzaman.jpg', email: 'abalossossomanzaman@gmail.com' },
+  { name: 'Benjamin Ngbabou', role: 'Software Developer', tags: ['Marketing', 'Professeur de Mathématiques'], initials: 'BN', color: '#16a34a', colorEnd: '#22c55e', photo: '/team/benjamin.jpg', email: 'bawiloussimngbabou1@gmail.com' },
 ];
 
 const FAQS = [
