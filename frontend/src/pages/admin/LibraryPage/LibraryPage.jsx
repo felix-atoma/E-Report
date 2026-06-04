@@ -1,17 +1,18 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import { libraryService } from '../../../services/libraryService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
+import PageHeader from '../../../components/layout/PageHeader/PageHeader';
+import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
+import Input from '../../../components/common/Input/Input';
+import Button from '../../../components/common/Button/Button';
+import Card from '../../../components/common/Card/Card';
 import './LibraryPage.css';
 
 const EMPTY_FORM = {
-  itemId: '',
-  studentId: '',
-  borrowerName: '',
-  loanDate: '',
-  dueDate: '',
-  conditionOut: '',
-  notes: '',
+  itemId: '', studentId: '', borrowerName: '',
+  loanDate: '', dueDate: '', conditionOut: '', notes: '',
 };
 
 function isOverdue(loan) {
@@ -25,23 +26,20 @@ function ReturnDialog({ loan, onClose, onConfirm, isPending }) {
       <div className="lib-dialog" onClick={(e) => e.stopPropagation()}>
         <h3 className="lib-dialog__title">Retour du livre</h3>
         <p className="lib-dialog__book">{loan.item?.name}</p>
-        <div className="lib-dialog__group">
-          <label>État au retour</label>
+        <div className="form-field" style={{ marginBottom: '1rem' }}>
+          <label className="form-field__label">État au retour</label>
           <input
+            className="lib-dialog__input"
             value={conditionIn}
             onChange={(e) => setConditionIn(e.target.value)}
-            placeholder="ex: Bon état, Pages cornées…"
+            placeholder="ex : Bon état, pages cornées…"
           />
         </div>
         <div className="lib-dialog__footer">
-          <button className="lib-dialog__btn-cancel" onClick={onClose}>Annuler</button>
-          <button
-            className="lib-dialog__btn-confirm"
-            onClick={() => onConfirm(conditionIn)}
-            disabled={isPending}
-          >
+          <Button variant="ghost" onClick={onClose}>Annuler</Button>
+          <Button onClick={() => onConfirm(conditionIn)} disabled={isPending}>
             {isPending ? 'Traitement…' : 'Confirmer le retour'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -51,10 +49,10 @@ function ReturnDialog({ loan, onClose, onConfirm, isPending }) {
 export default function LibraryPage() {
   const qc = useQueryClient();
   const [activeTab, setActiveTab] = useState('active');
-  const [search, setSearch] = useState('');
+  const [search, setSearch]       = useState('');
   const [panelOpen, setPanelOpen] = useState(false);
   const [returnLoan, setReturnLoan] = useState(null);
-  const [form, setForm] = useState(EMPTY_FORM);
+  const [form, setForm]   = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
 
   const queryParams = {
@@ -71,21 +69,29 @@ export default function LibraryPage() {
     mutationFn: (data) => libraryService.create(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['library-loans'] });
+      toast.success('Prêt créé');
       closePanel();
     },
+    onError: () => toast.error('Erreur lors de la création du prêt'),
   });
 
   const returnMutation = useMutation({
     mutationFn: ({ id, conditionIn }) => libraryService.returnLoan(id, conditionIn),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['library-loans'] });
+      toast.success('Retour enregistré');
       setReturnLoan(null);
     },
+    onError: () => toast.error('Erreur lors du retour'),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => libraryService.remove(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['library-loans'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['library-loans'] });
+      toast.success('Prêt supprimé');
+    },
+    onError: () => toast.error('Impossible de supprimer ce prêt'),
   });
 
   function openPanel() {
@@ -107,85 +113,89 @@ export default function LibraryPage() {
 
   function validate() {
     const e = {};
-    if (!form.itemId.trim()) e.itemId = 'Requis';
-    if (!form.loanDate) e.loanDate = 'Requis';
-    if (!form.dueDate) e.dueDate = 'Requis';
+    if (!form.itemId.trim()) e.itemId   = 'Ce champ est requis';
+    if (!form.loanDate)      e.loanDate = 'Ce champ est requis';
+    if (!form.dueDate)       e.dueDate  = 'Ce champ est requis';
     setErrors(e);
     return !Object.keys(e).length;
   }
 
-  function handleSubmit(ev) {
-    ev.preventDefault();
+  function handleSubmit() {
     if (!validate()) return;
     saveMutation.mutate({
-      itemId: form.itemId,
-      studentId: form.studentId || undefined,
+      itemId:       form.itemId,
+      studentId:    form.studentId    || undefined,
       borrowerName: form.borrowerName || undefined,
-      loanDate: form.loanDate,
-      dueDate: form.dueDate,
+      loanDate:     form.loanDate,
+      dueDate:      form.dueDate,
       conditionOut: form.conditionOut || undefined,
-      notes: form.notes || undefined,
+      notes:        form.notes        || undefined,
     });
   }
 
   const borrowerLabel = (loan) => {
-    if (loan.student?.user?.name) return loan.student.user.name;
+    if (loan.student?.user?.name)      return loan.student.user.name;
     if (loan.student?.admissionNumber) return loan.student.admissionNumber;
     return loan.borrowerName ?? '—';
   };
 
-  const fmtDate = (d) => d ? new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+  const fmtDate = (d) =>
+    d ? new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
-  const activeLoans = loans.filter((l) => !l.isReturned);
+  const activeLoans  = loans.filter((l) => !l.isReturned);
   const overdueCount = activeLoans.filter(isOverdue).length;
 
+  const subtitle = `${activeLoans.length} prêt(s) en cours${overdueCount > 0 ? ` · ${overdueCount} en retard` : ''}`;
+
   return (
-    <AppShell title="Bibliothèque">
-      <div className="lib-page">
-        <div className="lib-page__header">
-          <div>
-            <h1 className="lib-page__title">Bibliothèque</h1>
-            <p className="lib-page__subtitle">
-              {activeLoans.length} prêt(s) en cours
-              {overdueCount > 0 && <span className="lib-page__overdue-hint"> · {overdueCount} en retard</span>}
-            </p>
-          </div>
-          <button className="lib-page__btn-add" onClick={openPanel}>+ Nouveau prêt</button>
-        </div>
+    <AppShell>
+      <PageHeader
+        title="Bibliothèque"
+        subtitle={subtitle}
+        actions={<Button size="sm" onClick={openPanel}>+ Nouveau prêt</Button>}
+      />
 
-        {/* Tabs + Search */}
-        <div className="lib-page__filters">
-          <div className="lib-page__tabs">
-            <button
-              className={`lib-page__tab${activeTab === 'active' ? ' active' : ''}`}
-              onClick={() => setActiveTab('active')}
-            >
-              Prêts en cours
-            </button>
-            <button
-              className={`lib-page__tab${activeTab === 'all' ? ' active' : ''}`}
-              onClick={() => setActiveTab('all')}
-            >
-              Historique
-            </button>
-          </div>
-          <input
-            className="lib-page__search"
-            placeholder="Rechercher par livre, emprunteur…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+      {/* Tabs + Search */}
+      <div className="lib-page__filters">
+        <div className="lib-page__tabs">
+          <button
+            className={`lib-page__tab${activeTab === 'active' ? ' active' : ''}`}
+            onClick={() => setActiveTab('active')}
+          >
+            Prêts en cours
+          </button>
+          <button
+            className={`lib-page__tab${activeTab === 'all' ? ' active' : ''}`}
+            onClick={() => setActiveTab('all')}
+          >
+            Historique
+          </button>
         </div>
+        <input
+          className="lib-page__search"
+          placeholder="Rechercher par livre, emprunteur…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
 
-        {/* Table */}
-        {isLoading ? (
-          <p className="lib-page__loading">Chargement…</p>
-        ) : loans.length === 0 ? (
+      {/* Table */}
+      {isLoading ? (
+        <p className="lib-page__loading">Chargement…</p>
+      ) : loans.length === 0 ? (
+        <Card>
           <div className="lib-page__empty">
             <span className="lib-page__empty-icon">📚</span>
             <p>Aucun prêt {activeTab === 'active' ? 'en cours' : 'trouvé'}.</p>
+            {activeTab === 'active' && (
+              <Button size="sm" onClick={openPanel} style={{ marginTop: '1rem' }}>
+                + Enregistrer un prêt
+              </Button>
+            )}
           </div>
-        ) : (
+        </Card>
+      ) : (
+        <Card style={{ padding: 0 }}>
           <div className="lib-page__table-wrap">
             <table className="lib-table">
               <thead>
@@ -212,28 +222,21 @@ export default function LibraryPage() {
                         {overdue && <span className="lib-table__overdue-badge">En retard</span>}
                       </td>
                       <td>
-                        {loan.isReturned ? (
-                          <span className="lib-badge lib-badge--returned">Rendu</span>
-                        ) : (
-                          <span className="lib-badge lib-badge--active">En cours</span>
-                        )}
+                        {loan.isReturned
+                          ? <span className="lib-badge lib-badge--returned">Rendu</span>
+                          : <span className="lib-badge lib-badge--active">En cours</span>}
                       </td>
                       <td className="lib-table__condition">{loan.conditionOut ?? '—'}</td>
                       <td>
                         <div className="lib-table__actions">
                           {!loan.isReturned && (
-                            <button
-                              className="lib-table__btn-return"
-                              onClick={() => setReturnLoan(loan)}
-                            >
+                            <button className="lib-table__btn-return" onClick={() => setReturnLoan(loan)}>
                               Rendre
                             </button>
                           )}
                           <button
                             className="lib-table__btn-del"
-                            onClick={() => {
-                              if (window.confirm('Supprimer ce prêt ?')) deleteMutation.mutate(loan.id);
-                            }}
+                            onClick={() => { if (window.confirm('Supprimer ce prêt ?')) deleteMutation.mutate(loan.id); }}
                           >
                             ✕
                           </button>
@@ -245,8 +248,8 @@ export default function LibraryPage() {
               </tbody>
             </table>
           </div>
-        )}
-      </div>
+        </Card>
+      )}
 
       {/* Return dialog */}
       {returnLoan && (
@@ -258,94 +261,84 @@ export default function LibraryPage() {
         />
       )}
 
-      {/* OffCanvas Panel */}
-      {panelOpen && (
-        <div className="lib-panel-overlay" onClick={closePanel}>
-          <div className="lib-panel" onClick={(e) => e.stopPropagation()}>
-            <div className="lib-panel__header">
-              <h2>Nouveau prêt</h2>
-              <button className="lib-panel__close" onClick={closePanel}>✕</button>
-            </div>
+      {/* New loan OffCanvas */}
+      <OffCanvas
+        open={panelOpen}
+        onClose={closePanel}
+        title="Nouveau prêt"
+        subtitle="Enregistrez un emprunt de document ou de matériel"
+        size="md"
+        footer={
+          <>
+            <Button variant="ghost" onClick={closePanel} disabled={saveMutation.isPending}>Annuler</Button>
+            <Button onClick={handleSubmit} disabled={saveMutation.isPending}>
+              {saveMutation.isPending ? 'Enregistrement…' : 'Créer le prêt'}
+            </Button>
+          </>
+        }
+      >
+        <div className="lib-form">
+          <Input
+            label="ID de l'article"
+            required
+            placeholder="UUID de l'article inventaire"
+            value={form.itemId}
+            onChange={(e) => set('itemId', e.target.value)}
+            error={errors.itemId}
+          />
 
-            <form className="lib-panel__form" onSubmit={handleSubmit}>
-              <div className="lib-panel__group">
-                <label>ID de l'article *</label>
-                <input
-                  value={form.itemId}
-                  onChange={(e) => set('itemId', e.target.value)}
-                  placeholder="UUID de l'article inventaire"
-                />
-                {errors.itemId && <span className="lib-panel__error">{errors.itemId}</span>}
-              </div>
+          <Input
+            label="ID Élève"
+            placeholder="UUID de l'élève (optionnel)"
+            value={form.studentId}
+            onChange={(e) => set('studentId', e.target.value)}
+          />
 
-              <div className="lib-panel__group">
-                <label>ID Élève (optionnel)</label>
-                <input
-                  value={form.studentId}
-                  onChange={(e) => set('studentId', e.target.value)}
-                  placeholder="UUID de l'élève si connu"
-                />
-              </div>
+          <Input
+            label="Nom de l'emprunteur"
+            placeholder="Pour un emprunteur non-élève"
+            value={form.borrowerName}
+            onChange={(e) => set('borrowerName', e.target.value)}
+          />
 
-              <div className="lib-panel__group">
-                <label>Nom de l'emprunteur</label>
-                <input
-                  value={form.borrowerName}
-                  onChange={(e) => set('borrowerName', e.target.value)}
-                  placeholder="Pour emprunteur non-élève"
-                />
-              </div>
+          <div className="lib-form__row2">
+            <Input
+              label="Date de prêt"
+              required
+              type="date"
+              value={form.loanDate}
+              onChange={(e) => set('loanDate', e.target.value)}
+              error={errors.loanDate}
+            />
+            <Input
+              label="Date d'échéance"
+              required
+              type="date"
+              value={form.dueDate}
+              onChange={(e) => set('dueDate', e.target.value)}
+              error={errors.dueDate}
+            />
+          </div>
 
-              <div className="lib-panel__row2">
-                <div className="lib-panel__group">
-                  <label>Date de prêt *</label>
-                  <input
-                    type="date"
-                    value={form.loanDate}
-                    onChange={(e) => set('loanDate', e.target.value)}
-                  />
-                  {errors.loanDate && <span className="lib-panel__error">{errors.loanDate}</span>}
-                </div>
-                <div className="lib-panel__group">
-                  <label>Date d'échéance *</label>
-                  <input
-                    type="date"
-                    value={form.dueDate}
-                    onChange={(e) => set('dueDate', e.target.value)}
-                  />
-                  {errors.dueDate && <span className="lib-panel__error">{errors.dueDate}</span>}
-                </div>
-              </div>
+          <Input
+            label="État à la sortie"
+            placeholder="ex : Très bon état, couverture légèrement usée…"
+            value={form.conditionOut}
+            onChange={(e) => set('conditionOut', e.target.value)}
+          />
 
-              <div className="lib-panel__group">
-                <label>État à la sortie</label>
-                <input
-                  value={form.conditionOut}
-                  onChange={(e) => set('conditionOut', e.target.value)}
-                  placeholder="ex: Très bon état, couverture légèrement usée…"
-                />
-              </div>
-
-              <div className="lib-panel__group">
-                <label>Notes</label>
-                <textarea
-                  value={form.notes}
-                  onChange={(e) => set('notes', e.target.value)}
-                  rows={2}
-                  placeholder="Observations…"
-                />
-              </div>
-
-              <div className="lib-panel__footer">
-                <button type="button" className="lib-panel__btn-cancel" onClick={closePanel}>Annuler</button>
-                <button type="submit" className="lib-panel__btn-save" disabled={saveMutation.isPending}>
-                  {saveMutation.isPending ? 'Enregistrement…' : 'Créer le prêt'}
-                </button>
-              </div>
-            </form>
+          <div className="form-field">
+            <label className="form-field__label">Notes</label>
+            <textarea
+              className="lib-form__textarea"
+              value={form.notes}
+              onChange={(e) => set('notes', e.target.value)}
+              rows={3}
+              placeholder="Observations…"
+            />
           </div>
         </div>
-      )}
+      </OffCanvas>
     </AppShell>
   );
 }
