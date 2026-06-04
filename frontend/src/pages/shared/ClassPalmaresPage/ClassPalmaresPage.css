@@ -1,0 +1,86 @@
+/* ── Filters ─────────────────────────────────────────────────────────────── */
+.pal-filters { margin-bottom: 1.25rem; }
+.pal-filters__row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  align-items: end;
+}
+.pal-filters__input {
+  width: 100%;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  padding: .525rem .75rem;
+  font-size: .875rem;
+  font-family: inherit;
+  background: var(--color-surface, #fff);
+  color: var(--color-text, #1f2937);
+  margin-top: .3rem;
+}
+.pal-filters__input:focus {
+  outline: none;
+  border-color: var(--color-primary, #1e2a78);
+  box-shadow: 0 0 0 3px rgba(30,42,120,.1);
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────────── */
+.pal-empty { text-align: center; padding: 3rem 1rem; color: var(--color-text-muted, #9ca3af); }
+.pal-empty__icon { font-size: 3rem; display: block; margin-bottom: .75rem; }
+
+/* ── Podium ──────────────────────────────────────────────────────────────── */
+.pal-podium {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+.pal-podium__card {
+  background: var(--color-surface, #fff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 14px;
+  padding: 1.25rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .35rem;
+  transition: box-shadow .15s;
+}
+.pal-podium__card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); }
+.pal-podium__card--1 { border-color: #fbbf24; background: linear-gradient(135deg, #fffbf0, #fff); }
+.pal-podium__card--2 { border-color: #9ca3af; background: linear-gradient(135deg, #f9fafb, #fff); }
+.pal-podium__card--3 { border-color: #d97706; background: linear-gradient(135deg, #fff7f0, #fff); }
+.pal-podium__medal { font-size: 2rem; }
+.pal-podium__rank { font-size: .72rem; font-weight: 700; color: var(--color-text-muted, #6b7280); text-transform: uppercase; letter-spacing: .5px; }
+.pal-podium__name { font-size: .95rem; font-weight: 700; color: var(--color-text, #111827); }
+.pal-podium__avg { font-size: 1.1rem; font-weight: 800; color: var(--color-primary, #1e2a78); }
+
+/* ── Ranking table ───────────────────────────────────────────────────────── */
+.pal-table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+.pal-table th {
+  text-align: left;
+  padding: .625rem .875rem;
+  background: var(--color-bg-subtle, #f9fafb);
+  border-bottom: 1px solid var(--color-border, #f3f4f6);
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--color-text-muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.pal-table td { padding: .625rem .875rem; border-bottom: 1px solid var(--color-border, #f9fafb); vertical-align: middle; }
+.pal-table__row--top3 { background: #fffbf0; }
+.pal-table__rank { font-weight: 800; color: var(--color-primary, #1e2a78); white-space: nowrap; }
+.pal-table__name { font-weight: 600; color: var(--color-text, #111827); }
+.pal-table__avg  { font-weight: 700; color: var(--color-primary, #1e2a78); }
+.pal-table__muted { color: var(--color-text-muted, #9ca3af); font-size: .8rem; }
+.pal-table__honor { color: #a16207; font-weight: 600; font-size: .82rem; }
+
+/* ── Mention badge ───────────────────────────────────────────────────────── */
+.pal-mention {
+  font-size: .72rem;
+  font-weight: 700;
+  padding: .2rem .5rem;
+  border-radius: 6px;
+  white-space: nowrap;
+}

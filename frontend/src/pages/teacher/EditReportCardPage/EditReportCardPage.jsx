@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -12,6 +12,94 @@ import StatusPill from '../../../components/common/StatusPill/StatusPill';
 import ConfirmDialog from '../../../components/common/ConfirmDialog/ConfirmDialog';
 import Loading from '../../../components/common/Loading/Loading';
 import './EditReportCardPage.css';
+
+// ── Appreciation templates ─────────────────────────────────────────────────
+const APPRECIATION_TEMPLATES = {
+  '🟢 Excellent': [
+    'Élève brillant(e), sérieux(se) et très travailleur(se). Continuez ainsi !',
+    'Résultats excellents. Très bonne maîtrise des matières. Élève exemplaire.',
+    'Félicitations ! Un travail remarquable et une attitude irréprochable en classe.',
+    'Très bon(ne) élève. Régulier(e) dans l\'effort et toujours attentif(ve).',
+    'Travail excellent, participation active. Digne d\'être un modèle pour la classe.',
+  ],
+  '🔵 Bien': [
+    'Bons résultats. Élève sérieux(se) qui mérite d\'être encouragé(e).',
+    'Bonne trimestre dans l\'ensemble. Peut encore progresser en s\'investissant davantage.',
+    'Des efforts notables ont été fournis. Continuez sur cette lancée.',
+    'Bon(ne) élève, mais doit être plus régulier(e) dans le travail.',
+    'Résultats satisfaisants. Il/Elle a les capacités pour faire encore mieux.',
+  ],
+  '🟡 Passable': [
+    'Résultats moyens. Un effort supplémentaire est nécessaire pour progresser.',
+    'Peut mieux faire. Doit se montrer plus attentif(ve) et plus régulier(e) dans le travail.',
+    'Des lacunes persistent. Un travail sérieux à la maison est indispensable.',
+    'Trimestre mitigé. Les capacités sont là, mais le travail n\'est pas régulier.',
+    'Résultats insuffisants dans certaines matières. Besoin de renforcement.',
+  ],
+  '🔴 Insuffisant': [
+    'Résultats très insuffisants. Un travail sérieux est indispensable pour rattraper le retard.',
+    'Élève qui ne fournit pas les efforts nécessaires. Une remise en question s\'impose.',
+    'Attention ! Le niveau actuel risque de compromettre le passage en classe supérieure.',
+    'Des absences répétées et un manque de travail pénalisent les résultats.',
+    'Doit impérativement revoir ses méthodes de travail et solliciter de l\'aide.',
+  ],
+};
+
+function TemplatesPicker({ onSelect, disabled }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    function handler(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div className="appr-picker" ref={ref}>
+      <button
+        type="button"
+        className="appr-picker__toggle"
+        onClick={() => setOpen((v) => !v)}
+        disabled={disabled}
+        title="Choisir une appréciation type"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+        Appréciations types
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <polyline points={open ? '18 15 12 9 6 15' : '6 9 12 15 18 9'}/>
+        </svg>
+      </button>
+
+      {open && (
+        <div className="appr-picker__panel">
+          {Object.entries(APPRECIATION_TEMPLATES).map(([category, phrases]) => (
+            <div key={category} className="appr-picker__group">
+              <p className="appr-picker__category">{category}</p>
+              {phrases.map((phrase) => (
+                <button
+                  key={phrase}
+                  type="button"
+                  className="appr-picker__item"
+                  onClick={() => { onSelect(phrase); setOpen(false); }}
+                >
+                  {phrase}
+                </button>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function calculateAverage(gradeRows) {
   const valid = gradeRows.filter((g) => g.score !== '' && g.coefficient);
@@ -314,13 +402,19 @@ function EditReportCardPage() {
           </Card>
 
           <Card className="edit-report__comment-card">
-            <h3 className="edit-report__section-title">Appréciation du professeur principal</h3>
+            <div className="edit-report__comment-header">
+              <h3 className="edit-report__section-title">Appréciation du professeur principal</h3>
+              <TemplatesPicker
+                onSelect={(phrase) => { setComment(phrase); setDirty(true); }}
+                disabled={locked}
+              />
+            </div>
             <textarea
               className="edit-report__textarea"
               rows={5}
               value={teacherComment}
               disabled={locked}
-              placeholder="Observations générales sur l'élève…"
+              placeholder="Observations générales sur l'élève… ou choisissez une appréciation type ci-dessus."
               onChange={(e) => { setComment(e.target.value); setDirty(true); }}
             />
           </Card>

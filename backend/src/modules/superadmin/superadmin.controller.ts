@@ -37,6 +37,12 @@ export class SuperAdminController {
     return this.superAdminService.listInstitutions();
   }
 
+  @Roles(Role.SUPERADMIN)
+  @Get('network-stats')
+  networkStats() {
+    return this.superAdminService.networkStats();
+  }
+
   // Real-time SSE stream — superadmin receives instant alerts when a school registers
   @Roles(Role.SUPERADMIN)
   @Sse('events')

@@ -80,6 +80,20 @@
 .sa-refresh-btn:hover:not(:disabled) { background: #f9fafb; border-color: #6b7280; }
 .sa-refresh-btn:disabled { opacity: 0.55; cursor: not-allowed; }
 
+/* ── Network KPI banner ─────────────────────────────────────────────────────── */
+.sa-network-banner {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: .875rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #1e2a78, #3730a3);
+  border-radius: 14px;
+}
+.sa-network-kpi { display: flex; flex-direction: column; align-items: center; gap: .25rem; }
+.sa-network-kpi__val { font-size: 1.6rem; font-weight: 900; color: #fff; }
+.sa-network-kpi__label { font-size: .72rem; color: #c7d2fe; text-transform: uppercase; letter-spacing: .04em; text-align: center; }
+
 /* ── Stats row ──────────────────────────────────────────────────────────────── */
 .sa-stats-row {
   display: grid;

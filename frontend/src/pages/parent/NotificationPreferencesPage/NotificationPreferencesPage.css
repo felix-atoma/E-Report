@@ -136,3 +136,14 @@
 .np-toggle__input:checked + .np-toggle__track .np-toggle__thumb {
   transform: translateX(18px);
 }
+
+/* Push notifications */
+.np-push-row { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; margin-top: .5rem; }
+.np-push-badge {
+  font-size: .75rem;
+  font-weight: 700;
+  padding: .2rem .6rem;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+.np-push-hint { font-size: .8rem; color: var(--color-text-muted, #9ca3af); margin: 0; }

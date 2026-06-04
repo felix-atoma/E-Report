@@ -90,6 +90,23 @@ export class AuthController {
     return this.authService.resetPassword(dto.token, dto.password);
   }
 
+  // ─── Admin 2FA login ─────────────────────────────────────────────────────
+  @Public()
+  @Post('admin-2fa-request')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Request admin 2FA OTP — validates password then sends OTP' })
+  requestAdminOtp(@Body() body: { email: string; password: string }) {
+    return this.authService.requestAdminLoginOtp(body.email, body.password);
+  }
+
+  @Public()
+  @Post('admin-2fa-verify')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Verify admin 2FA OTP — returns tokens' })
+  verifyAdminOtp(@Body() body: { email: string; otp: string }) {
+    return this.authService.verifyAdminLoginOtp(body.email, body.otp);
+  }
+
   // ─── OTP first-login ─────────────────────────────────────────────────────
   @Public()
   @Post('login-otp')

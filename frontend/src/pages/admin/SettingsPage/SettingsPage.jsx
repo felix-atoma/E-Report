@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { institutionsService } from '../../../services/institutionsService';
+import { studentsService } from '../../../services/studentsService';
 import { useInstitution } from '../../../context/InstitutionContext';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
@@ -47,6 +48,9 @@ function SettingsPage() {
   const [infoOpen, setInfoOpen]         = useState(false);
   const [academicOpen, setAcademicOpen] = useState(false);
   const [exporting, setExporting]       = useState(false);
+  const [rolloverOpen, setRolloverOpen] = useState(false);
+  const [rolloverForm, setRolloverForm] = useState({ fromYear: '', toYear: '' });
+  const [rollingOver, setRollingOver]   = useState(false);
 
   const { data: institution, isLoading } = useQuery({
     queryKey: ['institution-me'],
@@ -126,6 +130,22 @@ function SettingsPage() {
       maxScore:       Number(academicForm.maxScore),
       feeGateEnabled: academicForm.feeGateEnabled,
     });
+  }
+
+  async function handleRollover() {
+    if (!rolloverForm.fromYear || !rolloverForm.toYear) { toast.error('Renseignez les deux années'); return; }
+    if (!window.confirm(`Réinscrire tous les élèves de ${rolloverForm.fromYear} vers ${rolloverForm.toYear} ?`)) return;
+    setRollingOver(true);
+    try {
+      const res = await studentsService.yearRollover(rolloverForm.fromYear, rolloverForm.toYear);
+      toast.success(res.data?.message ?? 'Passage en année suivante réussi');
+      setRolloverOpen(false);
+      qc.invalidateQueries({ queryKey: ['institution-me'] });
+    } catch (err) {
+      toast.error(err?.response?.data?.message ?? 'Erreur lors du passage de l\'année');
+    } finally {
+      setRollingOver(false);
+    }
   }
 
   async function handleExport() {
@@ -212,6 +232,43 @@ function SettingsPage() {
         </Card>
 
         {/* ── Export ── */}
+        {/* ── Academic year rollover ─────────────────────────────────── */}
+        <Card className="settings-section">
+          <h3 className="settings-section__title">Passage en année suivante</h3>
+          <p className="settings-section__desc">
+            Réinscrit automatiquement tous les élèves dans les mêmes classes pour une nouvelle année scolaire.
+          </p>
+          {rolloverOpen ? (
+            <div className="settings-rollover">
+              <div className="settings-rollover__row">
+                <div className="form-field">
+                  <label className="form-field__label">Année source</label>
+                  <input className="settings-rollover__input" placeholder="2023-2024"
+                    value={rolloverForm.fromYear}
+                    onChange={(e) => setRolloverForm((f) => ({ ...f, fromYear: e.target.value }))} />
+                </div>
+                <div className="settings-rollover__arrow">→</div>
+                <div className="form-field">
+                  <label className="form-field__label">Nouvelle année</label>
+                  <input className="settings-rollover__input" placeholder="2024-2025"
+                    value={rolloverForm.toYear}
+                    onChange={(e) => setRolloverForm((f) => ({ ...f, toYear: e.target.value }))} />
+                </div>
+              </div>
+              <div className="settings-rollover__btns">
+                <Button variant="ghost" size="sm" onClick={() => setRolloverOpen(false)}>Annuler</Button>
+                <Button size="sm" onClick={handleRollover} disabled={rollingOver}>
+                  {rollingOver ? 'En cours…' : 'Confirmer le passage'}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button variant="ghost" onClick={() => setRolloverOpen(true)}>
+              🔄 Passer à l'année suivante
+            </Button>
+          )}
+        </Card>
+
         <Card className="settings-section">
           <h3 className="settings-section__title">Export des données</h3>
           <p className="settings-section__desc">

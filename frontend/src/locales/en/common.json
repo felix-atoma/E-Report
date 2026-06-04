@@ -40,7 +40,10 @@
     "library":          "Library",
     "health":           "Health",
     "schoolDocuments":  "Documents",
-    "help":             "User Guide"
+    "help":             "User Guide",
+    "palmares":         "Rankings",
+    "timetable":        "Timetable",
+    "absences":         "Absences"
   },
 
   "section": {

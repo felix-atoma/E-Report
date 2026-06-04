@@ -10,4 +10,5 @@ export const studentsService = {
   delete: (id) => api.delete(`/students/${id}`),
   bulkDelete: (ids) => api.post('/students/bulk-delete', { ids }),
   bulkImport: (rows) => api.post('/students/bulk-import', { rows }),
+  yearRollover: (fromYear, toYear) => api.post('/students/year-rollover', { fromYear, toYear }),
 };

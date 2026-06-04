@@ -203,6 +203,7 @@ function SchoolProfile({ inst, notesMap, setNotesMap, savingNotes, saveNotes, sa
 // ─── Main page ─────────────────────────────────────────────────────────────────
 function SuperAdminPage() {
   const [institutions, setInstitutions] = useState([]);
+  const [networkStats, setNetworkStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState('ALL');
@@ -276,9 +277,13 @@ function SuperAdminPage() {
     setLoading(true);
     setError('');
     try {
-      const res = await institutionsService.listAllInstitutions();
+      const [res, statsRes] = await Promise.all([
+        institutionsService.listAllInstitutions(),
+        api.get('/superadmin/network-stats').catch(() => ({ data: null })),
+      ]);
       const data = Array.isArray(res.data) ? res.data : res.data?.data ?? [];
       setInstitutions(data);
+      if (statsRes.data) setNetworkStats(statsRes.data);
       const nm = {};
       const pm = {};
       data.forEach((i) => {
@@ -406,6 +411,28 @@ function SuperAdminPage() {
             Actualiser
           </button>
         </div>
+
+        {/* Network KPI banner */}
+        {networkStats && (
+          <div className="sa-network-banner">
+            <div className="sa-network-kpi">
+              <span className="sa-network-kpi__val">{networkStats.network?.students?.toLocaleString('fr-FR')}</span>
+              <span className="sa-network-kpi__label">Élèves inscrits</span>
+            </div>
+            <div className="sa-network-kpi">
+              <span className="sa-network-kpi__val">{networkStats.network?.users?.toLocaleString('fr-FR')}</span>
+              <span className="sa-network-kpi__label">Utilisateurs actifs</span>
+            </div>
+            <div className="sa-network-kpi">
+              <span className="sa-network-kpi__val">{networkStats.network?.bulletins?.toLocaleString('fr-FR')}</span>
+              <span className="sa-network-kpi__label">Bulletins émis</span>
+            </div>
+            <div className="sa-network-kpi">
+              <span className="sa-network-kpi__val">{networkStats.network?.payments?.toLocaleString('fr-FR')}</span>
+              <span className="sa-network-kpi__label">Paiements enregistrés</span>
+            </div>
+          </div>
+        )}
 
         {/* Stats row */}
         <div className="sa-stats-row">

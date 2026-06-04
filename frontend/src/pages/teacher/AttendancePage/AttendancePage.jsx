@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { classesService } from '../../../services/classesService';
 import { attendanceService } from '../../../services/attendanceService';
@@ -23,9 +23,24 @@ function today() {
 }
 
 export default function AttendancePage() {
+  const qc = useQueryClient();
   const [selectedClassId, setSelectedClassId] = useState('');
   const [date, setDate] = useState(today());
   const [entries, setEntries] = useState({});
+
+  const { data: pending = [] } = useQuery({
+    queryKey: ['att-pending-justifications'],
+    queryFn: () => attendanceService.pendingJustifications().then((r) => r.data),
+  });
+
+  const approveMutation = useMutation({
+    mutationFn: (id) => attendanceService.approveJustification(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['att-pending-justifications'] });
+      toast.success('Justification approuvée');
+    },
+    onError: () => toast.error('Impossible d\'approuver'),
+  });
 
   const { data: classes = [], isLoading: loadingClasses } = useQuery({
     queryKey: ['classes'],
@@ -42,16 +57,18 @@ export default function AttendancePage() {
     queryKey: ['attendance', selectedClassId, date],
     queryFn: () => attendanceService.listByClass(selectedClassId, { date }).then((r) => r.data),
     enabled: !!selectedClassId && !!date,
-    onSuccess: (data) => {
-      const map = {};
-      data.forEach((rec) => { map[rec.studentId] = rec.status; });
-      setEntries(map);
-    },
   });
+
+  useEffect(() => {
+    if (!existing.length) return;
+    const map = {};
+    existing.forEach((rec) => { map[rec.studentId] = rec.status; });
+    setEntries(map);
+  }, [existing]);
 
   const students = classDetail?.students?.map((cs) => cs.student) ?? [];
 
-  const { mutate: save, isLoading: saving } = useMutation({
+  const { mutate: save, isPending: saving } = useMutation({
     mutationFn: () =>
       attendanceService.bulkUpsert({
         classId: selectedClassId,
@@ -109,6 +126,46 @@ export default function AttendancePage() {
 
       {selectedClassId && !loadingClass && students.length === 0 && (
         <EmptyState message="Aucun élève dans cette classe." />
+      )}
+
+      {pending.length > 0 && (
+        <div style={{ marginTop: '1.5rem' }}>
+          <p className="att-section-title">⏳ Justifications en attente ({pending.length})</p>
+          <Card className="att-table-wrap">
+            <table className="att-table">
+              <thead>
+                <tr>
+                  <th>Élève</th>
+                  <th>Classe</th>
+                  <th>Date</th>
+                  <th>Motif</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {pending.map((rec) => (
+                  <tr key={rec.id}>
+                    <td className="att-table__name">{rec.student?.user?.name ?? rec.student?.admissionNumber}</td>
+                    <td>{rec.class?.name ?? '—'}</td>
+                    <td>{rec.date ? new Date(rec.date).toLocaleDateString('fr-FR') : '—'}</td>
+                    <td style={{ fontStyle: 'italic', color: 'var(--color-text-muted,#6b7280)', fontSize: '.85rem' }}>
+                      {rec.note?.replace('JUSTIFY_PENDING:', '').trim()}
+                    </td>
+                    <td>
+                      <Button
+                        size="sm"
+                        disabled={approveMutation.isPending}
+                        onClick={() => approveMutation.mutate(rec.id)}
+                      >
+                        ✅ Approuver
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Card>
+        </div>
       )}
 
       {students.length > 0 && (

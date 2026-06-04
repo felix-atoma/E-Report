@@ -20,6 +20,7 @@ const NAV = {
     { divider: true,              sectionKey: 'section.pedagogy' },
     { to: '/admin/reports',       icon: 'clipboard', labelKey: 'nav.reports' },
     { to: '/admin/statistics',    icon: 'stats',     labelKey: 'nav.statistics' },
+    { to: '/palmares',            icon: 'trophy',    labelKey: 'nav.palmares' },
     { to: '/admin/bulletins',     icon: 'megaphone', labelKey: 'nav.bulletins' },
     { to: '/admin/mock-exams',         icon: 'exam',      labelKey: 'nav.mockExams' },
     { to: '/admin/mock-exam-fiches',   icon: 'fichexam',  labelKey: 'nav.mockExamFiches' },
@@ -32,6 +33,7 @@ const NAV = {
     { to: '/admin/attendance',       icon: 'attendance',  labelKey: 'nav.attendance' },
     { to: '/admin/staff',            icon: 'briefcase',   labelKey: 'nav.staff' },
     { to: '/admin/calendar',         icon: 'calendar',    labelKey: 'nav.calendar' },
+    { to: '/admin/timetable',        icon: 'timetable',   labelKey: 'nav.timetable' },
     { to: '/admin/disciplinary',     icon: 'shield',      labelKey: 'nav.disciplinary' },
     { to: '/admin/alumni',           icon: 'graduation',  labelKey: 'nav.alumni' },
     { to: '/admin/transfers',        icon: 'transfer',    labelKey: 'nav.transfers' },
@@ -55,6 +57,7 @@ const NAV = {
     { to: '/teacher/fiches',      icon: 'notes',     labelKey: 'nav.gradeSheets' },
     { to: '/teacher/reports',     icon: 'clipboard', labelKey: 'nav.reports' },
     { to: '/teacher/statistics',  icon: 'stats',     labelKey: 'nav.statistics' },
+    { to: '/palmares',            icon: 'trophy',    labelKey: 'nav.palmares' },
     { to: '/teacher/bulletins',   icon: 'megaphone', labelKey: 'nav.bulletins' },
     { to: '/teacher/mock-exams',         icon: 'exam',      labelKey: 'nav.mockExams' },
     { to: '/teacher/mock-exam-fiches',   icon: 'fichexam',  labelKey: 'nav.mockExamFiches' },
@@ -73,6 +76,7 @@ const NAV = {
     { to: '/help',                   icon: 'helpCircle',labelKey: 'nav.help' },
     { to: '/parent/children',        icon: 'backpack',  labelKey: 'nav.myChildren' },
     { to: '/parent/bulletins',       icon: 'megaphone', labelKey: 'nav.bulletins' },
+    { to: '/parent/absences',        icon: 'attendance',labelKey: 'nav.absences' },
     { to: '/parent/lms',             icon: 'lms',       labelKey: 'nav.lms' },
     { to: '/parent/payments',        icon: 'card',      labelKey: 'nav.paymentHistory' },
     { to: '/parent/notifications',   icon: 'bell',      labelKey: 'nav.notifications' },
@@ -298,6 +302,15 @@ const ICONS = {
   health: (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+    </svg>
+  ),
+  timetable: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+      <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+      <line x1="3" y1="10" x2="21" y2="10"/>
+      <line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/>
+      <line x1="16" y1="14" x2="16" y2="14"/>
     </svg>
   ),
 };

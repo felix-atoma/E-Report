@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { BulkAttendanceDto } from './dto/bulk-attendance.dto';
 import { Role } from '../../common/enums/role.enum';
@@ -71,7 +71,10 @@ export class AttendanceService {
 
     return this.prisma.attendance.findMany({
       where: { studentId },
-      include: { subject: { select: { id: true, nameFr: true } } },
+      include: {
+        subject: { select: { id: true, nameFr: true } },
+        class: { select: { id: true, name: true } },
+      },
       orderBy: { date: 'desc' },
     });
   }
@@ -80,10 +83,21 @@ export class AttendanceService {
     const cls = await this.prisma.class.findFirst({ where: { id: classId, institutionId } });
     if (!cls) throw new NotFoundException('Class not found');
 
+    // Parse "2024-2025" → Sept 1 start, Aug 31 end
+    const dateFilter: any = {};
+    if (academicYear) {
+      const [startYearStr] = academicYear.split('-');
+      const startYear = parseInt(startYearStr, 10);
+      if (!isNaN(startYear)) {
+        dateFilter.gte = new Date(`${startYear}-09-01`);
+        dateFilter.lte = new Date(`${startYear + 1}-08-31`);
+      }
+    }
+
     const records = await this.prisma.attendance.findMany({
       where: {
         classId,
-        student: { institution: { id: institutionId } },
+        ...(Object.keys(dateFilter).length ? { date: dateFilter } : {}),
       },
       include: { student: { include: { user: { select: { name: true } } } } },
     });
@@ -115,5 +129,50 @@ export class AttendanceService {
       throw new NotFoundException('Attendance record not found');
     }
     return this.prisma.attendance.delete({ where: { id } });
+  }
+
+  async justifyAbsence(id: string, reason: string, parentUserId: string, institutionId: string) {
+    const record = await this.prisma.attendance.findFirst({
+      where: { id },
+      include: { class: true, student: { select: { parentId: true } } },
+    });
+    if (!record || record.class.institutionId !== institutionId) {
+      throw new NotFoundException('Absence record not found');
+    }
+    if (record.student.parentId !== parentUserId) {
+      throw new ForbiddenException('Not authorized to justify this absence');
+    }
+    const note = `JUSTIFY_PENDING: ${(reason ?? '').trim()}`;
+    return this.prisma.attendance.update({ where: { id }, data: { note } });
+  }
+
+  async approveJustification(id: string, institutionId: string) {
+    const record = await this.prisma.attendance.findFirst({
+      where: { id },
+      include: { class: true },
+    });
+    if (!record || record.class.institutionId !== institutionId) {
+      throw new NotFoundException('Attendance record not found');
+    }
+    const approvedNote = record.note?.replace('JUSTIFY_PENDING:', 'JUSTIFIED:') ?? 'JUSTIFIED';
+    return this.prisma.attendance.update({
+      where: { id },
+      data: { status: 'EXCUSED', note: approvedNote },
+    });
+  }
+
+  async pendingJustifications(institutionId: string) {
+    return this.prisma.attendance.findMany({
+      where: {
+        status: 'ABSENT',
+        note: { startsWith: 'JUSTIFY_PENDING:' },
+        class: { institutionId },
+      },
+      include: {
+        student: { include: { user: { select: { name: true } } } },
+        class: { select: { name: true } },
+      },
+      orderBy: { date: 'desc' },
+    });
   }
 }

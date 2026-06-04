@@ -40,6 +40,69 @@ function Toggle({ checked, onChange, id }) {
   );
 }
 
+function PushNotificationsCard() {
+  const [permission, setPermission] = useState(
+    typeof Notification !== 'undefined' ? Notification.permission : 'unsupported'
+  );
+  const [loading, setLoading] = useState(false);
+
+  const supported = typeof Notification !== 'undefined' && 'serviceWorker' in navigator;
+
+  async function requestPush() {
+    if (!supported) return;
+    setLoading(true);
+    try {
+      const result = await Notification.requestPermission();
+      setPermission(result);
+      if (result === 'granted') {
+        toast.success('Notifications activées !');
+        // Send a test notification
+        new Notification('NovaBulletin', {
+          body: 'Vous recevrez désormais les alertes importantes ici.',
+          icon: '/pwa-192.svg',
+        });
+      } else {
+        toast.error('Notifications refusées par le navigateur');
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const statusMap = {
+    granted:     { label: 'Activées',    color: '#15803d', bg: '#dcfce7' },
+    denied:      { label: 'Bloquées',    color: '#b91c1c', bg: '#fee2e2' },
+    default:     { label: 'Non activées', color: '#a16207', bg: '#fef3c7' },
+    unsupported: { label: 'Non supporté', color: '#6b7280', bg: '#f3f4f6' },
+  };
+  const status = statusMap[permission] ?? statusMap.unsupported;
+
+  return (
+    <Card className="np-section">
+      <h3 className="np-section__title">Notifications du navigateur (PWA)</h3>
+      <p className="np-section__desc">Recevez des alertes directement dans votre navigateur, même quand l'application est fermée.</p>
+      <div className="np-push-row">
+        <span className="np-push-badge" style={{ color: status.color, background: status.bg }}>
+          {status.label}
+        </span>
+        {permission !== 'granted' && permission !== 'denied' && supported && (
+          <Button size="sm" onClick={requestPush} disabled={loading}>
+            {loading ? 'Activation…' : 'Activer les notifications'}
+          </Button>
+        )}
+        {permission === 'granted' && (
+          <Button size="sm" variant="ghost" onClick={() => new Notification('NovaBulletin', { body: 'Test notification', icon: '/pwa-192.svg' })}>
+            Tester
+          </Button>
+        )}
+        {permission === 'denied' && (
+          <p className="np-push-hint">Autorisez les notifications dans les paramètres de votre navigateur.</p>
+        )}
+      </div>
+    </Card>
+  );
+}
+
 function NotificationPreferencesPage() {
   const { user } = useAuth();
 
@@ -178,6 +241,9 @@ function NotificationPreferencesPage() {
             ))}
           </div>
         </Card>
+
+        {/* PWA Push Notifications */}
+        <PushNotificationsCard />
 
         {/* Info note */}
         <Card className="np-section np-section--info">

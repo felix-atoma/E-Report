@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -8,6 +8,7 @@ import Loading from '../../../components/common/Loading/Loading';
 import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
 import SignaturePad from '../../../components/common/SignaturePad/SignaturePad';
 import { gradesService } from '../../../services/gradesService';
+import { enqueueGrade, dequeueAll, removeFromQueue, queueCount } from '../../../utils/offlineGradeQueue';
 import { subjectHoursService } from '../../../services/subjectHoursService';
 import './GradeEntryPage.css';
 
@@ -193,6 +194,42 @@ export default function GradeEntryPage() {
 
   const isSigned = data?.fiche?.isSigned ?? false;
 
+  const [pendingCount, setPendingCount] = useState(0);
+  const [syncing, setSyncing] = useState(false);
+
+  useEffect(() => {
+    queueCount().then(setPendingCount).catch(() => {});
+  }, []);
+
+  async function syncOfflineQueue() {
+    setSyncing(true);
+    try {
+      const items = await dequeueAll();
+      let synced = 0;
+      for (const item of items) {
+        try {
+          await gradesService.saveForClassSubject(item.classId, item.subjectId, item.payload);
+          await removeFromQueue(item.id);
+          synced++;
+        } catch { /* skip failed */ }
+      }
+      if (synced > 0) {
+        toast.success(`${synced} fiche(s) synchronisée(s)`);
+        qc.invalidateQueries({ queryKey: ficheKey });
+      }
+      setPendingCount(await queueCount());
+    } finally {
+      setSyncing(false);
+    }
+  }
+
+  useEffect(() => {
+    const handleOnline = () => { if (pendingCount > 0) syncOfflineQueue(); };
+    window.addEventListener('online', handleOnline);
+    return () => window.removeEventListener('online', handleOnline);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingCount]);
+
   const mutation = useMutation({
     mutationFn: (payload) => gradesService.saveForClassSubject(classId, subjectId, payload),
     onSuccess: () => {
@@ -200,7 +237,16 @@ export default function GradeEntryPage() {
       qc.invalidateQueries({ queryKey: ficheKey });
       setTimeout(() => setSaved(false), 3000);
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur lors de l\'enregistrement'),
+    onError: async (err, payload) => {
+      // If network error, queue offline
+      if (!navigator.onLine || err?.code === 'ERR_NETWORK') {
+        await enqueueGrade({ classId, subjectId, payload });
+        setPendingCount((n) => n + 1);
+        toast('Note mise en file hors-ligne — sera synchronisée dès la reconnexion', { icon: '📶' });
+      } else {
+        toast.error(err?.response?.data?.message ?? 'Erreur lors de l\'enregistrement');
+      }
+    },
   });
 
   const csvRef = useRef(null);
@@ -347,6 +393,15 @@ export default function GradeEntryPage() {
 
   return (
     <AppShell title={`Fiche de notes — ${data?.subject?.nameFr ?? ''}`}>
+      {/* Offline sync banner */}
+      {pendingCount > 0 && (
+        <div className="fdn__offline-banner">
+          <span>📶 {pendingCount} fiche(s) en attente de synchronisation</span>
+          <button className="fdn__offline-sync-btn" onClick={syncOfflineQueue} disabled={syncing}>
+            {syncing ? 'Synchronisation…' : 'Synchroniser maintenant'}
+          </button>
+        </div>
+      )}
       <PageHeader
         title={`Fiche de notes — ${data?.subject?.nameFr ?? ''}`}
         subtitle={[termName, academicYear, teacherLabel].filter(Boolean).join(' · ')}

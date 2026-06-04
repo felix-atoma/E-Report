@@ -320,6 +320,60 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
+  // ─── Admin 2FA login ─────────────────────────────────────────────────────
+  async requestAdminLoginOtp(email: string, password: string) {
+    const normalizedEmail = email.toLowerCase().trim();
+    const user = await this.prisma.user.findUnique({ where: { email: normalizedEmail } });
+    if (!user || !user.isActive) throw new UnauthorizedException('Identifiants incorrects');
+
+    const matches = await bcrypt.compare(password, user.password);
+    if (!matches) throw new UnauthorizedException('Identifiants incorrects');
+
+    if (user.role !== 'ADMIN' && user.role !== 'BURSAR') {
+      throw new UnauthorizedException('La double authentification est réservée aux administrateurs');
+    }
+
+    // Generate 6-digit OTP
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    const saltRounds = this.config.get<number>('BCRYPT_SALT_ROUNDS', 12);
+    const otpHash = await bcrypt.hash(otp, Number(saltRounds));
+    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { otpHash, otpExpiresAt },
+    });
+
+    const frontendUrl = this.config.get<string>('FRONTEND_URL', 'http://localhost:3000');
+    console.log(`[2FA OTP] To: ${user.email} | OTP: ${otp} | Expires: ${otpExpiresAt.toISOString()}`);
+    // In production this would send an email; for now the OTP is logged and can be viewed in server logs
+    void frontendUrl;
+
+    return { requiresOtp: true, email: user.email };
+  }
+
+  async verifyAdminLoginOtp(email: string, otp: string) {
+    const normalizedEmail = email.toLowerCase().trim();
+    const user = await this.prisma.user.findUnique({ where: { email: normalizedEmail } });
+    if (!user || !user.isActive) throw new UnauthorizedException('Compte introuvable ou inactif');
+    if (!user.otpHash || !user.otpExpiresAt) throw new UnauthorizedException('Aucun code en attente — recommencez la connexion');
+    if (user.otpExpiresAt < new Date()) throw new UnauthorizedException('Code OTP expiré (10 min). Recommencez la connexion');
+
+    const valid = await bcrypt.compare(otp, user.otpHash);
+    if (!valid) throw new UnauthorizedException('Code incorrect');
+
+    // Clear OTP and issue tokens
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { otpHash: null, otpExpiresAt: null },
+    });
+
+    const tokens = await this.generateTokens(user.id, user.email, user.role, user.institutionId);
+    await this.saveRefreshToken(user.id, tokens.refreshToken);
+    const { password: _, otpHash: __, otpExpiresAt: ___, ...safeUser } = user as any;
+    return { user: safeUser, ...tokens };
+  }
+
   // ─── OTP login (first-time users) ────────────────────────────────────────
   async loginWithOtp(email: string, otp: string) {
     const user = await this.prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });

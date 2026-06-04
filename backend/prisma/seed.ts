@@ -121,6 +121,16 @@ async function main() {
   await prisma.classStudent.deleteMany({});
   await prisma.timetableSlot.deleteMany({});
   await prisma.bulletin.deleteMany({});
+  await prisma.assignmentSubmission.deleteMany({});
+  await prisma.quizAttempt.deleteMany({});
+  await prisma.mockExamGrade.deleteMany({});
+  await prisma.paymentIntent.deleteMany({});
+  await prisma.attendance.deleteMany({});
+  await prisma.disciplinaryRecord.deleteMany({});
+  await prisma.alumniRecord.deleteMany({});
+  await prisma.studentTransfer.deleteMany({});
+  await prisma.nationalExamResult.deleteMany({});
+  await prisma.healthRecord.deleteMany({});
   await prisma.student.deleteMany({});
   await prisma.user.deleteMany({ where: { role: 'STUDENT' } });
   // Remove stale seed classes (by fixed IDs) so upserts below re-create under the correct institution

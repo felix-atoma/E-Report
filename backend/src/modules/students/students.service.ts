@@ -362,6 +362,46 @@ export class StudentsService {
     };
   }
 
+  async yearRollover(fromYear: string, toYear: string, institutionId: string) {
+    // Find all enrollments from the source year for this institution
+    const enrollments = await this.prisma.classStudent.findMany({
+      where: {
+        academicYear: fromYear,
+        class: { institutionId },
+      },
+      select: { classId: true, studentId: true },
+    });
+
+    if (enrollments.length === 0) {
+      return { enrolled: 0, message: `Aucun élève trouvé pour l'année ${fromYear}` };
+    }
+
+    // Re-enroll into the same classes with the new year (skipDuplicates avoids errors if already done)
+    const result = await this.prisma.classStudent.createMany({
+      data: enrollments.map((e) => ({
+        classId: e.classId,
+        studentId: e.studentId,
+        academicYear: toYear,
+      })),
+      skipDuplicates: true,
+    });
+
+    // Update institution's currentYear in academicSettings
+    await this.prisma.institution.update({
+      where: { id: institutionId },
+      data: {
+        academicSettings: {
+          currentYear: toYear,
+        },
+      },
+    });
+
+    return {
+      enrolled: result.count,
+      message: `${result.count} inscriptions créées pour l'année ${toYear}`,
+    };
+  }
+
   private async ensureExists(id: string, institutionId: string) {
     const s = await this.prisma.student.findFirst({ where: { id, institutionId } });
     if (!s) throw new NotFoundException('Student not found');

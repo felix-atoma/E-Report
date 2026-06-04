@@ -103,4 +103,15 @@ export class StudentsController {
   bulkImport(@Body() dto: BulkImportStudentsDto, @CurrentUser() user: any) {
     return this.service.bulkImport(dto.rows, user.institutionId);
   }
+
+  @Post('year-rollover')
+  @Roles(Role.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Re-enroll all students from fromYear into toYear (keeps same classes)' })
+  yearRollover(
+    @Body() body: { fromYear: string; toYear: string },
+    @CurrentUser() user: any,
+  ) {
+    return this.service.yearRollover(body.fromYear, body.toYear, user.institutionId);
+  }
 }

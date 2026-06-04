@@ -453,3 +453,31 @@
 .fdn__btn--csv-dl:hover { background: #dcfce7; }
 .fdn__btn--csv-up { background: #eff6ff; color: #1d4ed8; border: 1px solid #93c5fd; }
 .fdn__btn--csv-up:hover { background: #dbeafe; }
+
+/* Offline sync banner */
+.fdn__offline-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  padding: .6rem 1rem;
+  margin-bottom: 1rem;
+  font-size: .875rem;
+  color: #92400e;
+}
+.fdn__offline-sync-btn {
+  background: #f59e0b;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: .35rem .75rem;
+  font-size: .8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.fdn__offline-sync-btn:hover { background: #d97706; }
+.fdn__offline-sync-btn:disabled { opacity: .6; cursor: not-allowed; }

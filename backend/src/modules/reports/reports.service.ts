@@ -46,6 +46,28 @@ export class ReportsService {
     private readonly pdf: PdfService,
   ) {}
 
+  async palmares(
+    institutionId: string,
+    filters: { classId?: string; academicYear?: string; termName?: string },
+  ) {
+    const where: any = {
+      class: { institutionId },
+      status: 'PUBLISHED',
+    };
+    if (filters.classId) where.classId = filters.classId;
+    if (filters.academicYear) where.academicYear = filters.academicYear;
+    if (filters.termName) where.termName = filters.termName;
+
+    return this.prisma.reportCard.findMany({
+      where,
+      include: {
+        student: { include: { user: { select: { name: true } } } },
+        class: { select: { id: true, name: true } },
+      },
+      orderBy: [{ classRank: 'asc' }, { overallAverage: 'desc' }],
+    });
+  }
+
   async findAll(
     institutionId: string,
     userId: string,

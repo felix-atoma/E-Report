@@ -7,4 +7,6 @@ export const authService = {
   logout: () => api.post('/auth/logout'),
   forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
   resetPassword: (token, password) => api.post('/auth/reset-password', { token, password }),
+  requestAdmin2fa: (email, password) => api.post('/auth/admin-2fa-request', { email, password }),
+  verifyAdmin2fa: (email, otp) => api.post('/auth/admin-2fa-verify', { email, otp }),
 };

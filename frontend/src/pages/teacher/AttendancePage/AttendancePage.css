@@ -36,6 +36,20 @@
 
 .att-footer { margin-top: 1.5rem; display: flex; justify-content: flex-end; }
 
+.att-section-title {
+  font-size: .9rem;
+  font-weight: 700;
+  color: var(--color-text, #111827);
+  margin-bottom: .75rem;
+}
+
+.att-table-wrap { padding: 0; overflow-x: auto; }
+.att-table { width: 100%; border-collapse: collapse; font-size: .875rem; min-width: 500px; }
+.att-table th { padding: .625rem 1rem; background: #f8fafc; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: #6b7280; text-align: left; border-bottom: 1px solid #e5e7eb; }
+.att-table td { padding: .625rem 1rem; border-bottom: 1px solid #f3f4f6; color: #374151; vertical-align: middle; }
+.att-table tbody tr:hover td { background: #f9fafb; }
+.att-table__name { font-weight: 700; color: #111827; }
+
 @media(max-width:640px) {
   .att-row { flex-direction: column; align-items: flex-start; }
   .att-row__btns { width: 100%; }

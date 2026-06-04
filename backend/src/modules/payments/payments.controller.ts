@@ -1,6 +1,7 @@
 import { Body, Controller, Get, HttpCode, Param, Post, Query, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { PaymentsService } from './payments.service';
+import { CinetpayService } from './cinetpay.service';
 import { RecordPaymentDto } from './dto/record-payment.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -11,7 +12,10 @@ import { Public } from '../../common/decorators/public.decorator';
 @ApiBearerAuth()
 @Controller('payments')
 export class PaymentsController {
-  constructor(private readonly service: PaymentsService) {}
+  constructor(
+    private readonly service: PaymentsService,
+    private readonly cinetpay: CinetpayService,
+  ) {}
 
   @Get('my-history')
   @Roles(Role.STUDENT, Role.PARENT)
@@ -93,5 +97,42 @@ export class PaymentsController {
   notchpayWebhook(@Body() body: any, @Req() req: any) {
     const signature = req.headers['x-notch-signature'] ?? '';
     return this.service.handleNotchpayWebhook(body, signature);
+  }
+
+  // ── CinetPay online payment ───────────────────────────────────────────────
+
+  @Post('cinetpay/initiate')
+  @Roles(Role.PARENT)
+  @ApiOperation({ summary: 'Parent: initiate CinetPay online payment' })
+  cinetpayInitiate(
+    @Body() body: { studentId: string; academicYear: string; term?: string },
+    @CurrentUser() user: any,
+  ) {
+    return this.cinetpay.initiatePayment({
+      studentId:     body.studentId,
+      institutionId: user.institutionId,
+      academicYear:  body.academicYear,
+      term:          body.term,
+      amount:        0, // will be computed from outstanding balance in a real impl
+      parentName:    user.name ?? 'Parent',
+      parentEmail:   user.email,
+    });
+  }
+
+  @Public()
+  @Post('cinetpay/webhook')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'CinetPay IPN webhook — do not call manually' })
+  async cinetpayWebhook(@Body() body: any) {
+    const { cpm_trans_id, cpm_result } = body ?? {};
+    if (cpm_result === '00' && cpm_trans_id) {
+      const verified = await this.cinetpay.verifyPayment(cpm_trans_id);
+      if (verified.status === 'ACCEPTED') {
+        // Record payment — for a full impl, parse metadata from CinetPay dashboard
+        // For now, just acknowledge
+        return { received: true, status: verified.status };
+      }
+    }
+    return { received: true };
   }
 }

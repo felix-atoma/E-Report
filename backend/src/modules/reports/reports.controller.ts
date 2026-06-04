@@ -102,6 +102,21 @@ export class ReportsController {
     return this.service.publish(id, user.institutionId, user.id, user.role);
   }
 
+  @Get('palmares')
+  @Roles(Role.ADMIN, Role.TEACHER)
+  @ApiOperation({ summary: 'Get class rankings for published report cards' })
+  @ApiQuery({ name: 'classId', required: false })
+  @ApiQuery({ name: 'academicYear', required: false })
+  @ApiQuery({ name: 'termName', required: false })
+  getPalmares(
+    @CurrentUser() user: any,
+    @Query('classId') classId?: string,
+    @Query('academicYear') academicYear?: string,
+    @Query('termName') termName?: string,
+  ) {
+    return this.service.palmares(user.institutionId, { classId, academicYear, termName });
+  }
+
   @Get('annual')
   @Roles(Role.ADMIN, Role.TEACHER, Role.PARENT, Role.STUDENT)
   @ApiOperation({ summary: 'Get annual report card aggregated across all terms' })

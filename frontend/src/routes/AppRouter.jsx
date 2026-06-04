@@ -53,6 +53,7 @@ import ClassStatsPage         from '../pages/teacher/ClassStatsPage/ClassStatsPa
 import TitulaireEntryPage     from '../pages/teacher/TitulaireEntryPage/TitulaireEntryPage';
 
 import ParentDashboardPage    from '../pages/parent/ParentDashboardPage/ParentDashboardPage';
+import ParentAbsencesPage    from '../pages/parent/ParentAbsencesPage/ParentAbsencesPage';
 import ChildrenPage           from '../pages/parent/ChildrenPage/ChildrenPage';
 import ChildReportCardsPage   from '../pages/parent/ChildReportCardsPage/ChildReportCardsPage';
 import ParentBulletinsPage    from '../pages/parent/ChildBulletinsPage/ChildBulletinsPage';
@@ -71,6 +72,7 @@ import StudentLMSPage         from '../pages/student/StudentLMSPage/StudentLMSPa
 
 import ProfilePage            from '../pages/shared/ProfilePage/ProfilePage';
 import HelpPage               from '../pages/shared/HelpPage/HelpPage';
+import ClassPalmaresPage      from '../pages/shared/ClassPalmaresPage/ClassPalmaresPage';
 import PrintReportCardPage   from '../pages/shared/PrintReportCardPage/PrintReportCardPage';
 import AnnualReportPage      from '../pages/shared/AnnualReportPage/AnnualReportPage';
 import GoogleCallbackPage    from '../pages/auth/GoogleCallbackPage/GoogleCallbackPage';
@@ -91,6 +93,7 @@ import InventoryPage          from '../pages/admin/InventoryPage/InventoryPage';
 import NationalExamResultsPage from '../pages/admin/NationalExamResultsPage/NationalExamResultsPage';
 import LibraryPage             from '../pages/admin/LibraryPage/LibraryPage';
 import HealthRecordsPage       from '../pages/admin/HealthRecordsPage/HealthRecordsPage';
+import TimetableBuilderPage    from '../pages/admin/TimetableBuilderPage/TimetableBuilderPage';
 
 function AppRouter() {
   return (
@@ -146,6 +149,7 @@ function AppRouter() {
       <Route path="/admin/national-exams" element={<ProtectedRoute roles={['ADMIN']}><NationalExamResultsPage /></ProtectedRoute>} />
       <Route path="/admin/library"        element={<ProtectedRoute roles={['ADMIN']}><LibraryPage /></ProtectedRoute>} />
       <Route path="/admin/health"         element={<ProtectedRoute roles={['ADMIN']}><HealthRecordsPage /></ProtectedRoute>} />
+      <Route path="/admin/timetable"      element={<ProtectedRoute roles={['ADMIN']}><TimetableBuilderPage /></ProtectedRoute>} />
 
       {/* Bursar */}
       <Route path="/bursar"              element={<ProtectedRoute roles={['BURSAR']}><BursarDashboardPage /></ProtectedRoute>} />
@@ -184,6 +188,7 @@ function AppRouter() {
       <Route path="/payment-return"             element={<ProtectedRoute roles={['PARENT']}><PaymentReturnPage /></ProtectedRoute>} />
       <Route path="/parent/notifications"       element={<ProtectedRoute roles={['PARENT']}><NotificationPreferencesPage /></ProtectedRoute>} />
       <Route path="/parent/lms"                 element={<ProtectedRoute roles={['PARENT']}><ParentLMSPage /></ProtectedRoute>} />
+      <Route path="/parent/absences"            element={<ProtectedRoute roles={['PARENT']}><ParentAbsencesPage /></ProtectedRoute>} />
       <Route path="/parent/calendar"     element={<ProtectedRoute roles={['PARENT']}><CalendarPage /></ProtectedRoute>} />
 
       {/* Student */}
@@ -200,7 +205,8 @@ function AppRouter() {
       <Route path="/admin/mock-exam-results"       element={<ProtectedRoute roles={['ADMIN']}><MockExamResultsPage /></ProtectedRoute>} />
 
       {/* Shared */}
-      <Route path="/help"    element={<ProtectedRoute><HelpPage /></ProtectedRoute>} />
+      <Route path="/help"     element={<ProtectedRoute><HelpPage /></ProtectedRoute>} />
+      <Route path="/palmares" element={<ProtectedRoute roles={['ADMIN','TEACHER']}><ClassPalmaresPage /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
       <Route path="/reports/:id/print" element={<ProtectedRoute><PrintReportCardPage /></ProtectedRoute>} />
       <Route path="/reports/annual/:studentId/:academicYear" element={<ProtectedRoute><AnnualReportPage /></ProtectedRoute>} />

@@ -45,7 +45,7 @@ export default function SchoolDocumentsPage() {
     queryFn: () => schoolDocumentsService.list(filter ? { category: filter } : {}).then((r) => r.data),
   });
 
-  const { mutate: save, isLoading: saving } = useMutation({
+  const { mutate: save, isPending: saving } = useMutation({
     mutationFn: async () => {
       let fileUrl = form.fileUrl;
       if (file) {

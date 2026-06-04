@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import { classesService } from '../../../services/classesService';
 import { attendanceService } from '../../../services/attendanceService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Card from '../../../components/common/Card/Card';
+import Button from '../../../components/common/Button/Button';
 import Loading from '../../../components/common/Loading/Loading';
 import EmptyState from '../../../components/common/EmptyState/EmptyState';
 import { useInstitution } from '../../../context/InstitutionContext';
@@ -16,10 +18,25 @@ function rate(v, total) {
 }
 
 export default function AdminAttendancePage() {
+  const qc = useQueryClient();
   const { institution } = useInstitution();
   const [classId, setClassId] = useState('');
   const [view, setView] = useState('summary'); // 'summary' | 'list'
   const [date, setDate] = useState('');
+
+  const { data: pending = [], isLoading: loadingPending } = useQuery({
+    queryKey: ['att-pending-justifications'],
+    queryFn: () => attendanceService.pendingJustifications().then((r) => r.data),
+  });
+
+  const approveMutation = useMutation({
+    mutationFn: (id) => attendanceService.approveJustification(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['att-pending-justifications'] });
+      toast.success('Justification approuvée — absence marquée excusée');
+    },
+    onError: () => toast.error('Impossible d\'approuver la justification'),
+  });
 
   const { data: classes = [], isLoading: l1 } = useQuery({
     queryKey: ['classes'],
@@ -154,6 +171,51 @@ export default function AdminAttendancePage() {
 
       {!classId && (
         <EmptyState message="Sélectionnez une classe pour voir les présences." />
+      )}
+
+      {/* Pending justifications */}
+      {(loadingPending || pending.length > 0) && (
+        <div style={{ marginTop: '1.5rem' }}>
+          <h3 className="att-section-title">
+            ⏳ Justifications en attente ({pending.length})
+          </h3>
+          {loadingPending ? <Loading /> : (
+            <Card className="att-table-wrap">
+              <table className="att-table">
+                <thead>
+                  <tr>
+                    <th>Élève</th>
+                    <th>Classe</th>
+                    <th>Date</th>
+                    <th>Motif</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pending.map((rec) => (
+                    <tr key={rec.id}>
+                      <td className="att-table__name">{rec.student?.user?.name ?? rec.student?.admissionNumber}</td>
+                      <td>{rec.class?.name ?? '—'}</td>
+                      <td>{rec.date ? new Date(rec.date).toLocaleDateString('fr-FR') : '—'}</td>
+                      <td style={{ fontStyle: 'italic', color: 'var(--color-text-muted,#6b7280)', fontSize: '.85rem' }}>
+                        {rec.note?.replace('JUSTIFY_PENDING:', '').trim()}
+                      </td>
+                      <td>
+                        <Button
+                          size="sm"
+                          disabled={approveMutation.isPending}
+                          onClick={() => approveMutation.mutate(rec.id)}
+                        >
+                          ✅ Approuver
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Card>
+          )}
+        </div>
       )}
     </AppShell>
   );

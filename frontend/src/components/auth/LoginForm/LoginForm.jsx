@@ -2,16 +2,19 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../context/AuthContext';
+import { authService } from '../../../services/authService';
 import './LoginForm.css';
 
 function LoginForm({ onSuccess }) {
-  const { login } = useAuth();
+  const { login, loginWithTokens } = useAuth();
   const { t } = useTranslation();
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState('credentials'); // 'credentials' | 'otp'
+  const [otp, setOtp] = useState('');
 
   const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
 
@@ -19,11 +22,42 @@ function LoginForm({ onSuccess }) {
     e.preventDefault();
     setError('');
     setLoading(true);
+
+    if (step === 'otp') {
+      // Verify the 2FA OTP
+      try {
+        const res = await authService.verifyAdmin2fa(form.email, otp);
+        loginWithTokens(res.data);
+        onSuccess?.(res.data.user);
+      } catch (err) {
+        setError(err.response?.data?.message ?? 'Code OTP invalide');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    // Step 1: try regular login first; if admin 2FA required, go to OTP step
     try {
       const user = await login(form.email, form.password);
       onSuccess?.(user);
     } catch (err) {
-      setError(err.response?.data?.message ?? t('login.invalidCredentials'));
+      const msg = err.response?.data?.message ?? '';
+      // If backend signals 2FA is needed it will return 401 from regular login
+      // Try admin-2fa-request to see if this is an admin user
+      if (err.response?.status === 401) {
+        try {
+          const res2fa = await authService.requestAdmin2fa(form.email, form.password);
+          if (res2fa.data?.requiresOtp) {
+            setStep('otp');
+            setLoading(false);
+            return;
+          }
+        } catch {
+          // Not an admin 2FA case — show original error
+        }
+      }
+      setError(msg || t('login.invalidCredentials'));
     } finally {
       setLoading(false);
     }
@@ -116,7 +150,41 @@ function LoginForm({ onSuccess }) {
         </div>
       </div>
 
-      {/* Remember me toggle */}
+      {/* 2FA OTP step */}
+      {step === 'otp' && (
+        <div className="login-form__2fa-box">
+          <p className="login-form__2fa-title">Vérification en deux étapes</p>
+          <p className="login-form__2fa-desc">
+            Un code à 6 chiffres a été envoyé à l'adresse <strong>{form.email}</strong>. Vérifiez les logs du serveur en développement.
+          </p>
+          <div className="login-form__field">
+            <label htmlFor="otp" className="login-form__label">Code OTP *</label>
+            <input
+              id="otp"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]{6}"
+              maxLength={6}
+              className="login-form__input login-form__input--otp"
+              placeholder="123456"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              autoFocus
+              autoComplete="one-time-code"
+            />
+          </div>
+          <button
+            type="button"
+            className="login-form__otp-back"
+            onClick={() => { setStep('credentials'); setOtp(''); setError(''); }}
+          >
+            ← Retour
+          </button>
+        </div>
+      )}
+
+      {/* Remember me toggle — only on step 1 */}
+      {step === 'credentials' && (
       <div className="login-form__remember">
         <label className="login-form__toggle-label">
           <div className="login-form__toggle">
@@ -133,6 +201,7 @@ function LoginForm({ onSuccess }) {
           <span className="login-form__remember-text">{t('login.rememberMe')}</span>
         </label>
       </div>
+      )}
 
       {/* Submit button with icon + spinner */}
       <button type="submit" className="login-form__btn" disabled={loading}>

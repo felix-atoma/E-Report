@@ -27,3 +27,10 @@
 .att-pill--absent  { background: #fee2e2; color: #dc2626; }
 .att-pill--late    { background: #fef3c7; color: #d97706; }
 .att-pill--excused { background: #f3f4f6; color: #6b7280; }
+
+.att-section-title {
+  font-size: .9rem;
+  font-weight: 700;
+  color: var(--color-text, #111827);
+  margin-bottom: .75rem;
+}

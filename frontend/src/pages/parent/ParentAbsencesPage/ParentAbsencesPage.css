@@ -1,0 +1,96 @@
+/* ── Child tabs ──────────────────────────────────────────────────────────── */
+.pabs-child-tabs {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+.pabs-child-tab {
+  padding: .4rem .9rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  background: var(--color-surface, #fff);
+  font-size: .875rem;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--color-text-muted, #6b7280);
+  transition: background .15s, border-color .15s, color .15s;
+}
+.pabs-child-tab.active,
+.pabs-child-tab:hover {
+  background: var(--color-primary, #1e2a78);
+  border-color: var(--color-primary, #1e2a78);
+  color: #fff;
+}
+
+/* ── Section ─────────────────────────────────────────────────────────────── */
+.pabs-section { margin-bottom: 1.25rem; }
+.pabs-section__title {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .875rem;
+  font-weight: 700;
+  color: var(--color-text, #111827);
+  margin-bottom: .625rem;
+}
+.pabs-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.pabs-dot--red    { background: #ef4444; }
+.pabs-dot--yellow { background: #f59e0b; }
+.pabs-dot--green  { background: #22c55e; }
+
+/* ── Cards ───────────────────────────────────────────────────────────────── */
+.pabs-list { display: flex; flex-direction: column; gap: .5rem; }
+.pabs-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: .75rem 1rem;
+  background: var(--color-surface, #fff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 10px;
+  flex-wrap: wrap;
+}
+.pabs-card--absent  { border-left: 3px solid #ef4444; }
+.pabs-card--pending { border-left: 3px solid #f59e0b; }
+.pabs-card--excused { border-left: 3px solid #22c55e; }
+
+.pabs-card__info { display: flex; flex-direction: column; gap: .2rem; flex: 1; min-width: 120px; }
+.pabs-card__date { font-size: .875rem; font-weight: 600; color: var(--color-text, #111827); }
+.pabs-card__class { font-size: .75rem; color: var(--color-text-muted, #6b7280); }
+.pabs-card__note  { font-size: .8rem; color: var(--color-text-muted, #6b7280); font-style: italic; flex: 2; }
+
+/* ── Status badges ───────────────────────────────────────────────────────── */
+.pabs-status { font-size: .78rem; font-weight: 600; white-space: nowrap; }
+.pabs-status--pending { color: #d97706; }
+.pabs-status--excused { color: #16a34a; }
+
+/* ── Justify form ────────────────────────────────────────────────────────── */
+.pabs-justify-form { display: flex; flex-direction: column; gap: .5rem; flex: 1; min-width: 200px; }
+.pabs-justify-form__input {
+  width: 100%;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  padding: .5rem .75rem;
+  font-size: .875rem;
+  font-family: inherit;
+  resize: vertical;
+}
+.pabs-justify-form__input:focus {
+  outline: none;
+  border-color: var(--color-primary, #1e2a78);
+  box-shadow: 0 0 0 3px rgba(30,42,120,.1);
+}
+.pabs-justify-form__btns { display: flex; gap: .5rem; justify-content: flex-end; }
+
+/* ── Empty state ─────────────────────────────────────────────────────────── */
+.pabs-empty {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: var(--color-text-muted, #9ca3af);
+}
+.pabs-empty__icon { font-size: 2.5rem; display: block; margin-bottom: .5rem; }

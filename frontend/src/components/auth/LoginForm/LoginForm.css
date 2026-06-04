@@ -270,3 +270,32 @@
   font-weight: 600;
 }
 .login-form__forgot a:hover { text-decoration: underline; }
+
+/* 2FA OTP step */
+.login-form__2fa-box {
+  background: #f0f4ff;
+  border: 1px solid #c7d2fe;
+  border-radius: 10px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+.login-form__2fa-title { font-weight: 700; color: #1e2a78; font-size: .9rem; margin: 0; }
+.login-form__2fa-desc  { font-size: .8rem; color: #374151; margin: 0; line-height: 1.4; }
+.login-form__input--otp {
+  letter-spacing: .25rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-align: center;
+}
+.login-form__otp-back {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: .8rem;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+.login-form__otp-back:hover { color: #1e2a78; }
