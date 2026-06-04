@@ -6,7 +6,7 @@ import { classesService } from '../../../services/classesService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Table from '../../../components/common/Table/Table';
-import Modal from '../../../components/common/Modal/Modal';
+import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
 import ConfirmDialog from '../../../components/common/ConfirmDialog/ConfirmDialog';
 import Input from '../../../components/common/Input/Input';
 import Textarea from '../../../components/common/Textarea/Textarea';
@@ -229,10 +229,11 @@ function BulletinsPage() {
         emptyMessage="Aucune annonce créée"
       />
 
-      <Modal
+      <OffCanvas
         open={!!modal}
         onClose={closeModal}
         title={modal === 'create' ? 'Nouvelle annonce' : 'Modifier l\'annonce'}
+        subtitle={modal === 'create' ? 'Rédigez et diffusez un message à votre public cible' : 'Mettez à jour le contenu de cette annonce'}
         size="md"
         footer={
           <>
@@ -244,7 +245,7 @@ function BulletinsPage() {
         }
       >
         <BulletinForm form={form} errors={errors} onChange={handleChange} classes={classes} />
-      </Modal>
+      </OffCanvas>
 
       <ConfirmDialog
         open={!!confirm}

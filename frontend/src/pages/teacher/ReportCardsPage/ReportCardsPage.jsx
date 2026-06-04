@@ -7,12 +7,30 @@ import { classesService } from '../../../services/classesService';
 import { useAuth } from '../../../context/AuthContext';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
+import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
 import Table from '../../../components/common/Table/Table';
 import Select from '../../../components/common/Select/Select';
+import Input from '../../../components/common/Input/Input';
 import Button from '../../../components/common/Button/Button';
 import StatusPill from '../../../components/common/StatusPill/StatusPill';
 import ConfirmDialog from '../../../components/common/ConfirmDialog/ConfirmDialog';
 import './ReportCardsPage.css';
+
+const TERM_TYPES = [
+  { value: 'TRIMESTRE', label: 'Trimestriel' },
+  { value: 'SEMESTRE',  label: 'Semestriel' },
+  { value: 'CUSTOM',    label: 'Personnalisé' },
+];
+const TRIMESTRE_NAMES = [
+  { value: '1', label: '1er trimestre' },
+  { value: '2', label: '2ème trimestre' },
+  { value: '3', label: '3ème trimestre' },
+];
+const SEMESTRE_NAMES = [
+  { value: '1', label: '1er semestre' },
+  { value: '2', label: '2ème semestre' },
+];
+const EMPTY_CREATE = { classId: '', academicYear: '', termType: 'TRIMESTRE', termNumber: '1', termName: '' };
 
 function downloadBlob(blob, filename) {
   const url = window.URL.createObjectURL(blob);
@@ -41,6 +59,45 @@ function ReportCardsPage() {
   const [zipping, setZipping] = useState(false);
   const [bulkPublishing, setBulkPublishing] = useState(false);
   const [confirmBulkPublish, setConfirmBulkPublish] = useState(false);
+
+  // ── Create bulletin OffCanvas ──────────────────────────────────────────
+  const [createOpen, setCreateOpen]   = useState(false);
+  const [createForm, setCreateForm]   = useState(EMPTY_CREATE);
+  const [createErrors, setCreateErrors] = useState({});
+
+  const createMutation = useMutation({
+    mutationFn: (data) => reportsService.create(data),
+    onSuccess: (res) => {
+      qc.invalidateQueries({ queryKey: ['reports'] });
+      const count = res.data?.count ?? 1;
+      toast.success(`${count} bulletin${count !== 1 ? 's' : ''} créé${count !== 1 ? 's' : ''}`);
+      setCreateOpen(false);
+      setCreateForm(EMPTY_CREATE);
+      setCreateErrors({});
+    },
+    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur de création'),
+  });
+
+  function setCreate(field, value) {
+    setCreateForm((f) => ({ ...f, [field]: value }));
+    if (createErrors[field]) setCreateErrors((e) => ({ ...e, [field]: undefined }));
+  }
+
+  function handleCreate() {
+    const e = {};
+    if (!createForm.classId)             e.classId     = 'Classe requise';
+    if (!createForm.academicYear.trim()) e.academicYear = 'Année scolaire requise';
+    if (!createForm.termType)            e.termType    = 'Type de période requis';
+    if (!createForm.termNumber)          e.termNumber  = 'Période requise';
+    if (Object.keys(e).length) { setCreateErrors(e); return; }
+    createMutation.mutate({
+      classId:      createForm.classId,
+      academicYear: createForm.academicYear,
+      termType:     createForm.termType,
+      termNumber:   Number(createForm.termNumber),
+      ...(createForm.termName ? { termName: createForm.termName } : {}),
+    });
+  }
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ['reports'],
@@ -221,11 +278,7 @@ function ReportCardsPage() {
       <PageHeader
         title="Bulletins de notes"
         subtitle={`${filtered.length} bulletin${filtered.length !== 1 ? 's' : ''}`}
-        actions={
-          <Link to={isAdmin ? '/admin/reports/new' : '/teacher/reports/new'}>
-            <Button icon="+">Nouveau bulletin</Button>
-          </Link>
-        }
+        actions={<Button size="sm" onClick={() => setCreateOpen(true)}>+ Nouveau bulletin</Button>}
       />
 
       <div className="reports-page__toolbar">
@@ -309,6 +362,97 @@ function ReportCardsPage() {
         confirmLabel={`Publier ${reviewCount} bulletin${reviewCount !== 1 ? 's' : ''}`}
         variant="primary"
       />
+
+      {/* Nouveau bulletin de notes — OffCanvas */}
+      <OffCanvas
+        open={createOpen}
+        onClose={() => { setCreateOpen(false); setCreateForm(EMPTY_CREATE); setCreateErrors({}); }}
+        title="Nouveau bulletin de notes"
+        subtitle="Générez les bulletins pour une classe et une période"
+        size="md"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setCreateOpen(false)} disabled={createMutation.isPending}>
+              Annuler
+            </Button>
+            <Button onClick={handleCreate} disabled={createMutation.isPending}>
+              {createMutation.isPending ? 'Création…' : 'Créer le bulletin'}
+            </Button>
+          </>
+        }
+      >
+        <div className="create-report-form">
+          <Select
+            id="cr-classId"
+            label="Classe"
+            required
+            value={createForm.classId}
+            error={createErrors.classId}
+            placeholder="Sélectionner une classe"
+            options={classes.map((c) => ({ value: c.id, label: c.name }))}
+            onChange={(e) => setCreate('classId', e.target.value)}
+          />
+
+          <Input
+            id="cr-academicYear"
+            label="Année scolaire"
+            required
+            value={createForm.academicYear}
+            error={createErrors.academicYear}
+            placeholder="ex : 2024-2025"
+            onChange={(e) => setCreate('academicYear', e.target.value)}
+          />
+
+          <div className="create-report-form__row">
+            <div className="form-field">
+              <label className="form-field__label">Type de période <span style={{color:'#ef4444'}}>*</span></label>
+              <select
+                className="create-report-form__select"
+                value={createForm.termType}
+                onChange={(e) => { setCreate('termType', e.target.value); setCreate('termNumber', '1'); }}
+              >
+                {TERM_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+              </select>
+              {createErrors.termType && <span className="create-report-form__error">{createErrors.termType}</span>}
+            </div>
+
+            {createForm.termType !== 'CUSTOM' ? (
+              <div className="form-field">
+                <label className="form-field__label">Période <span style={{color:'#ef4444'}}>*</span></label>
+                <select
+                  className="create-report-form__select"
+                  value={createForm.termNumber}
+                  onChange={(e) => setCreate('termNumber', e.target.value)}
+                >
+                  {(createForm.termType === 'SEMESTRE' ? SEMESTRE_NAMES : TRIMESTRE_NAMES)
+                    .map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </select>
+                {createErrors.termNumber && <span className="create-report-form__error">{createErrors.termNumber}</span>}
+              </div>
+            ) : (
+              <Input
+                id="cr-termName"
+                label="Nom de la période"
+                required
+                value={createForm.termName}
+                error={createErrors.termNumber}
+                placeholder="ex : Période 1"
+                onChange={(e) => { setCreate('termName', e.target.value); setCreate('termNumber', '1'); }}
+              />
+            )}
+          </div>
+
+          {createForm.termType !== 'CUSTOM' && (
+            <Input
+              id="cr-termLabel"
+              label="Libellé personnalisé (optionnel)"
+              value={createForm.termName}
+              placeholder={`ex : ${createForm.termType === 'SEMESTRE' ? '1er semestre 2024' : '1er trimestre 2024'}`}
+              onChange={(e) => setCreate('termName', e.target.value)}
+            />
+          )}
+        </div>
+      </OffCanvas>
     </AppShell>
   );
 }
