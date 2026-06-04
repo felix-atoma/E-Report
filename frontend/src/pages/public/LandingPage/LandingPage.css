@@ -672,6 +672,54 @@ section[id]{scroll-margin-top:110px}
 .lp-video__step p{margin:0;font-size:.78rem;color:#6b7280;line-height:1.4}
 @media(max-width:900px){.lp-video__player{grid-template-columns:1fr}}
 
+/* ── Accessibility toolbar (A+/A−, eye, search) ────────────────────────── */
+.lp-toolbar{display:flex;align-items:center;gap:3px;background:rgba(255,255,255,.1);border-radius:8px;padding:3px}
+.lp-nav--scrolled .lp-toolbar{background:rgba(0,0,0,.06)}
+.lp-toolbar__btn{display:flex;align-items:center;gap:2px;padding:5px 8px;border:none;background:transparent;border-radius:6px;cursor:pointer;color:rgba(255,255,255,.75);transition:background .15s,color .15s;font-family:inherit;line-height:1}
+.lp-nav--scrolled .lp-toolbar__btn{color:#4b5563}
+.lp-toolbar__btn:hover:not(:disabled){background:rgba(255,255,255,.18);color:#fff}
+.lp-nav--scrolled .lp-toolbar__btn:hover:not(:disabled){background:rgba(0,0,0,.07);color:#1f2937}
+.lp-toolbar__btn:disabled{opacity:.35;cursor:not-allowed}
+.lp-toolbar__a--sm{font-size:.7rem;font-weight:700}
+.lp-toolbar__a--lg{font-size:.92rem;font-weight:700}
+.lp-toolbar__minus,.lp-toolbar__plus{font-size:.75rem;font-weight:700;line-height:1}
+.lp-toolbar__btn--eye{gap:4px}
+
+/* ── Colour theme picker ─────────────────────────────────────────────────  */
+.lp-toolbar__theme-wrap{position:relative}
+.lp-theme-picker{position:absolute;top:calc(100% + 10px);left:50%;transform:translateX(-50%);background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:1rem;box-shadow:0 12px 40px rgba(0,0,0,.18);z-index:2000;min-width:230px}
+.lp-theme-picker__title{font-size:.72rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.8px;margin:0 0 .75rem}
+.lp-theme-picker__swatches{display:grid;grid-template-columns:repeat(5,1fr);gap:.5rem}
+.lp-theme-swatch{position:relative;width:36px;height:36px;border-radius:8px;border:2px solid transparent;cursor:pointer;transition:transform .15s,border-color .15s;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.lp-theme-swatch:hover{transform:scale(1.1)}
+.lp-theme-swatch--active{border-color:#1f2937;box-shadow:0 0 0 3px rgba(0,0,0,.12)}
+.lp-theme-swatch__dot{position:absolute;bottom:4px;right:4px;width:10px;height:10px;border-radius:50%;border:1.5px solid rgba(255,255,255,.6)}
+.lp-theme-swatch__check{font-size:.8rem;color:#fff;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.4)}
+
+/* ── Search overlay ─────────────────────────────────────────────────────── */
+.lp-search-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:3000;display:flex;align-items:flex-start;justify-content:center;padding:6rem 1rem 2rem;backdrop-filter:blur(4px)}
+.lp-search-modal{background:#fff;border-radius:18px;width:100%;max-width:560px;box-shadow:0 24px 64px rgba(0,0,0,.25);overflow:hidden}
+.lp-search-modal__header{display:flex;align-items:center;gap:.75rem;padding:1rem 1.25rem;border-bottom:1px solid #f3f4f6;color:#9ca3af}
+.lp-search-modal__input{flex:1;border:none;outline:none;font-size:1rem;color:#1f2937;font-family:inherit;background:transparent}
+.lp-search-modal__input::placeholder{color:#9ca3af}
+.lp-search-modal__close{background:none;border:none;cursor:pointer;color:#9ca3af;font-size:1rem;padding:2px 6px;border-radius:4px;line-height:1;transition:color .15s,background .15s}
+.lp-search-modal__close:hover{color:#1f2937;background:#f3f4f6}
+.lp-search-modal__results{max-height:360px;overflow-y:auto}
+.lp-search-modal__item{display:flex;align-items:center;gap:.75rem;padding:.8rem 1.25rem;text-decoration:none;color:#374151;font-size:.9rem;font-weight:500;border-bottom:1px solid #f9fafb;transition:background .1s}
+.lp-search-modal__item:last-child{border-bottom:none}
+.lp-search-modal__item:hover{background:#f8fafc;color:#1E2A78}
+.lp-search-modal__item:hover svg{color:#1E2A78}
+.lp-search-modal__item-icon{font-size:1.1rem;width:24px;text-align:center;flex-shrink:0}
+.lp-search-modal__item svg{margin-left:auto;color:#d1d5db;flex-shrink:0}
+.lp-search-modal__empty{padding:2rem;text-align:center;color:#9ca3af;font-size:.875rem;margin:0}
+.lp-search-modal__hint{padding:.6rem 1.25rem;font-size:.72rem;color:#9ca3af;text-align:center;border-top:1px solid #f3f4f6;margin:0}
+
+@media(max-width:768px){
+  .lp-toolbar{gap:2px;padding:2px}
+  .lp-toolbar__btn{padding:5px 6px}
+  .lp-search-overlay{padding:4rem 1rem 1rem}
+}
+
 /* ── Floating WhatsApp button ───────────────────────────────────────────── */
 .lp-wa-float{
   position:fixed;bottom:1.5rem;right:1.5rem;z-index:900;

@@ -673,12 +673,78 @@ export default function LandingPage() {
   const faqs        = isFr ? FAQS                  : FAQS_EN;
   const comparison  = isFr ? COMPARISON            : COMPARISON_EN;
 
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen]   = useState(false);
+  const [scrolled, setScrolled]   = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [activeRole, setActiveRole] = useState(0);
   const { ref: featRef, inView: featInView } = useInView();
-  const { ref: lmsRef, inView: lmsInView } = useInView();
+  const { ref: lmsRef, inView: lmsInView }   = useInView();
+
+  // ── Font size ──────────────────────────────────────────────────────────
+  const FONT_SIZES = [14, 16, 18];
+  const [fontIdx, setFontIdx] = useState(() => {
+    const s = localStorage.getItem('lp-font');
+    return s !== null ? Number(s) : 1;
+  });
+  useEffect(() => {
+    document.documentElement.style.fontSize = `${FONT_SIZES[fontIdx]}px`;
+    return () => { document.documentElement.style.fontSize = ''; };
+  }, [fontIdx]);
+  const changeFont = (dir) => setFontIdx(i => {
+    const n = Math.max(0, Math.min(FONT_SIZES.length - 1, i + dir));
+    localStorage.setItem('lp-font', String(n));
+    return n;
+  });
+
+  // ── Color themes ───────────────────────────────────────────────────────
+  const LP_THEMES = [
+    { id:'default', label: isFr ? 'Défaut'   : 'Default', hero:'linear-gradient(155deg,#020d30 0%,#0f1a52 35%,#1E2A78 65%,#1d4ed8 100%)', accent:'#FF7A59', btn:'#1E2A78' },
+    { id:'ocean',   label: isFr ? 'Océan'    : 'Ocean',   hero:'linear-gradient(155deg,#012030 0%,#014060 40%,#027090 100%)',              accent:'#06b6d4', btn:'#0e7490' },
+    { id:'forest',  label: isFr ? 'Forêt'    : 'Forest',  hero:'linear-gradient(155deg,#071a10 0%,#0a3020 40%,#166534 100%)',              accent:'#4ade80', btn:'#166534' },
+    { id:'sunset',  label: isFr ? 'Coucher'  : 'Sunset',  hero:'linear-gradient(155deg,#1a0528 0%,#3b0764 40%,#7c3aed 100%)',              accent:'#f472b6', btn:'#7c3aed' },
+    { id:'crimson', label: isFr ? 'Cramoisi' : 'Crimson', hero:'linear-gradient(155deg,#1c0208 0%,#450a16 40%,#9f1239 100%)',              accent:'#fbbf24', btn:'#9f1239' },
+  ];
+  const [themeId, setThemeId] = useState(() => localStorage.getItem('lp-theme') ?? 'default');
+  const [showThemes, setShowThemes] = useState(false);
+  const currentTheme = LP_THEMES.find(t => t.id === themeId) ?? LP_THEMES[0];
+  const applyTheme = (t) => {
+    setThemeId(t.id);
+    localStorage.setItem('lp-theme', t.id);
+    setShowThemes(false);
+  };
+
+  // ── Search ─────────────────────────────────────────────────────────────
+  const SEARCH_ITEMS = [
+    { label: isFr ? 'Fonctionnalités' : 'Features',           anchor: '#features',   icon: '⚡' },
+    { label: isFr ? 'Module LMS'      : 'LMS Module',          anchor: '#lms',        icon: '🎓' },
+    { label: isFr ? 'Base de données' : 'Database',            anchor: '#database',   icon: '🗄️' },
+    { label: isFr ? 'Démarrage'       : 'Get started',         anchor: '#how',        icon: '🚀' },
+    { label: isFr ? 'Pour qui ?'      : 'Who it\'s for',       anchor: '#roles',      icon: '👥' },
+    { label: isFr ? 'Comparaison'     : 'Comparison',          anchor: '#comparison', icon: '📊' },
+    { label: isFr ? 'Témoignages'     : 'Testimonials',        anchor: '#testimonials',icon:'⭐' },
+    { label: isFr ? 'Tarif'           : 'Pricing',             anchor: '#pricing',    icon: '💎' },
+    { label: isFr ? 'FAQ'             : 'FAQ',                 anchor: '#faq',        icon: '❓' },
+    { label: isFr ? 'Équipe'          : 'Team',                anchor: '#team',       icon: '👥' },
+    { label: isFr ? 'Démo vidéo'      : 'Video demo',          anchor: '#demo',       icon: '▶️' },
+    { label: 'WhatsApp',                                        anchor: '#whatsapp',   icon: '📱' },
+    { label: isFr ? 'Galerie'         : 'Gallery',             anchor: '#gallery',    icon: '📸' },
+    { label: isFr ? 'Se connecter'    : 'Log in',              href: '/login',        icon: '🔐' },
+    { label: isFr ? 'Inscrire mon école' : 'Register school',  href: '/register-school', icon: '🏫' },
+  ];
+  const [searchOpen, setSearchOpen]   = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchResults = searchQuery.trim().length > 0
+    ? SEARCH_ITEMS.filter(s => s.label.toLowerCase().includes(searchQuery.toLowerCase()))
+    : SEARCH_ITEMS;
+  const searchRef = useRef(null);
+  useEffect(() => {
+    if (searchOpen) setTimeout(() => searchRef.current?.focus(), 50);
+  }, [searchOpen]);
+  useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') setSearchOpen(false); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   useEffect(() => {
     const fn = () => {
@@ -694,6 +760,45 @@ export default function LandingPage() {
 
   return (
     <div className="lp">
+
+      {/* ─── SEARCH OVERLAY ──────────────────────────────────────────── */}
+      {searchOpen && (
+        <div className="lp-search-overlay" onClick={() => setSearchOpen(false)}>
+          <div className="lp-search-modal" onClick={e => e.stopPropagation()}>
+            <div className="lp-search-modal__header">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input
+                ref={searchRef}
+                type="search"
+                className="lp-search-modal__input"
+                placeholder={t('Rechercher une section…','Search a section…')}
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                autoComplete="off"
+              />
+              <button className="lp-search-modal__close" onClick={() => setSearchOpen(false)} aria-label="Fermer">✕</button>
+            </div>
+            <div className="lp-search-modal__results">
+              {searchResults.length === 0 ? (
+                <p className="lp-search-modal__empty">{t('Aucun résultat','No results')}</p>
+              ) : searchResults.map(item => (
+                <a
+                  key={item.label}
+                  href={item.href ?? item.anchor}
+                  className="lp-search-modal__item"
+                  onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
+                >
+                  <span className="lp-search-modal__item-icon">{item.icon}</span>
+                  <span>{item.label}</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+              ))}
+            </div>
+            <p className="lp-search-modal__hint">{t('Appuyez sur Échap pour fermer','Press Escape to close')}</p>
+          </div>
+        </div>
+      )}
+
       <div className="lp-progress" aria-hidden="true" style={{width:`${scrollProgress}%`}}/>
       {scrolled && (
         <button type="button" className="lp-back-to-top" onClick={() => window.scrollTo({top:0,behavior:'smooth'})} aria-label="Retour en haut">↑</button>
@@ -792,6 +897,65 @@ export default function LandingPage() {
             <span>NovaBulletin</span>
           </Link>
 
+          {/* Accessibility toolbar */}
+          <div className="lp-toolbar">
+            {/* Font size */}
+            <button className="lp-toolbar__btn" onClick={() => changeFont(-1)} disabled={fontIdx === 0} aria-label="Réduire la taille du texte" title="A−">
+              <span className="lp-toolbar__a lp-toolbar__a--sm">A</span><span className="lp-toolbar__minus">−</span>
+            </button>
+            <button className="lp-toolbar__btn" onClick={() => changeFont(1)} disabled={fontIdx === FONT_SIZES.length - 1} aria-label="Agrandir la taille du texte" title="A+">
+              <span className="lp-toolbar__a lp-toolbar__a--lg">A</span><span className="lp-toolbar__plus">+</span>
+            </button>
+
+            {/* Color theme */}
+            <div className="lp-toolbar__theme-wrap">
+              <button
+                className="lp-toolbar__btn lp-toolbar__btn--eye"
+                onClick={() => setShowThemes(v => !v)}
+                aria-label={t('Changer le thème de couleur','Change colour theme')}
+                title={t('Thème','Theme')}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8S1 12 1 12z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+              {showThemes && (
+                <div className="lp-theme-picker">
+                  <p className="lp-theme-picker__title">{t('Thème de couleur','Colour theme')}</p>
+                  <div className="lp-theme-picker__swatches">
+                    {LP_THEMES.map(th => (
+                      <button
+                        key={th.id}
+                        className={`lp-theme-swatch${themeId === th.id ? ' lp-theme-swatch--active' : ''}`}
+                        style={{ background: th.hero }}
+                        onClick={() => applyTheme(th)}
+                        title={th.label}
+                        aria-label={th.label}
+                        aria-pressed={themeId === th.id}
+                      >
+                        <span className="lp-theme-swatch__dot" style={{ background: th.accent }} />
+                        {themeId === th.id && <span className="lp-theme-swatch__check">✓</span>}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Search */}
+            <button
+              className="lp-toolbar__btn"
+              onClick={() => setSearchOpen(true)}
+              aria-label={t('Rechercher','Search')}
+              title={t('Rechercher','Search')}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </button>
+          </div>
+
           <div className="lp-lang">
             <button
               className={`lp-lang__btn${isFr ? ' lp-lang__btn--active' : ''}`}
@@ -847,7 +1011,7 @@ export default function LandingPage() {
       </nav>
 
       {/* ─── HERO ────────────────────────────────────────────────────── */}
-      <section className="lp-hero">
+      <section className="lp-hero" style={{ background: currentTheme.hero }}>
         <div className="lp-hero__bg" aria-hidden="true">
           <div className="lp-blob lp-blob--1" /><div className="lp-blob lp-blob--2" /><div className="lp-blob lp-blob--3" />
           <div className="lp-grid-overlay" />
