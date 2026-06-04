@@ -757,6 +757,38 @@ export default function LandingPage() {
   return (
     <div className="lp" style={{ zoom: ZOOM_LEVELS[fontIdx] }}>
 
+      {/* ─── THEME OVERLAY ───────────────────────────────────────────── */}
+      {showThemes && (
+        <div className="lp-theme-overlay" onClick={() => setShowThemes(false)}>
+          <div className="lp-theme-modal" onClick={e => e.stopPropagation()}>
+            <div className="lp-theme-modal__header">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+              <span>{t('Choisir un thème de couleur','Choose a colour theme')}</span>
+              <button className="lp-search-modal__close" onClick={() => setShowThemes(false)} aria-label="Fermer">✕</button>
+            </div>
+            <div className="lp-theme-modal__grid">
+              {LP_THEMES.map(th => (
+                <button
+                  key={th.id}
+                  className={`lp-theme-card${themeId === th.id ? ' lp-theme-card--active' : ''}`}
+                  onClick={() => applyTheme(th)}
+                  aria-pressed={themeId === th.id}
+                >
+                  <div className="lp-theme-card__preview" style={{ background: th.hero }}>
+                    <span className="lp-theme-card__dot" style={{ background: th.accent }} />
+                    {themeId === th.id && <span className="lp-theme-card__check">✓</span>}
+                  </div>
+                  <span className="lp-theme-card__label">{th.label}</span>
+                </button>
+              ))}
+            </div>
+            <p className="lp-search-modal__hint">{t('Cliquez à l\'extérieur pour fermer','Click outside to close')}</p>
+          </div>
+        </div>
+      )}
+
       {/* ─── SEARCH OVERLAY ──────────────────────────────────────────── */}
       {searchOpen && (
         <div className="lp-search-overlay" onClick={() => setSearchOpen(false)}>
@@ -904,40 +936,17 @@ export default function LandingPage() {
             </button>
 
             {/* Color theme */}
-            <div className="lp-toolbar__theme-wrap">
-              <button
-                className="lp-toolbar__btn lp-toolbar__btn--eye"
-                onClick={() => setShowThemes(v => !v)}
-                aria-label={t('Changer le thème de couleur','Change colour theme')}
-                title={t('Thème','Theme')}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8S1 12 1 12z"/>
-                  <circle cx="12" cy="12" r="3"/>
-                </svg>
-              </button>
-              {showThemes && (
-                <div className="lp-theme-picker">
-                  <p className="lp-theme-picker__title">{t('Thème de couleur','Colour theme')}</p>
-                  <div className="lp-theme-picker__swatches">
-                    {LP_THEMES.map(th => (
-                      <button
-                        key={th.id}
-                        className={`lp-theme-swatch${themeId === th.id ? ' lp-theme-swatch--active' : ''}`}
-                        style={{ background: th.hero }}
-                        onClick={() => applyTheme(th)}
-                        title={th.label}
-                        aria-label={th.label}
-                        aria-pressed={themeId === th.id}
-                      >
-                        <span className="lp-theme-swatch__dot" style={{ background: th.accent }} />
-                        {themeId === th.id && <span className="lp-theme-swatch__check">✓</span>}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            <button
+              className="lp-toolbar__btn lp-toolbar__btn--eye"
+              onClick={() => setShowThemes(v => !v)}
+              aria-label={t('Changer le thème de couleur','Change colour theme')}
+              title={t('Thème','Theme')}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8S1 12 1 12z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
 
             {/* Search */}
             <button
