@@ -13,7 +13,7 @@ export class FeeRemindersService {
   ) {}
 
   // Every Monday at 9:00 AM Togo time
-  @Cron('0 9 * * 1', { name: 'fee-reminders', timeZone: 'Africa/Lomé' })
+  @Cron('0 9 * * 1', { name: 'fee-reminders', timeZone: 'Africa/Lome' })
   async sendFeeReminders() {
     this.logger.log('Running weekly fee reminders…');
 
