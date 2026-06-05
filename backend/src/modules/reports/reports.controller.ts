@@ -163,4 +163,17 @@ export class ReportsController {
   regeneratePdf(@Param('id') id: string, @CurrentUser() user: any) {
     return this.service.regeneratePdf(id, user.institutionId);
   }
+
+  @Get(':id/pdf-download')
+  @Roles(Role.ADMIN, Role.TEACHER, Role.PARENT, Role.STUDENT)
+  @ApiOperation({ summary: 'Download bulletin as PDF — generated on-demand (no stored file required)' })
+  async downloadPdf(@Param('id') id: string, @CurrentUser() user: any, @Res() res: Response) {
+    const { buffer, filename } = await this.service.downloadPdf(id, user.institutionId, user.id, user.role);
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+      'Content-Length': buffer.length,
+    });
+    res.end(buffer);
+  }
 }

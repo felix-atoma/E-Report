@@ -794,6 +794,72 @@ export class ReportsService {
     });
   }
 
+  async downloadPdf(id: string, institutionId: string, userId: string, role: Role): Promise<{ buffer: Buffer; filename: string }> {
+    const report = await this.prisma.reportCard.findFirst({
+      where: { id, class: { institutionId }, status: 'PUBLISHED' },
+      include: {
+        grades: {
+          include: { subject: { select: { nameFr: true, passMark: true } } },
+          orderBy: { coefficient: 'desc' },
+        },
+        student: { include: { user: { select: { name: true, profileImage: true } } } },
+        class: { select: { name: true } },
+      },
+    });
+    if (!report) throw new NotFoundException('Published report card not found');
+
+    if (role === Role.PARENT) {
+      const child = await this.prisma.student.findFirst({ where: { id: report.studentId, parentId: userId } });
+      if (!child) throw new ForbiddenException('You do not have access to this report');
+    }
+    if (role === Role.STUDENT) {
+      const student = await this.prisma.student.findFirst({ where: { id: report.studentId, userId } });
+      if (!student) throw new ForbiddenException('You do not have access to this report');
+    }
+
+    const institution = await this.prisma.institution.findUnique({
+      where: { id: institutionId },
+      select: { name: true, country: true, countryMotto: true, address: true, phone: true, motto: true, logo: true, crest: true, stamp: true, brandingSettings: true },
+    });
+    if (!institution) throw new NotFoundException('Institution not found');
+
+    const fiches = await this.prisma.gradeFiche.findMany({
+      where: { classId: report.classId, academicYear: report.academicYear, termNumber: report.termNumber },
+    });
+    const ficheMap = new Map(fiches.map((f) => [f.subjectId, f]));
+
+    const r = report as any;
+    const buffer = await this.pdf.generateReportCardPdfBuffer({
+      report: {
+        id: r.id, termName: r.termName, academicYear: r.academicYear, termNumber: r.termNumber,
+        overallAverage: r.overallAverage, classRank: r.classRank, classSize: r.classSize,
+        classHighest: r.classHighest ?? null, classLowest: r.classLowest ?? null, classAverage: r.classAverage ?? null,
+        mention: r.mention, conductRating: r.conductRating, teacherComment: r.teacherComment,
+        principalComment: r.principalComment, attendanceDays: r.attendanceDays, attendancePresent: r.attendancePresent,
+        attendanceLate: r.attendanceLate ?? null, attendanceAbsent: r.attendanceAbsent ?? null,
+        attendanceAbsentHours: r.attendanceAbsentHours ?? null, honorCouncil: r.honorCouncil ?? null,
+        commendations: r.commendations ?? null, warnings: r.warnings ?? null,
+        annualAverage: r.annualAverage ?? null, councilDecision: r.councilDecision ?? null,
+      },
+      student: { admissionNumber: r.student.admissionNumber, dateOfBirth: r.student.dateOfBirth, user: r.student.user },
+      className: r.class.name,
+      grades: r.grades.map((g: any) => ({
+        score: g.score, moyenneMatiere: g.moyenneMatiere, coefficient: g.coefficient, weightedScore: g.weightedScore,
+        noteInterro1: g.noteInterro1, noteInterro2: g.noteInterro2, noteInterro3: g.noteInterro3, noteInterro4: g.noteInterro4,
+        noteDevoir: g.noteDevoir, noteComposition: g.noteComposition, rangMatiere: g.rangMatiere,
+        appreciation: g.appreciation, teacherComment: g.teacherComment, teacherName: g.teacherName,
+        ficheSignedAt: ficheMap.get(g.subjectId)?.signedAt ?? null,
+        signatureData: ficheMap.get(g.subjectId)?.signatureData ?? null,
+        subject: { nameFr: g.subject.nameFr, passMark: g.subject.passMark },
+      })),
+      institution,
+    });
+
+    const studentName = (r.student.user?.name ?? r.student.admissionNumber).replace(/[^a-zA-Z0-9]/g, '-');
+    const filename = `bulletin-${studentName}-T${r.termNumber}-${r.academicYear}.pdf`;
+    return { buffer, filename };
+  }
+
   private async ensureEditable(id: string, institutionId: string, userId: string, role: Role) {
     const report = await this.prisma.reportCard.findFirst({
       where: { id, class: { institutionId } },

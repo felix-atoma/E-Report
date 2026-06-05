@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import api from '../../../services/api';
 import { studentsService } from '../../../services/studentsService';
 import { reportsService } from '../../../services/reportsService';
 import { feesService } from '../../../services/feesService';
@@ -9,7 +10,6 @@ import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Card from '../../../components/common/Card/Card';
 import Badge from '../../../components/common/Badge/Badge';
 import PaywallNotice from '../../../components/parent/PaywallNotice/PaywallNotice';
-import PdfViewer from '../../../components/common/PdfViewer/PdfViewer';
 import Loading from '../../../components/common/Loading/Loading';
 import EmptyState from '../../../components/common/EmptyState/EmptyState';
 import './ChildReportCardsPage.css';
@@ -21,8 +21,19 @@ const MENTION_VARIANT = (avg) => {
   return 'danger';
 };
 
+async function downloadPdf(reportId, studentName, termNumber) {
+  const res = await api.get(`/reports/${reportId}/pdf-download`, { responseType: 'blob' });
+  const url = URL.createObjectURL(res.data);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `bulletin-${(studentName ?? reportId).replace(/[^a-zA-Z0-9]/g, '-')}-T${termNumber}.pdf`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 function ReportCard({ report, feeSummary }) {
   const [expanded, setExpanded] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   const termLabel    = report.termName ?? `Trimestre ${report.termNumber}`;
   const isPaid       = !feeSummary || feeSummary.status === 'PAID' || feeSummary.status === 'EXEMPT';
@@ -80,15 +91,24 @@ function ReportCard({ report, feeSummary }) {
                 >
                   🖨️ Imprimer / PDF
                 </Link>
-                {report.pdfUrl && (
-                  <a
-                    href={report.pdfUrl}
-                    download
-                    className="report-card-item__btn report-card-item__btn--print"
-                  >
-                    ↓ Télécharger
-                  </a>
-                )}
+                <button
+                  className="report-card-item__btn report-card-item__btn--print"
+                  disabled={downloading}
+                  onClick={async () => {
+                    setDownloading(true);
+                    try {
+                      await downloadPdf(
+                        report.id,
+                        report.student?.user?.name ?? report.student?.admissionNumber,
+                        report.termNumber,
+                      );
+                    } finally {
+                      setDownloading(false);
+                    }
+                  }}
+                >
+                  {downloading ? '⏳ …' : '↓ Télécharger'}
+                </button>
               </div>
 
               {/* Grade summary */}
@@ -135,10 +155,6 @@ function ReportCard({ report, feeSummary }) {
                 </div>
               )}
 
-              {/* PDF */}
-              {report.pdfUrl && (
-                <PdfViewer url={report.pdfUrl} title={`Bulletin ${termLabel}`} />
-              )}
             </>
           )}
         </div>
