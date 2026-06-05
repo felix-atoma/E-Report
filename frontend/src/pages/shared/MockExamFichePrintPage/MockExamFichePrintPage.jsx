@@ -97,7 +97,7 @@ function SubjectPrintFiche({ subject, students, institution, exam }) {
       <div className="mfp-subj-banner">
         <div className="mfp-subj-banner__left">
           <span className="mfp-subj-title">{subject.nameFr}</span>
-          <span className="mfp-coeff-badge">Coeff.&nbsp;<strong>{subject.coefficient}</strong></span>
+          <span className="mfp-coeff-badge">Coeff.&nbsp;<span className="mfp-coeff-blank" /></span>
           {subject.teacherName && <span className="mfp-teacher-tag">Prof : {subject.teacherName}</span>}
         </div>
         {subject.isSigned && (

@@ -124,8 +124,8 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
   };
 
   const handleCoeffChange = (val) => {
-    const n = parseInt(val, 10);
-    if (!isNaN(n) && n >= 1 && n <= 20) {
+    const n = parseFloat(val);
+    if (!isNaN(n) && n >= 0.5 && n <= 20) {
       setCoeff(n);
       setDirty(true);
       setSaved(false);
@@ -196,7 +196,7 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
                 type="number"
                 className="mfiche-coeff-input"
                 value={coeff}
-                min={1} max={20} step={1}
+                min={0.5} max={20} step={0.5}
                 onChange={(e) => handleCoeffChange(e.target.value)}
                 title="Coefficient de la matière"
               />
@@ -204,8 +204,8 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
               <strong>{coeff}</strong>
             )}
           </span>
-          {/* Print: always static */}
-          <span className="mfiche-subj-coeff print-only">Coeff. <strong>{coeff}</strong></span>
+          {/* Print: blank line for teacher to fill in */}
+          <span className="mfiche-subj-coeff print-only">Coeff.&nbsp;<span className="mfiche-coeff-blank" /></span>
         </div>
         <div className="mfiche-subj-band__right no-print">
           {subject.teacherName && (

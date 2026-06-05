@@ -126,6 +126,12 @@
   background: #dbeafe; color: #1e40af;
   padding: 2px 9px; border-radius: 12px;
   border: 1px solid #bfdbfe;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.mfp-coeff-blank {
+  display: inline-block;
+  width: 32px; height: 13px;
+  border-bottom: 1.5px solid #1e40af;
 }
 .mfp-teacher-tag {
   font-size: 10px; font-style: italic; color: #374151;

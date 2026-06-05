@@ -177,6 +177,8 @@
 .fdn__btn--sign:disabled { opacity: 0.65; cursor: not-allowed; }
 .fdn__btn--unsign { background: #f3f4f6; color: #92400e; border: 1px solid #fcd34d; }
 .fdn__btn--unsign:hover:not(:disabled) { background: #fef3c7; }
+.fdn__btn--print { background: #1e3a8a; color: #fff; }
+.fdn__btn--print:hover { background: #1e40af; box-shadow: 0 3px 10px rgba(30,58,138,0.3); }
 
 /* ── Appreciation colours ────────────────────────────────────────────── */
 .appr--good { color: #0f766e; }

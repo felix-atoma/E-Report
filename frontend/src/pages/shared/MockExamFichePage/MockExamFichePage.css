@@ -69,6 +69,7 @@
 .mfiche-subj-band__left { display: flex; align-items: center; gap: 12px; }
 .mfiche-subj-name   { font-size: 13px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.04em; }
 .mfiche-subj-coeff  { font-size: 10px; opacity: 0.9; display: flex; align-items: center; gap: 4px; }
+.mfiche-coeff-blank { display: inline-block; width: 28px; height: 12px; border-bottom: 1.5px solid currentColor; }
 
 .mfiche-coeff-input {
   width: 44px; padding: 0.15rem 0.3rem;

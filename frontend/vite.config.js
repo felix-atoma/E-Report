@@ -68,8 +68,8 @@ export default defineConfig({
             options: { cacheName: 'google-fonts' },
           },
         ],
-        navigateFallback: '/offline.html',
-        navigateFallbackDenylist: [/^\/api/, /^\/uploads/],
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api/, /^\/uploads/, /^\/offline\.html/],
       },
     }),
   ],
@@ -93,5 +93,17 @@ export default defineConfig({
     proxy: {
       '/api': { target: 'http://localhost:4000', changeOrigin: true },
     },
+  },
+  optimizeDeps: {
+    // Pre-bundle heavy deps so the browser makes fewer individual requests
+    include: [
+      'react', 'react-dom', 'react-dom/client',
+      'react-router-dom',
+      '@tanstack/react-query',
+      'axios',
+      'react-hot-toast',
+      'i18next', 'react-i18next',
+      '@sentry/react',
+    ],
   },
 });

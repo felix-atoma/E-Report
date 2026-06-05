@@ -419,6 +419,32 @@ export default function GradeEntryPage() {
               />
             </label>
             <button className="fdn__btn fdn__btn--secondary" onClick={() => navigate(-1)}>Retour</button>
+            <button
+              className="fdn__btn fdn__btn--print"
+              onClick={() => {
+                // Snapshot current in-memory state so print page works offline
+                const snapshot = {
+                  ts: Date.now(),
+                  subject: data?.subject ?? null,
+                  teacher: data?.teacher ?? null,
+                  fiche: data?.fiche ?? null,
+                  coef,
+                  termName,
+                  academicYear,
+                  termNumber,
+                  students: rows,
+                };
+                localStorage.setItem(
+                  `fdnp:${classId}:${subjectId}:${academicYear}:${termNumber}`,
+                  JSON.stringify(snapshot),
+                );
+                const qs = new URLSearchParams({ academicYear, termNumber, termName }).toString();
+                window.open(`/teacher/classes/${classId}/grades/${subjectId}/print?${qs}`, '_blank');
+              }}
+              title="Imprimer / télécharger la fiche pour usage hors-ligne"
+            >
+              🖨 Fiche hors-ligne
+            </button>
             {!isSigned ? (
               <>
                 <button

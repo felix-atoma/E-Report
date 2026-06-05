@@ -502,6 +502,20 @@ async function main() {
   const totalStudents = s6A.length + s3B.length + s2A.length + sTleD.length;
   const totalRC = totalStudents + sTleD.length + s3B.length + sTleD.length; // T1+T2(TleD+3B)+T3(TleD)
 
+  // ── Superadmin — Felix Atoma ─────────────────────────────────────────────
+  await prisma.user.upsert({
+    where: { email: 'felixatoma2@gmail.com' },
+    update: { password: await hash('Adjola12.'), role: 'SUPERADMIN' as any, isActive: true },
+    create: {
+      name: 'Felix Atoma',
+      email: 'felixatoma2@gmail.com',
+      password: await hash('Adjola12.'),
+      role: 'SUPERADMIN' as any,
+      isActive: true,
+    },
+  });
+  console.log('✅ Superadmin: felixatoma2@gmail.com');
+
   console.log(`
 ╔══════════════════════════════════════════════════════════════════╗
 ║               ✅  SEED COMPLETE — NovaBulletin Demo              ║
@@ -523,14 +537,7 @@ async function main() {
 ║  PARENT   parent.edem@demo.novabulletin.local    Parent@123      ║
 ║  STUDENT  s.6a.m1@student.demo…                 Student@123     ║
 ╠══════════════════════════════════════════════════════════════════╣
-║  SUPERADMIN — create manually (NOT seeded for security):         ║
-║  INSERT INTO "User" (id, name, email, password, role,            ║
-║    "isActive", "createdAt", "updatedAt")                         ║
-║  VALUES (gen_random_uuid(), 'Felix Atoma',                       ║
-║    'atomafelix2@gmail.com',                                      ║
-║    '<bcrypt-hash-of-your-password>', 'SUPERADMIN',               ║
-║    true, now(), now());                                          ║
-║  -- Or run: npx ts-node -e "require('./prisma/create-sa')"       ║
+║  SUPERADMIN  felixatoma2@gmail.com           Adjola12.           ║
 ╚══════════════════════════════════════════════════════════════════╝
 `);
 }

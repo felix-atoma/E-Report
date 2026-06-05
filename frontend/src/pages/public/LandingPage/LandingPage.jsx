@@ -681,7 +681,7 @@ export default function LandingPage() {
   const { ref: lmsRef, inView: lmsInView }   = useInView();
 
   // ── Font size (zoom scales px, rem, em — everything) ──────────────────
-  const ZOOM_LEVELS = [0.875, 1, 1.125];
+  const ZOOM_LEVELS = [0.7, 0.8, 0.875, 0.925, 1, 1.075, 1.15, 1.25, 1.4];
   const [fontIdx, setFontIdx] = useState(() => {
     const s = localStorage.getItem('lp-font');
     return s !== null ? Number(s) : 1;

@@ -1,0 +1,281 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Fiche de notes — Print Page  (landscape A4, pre-populated grades)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.fdnp__loading, .fdnp__error {
+  padding: 4rem; text-align: center;
+  font-family: Arial, sans-serif; font-size: 0.95rem; color: #6b7280;
+}
+
+/* ── Toolbar ────────────────────────────────────────────────────────────── */
+.fdnp__toolbar {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.65rem 1.5rem;
+  background: #fff;
+  border-bottom: 3px solid #1e3a8a;
+  box-shadow: 0 2px 12px rgba(30,58,138,0.12);
+  position: sticky; top: 0; z-index: 100;
+}
+.fdnp__btn { cursor: pointer; border: none; border-radius: 8px; font-size: 0.82rem; font-weight: 700; transition: all 0.15s; }
+.fdnp__btn--print {
+  padding: 0.42rem 1.15rem;
+  background: linear-gradient(135deg, #1e3a8a, #2563eb); color: #fff;
+}
+.fdnp__btn--print:hover { transform: translateY(-1px); }
+.fdnp__btn--close {
+  padding: 0.42rem 0.9rem;
+  background: #f8fafc; color: #374151;
+  border: 1.5px solid #e5e7eb;
+}
+.fdnp__btn--close:hover { background: #f1f5f9; }
+.fdnp__offline-badge {
+  font-size: 0.78rem; font-weight: 600;
+  background: #fef3c7; color: #92400e;
+  border: 1px solid #fcd34d; border-radius: 20px;
+  padding: 0.25rem 0.75rem; white-space: nowrap;
+}
+
+/* ── Sheet ──────────────────────────────────────────────────────────────── */
+.fdnp__page {
+  background: linear-gradient(160deg, #e8edf5 0%, #dde3ef 100%);
+  min-height: 100vh; padding-bottom: 4rem;
+}
+.fdnp__sheet {
+  margin: 1.75rem auto; max-width: 1050px;
+  background: #fff; border-radius: 4px;
+  padding: 26px 32px 22px;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 11.5px; color: #111;
+  box-shadow: 0 4px 20px rgba(30,58,138,0.10), 0 1px 4px rgba(0,0,0,0.05);
+  border-top: 4px solid #1e3a8a;
+}
+
+/* ── Document header ────────────────────────────────────────────────────── */
+.fdnp__doc-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 1.5rem; margin-bottom: 10px;
+}
+.fdnp__school-side {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding-right: 20px; border-right: 1.5px solid #e5e7eb;
+  flex-shrink: 0; max-width: 44%;
+}
+.fdnp__logo {
+  width: 58px; height: 58px; object-fit: contain;
+  border: 1px solid #e5e7eb; border-radius: 4px;
+  padding: 2px; flex-shrink: 0;
+}
+.fdnp__school-info { display: flex; flex-direction: column; gap: 2px; }
+.fdnp__circ { font-size: 8px; font-style: italic; color: #6b7280; text-transform: uppercase; letter-spacing: 0.07em; }
+.fdnp__school-name { font-size: 13px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; color: #0f172a; line-height: 1.2; }
+.fdnp__school-addr { font-size: 9px; color: #6b7280; margin-top: 2px; }
+
+.fdnp__title-side { text-align: right; flex: 1; }
+.fdnp__doc-badge {
+  display: inline-block;
+  font-size: 15px; font-weight: 900; text-transform: uppercase;
+  letter-spacing: 0.1em; color: #1e3a8a;
+  border-bottom: 2.5px solid #1e3a8a; padding-bottom: 3px; margin-bottom: 6px;
+}
+.fdnp__doc-meta {
+  display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap;
+  font-size: 10px; color: #374151;
+}
+.fdnp__doc-meta strong { color: #0f172a; }
+.fdnp__teacher-tag { font-size: 10px; font-style: italic; color: #374151; margin-top: 4px; }
+
+.fdnp__rule { height: 0; border: none; border-top: 1.5px solid #cbd5e1; margin: 10px 0 10px; }
+
+/* ── Status bar ─────────────────────────────────────────────────────────── */
+.fdnp__status-bar {
+  display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.fdnp__coef-badge {
+  font-size: 10px;
+  background: #dbeafe; color: #1e40af;
+  padding: 2px 10px; border-radius: 12px;
+  border: 1px solid #bfdbfe;
+}
+.fdnp__signed-badge {
+  font-size: 9.5px; color: #15803d; font-weight: 700;
+  background: #dcfce7; padding: 3px 10px; border-radius: 12px;
+  border: 1px solid #86efac;
+}
+.fdnp__unsigned-badge {
+  font-size: 9.5px; color: #92400e;
+  background: #fef3c7; padding: 3px 10px; border-radius: 12px;
+  border: 1px solid #fcd34d;
+}
+.fdnp__blank-notice {
+  font-size: 9.5px; color: #1e40af; font-style: italic;
+  background: #eff6ff; padding: 3px 10px; border-radius: 12px;
+  border: 1px dashed #93c5fd;
+}
+
+/* ── Table ──────────────────────────────────────────────────────────────── */
+.fdnp__table-wrap { overflow-x: auto; margin-bottom: 0.5rem; }
+.fdnp__table {
+  width: 100%; border-collapse: collapse;
+  font-size: 10.5px; border: 1.5px solid #cbd5e1;
+}
+
+.fdnp__th {
+  background: #f0f4ff; color: #1e3a8a;
+  padding: 6px 7px; text-align: center;
+  font-size: 9px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.05em; border: 1px solid #bfdbfe;
+  white-space: nowrap; line-height: 1.3;
+}
+.fdnp__th--n    { min-width: 26px; background: #f1f5f9; color: #374151; }
+.fdnp__th--name { text-align: left; min-width: 180px; background: #e8edf8; color: #0f172a; }
+.fdnp__th--mat  { min-width: 80px; background: #f1f5f9; color: #374151; }
+.fdnp__th--group { background: #e0f2fe; color: #0369a1; }
+.fdnp__th--note { min-width: 52px; background: #e0f2fe; color: #0369a1; }
+.fdnp__th--moyi { min-width: 46px; background: #dbeafe; color: #1d4ed8; }
+.fdnp__th--moy  { min-width: 56px; background: #ede9fe; color: #4c1d95; }
+.fdnp__th--total{ min-width: 50px; }
+.fdnp__th--rang { min-width: 42px; background: #e0e7ff; color: #3730a3; }
+.fdnp__th--appr { min-width: 110px; background: #f1f5f9; color: #374151; }
+.fdnp__th-sub   { font-size: 8px; font-weight: 600; opacity: 0.7; display: block; }
+
+.fdnp__td {
+  padding: 5px 7px; border: 1px solid #e5e7eb;
+  text-align: center; vertical-align: middle;
+}
+.fdnp__td--n    { font-size: 9.5px; color: #9ca3af; }
+.fdnp__td--name { text-align: left; padding-left: 10px; }
+.fdnp__td--mat  { font-size: 9.5px; color: #6b7280; }
+.fdnp__td--note { background: #f8fbff; }
+.fdnp__td--devoir { background: #f0f9ff; }
+.fdnp__td--compo  { background: #f0f9ff; }
+.fdnp__td--moyi   { background: #eef2ff; font-weight: 700; }
+.fdnp__td--moy    { background: #f5f3ff; font-weight: 900; font-size: 12px; }
+.fdnp__td--fail   { color: #dc2626 !important; background: #fff1f2 !important; }
+.fdnp__td--total  { font-weight: 700; }
+.fdnp__td--rang   { background: #f5f3ff; font-weight: 900; }
+.fdnp__td--appr   { font-style: italic; font-size: 10px; }
+
+.fdnp__student-name { font-weight: 700; font-size: 11px; }
+
+.fdnp__tr     { background: #fff; }
+.fdnp__tr--alt { background: #f9fafb; }
+
+/* blank cell — drawn as a light underline box for paper fill-in */
+.fdnp__blank-cell {
+  display: inline-block;
+  min-width: 38px; height: 14px;
+  border-bottom: 1.5px solid #d1d5db;
+  border-radius: 0;
+}
+
+/* Score pill */
+.fdnp__score {
+  display: inline-block; min-width: 40px;
+  padding: 2px 7px; border-radius: 20px; text-align: center;
+  font-size: 13px; font-weight: 900; border: 1.5px solid transparent;
+}
+.fdnp__score--high  { background: #dcfce7; color: #166534; border-color: #86efac; }
+.fdnp__score--mid   { background: #dbeafe; color: #1e3a8a; border-color: #93c5fd; }
+.fdnp__score--low   { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+.fdnp__score--empty { background: #f1f5f9; color: #9ca3af; border-color: #e2e8f0; border-style: dashed; font-size: 11px; }
+
+/* Appreciation colors */
+.fdnp__appr--good { color: #15803d !important; font-weight: 700 !important; }
+.fdnp__appr--pass { color: #0369a1 !important; }
+.fdnp__appr--fail { color: #dc2626 !important; }
+
+/* Totals footer */
+.fdnp__totals { background: #f0f4ff; border-top: 2px solid #bfdbfe; }
+.fdnp__totals-label {
+  text-align: right; font-weight: 800; font-size: 10px;
+  color: #1e3a8a; text-transform: uppercase; letter-spacing: 0.05em;
+  padding-right: 12px;
+}
+.fdnp__totals-val { font-weight: 900; font-size: 12px; }
+.fdnp__empty { text-align: center; color: #9ca3af; padding: 1.5rem; font-style: italic; }
+
+/* ── Stats band ─────────────────────────────────────────────────────────── */
+.fdnp__stats-band {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  margin-top: 10px; padding: 10px 0 6px;
+  border-top: 1.5px solid #e5e7eb;
+}
+.fdnp__stat {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 6px 12px; border-radius: 8px;
+  flex: 1; min-width: 80px; border: 1.5px solid #e5e7eb;
+}
+.fdnp__stat__label { font-size: 8px; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 700; font-family: Arial, sans-serif; white-space: nowrap; margin-bottom: 3px; }
+.fdnp__stat__val   { font-size: 17px; font-weight: 900; line-height: 1; font-family: Arial, sans-serif; }
+.fdnp__stat__val small { font-size: 10px; font-weight: 600; opacity: 0.7; }
+.fdnp__stat--neutral { background: #f8fafc; color: #374151; border-color: #e2e8f0; }
+.fdnp__stat--blue    { background: #eff6ff; color: #1e3a8a; border-color: #bfdbfe; }
+.fdnp__stat--green   { background: #f0fdf4; color: #166534; border-color: #86efac; }
+.fdnp__stat--red     { background: #fef2f2; color: #991b1b; border-color: #fca5a5; }
+.fdnp__stat--teal    { background: #f0fdfa; color: #0f766e; border-color: #5eead4; }
+
+/* ── Signatures ─────────────────────────────────────────────────────────── */
+.fdnp__sigs {
+  display: flex; justify-content: space-around; gap: 24px;
+  margin-top: 16px; padding-top: 12px;
+  border-top: 1px dashed #cbd5e1;
+}
+.fdnp__sig  { flex: 1; text-align: center; }
+.fdnp__sig__label { font-size: 9.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; color: #374151; }
+.fdnp__sig__line  { height: 52px; border-bottom: 1px solid #9ca3af; margin: 0 24px; }
+.fdnp__sig__name  { font-size: 9px; color: #9ca3af; margin-top: 5px; font-style: italic; }
+.fdnp__sig__img   { max-height: 52px; max-width: 180px; object-fit: contain; display: block; margin: 0 auto; }
+.fdnp__sig__stamp {
+  height: 52px; margin: 0 24px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  border: 1.5px solid #16a34a; border-radius: 6px; background: #f0fdf4;
+}
+.fdnp__sig__stamp-name { font-size: 11px; font-weight: 900; color: #15803d; }
+.fdnp__sig__stamp-date { font-size: 9px; color: #166534; font-style: italic; margin-top: 2px; }
+
+/* ── Footnote ───────────────────────────────────────────────────────────── */
+.fdnp__footnote {
+  margin-top: 10px; padding-top: 8px;
+  border-top: 1px solid #f1f5f9;
+  font-size: 8.5px; color: #9ca3af; font-style: italic;
+  text-align: center; font-family: Arial, sans-serif;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Print media
+   ══════════════════════════════════════════════════════════════════════════ */
+@media print {
+  .no-print { display: none !important; }
+
+  .fdnp__page { background: #fff; padding: 0; }
+
+  .fdnp__sheet {
+    margin: 0; max-width: 100%;
+    border: none; border-radius: 0; border-top: 3px solid #1e3a8a;
+    padding: 6mm 10mm 6mm;
+    box-shadow: none;
+    page-break-inside: avoid;
+  }
+
+  .fdnp__table    { font-size: 9.5px; border: 1px solid #cbd5e1; }
+  .fdnp__th       { font-size: 8px; padding: 4px 5px; }
+  .fdnp__td       { padding: 3.5px 5px; }
+  .fdnp__td--note, .fdnp__td--devoir, .fdnp__td--compo,
+  .fdnp__td--moyi, .fdnp__td--moy, .fdnp__td--rang { background: none !important; }
+
+  .fdnp__score    { font-size: 11px; padding: 1px 5px; }
+  .fdnp__student-name { font-size: 10px; }
+
+  .fdnp__stats-band { gap: 4px; padding-top: 6px; }
+  .fdnp__stat       { padding: 4px 8px; }
+  .fdnp__stat__val  { font-size: 14px; }
+  .fdnp__stat__label { font-size: 7px; }
+
+  .fdnp__school-side { border-right: 1px solid #cbd5e1; }
+}
+
+@page {
+  size: A4 landscape;
+  margin: 0;
+}
