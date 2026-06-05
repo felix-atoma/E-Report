@@ -1643,7 +1643,7 @@ export default function LandingPage() {
 
       {/* ─── FLOATING WHATSAPP ───────────────────────────────────────── */}
       <a
-        href="https://wa.me/22890196991"
+        href="https://wa.me/233244173068"
         target="_blank"
         rel="noopener noreferrer"
         className="lp-wa-float"
