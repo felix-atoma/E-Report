@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { flushSync } from 'react-dom';
 import { authService } from '../services/authService';
 
 export const AuthContext = createContext(null);
@@ -23,14 +24,16 @@ export function AuthProvider({ children }) {
     const res = await authService.login(email, password);
     localStorage.setItem('accessToken', res.data.accessToken);
     localStorage.setItem('refreshToken', res.data.refreshToken);
-    setUser(res.data.user);
+    // flushSync ensures user is in context before the caller's navigate() fires,
+    // preventing ProtectedRoute from seeing user=null and bouncing back to /login
+    flushSync(() => setUser(res.data.user));
     return res.data.user;
   }, []);
 
   const loginWithTokens = useCallback((data) => {
     localStorage.setItem('accessToken', data.accessToken);
     localStorage.setItem('refreshToken', data.refreshToken);
-    setUser(data.user);
+    flushSync(() => setUser(data.user));
   }, []);
 
   const logout = useCallback(async () => {
