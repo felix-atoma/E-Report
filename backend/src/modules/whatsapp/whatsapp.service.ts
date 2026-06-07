@@ -11,6 +11,7 @@ export interface WhatsAppBulletinPayload {
   mention: string;
   pdfUrl: string | null;
   institutionName: string;
+  language?: 'FR' | 'EN';
 }
 
 @Injectable()
@@ -63,9 +64,9 @@ export class WhatsAppService {
       return false;
     }
     const message =
-      `🏫 Nouvelle école inscrite sur NovaBulletin\n` +
+      `🏫 New school registered on NovaBulletin\n` +
       `📌 ${schoolName} — ${city}\n` +
-      `Connectez-vous au tableau de bord super-admin pour approuver.`;
+      `Log in to the super-admin dashboard to approve.`;
     return this.send(this.ownerWhatsapp, message);
   }
 
@@ -142,16 +143,29 @@ export class WhatsAppService {
   }
 
   private buildMessage(p: WhatsAppBulletinPayload): string {
-    const lines = [
-      `📋 *Bulletin disponible — ${p.termName} ${p.academicYear}*`,
-      `📚 Élève : ${p.studentName}`,
-      `📊 Moyenne : ${p.average}  |  Mention : ${p.mention}`,
-      `🏫 ${p.institutionName}`,
-    ];
+    const en = p.language === 'EN';
+    const lines = en
+      ? [
+          `📋 *Report card available — ${p.termName} ${p.academicYear}*`,
+          `📚 Student: ${p.studentName}`,
+          `📊 Average: ${p.average}  |  Grade: ${p.mention}`,
+          `🏫 ${p.institutionName}`,
+        ]
+      : [
+          `📋 *Bulletin disponible — ${p.termName} ${p.academicYear}*`,
+          `📚 Élève : ${p.studentName}`,
+          `📊 Moyenne : ${p.average}  |  Mention : ${p.mention}`,
+          `🏫 ${p.institutionName}`,
+        ];
+
     if (p.pdfUrl) {
-      lines.push(`\n📥 Télécharger : ${p.pdfUrl}`);
+      lines.push(en
+        ? `\n📥 Download: ${p.pdfUrl}`
+        : `\n📥 Télécharger : ${p.pdfUrl}`);
     } else {
-      lines.push('\n⚠️ Bulletin retenu — veuillez régulariser les frais scolaires.');
+      lines.push(en
+        ? '\n⚠️ Report card on hold — please settle outstanding school fees.'
+        : '\n⚠️ Bulletin retenu — veuillez régulariser les frais scolaires.');
     }
     return lines.join('\n');
   }

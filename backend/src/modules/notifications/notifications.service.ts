@@ -169,7 +169,7 @@ export class NotificationsService {
           },
         },
         recipient: {
-          select: { email: true, whatsappNumber: true, name: true },
+          select: { email: true, whatsappNumber: true, name: true, language: true },
         },
       },
       take: 50,
@@ -210,6 +210,7 @@ export class NotificationsService {
           success = await this.whatsapp.sendBulletinReady({
             toPhone: log.recipient.whatsappNumber, studentName, termName,
             academicYear, average, mention, pdfUrl, institutionName,
+            language: (log.recipient as any).language ?? 'FR',
           });
         }
       } catch (err) {
