@@ -506,9 +506,9 @@ function SuperAdminPage() {
                 <tr>
                   <th>École</th>
                   <th>Statut</th>
-                  <th>Élèves déclarés / Réels</th>
-                  <th>Inscription</th>
-                  <th>Plan</th>
+                  <th className="sa-col-students">Élèves déclarés / Réels</th>
+                  <th className="sa-col-date">Inscription</th>
+                  <th className="sa-col-plan">Plan</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -546,10 +546,10 @@ function SuperAdminPage() {
                         </td>
 
                         {/* Statut */}
-                        <td className="sa-cell"><StatusBadge status={inst.status} /></td>
+                        <td className="sa-cell" data-label="Statut"><StatusBadge status={inst.status} /></td>
 
                         {/* Élèves */}
-                        <td className="sa-cell sa-cell--students">
+                        <td className="sa-cell sa-cell--students sa-col-students" data-label="Élèves">
                           <span className={overQuota ? 'sa-overquota' : ''}>
                             {inst.declaredStudentCount ?? '—'} / {inst.actualStudentCount ?? 0}
                             {overQuota && <span className="sa-warn-icon" title="Dépassement de quota"> ⚠️</span>}
@@ -557,10 +557,10 @@ function SuperAdminPage() {
                         </td>
 
                         {/* Date */}
-                        <td className="sa-cell sa-cell--date">{fmtDate(inst.createdAt)}</td>
+                        <td className="sa-cell sa-cell--date sa-col-date" data-label="Inscription">{fmtDate(inst.createdAt)}</td>
 
                         {/* Plan */}
-                        <td className="sa-cell">
+                        <td className="sa-cell sa-col-plan" data-label="Plan">
                           {inst.subscriptionPlan
                             ? <span className="sa-plan">{inst.subscriptionPlan}</span>
                             : <span className="sa-no-plan">—</span>}
@@ -578,7 +578,7 @@ function SuperAdminPage() {
                             <button className="sa-action-btn sa-action-btn--remind"
                               onClick={() => doAction(inst.id, 'remind')} disabled={!!aL}
                               title="Envoyer un rappel de connexion par email">
-                              {aL === 'remind' ? '...' : 'Rappel connexion'}
+                              {aL === 'remind' ? '...' : 'Rappel'}
                             </button>
                           )}
                           {inst.status !== 'SUSPENDED' && inst.status !== 'REJECTED' && (
