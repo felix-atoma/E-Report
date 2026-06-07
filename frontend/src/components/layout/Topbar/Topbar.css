@@ -352,10 +352,15 @@
   .topbar { padding: 0 1rem; }
   .topbar__hamburger { display: flex; }
   .topbar__search { width: 180px; }
-  .topbar__user-info { display: none; }
+  /* Keep name visible, only hide the role label */
+  .topbar__user-role { display: none; }
 }
 
 @media (max-width: 768px) {
+  .topbar__search { width: 150px; }
+  /* Hide role + name text, show only avatar */
+  .topbar__user-info { display: none; }
+
   .topbar__dropdown--notif,
   .topbar__dropdown--user {
     position: fixed;
@@ -371,11 +376,30 @@
 
 @media (max-width: 640px) {
   .topbar { height: 56px; padding: 0 0.75rem; gap: 0.5rem; }
+
+  /* Hide search — not wired up, wastes space */
   .topbar__search { display: none; }
-  .topbar__title { font-size: 0.875rem; max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .topbar__brand-name { display: none; }
-  .topbar__brand-logo { width: 24px; height: 24px; }
+
+  /* Give the title all remaining space */
+  .topbar__left { flex: 1; min-width: 0; }
+  .topbar__title {
+    font-size: 0.875rem;
+    flex: 1;
+    min-width: 0;
+    max-width: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Keep brand name but smaller */
+  .topbar__brand-name { font-size: 0.78rem; }
+  .topbar__brand-logo { width: 22px; height: 22px; }
+
   .topbar__divider { display: none; }
   .topbar__icon-btn { width: 34px; height: 34px; }
   .topbar__user-btn { gap: 0; padding: 4px; }
+
+  .topbar__dropdown--notif,
+  .topbar__dropdown--user { top: 56px; }
 }
