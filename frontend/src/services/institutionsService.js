@@ -17,4 +17,6 @@ export const institutionsService = {
     api.patch(`/superadmin/institutions/${id}/notes`, { notes }),
   updateSubscriptionPlan: (id, plan) =>
     api.patch(`/superadmin/institutions/${id}/plan`, { plan }),
+  sendLoginReminder: (id) =>
+    api.post(`/superadmin/institutions/${id}/remind`),
 };

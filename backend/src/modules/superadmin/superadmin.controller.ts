@@ -93,4 +93,10 @@ export class SuperAdminController {
   updateSubscriptionPlan(@Param('id') id: string, @Body('plan') plan: string) {
     return this.superAdminService.updateSubscriptionPlan(id, plan);
   }
+
+  @Roles(Role.SUPERADMIN)
+  @Post('institutions/:id/remind')
+  sendLoginReminder(@Param('id') id: string) {
+    return this.superAdminService.sendLoginReminder(id);
+  }
 }

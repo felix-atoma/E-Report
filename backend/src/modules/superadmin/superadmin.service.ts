@@ -229,6 +229,28 @@ export class SuperAdminService {
     };
   }
 
+  // ─── SuperAdmin: Send login reminder to school admin ────────────────────────
+  async sendLoginReminder(id: string) {
+    const institution = await this.findInstitutionOrThrow(id);
+
+    const admins = await this.prisma.user.findMany({
+      where: { institutionId: id, role: Role.ADMIN as any },
+      select: { name: true, email: true },
+    });
+
+    if (!admins.length) {
+      throw new NotFoundException(`Aucun administrateur trouvé pour l'établissement ${id}`);
+    }
+
+    let sent = 0;
+    for (const admin of admins) {
+      const ok = await this.mail.sendLoginReminder(admin.name, admin.email, institution.name);
+      if (ok) sent++;
+    }
+
+    return { sent, total: admins.length };
+  }
+
   // ─── SuperAdmin: Update owner notes ─────────────────────────────────────────
   async updateNotes(id: string, notes: string) {
     await this.findInstitutionOrThrow(id);

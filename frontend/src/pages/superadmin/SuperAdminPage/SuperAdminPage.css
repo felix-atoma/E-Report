@@ -380,6 +380,9 @@
 .sa-action-btn--reject  { background: #fee2e2; color: #b91c1c; }
 .sa-action-btn--reject:hover:not(:disabled)  { background: #fecaca; }
 
+.sa-action-btn--remind  { background: #dbeafe; color: #1d4ed8; }
+.sa-action-btn--remind:hover:not(:disabled)  { background: #bfdbfe; }
+
 /* ── School profile expanded panel ──────────────────────────────────────────── */
 .sa-profile-row { background: #f8faff; border-bottom: 2px solid #bfdbfe; }
 

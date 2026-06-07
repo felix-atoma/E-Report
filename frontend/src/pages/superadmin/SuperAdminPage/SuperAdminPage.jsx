@@ -335,9 +335,14 @@ function SuperAdminPage() {
       if (action === 'approve') await institutionsService.approveInstitution(id);
       if (action === 'suspend') await institutionsService.suspendInstitution(id);
       if (action === 'reject')  await institutionsService.rejectInstitution(id);
+      if (action === 'remind') {
+        await institutionsService.sendLoginReminder(id);
+        toast.success('Rappel de connexion envoyé avec succès.');
+        return;
+      }
       await load();
     } catch {
-      alert('Action échouée. Réessayez.');
+      toast.error('Action échouée. Réessayez.');
     } finally {
       setActionLoading((prev) => ({ ...prev, [id]: null }));
     }
@@ -567,6 +572,13 @@ function SuperAdminPage() {
                             <button className="sa-action-btn sa-action-btn--approve"
                               onClick={() => doAction(inst.id, 'approve')} disabled={!!aL}>
                               {aL === 'approve' ? '...' : 'Approuver'}
+                            </button>
+                          )}
+                          {inst.status === 'ACTIVE' && (
+                            <button className="sa-action-btn sa-action-btn--remind"
+                              onClick={() => doAction(inst.id, 'remind')} disabled={!!aL}
+                              title="Envoyer un rappel de connexion par email">
+                              {aL === 'remind' ? '...' : 'Rappel connexion'}
                             </button>
                           )}
                           {inst.status !== 'SUSPENDED' && inst.status !== 'REJECTED' && (

@@ -178,35 +178,70 @@ export class MailService {
     adminEmail: string,
     schoolName: string,
   ): Promise<boolean> {
-    const subject = `✅ Votre école a été approuvée — NovaBulletin`;
+    return this.sendLoginReminder(adminName, adminEmail, schoolName, true);
+  }
+
+  async sendLoginReminder(
+    adminName: string,
+    adminEmail: string,
+    schoolName: string,
+    isFirstApproval = false,
+  ): Promise<boolean> {
+    const frontendUrl = this.config.get('FRONTEND_URL', 'https://e-report-frontend.vercel.app');
+    const loginUrl = `${frontendUrl}/login`;
+    const subject = isFirstApproval
+      ? `✅ Votre école a été approuvée — NovaBulletin`
+      : `🔔 Rappel de connexion — NovaBulletin`;
+    const headline = isFirstApproval ? 'Compte activé !' : 'Rappel : accédez à votre tableau de bord';
+    const intro = isFirstApproval
+      ? `Votre demande d'inscription pour l'établissement <strong>${schoolName}</strong> a été <strong style="color:#15803d;">approuvée</strong>. Vous pouvez maintenant vous connecter.`
+      : `Votre établissement <strong>${schoolName}</strong> est actif sur NovaBulletin. Connectez-vous pour configurer vos classes, enseignants et bulletins.`;
+
     const html = `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;">
         <div style="background:#15803d;color:#fff;padding:16px 20px;">
-          <h2 style="margin:0;">Compte activé !</h2>
+          <h2 style="margin:0;">${headline}</h2>
           <p style="margin:4px 0 0;opacity:0.85;">NovaBulletin — Gestion scolaire</p>
         </div>
         <div style="padding:20px;">
           <p>Bonjour <strong>${adminName}</strong>,</p>
-          <p>Votre demande d'inscription pour l'établissement <strong>${schoolName}</strong> a été <strong style="color:#15803d;">approuvée</strong>.</p>
-          <p>Vous pouvez maintenant vous connecter à votre espace administrateur avec votre email et votre mot de passe.</p>
+          <p>${intro}</p>
+          <table style="width:100%;border-collapse:collapse;margin:16px 0;">
+            <tr>
+              <td style="padding:8px;background:#f9fafb;border:1px solid #e5e7eb;font-weight:bold;">Email de connexion</td>
+              <td style="padding:8px;border:1px solid #e5e7eb;">${adminEmail}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px;background:#f9fafb;border:1px solid #e5e7eb;font-weight:bold;">Mot de passe</td>
+              <td style="padding:8px;border:1px solid #e5e7eb;">Celui choisi lors de votre inscription</td>
+            </tr>
+          </table>
+          <div style="text-align:center;margin:24px 0;">
+            <a href="${loginUrl}" style="display:inline-block;background:#15803d;color:#fff;padding:12px 32px;border-radius:6px;text-decoration:none;font-weight:700;font-size:15px;">
+              Accéder au tableau de bord →
+            </a>
+          </div>
+          <p style="color:#6b7280;font-size:13px;">
+            Si vous avez oublié votre mot de passe, utilisez le lien <em>Mot de passe oublié</em> sur la page de connexion.
+          </p>
           <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0;" />
           <p style="color:#6b7280;font-size:11px;">NovaBulletin — Notification automatique</p>
         </div>
       </div>`;
 
-    this.logger.log(`Sending approval email to admin: ${adminEmail}`);
+    this.logger.log(`Sending ${isFirstApproval ? 'approval' : 'reminder'} email to: ${adminEmail}`);
     try {
       if (this.provider === 'sendgrid') {
         await sgMail.send({ to: adminEmail, from: this.from, subject, html });
       } else if (this.provider === 'smtp' && this.smtpTransport) {
         await this.smtpTransport.sendMail({ from: this.fromSmtp, to: adminEmail, subject, html });
       } else {
-        this.logger.log(`[DEV EMAIL] Approval email → ${adminEmail} (${schoolName})`);
+        this.logger.log(`[DEV EMAIL] ${isFirstApproval ? 'Approval' : 'Reminder'} → ${adminEmail} (${schoolName}) | Login: ${loginUrl}`);
         return true;
       }
       return true;
     } catch (err) {
-      this.logger.error(`Failed to send approval email to ${adminEmail}`, err);
+      this.logger.error(`Failed to send email to ${adminEmail}`, err);
       return false;
     }
   }
