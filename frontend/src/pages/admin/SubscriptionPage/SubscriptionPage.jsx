@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { subscriptionService } from '../../../services/subscriptionService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
@@ -12,14 +11,51 @@ import Select from '../../../components/common/Select/Select';
 import Loading from '../../../components/common/Loading/Loading';
 import './SubscriptionPage.css';
 
-const STATUS_ICON  = { TRIAL: '🕐', ACTIVE: '✅', EXPIRED: '🔴', SUSPENDED: '⛔' };
-const STATUS_LABEL = { TRIAL: "Période d'essai", ACTIVE: 'Actif', EXPIRED: 'Expiré', SUSPENDED: 'Suspendu' };
+// ── Static tier definitions (always shown, API data highlights current) ────────
+const TIERS = [
+  {
+    key:       'STARTER',
+    label:     'Starter',
+    range:     'Moins de 50 élèves',
+    rangeEN:   '< 50 students',
+    color:     '#6366f1',
+    monthly:   5000,
+    annual:    50000,
+  },
+  {
+    key:       'BASIC',
+    label:     'Basic',
+    range:     'De 50 à 99 élèves',
+    rangeEN:   '50 – 99 students',
+    color:     '#0ea5e9',
+    monthly:   10000,
+    annual:    100000,
+  },
+  {
+    key:       'PRO',
+    label:     'Pro',
+    range:     'De 100 à 199 élèves',
+    rangeEN:   '100 – 199 students',
+    color:     '#f59e0b',
+    monthly:   20000,
+    annual:    200000,
+  },
+  {
+    key:       'ENTERPRISE',
+    label:     'Enterprise',
+    range:     '200 élèves et plus',
+    rangeEN:   '200+ students',
+    color:     '#8b5cf6',
+    monthly:   35000,
+    annual:    350000,
+  },
+];
 
-const TIER_COLOR = {
-  STARTER:    '#6366f1',
-  BASIC:      '#0ea5e9',
-  PRO:        '#f59e0b',
-  ENTERPRISE: '#8b5cf6',
+const STATUS_META = {
+  TRIAL:     { icon: '🕐', label: "Période d'essai",  cls: 'trial' },
+  ACTIVE:    { icon: '✅', label: 'Actif',             cls: 'active' },
+  EXPIRED:   { icon: '🔴', label: 'Expiré',            cls: 'expired' },
+  SUSPENDED: { icon: '⛔', label: 'Suspendu',          cls: 'suspended' },
 };
 
 const OPERATORS = [
@@ -28,83 +64,19 @@ const OPERATORS = [
   { value: 'MOOV',   label: 'Moov Money' },
 ];
 
-function StatusCard({ data, billingPeriod }) {
-  const locale   = navigator.language || 'fr-FR';
-  const expiry   = data.expiry ?? data.trialEndsAt;
-  const price    = billingPeriod === 'ANNUAL' ? data.currentPrice?.annual : data.currentPrice?.monthly;
-  const statusClass = `sub-status-card sub-status-card--${(data.status ?? 'trial').toLowerCase()}`;
-
-  return (
-    <div className={statusClass}>
-      <div className="sub-status-left">
-        <span className="sub-status-icon">{STATUS_ICON[data.status] ?? '🕐'}</span>
-        <div>
-          <p className="sub-status-label">Statut de l'abonnement</p>
-          <p className="sub-status-value">{STATUS_LABEL[data.status] ?? data.status}</p>
-          {expiry && (
-            <p className="sub-status-expiry">
-              {data.status === 'TRIAL' ? "Essai jusqu'au" : 'Valide jusqu\'au'} :{' '}
-              <strong>{new Date(expiry).toLocaleDateString(locale, { day: '2-digit', month: 'long', year: 'numeric' })}</strong>
-              {data.daysLeft != null && ` (${data.daysLeft} j restants)`}
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* Tier badge + price */}
-      <div className="sub-status-right">
-        {data.tier && (
-          <span className="sub-tier-badge" style={{ background: TIER_COLOR[data.tier] }}>
-            {data.tier}
-          </span>
-        )}
-        <p className="sub-status-student-count">{data.studentCount ?? 0} élève(s)</p>
-        {price != null && (
-          <p className="sub-status-price">
-            {price.toLocaleString(locale)} <span>FCFA/{billingPeriod === 'ANNUAL' ? 'an' : 'mois'}</span>
-          </p>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function TierTable({ pricing, currentTier }) {
-  const locale = navigator.language || 'fr-FR';
-  const tiers  = ['STARTER', 'BASIC', 'PRO', 'ENTERPRISE'];
-  return (
-    <div className="sub-tier-table-wrap">
-      {tiers.map((t) => {
-        const p = pricing?.[t];
-        const active = t === currentTier;
-        return (
-          <div key={t} className={`sub-tier-row${active ? ' sub-tier-row--active' : ''}`}>
-            <span className="sub-tier-row-badge" style={{ background: TIER_COLOR[t] }}>{t}</span>
-            <span className="sub-tier-row-threshold">{p?.label ?? ''}</span>
-            <span className="sub-tier-row-price">
-              {p ? `${p.monthly.toLocaleString(locale)} / ${p.annual.toLocaleString(locale)} FCFA` : '—'}
-            </span>
-            {active && <span className="sub-tier-row-current">Votre tier</span>}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
 export default function SubscriptionPage() {
-  const { t } = useTranslation();
   const qc     = useQueryClient();
   const locale = navigator.language || 'fr-FR';
 
-  const [billingPeriod, setBillingPeriod] = useState('MONTHLY'); // 'MONTHLY' | 'ANNUAL'
-  const [payMethod, setPayMethod]         = useState(null);      // 'MOMO' | 'NOTCHPAY'
-  const [momoForm, setMomoForm]           = useState({ momoPhone: '', momoReference: '', momoOperator: 'TMONEY' });
-  const [momoErrors, setMomoErrors]       = useState({});
+  const [billing, setBilling]       = useState('MONTHLY'); // 'MONTHLY' | 'ANNUAL'
+  const [payMethod, setPayMethod]   = useState(null);      // 'MOMO' | 'NOTCHPAY'
+  const [momoForm, setMomoForm]     = useState({ momoPhone: '', momoReference: '', momoOperator: 'TMONEY' });
+  const [momoErrors, setMomoErrors] = useState({});
 
-  const { data: statusData, isLoading } = useQuery({
+  const { data: statusData, isLoading, isError } = useQuery({
     queryKey: ['subscription-status'],
     queryFn:  () => subscriptionService.getStatus().then((r) => r.data),
+    retry: 2,
   });
 
   const { data: history = [] } = useQuery({
@@ -113,13 +85,13 @@ export default function SubscriptionPage() {
   });
 
   const notchpayMutation = useMutation({
-    mutationFn: () => subscriptionService.initiateNotchpay({ plan: billingPeriod }),
+    mutationFn: () => subscriptionService.initiateNotchpay({ plan: billing }),
     onSuccess:  (res) => { window.location.href = res.data.url; },
     onError:    (err) => toast.error(err?.response?.data?.message ?? 'Erreur de paiement'),
   });
 
   const momoMutation = useMutation({
-    mutationFn: () => subscriptionService.submitMomo({ plan: billingPeriod, ...momoForm }),
+    mutationFn: () => subscriptionService.submitMomo({ plan: billing, ...momoForm }),
     onSuccess: () => {
       toast.success('Paiement soumis ! Vérification en cours dans les 24h.');
       setPayMethod(null);
@@ -142,65 +114,166 @@ export default function SubscriptionPage() {
     momoMutation.mutate();
   }
 
-  if (isLoading) return <AppShell title="Abonnement"><Loading /></AppShell>;
+  // Determine current tier — from API if available, otherwise null
+  const currentTier     = statusData?.tier ?? null;
+  const studentCount    = statusData?.studentCount ?? null;
+  const status          = statusData?.status ?? null;
+  const statusMeta      = STATUS_META[status] ?? null;
+  const momoInfo        = statusData?.momoInfo ?? { number: '', operator: 'TMoney' };
 
-  const momoInfo    = statusData?.momoInfo    ?? { number: '', operator: 'TMoney' };
-  const currentPrice = billingPeriod === 'ANNUAL'
-    ? (statusData?.currentPrice?.annual  ?? 0)
-    : (statusData?.currentPrice?.monthly ?? 0);
+  // Use API pricing if available, otherwise fall back to static TIERS
+  const activeTierDef   = TIERS.find((t) => t.key === currentTier);
+  const currentPrice    = billing === 'ANNUAL'
+    ? (statusData?.currentPrice?.annual  ?? activeTierDef?.annual  ?? 0)
+    : (statusData?.currentPrice?.monthly ?? activeTierDef?.monthly ?? 0);
 
   return (
     <AppShell title="Abonnement">
       <PageHeader
-        title="Mon abonnement"
-        subtitle="Gérez votre plan NovaBulletin"
+        title="Mon abonnement NovaBulletin"
+        subtitle="Tarification automatique selon le nombre d'élèves inscrits"
       />
 
       <div className="sub-page">
 
-        {/* Current status + tier */}
-        {statusData && <StatusCard data={statusData} billingPeriod={billingPeriod} />}
-
-        {/* Tier breakdown */}
-        {statusData?.pricing && (
-          <Card>
-            <h3 style={{ margin: '0 0 0.75rem', fontSize: '1rem' }}>Tarifs par nombre d'élèves</h3>
-            <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
-              Votre tier est détecté automatiquement selon le nombre d'élèves inscrits dans votre établissement.
-            </p>
-            <TierTable pricing={statusData.pricing} currentTier={statusData.tier} />
-          </Card>
+        {/* ── Status banner ──────────────────────────────────────────────────── */}
+        {isLoading && (
+          <div className="sub-status-card sub-status-card--trial" style={{ justifyContent: 'center' }}>
+            <Loading />
+          </div>
         )}
 
-        {/* Billing period toggle */}
+        {isError && (
+          <div className="sub-status-card sub-status-card--expired">
+            <div className="sub-status-left">
+              <span className="sub-status-icon">⚠️</span>
+              <div>
+                <p className="sub-status-label">Impossible de charger le statut</p>
+                <p className="sub-status-value">Erreur de connexion</p>
+                <p className="sub-status-expiry">Vérifiez votre connexion et rafraîchissez la page.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {statusMeta && (
+          <div className={`sub-status-card sub-status-card--${statusMeta.cls}`}>
+            <div className="sub-status-left">
+              <span className="sub-status-icon">{statusMeta.icon}</span>
+              <div>
+                <p className="sub-status-label">Statut de l'abonnement</p>
+                <p className="sub-status-value">{statusMeta.label}</p>
+                {(statusData.expiry || statusData.trialEndsAt) && (
+                  <p className="sub-status-expiry">
+                    {status === 'TRIAL' ? "Essai jusqu'au" : 'Valide jusqu\'au'} :{' '}
+                    <strong>
+                      {new Date(statusData.expiry ?? statusData.trialEndsAt).toLocaleDateString(locale, {
+                        day: '2-digit', month: 'long', year: 'numeric',
+                      })}
+                    </strong>
+                    {statusData.daysLeft != null && ` (${statusData.daysLeft} j restants)`}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="sub-status-right">
+              {currentTier && activeTierDef && (
+                <>
+                  <span className="sub-tier-badge" style={{ background: activeTierDef.color }}>
+                    {activeTierDef.label}
+                  </span>
+                  <p className="sub-status-student-count">
+                    {studentCount} élève{studentCount !== 1 ? 's' : ''} détecté{studentCount !== 1 ? 's' : ''}
+                  </p>
+                </>
+              )}
+              {currentPrice > 0 && (
+                <p className="sub-status-price">
+                  {currentPrice.toLocaleString(locale)}{' '}
+                  <span>FCFA/{billing === 'ANNUAL' ? 'an' : 'mois'}</span>
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ── Tier cards ─────────────────────────────────────────────────────── */}
         <Card>
-          <h3 style={{ margin: '0 0 1rem', fontSize: '1rem' }}>Période de facturation</h3>
+          <h3 className="sub-section-title">Tarification par nombre d'élèves</h3>
+          <p className="sub-section-sub">
+            Votre tier est détecté <strong>automatiquement</strong> à chaque paiement selon le nombre d'élèves inscrits dans votre établissement.
+          </p>
+
+          <div className="sub-tier-grid">
+            {TIERS.map((tier) => {
+              const isCurrent = tier.key === currentTier;
+              const price     = billing === 'ANNUAL' ? tier.annual : tier.monthly;
+              return (
+                <div
+                  key={tier.key}
+                  className={`sub-tier-card${isCurrent ? ' sub-tier-card--current' : ''}`}
+                  style={{ '--tier-color': tier.color }}
+                >
+                  {isCurrent && (
+                    <div className="sub-tier-card__current-label">Votre tier actuel</div>
+                  )}
+                  <div className="sub-tier-card__top">
+                    <span className="sub-tier-card__name">{tier.label}</span>
+                    <span className="sub-tier-card__range">{tier.range}</span>
+                  </div>
+                  <div className="sub-tier-card__price">
+                    <span className="sub-tier-card__amount">{price.toLocaleString(locale)}</span>
+                    <span className="sub-tier-card__currency">FCFA/{billing === 'ANNUAL' ? 'an' : 'mois'}</span>
+                  </div>
+                  {billing === 'ANNUAL' && (
+                    <p className="sub-tier-card__saving">
+                      soit {Math.round(tier.annual / 12).toLocaleString(locale)} FCFA/mois · 2 mois offerts
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+
+        {/* ── Billing period toggle ──────────────────────────────────────────── */}
+        <Card>
+          <h3 className="sub-section-title">Période de facturation</h3>
           <div className="sub-billing-toggle">
             <button
-              className={`sub-billing-btn${billingPeriod === 'MONTHLY' ? ' sub-billing-btn--active' : ''}`}
-              onClick={() => setBillingPeriod('MONTHLY')}
+              className={`sub-billing-btn${billing === 'MONTHLY' ? ' sub-billing-btn--active' : ''}`}
+              onClick={() => setBilling('MONTHLY')}
             >
               <span className="sub-billing-label">Mensuel</span>
-              <span className="sub-billing-price">
-                {(statusData?.currentPrice?.monthly ?? 0).toLocaleString(locale)} FCFA/mois
-              </span>
+              <span className="sub-billing-desc">Renouvelé chaque mois</span>
             </button>
             <button
-              className={`sub-billing-btn${billingPeriod === 'ANNUAL' ? ' sub-billing-btn--active' : ''}`}
-              onClick={() => setBillingPeriod('ANNUAL')}
+              className={`sub-billing-btn${billing === 'ANNUAL' ? ' sub-billing-btn--active' : ''}`}
+              onClick={() => setBilling('ANNUAL')}
             >
               <span className="sub-billing-badge">2 mois offerts</span>
               <span className="sub-billing-label">Annuel</span>
-              <span className="sub-billing-price">
-                {(statusData?.currentPrice?.annual ?? 0).toLocaleString(locale)} FCFA/an
-              </span>
+              <span className="sub-billing-desc">Renouvelé chaque année</span>
             </button>
           </div>
         </Card>
 
-        {/* Payment method */}
+        {/* ── Payment methods ────────────────────────────────────────────────── */}
         <Card>
-          <h3 style={{ margin: '0 0 1rem', fontSize: '1rem' }}>Mode de paiement</h3>
+          <h3 className="sub-section-title">Mode de paiement</h3>
+          {currentTier ? (
+            <p className="sub-section-sub">
+              Vous serez facturé{' '}
+              <strong>{currentPrice.toLocaleString(locale)} FCFA</strong>
+              {billing === 'ANNUAL' ? ' / an' : ' / mois'} (tier{' '}
+              <strong>{activeTierDef?.label}</strong> — {activeTierDef?.range}).
+            </p>
+          ) : (
+            <p className="sub-section-sub">
+              Le montant exact sera calculé automatiquement selon votre nombre d'élèves au moment du paiement.
+            </p>
+          )}
+
           <div className="sub-methods">
             {/* Mobile Money */}
             <button
@@ -210,7 +283,7 @@ export default function SubscriptionPage() {
               <span className="sub-method-icon">📱</span>
               <div>
                 <div className="sub-method-label">Mobile Money</div>
-                <div className="sub-method-desc">TMoney, Flooz, Moov — paiement direct</div>
+                <div className="sub-method-desc">TMoney · Flooz · Moov</div>
               </div>
             </button>
 
@@ -219,14 +292,14 @@ export default function SubscriptionPage() {
               className={`sub-method-btn${payMethod === 'NOTCHPAY' ? ' sub-method-btn--active' : ''}`}
               onClick={() => setPayMethod(payMethod === 'NOTCHPAY' ? null : 'NOTCHPAY')}
             >
-              <span className="sub-method-icon">💳</span>
+              <span className="sub-method-icon">🌐</span>
               <div>
                 <div className="sub-method-label">Notchpay</div>
-                <div className="sub-method-desc">Paiement sécurisé en ligne (TMoney, Flooz, carte)</div>
+                <div className="sub-method-desc">Paiement sécurisé en ligne</div>
               </div>
             </button>
 
-            {/* Mastercard — coming soon */}
+            {/* Mastercard — future */}
             <button className="sub-method-btn sub-method-btn--disabled" disabled>
               <span className="sub-method-icon">💳</span>
               <div>
@@ -234,31 +307,31 @@ export default function SubscriptionPage() {
                   Mastercard / Visa
                   <span className="sub-method-soon">Bientôt</span>
                 </div>
-                <div className="sub-method-desc">Paiement par carte bancaire internationale</div>
+                <div className="sub-method-desc">Carte bancaire internationale</div>
               </div>
             </button>
           </div>
 
           {/* MoMo flow */}
           {payMethod === 'MOMO' && (
-            <div style={{ marginTop: '1.25rem' }}>
+            <div className="sub-payment-panel">
               <div className="sub-momo-box">
-                <p style={{ margin: '0 0 8px', fontWeight: 600, fontSize: '0.85rem' }}>
-                  Envoyez {currentPrice.toLocaleString(locale)} FCFA au :
+                <p className="sub-momo-title">
+                  Envoyez <strong>{currentPrice > 0 ? `${currentPrice.toLocaleString(locale)} FCFA` : 'le montant correspondant à votre tier'}</strong> au numéro suivant :
                 </p>
                 <p className="sub-momo-number">{momoInfo.number || '+228 XX XX XX XX'}</p>
-                <p className="sub-momo-operator">Opérateur : {momoInfo.operator}</p>
-                <ul className="sub-momo-steps">
-                  <li>Envoyez le montant exact au numéro ci-dessus</li>
-                  <li>Notez la référence de transaction affichée sur votre téléphone</li>
-                  <li>Remplissez le formulaire ci-dessous pour confirmer votre paiement</li>
-                </ul>
+                <p className="sub-momo-operator">Opérateur : <strong>{momoInfo.operator}</strong></p>
+                <ol className="sub-momo-steps">
+                  <li>Envoyez le montant exact au numéro ci-dessus via votre opérateur</li>
+                  <li>Notez la <strong>référence de transaction</strong> qui apparaît sur votre téléphone</li>
+                  <li>Remplissez le formulaire ci-dessous — nous vérifierons et activerons sous 24h</li>
+                </ol>
               </div>
 
-              <div className="sub-form" style={{ marginTop: '1rem' }}>
+              <div className="sub-form">
                 <Input
                   id="momo-phone"
-                  label="Votre numéro MoMo (utilisé pour le paiement)"
+                  label="Votre numéro Mobile Money (utilisé pour le paiement)"
                   placeholder="+228 XX XX XX XX"
                   value={momoForm.momoPhone}
                   error={momoErrors.momoPhone}
@@ -273,8 +346,8 @@ export default function SubscriptionPage() {
                 />
                 <Input
                   id="momo-ref"
-                  label="Référence de transaction (affiché sur votre téléphone)"
-                  placeholder="ex: TG2024XXXX"
+                  label="Référence de transaction (affichée sur votre téléphone après paiement)"
+                  placeholder="ex : TG2024XXXXXXXXXXXX"
                   value={momoForm.momoReference}
                   error={momoErrors.momoReference}
                   onChange={(e) => setMomoForm((f) => ({ ...f, momoReference: e.target.value }))}
@@ -284,7 +357,7 @@ export default function SubscriptionPage() {
                   disabled={momoMutation.isPending}
                   style={{ alignSelf: 'flex-start' }}
                 >
-                  {momoMutation.isPending ? 'Envoi…' : 'Confirmer mon paiement'}
+                  {momoMutation.isPending ? 'Envoi en cours…' : 'Confirmer mon paiement MoMo'}
                 </Button>
               </div>
             </div>
@@ -292,28 +365,30 @@ export default function SubscriptionPage() {
 
           {/* Notchpay flow */}
           {payMethod === 'NOTCHPAY' && (
-            <div style={{ marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div className="sub-payment-panel">
               <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
-                Vous serez redirigé vers la plateforme sécurisée Notchpay pour payer via TMoney, Flooz ou carte bancaire.
-                Votre abonnement sera activé automatiquement après le paiement.
+                Vous serez redirigé vers Notchpay pour payer via TMoney, Flooz ou carte bancaire.
+                L'abonnement sera activé <strong>automatiquement</strong> après confirmation du paiement.
               </p>
               <Button
                 onClick={() => notchpayMutation.mutate()}
                 disabled={notchpayMutation.isPending}
-                style={{ alignSelf: 'flex-start' }}
+                style={{ alignSelf: 'flex-start', marginTop: '1rem' }}
               >
                 {notchpayMutation.isPending
                   ? 'Redirection…'
-                  : `Payer ${currentPrice.toLocaleString(locale)} FCFA via Notchpay`}
+                  : currentPrice > 0
+                    ? `Payer ${currentPrice.toLocaleString(locale)} FCFA via Notchpay`
+                    : 'Payer via Notchpay'}
               </Button>
             </div>
           )}
         </Card>
 
-        {/* Payment history */}
+        {/* ── Payment history ────────────────────────────────────────────────── */}
         {history.length > 0 && (
           <Card>
-            <h3 style={{ margin: '0 0 1rem', fontSize: '1rem' }}>Historique des paiements</h3>
+            <h3 className="sub-section-title">Historique des paiements</h3>
             <div style={{ overflowX: 'auto' }}>
               <table className="sub-history-table">
                 <thead>
@@ -328,32 +403,35 @@ export default function SubscriptionPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {history.map((p) => (
-                    <tr key={p.id}>
-                      <td>{new Date(p.createdAt).toLocaleDateString(locale)}</td>
-                      <td>
-                        {p.tier ? (
-                          <span className="sub-tier-pill" style={{ background: TIER_COLOR[p.tier] ?? '#6b7280' }}>
-                            {p.tier}
+                  {history.map((p) => {
+                    const tierDef = TIERS.find((t) => t.key === p.tier);
+                    return (
+                      <tr key={p.id}>
+                        <td>{new Date(p.createdAt).toLocaleDateString(locale)}</td>
+                        <td>
+                          {tierDef ? (
+                            <span className="sub-tier-pill" style={{ background: tierDef.color }}>
+                              {tierDef.label}
+                            </span>
+                          ) : '—'}
+                        </td>
+                        <td>{p.plan === 'ANNUAL' ? 'Annuel' : 'Mensuel'}</td>
+                        <td>{Number(p.amount).toLocaleString(locale)} FCFA</td>
+                        <td>{p.method === 'MOMO_MANUAL' ? 'Mobile Money' : 'Notchpay'}</td>
+                        <td style={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>
+                          {p.momoReference ?? p.notchpayRef ?? '—'}
+                        </td>
+                        <td>
+                          <span className={`sub-status-pill sub-status-pill--${p.status}`}>
+                            {p.status === 'PENDING_REVIEW' ? 'En vérification'
+                              : p.status === 'APPROVED'    ? 'Approuvé'
+                              : p.status === 'REJECTED'    ? 'Rejeté'
+                              : 'Échoué'}
                           </span>
-                        ) : '—'}
-                      </td>
-                      <td>{p.plan === 'ANNUAL' ? 'Annuel' : 'Mensuel'}</td>
-                      <td>{Number(p.amount).toLocaleString(locale)} FCFA</td>
-                      <td>{p.method === 'MOMO_MANUAL' ? 'Mobile Money' : 'Notchpay'}</td>
-                      <td style={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>
-                        {p.momoReference ?? p.notchpayRef ?? '—'}
-                      </td>
-                      <td>
-                        <span className={`sub-status-pill sub-status-pill--${p.status}`}>
-                          {p.status === 'PENDING_REVIEW' ? 'En vérification'
-                            : p.status === 'APPROVED'    ? 'Approuvé'
-                            : p.status === 'REJECTED'    ? 'Rejeté'
-                            : 'Échoué'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
