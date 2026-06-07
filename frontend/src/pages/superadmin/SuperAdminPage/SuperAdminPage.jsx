@@ -29,9 +29,11 @@ function StatCard({ label, value, cls, sub }) {
   );
 }
 
+const locale = navigator.language || 'fr-FR';
+
 function fmtDate(iso) {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('fr-FR', {
+  return new Date(iso).toLocaleDateString(locale, {
     day: '2-digit', month: 'short', year: 'numeric',
   });
 }
@@ -40,9 +42,9 @@ function fmtDateTime(iso) {
   if (!iso) return '—';
   const d = new Date(iso);
   return (
-    d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) +
+    d.toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' }) +
     ' · ' +
-    d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+    d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
   );
 }
 
