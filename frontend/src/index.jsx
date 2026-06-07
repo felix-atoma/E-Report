@@ -6,6 +6,18 @@ import ErrorBoundary from './components/common/ErrorBoundary/ErrorBoundary';
 import './locales/i18n';
 import './styles/main.scss';
 
+// In dev mode, unregister any stale service worker left from a production build.
+// A production SW intercepts requests and routes them to the production API,
+// breaking local development. Reload once after unregistering so the clean
+// session takes effect immediately.
+if (import.meta.env.DEV && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then((regs) => {
+    if (regs.length > 0) {
+      Promise.all(regs.map((r) => r.unregister())).then(() => window.location.reload());
+    }
+  });
+}
+
 Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN || "https://e23f50286f8b8847ccdb82a0c495fe7c@o4511477173518336.ingest.de.sentry.io/4511477289975888",
   environment: import.meta.env.MODE,

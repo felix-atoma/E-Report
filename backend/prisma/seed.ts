@@ -1,7 +1,9 @@
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
-const basePrisma = new PrismaClient();
+const basePrisma = new PrismaClient({
+  datasources: { db: { url: process.env.DIRECT_URL ?? process.env.DATABASE_URL } },
+});
 
 // Auto-reconnect on P1001/P1017 (Supabase drops idle connections)
 const prisma = basePrisma.$extends({
@@ -11,7 +13,8 @@ const prisma = basePrisma.$extends({
         try {
           return await query(args);
         } catch (e: any) {
-          if ((e.code === 'P1001' || e.code === 'P1017') && attempt < 4) {
+          const code = e.code ?? e.errorCode;
+          if ((code === 'P1001' || code === 'P1017') && attempt < 4) {
             const wait = 1500 * (attempt + 1);
             console.log(`  ⟳ Connection lost (${e.code}), retrying in ${wait}ms…`);
             await basePrisma.$disconnect();
@@ -86,6 +89,7 @@ function makeDefs(code: string, baseYr: number) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 async function main() {
   console.log('🌱 Seeding database…');
+  try { await basePrisma.$executeRawUnsafe('SET statement_timeout = 0'); } catch (_) {}
 
   // ── 1. Institution — update existing or create from scratch ──────────────
   const instData = {
@@ -224,16 +228,23 @@ async function main() {
   const AY = '2024-2025';
 
   async function createStudents(defs: ReturnType<typeof makeDefs>, classId: string) {
-    const result: any[] = [];
     await prisma.$disconnect();
     await prisma.$connect();
-    for (const d of defs) {
-      const u = await prisma.user.create({ data: { email: d.email, password: studentPw, name: d.name, role: 'STUDENT', institutionId: inst.id } });
-      const s = await prisma.student.create({ data: { admissionNumber: d.admission, dateOfBirth: new Date(d.dob), sex: d.sex, institutionId: inst.id, userId: u.id, parentId: parents[d.pi].id } });
-      await prisma.classStudent.create({ data: { classId, studentId: s.id, academicYear: AY } });
-      result.push(s);
-    }
-    return result;
+    try { await basePrisma.$executeRawUnsafe('SET statement_timeout = 0'); } catch (_) {}
+
+    const users = await (prisma.user as any).createManyAndReturn({
+      data: defs.map(d => ({ email: d.email, password: studentPw, name: d.name, role: 'STUDENT', institutionId: inst.id })),
+    });
+
+    const students = await (prisma.student as any).createManyAndReturn({
+      data: defs.map((d, i) => ({ admissionNumber: d.admission, dateOfBirth: new Date(d.dob), sex: d.sex, institutionId: inst.id, userId: users[i].id, parentId: parents[d.pi].id })),
+    });
+
+    await prisma.classStudent.createMany({
+      data: students.map((s: any) => ({ classId, studentId: s.id, academicYear: AY })),
+    });
+
+    return students;
   }
 
   const s6A   = await createStudents(makeDefs('6A',  2012), class6A.id);
@@ -257,19 +268,25 @@ async function main() {
     'inscr':     await prisma.fee.upsert({ where: { id: 'seed-fee-inscr'  }, update: {}, create: { id: 'seed-fee-inscr',  name: "Inscription 2024-2025",   feeType: 'REGISTRATION', amount: 15000, currency: 'XOF', academicYear: AY, institutionId: inst.id } }),
   };
 
+  const studentFeeRows: any[] = [];
+  const paymentRows: any[] = [];
   let recSeq = 1;
-  async function assignFee(studentId: string, fee: any, paid: boolean) {
-    await prisma.studentFee.create({ data: { studentId, feeId: fee.id, academicYear: AY, term: fee.term ?? '1er Trimestre', amountDue: fee.amount } });
+
+  function collectFee(studentId: string, fee: any, paid: boolean) {
+    studentFeeRows.push({ studentId, feeId: fee.id, academicYear: AY, term: fee.term ?? '1er Trimestre', amountDue: fee.amount });
     if (paid) {
-      await prisma.payment.create({ data: { receiptNumber: `REC-2024-${String(recSeq++).padStart(4,'0')}`, studentId, academicYear: AY, term: fee.term ?? '1er Trimestre', amount: fee.amount, paymentMethod: 'CASH', paymentDate: new Date('2024-10-10'), recordedById: admin.id, institutionId: inst.id } });
+      paymentRows.push({ receiptNumber: `REC-2024-${String(recSeq++).padStart(4,'0')}`, studentId, academicYear: AY, term: fee.term ?? '1er Trimestre', amount: fee.amount, paymentMethod: 'CASH', paymentDate: new Date('2024-10-10'), recordedById: admin.id, institutionId: inst.id });
     }
   }
 
   // 6ème A: 42/50 paid, 3ème B: 47/50 paid, 2nde A: 45/50 paid, Terminale D: 48/50 paid
-  for (let i = 0; i < s6A.length; i++)   await assignFee(s6A[i].id,   fees['6eme'],      i < 42);
-  for (let i = 0; i < s3B.length; i++)   await assignFee(s3B[i].id,   fees['3eme'],      i < 47);
-  for (let i = 0; i < s2A.length; i++)   await assignFee(s2A[i].id,   fees['2nde'],      i < 45);
-  for (let i = 0; i < sTleD.length; i++) await assignFee(sTleD[i].id, fees['Terminale'], i < 48);
+  for (let i = 0; i < s6A.length; i++)   collectFee(s6A[i].id,   fees['6eme'],      i < 42);
+  for (let i = 0; i < s3B.length; i++)   collectFee(s3B[i].id,   fees['3eme'],      i < 47);
+  for (let i = 0; i < s2A.length; i++)   collectFee(s2A[i].id,   fees['2nde'],      i < 45);
+  for (let i = 0; i < sTleD.length; i++) collectFee(sTleD[i].id, fees['Terminale'], i < 48);
+
+  await prisma.studentFee.createMany({ data: studentFeeRows });
+  await prisma.payment.createMany({ data: paymentRows });
   console.log('✅ Fees & payments');
 
   // ── 10. Report cards + grades ────────────────────────────────────────────────
@@ -301,30 +318,30 @@ async function main() {
     const lowest  = sorted[sorted.length - 1];
     const classAvg = Math.round(avgs.reduce((s, v) => s + v, 0) / avgs.length * 100) / 100;
 
-    const gradeRows: any[] = [];
+    const rcData = computed.map(({ s, avg }, i) => ({
+      studentId: s.id, classId, academicYear: AY,
+      termType: 'TRIMESTRE', termNumber, termName,
+      status: 'PUBLISHED', publishedAt,
+      overallAverage: avg, classRank: sorted.indexOf(avg) + 1, classSize: total,
+      classHighest: highest, classLowest: lowest, classAverage: classAvg,
+      mention: ment(avg), conductRating: conduct(avg),
+      attendanceDays: 60, attendancePresent: 60 - (i % 5),
+      attendanceLate: i % 3, attendanceAbsent: (i % 4 === 0) ? 1 : 0,
+      teacherComment: avg >= 14 ? 'Excellent travail, continuez sur cette lancée.' : avg >= 10 ? 'Des efforts encourageants, il faut persévérer.' : 'Des progrès importants sont nécessaires.',
+      principalComment: avg >= 16 ? "Tableau d'honneur. Félicitations du conseil." : "Bon trimestre dans l'ensemble.",
+      honorCouncil: avg >= 16,
+      createdById: teacher.id,
+    }));
 
+    const createdRCs = await (prisma.reportCard as any).createManyAndReturn({ data: rcData });
+
+    const gradeRows: any[] = [];
     for (let i = 0; i < computed.length; i++) {
-      const { s, gradeData, avg } = computed[i];
-      const rank = sorted.indexOf(avg) + 1;
-      const rc = await prisma.reportCard.create({
-        data: {
-          studentId: s.id, classId, academicYear: AY,
-          termType: 'TRIMESTRE', termNumber, termName,
-          status: 'PUBLISHED', publishedAt,
-          overallAverage: avg, classRank: rank, classSize: total,
-          classHighest: highest, classLowest: lowest, classAverage: classAvg,
-          mention: ment(avg), conductRating: conduct(avg),
-          attendanceDays: 60, attendancePresent: 60 - (i % 5),
-          attendanceLate: i % 3, attendanceAbsent: (i % 4 === 0) ? 1 : 0,
-          teacherComment: avg >= 14 ? 'Excellent travail, continuez sur cette lancée.' : avg >= 10 ? 'Des efforts encourageants, il faut persévérer.' : 'Des progrès importants sont nécessaires.',
-          principalComment: avg >= 16 ? "Tableau d'honneur. Félicitations du conseil." : "Bon trimestre dans l'ensemble.",
-          honorCouncil: avg >= 16,
-          createdById: teacher.id,
-        },
-      });
+      const { gradeData } = computed[i];
+      const rcId = createdRCs[i].id;
       for (const gd of gradeData) {
         gradeRows.push({
-          reportCardId: rc.id, subjectId: subs[gd.code].id,
+          reportCardId: rcId, subjectId: subs[gd.code].id,
           noteInterro1: gd.i1, noteInterro2: gd.i2, noteDevoir: gd.devoir, noteComposition: gd.compo,
           moyenneMatiere: gd.moy, score: gd.moy, coefficient: coefs[gd.code],
           weightedScore: Math.round(gd.moy * coefs[gd.code] * 100) / 100,
@@ -348,11 +365,13 @@ async function main() {
   console.log('✅ Report cards T1 (200 students)');
 
   // T2 — Terminale D + 3ème B
+  await prisma.$disconnect(); await prisma.$connect();
   await seedTerm(sTleD, classTleD.id, classCfg[3].codes, classCfg[3].coefs, t2, 2, t2Name, t2Date);
   await seedTerm(s3B,   class3B.id,   classCfg[1].codes, classCfg[1].coefs, t3, 2, t2Name, t2Date);
   console.log('✅ Report cards T2 (Terminale D + 3ème B)');
 
   // T3 — Terminale D only (bac prep)
+  await prisma.$disconnect(); await prisma.$connect();
   await seedTerm(sTleD, classTleD.id, classCfg[3].codes, classCfg[3].coefs, t2, 3, t3Name, t3Date);
   console.log('✅ Report cards T3 (Terminale D)');
 
@@ -502,14 +521,14 @@ async function main() {
   const totalStudents = s6A.length + s3B.length + s2A.length + sTleD.length;
   const totalRC = totalStudents + sTleD.length + s3B.length + sTleD.length; // T1+T2(TleD+3B)+T3(TleD)
 
-  // ── Superadmin — Felix Atoma ─────────────────────────────────────────────
+  // ── Superadmin ────────────────────────────────────────────────────────────
   await prisma.user.upsert({
     where: { email: 'felixatoma2@gmail.com' },
-    update: { password: await hash('Adjola12.'), role: 'SUPERADMIN' as any, isActive: true },
+    update: { password: await hash('Adjola12.,'), role: 'SUPERADMIN' as any, isActive: true, institutionId: null },
     create: {
       name: 'Felix Atoma',
       email: 'felixatoma2@gmail.com',
-      password: await hash('Adjola12.'),
+      password: await hash('Adjola12.,'),
       role: 'SUPERADMIN' as any,
       isActive: true,
     },
@@ -528,16 +547,16 @@ async function main() {
 ║  📢 Bulletins    : 10 announcements                              ║
 ╠══════════════════════════════════════════════════════════════════╣
 ║  LOGINS                                                          ║
-║  ADMIN    admin@demo.novabulletin.local                 ║
-║  TEACHER  kofi.agbesi@demo.novabulletin.local    Teacher@123     ║
-║  TEACHER  ama.dossou@demo.novabulletin.local     Teacher@123     ║
-║  TEACHER  edem.kpodo@demo.novabulletin.local     Teacher@123     ║
-║  TEACHER  akosua.lawson@demo.novabulletin.local  Teacher@123     ║
-║  BURSAR   bursar@demo.novabulletin.local         Bursar@123      ║
-║  PARENT   parent.edem@demo.novabulletin.local    Parent@123      ║
-║  STUDENT  s.6a.m1@student.demo…                 Student@123     ║
+║  ADMIN    admin@demo.novabulletin.local         Admin@123        ║
+║  TEACHER  kofi.agbesi@demo.novabulletin.local   Teacher@123      ║
+║  TEACHER  ama.dossou@demo.novabulletin.local    Teacher@123      ║
+║  TEACHER  edem.kpodo@demo.novabulletin.local    Teacher@123      ║
+║  TEACHER  akosua.lawson@demo.novabulletin.local Teacher@123      ║
+║  BURSAR   bursar@demo.novabulletin.local        Bursar@123       ║
+║  PARENT   parent.edem@demo.novabulletin.local   Parent@123       ║
+║  STUDENT  s.6a.m1@student.demo…                Student@123      ║
 ╠══════════════════════════════════════════════════════════════════╣
-║  SUPERADMIN  felixatoma2@gmail.com           Adjola12.           ║
+║  SUPERADMIN  felixatoma2@gmail.com             Adjola12.,       ║
 ╚══════════════════════════════════════════════════════════════════╝
 `);
 }

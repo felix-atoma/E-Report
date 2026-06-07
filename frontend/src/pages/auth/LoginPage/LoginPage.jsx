@@ -86,13 +86,12 @@ function LoginPage() {
   const message = location.state?.message;
 
   useEffect(() => {
-    if (user) navigate(ROLE_HOME[user.role] ?? '/', { replace: true });
-  }, [user, navigate]);
-
-  const handleSuccess = (u) => {
-    const from = location.state?.from?.pathname;
-    navigate(from ?? ROLE_HOME[u.role] ?? '/', { replace: true });
-  };
+    if (user) {
+      const from = location.state?.from?.pathname;
+      const dest = from ?? ROLE_HOME[user.role] ?? '/';
+      window.location.replace(dest);
+    }
+  }, [user, location.state]);
 
   return (
     <div className="asl-page">
@@ -134,7 +133,7 @@ function LoginPage() {
           )}
 
           {/* Form — reuses existing LoginForm */}
-          <LoginForm onSuccess={handleSuccess} />
+          <LoginForm />
 
           {/* Sign-up CTA */}
           <Link to="/register-school" className="asl-signup-btn">

@@ -5,7 +5,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { authService } from '../../../services/authService';
 import './LoginForm.css';
 
-function LoginForm({ onSuccess }) {
+function LoginForm() {
   const { login, loginWithTokens } = useAuth();
   const { t } = useTranslation();
   const [form, setForm] = useState({ email: '', password: '' });
@@ -28,7 +28,6 @@ function LoginForm({ onSuccess }) {
       try {
         const res = await authService.verifyAdmin2fa(form.email, otp);
         loginWithTokens(res.data);
-        onSuccess?.(res.data.user);
       } catch (err) {
         setError(err.response?.data?.message ?? 'Code OTP invalide');
       } finally {
@@ -39,8 +38,7 @@ function LoginForm({ onSuccess }) {
 
     // Step 1: try regular login first; if admin 2FA required, go to OTP step
     try {
-      const user = await login(form.email, form.password);
-      onSuccess?.(user);
+      await login(form.email, form.password);
     } catch (err) {
       const msg = err.response?.data?.message ?? '';
       // If backend signals 2FA is needed it will return 401 from regular login

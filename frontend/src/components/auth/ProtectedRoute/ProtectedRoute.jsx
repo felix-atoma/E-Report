@@ -6,6 +6,8 @@ function ProtectedRoute({ children, roles }) {
   const { user, loading } = useAuth();
   const location = useLocation();
 
+  console.log('[ProtectedRoute]', location.pathname, '| loading:', loading, '| role:', user?.role, '| required:', roles);
+
   if (loading) return <Loading fullPage />;
   if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
   if (roles && !roles.includes(user.role)) return <Navigate to="/unauthorized" replace />;

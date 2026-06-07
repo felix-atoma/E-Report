@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { institutionsService } from '../services/institutionsService';
 
-export const InstitutionContext = createContext(null);
+const InstitutionContext = createContext(null);
 
 export function InstitutionProvider({ children }) {
   const { user } = useAuth();
