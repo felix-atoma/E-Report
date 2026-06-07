@@ -51,4 +51,12 @@ export class NotificationsController {
   forceSend(@Param('id') id: string, @CurrentUser() user: any) {
     return this.service.forceSend(id, user.institutionId);
   }
+
+  @Post(':id/send-payment-link')
+  @Roles(Role.ADMIN, Role.BURSAR)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Send WhatsApp payment reminder with amount due to parent' })
+  sendPaymentLink(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.service.sendPaymentLink(id, user.institutionId);
+  }
 }

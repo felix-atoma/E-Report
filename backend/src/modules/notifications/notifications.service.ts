@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -234,5 +234,52 @@ export class NotificationsService {
     ]);
 
     this.logger.log(`Done — sent: ${sentIds.length}, failed: ${failedIds.length}`);
+  }
+
+  // ─── WhatsApp payment link ────────────────────────────────────────────────
+
+  async sendPaymentLink(id: string, institutionId: string) {
+    const log = await this.prisma.notificationLog.findFirst({
+      where: { id, student: { institutionId } },
+      include: {
+        student: {
+          include: {
+            user:   { select: { name: true } },
+            parent: { select: { name: true, whatsappNumber: true } },
+          },
+        },
+      },
+    });
+    if (!log) throw new NotFoundException('Notification non trouvée');
+
+    const parent = (log.student as any)?.parent;
+    if (!parent?.whatsappNumber) {
+      throw new BadRequestException('Numéro WhatsApp du parent non disponible');
+    }
+
+    // Sum outstanding balance across all fee records for this student
+    const agg = await (this.prisma as any).feeRecord.aggregate({
+      where: { studentId: log.studentId, balance: { gt: 0 } },
+      _sum: { balance: true },
+    });
+    const outstanding: number = Number(agg?._sum?.balance ?? 0);
+
+    const studentName = log.student?.user?.name ?? 'votre enfant';
+    const parentName  = parent.name ?? 'Cher parent';
+
+    const lines = [
+      `Bonjour ${parentName},`,
+      '',
+      `Nous vous rappelons que le bulletin scolaire de *${studentName}* est actuellement retenu pour frais impayés.`,
+    ];
+    if (outstanding > 0) {
+      lines.push(`💰 Montant dû : *${outstanding.toLocaleString('fr-FR')} XOF*`);
+    }
+    lines.push('', 'Veuillez régulariser votre situation auprès de l\'administration de l\'école pour recevoir le bulletin.');
+    lines.push('Merci.');
+
+    const sent = await this.whatsapp.sendText(parent.whatsappNumber, lines.join('\n'));
+    if (!sent) throw new BadRequestException("Échec de l'envoi WhatsApp — vérifiez la configuration");
+    return { success: true };
   }
 }

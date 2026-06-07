@@ -279,6 +279,7 @@
   margin-bottom: .75rem;
 }
 .edit-report__comment-header .edit-report__section-title { margin-bottom: 0; }
+.edit-report__comment-actions { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
 
 .appr-picker { position: relative; }
 .appr-picker__toggle {

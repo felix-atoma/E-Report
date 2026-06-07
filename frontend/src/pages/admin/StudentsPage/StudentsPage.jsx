@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useCallback } from 'react';
 import { downloadCSV } from '../../../utils/csvExport';
+import { exportService } from '../../../services/exportService';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -574,6 +575,13 @@ function StudentsPage() {
               }}
             >
               ↓ CSV
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => exportService.downloadStudents().catch(() => toast.error('Erreur d\'export'))}
+              title="Export complet pour le gouvernement/inspection (tous les élèves)"
+            >
+              ↓ Export officiel
             </Button>
             <Button icon="+" onClick={openCreate}>Nouvel élève</Button>
           </div>

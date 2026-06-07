@@ -38,6 +38,12 @@ function NotificationLogsPage() {
     onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur d\'envoi'),
   });
 
+  const sendPaymentLink = useMutation({
+    mutationFn: (id) => notificationsService.sendPaymentLink(id),
+    onSuccess: () => toast.success('Rappel de paiement envoyé sur WhatsApp'),
+    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur d\'envoi WhatsApp'),
+  });
+
   const heldColumns = [
     {
       key: 'student',
@@ -87,11 +93,22 @@ function NotificationLogsPage() {
     {
       key: 'actions',
       label: '',
-      style: { width: '120px', textAlign: 'right' },
+      style: { width: '200px', textAlign: 'right' },
       render: (n) => (
-        <Button size="sm" variant="primary" onClick={() => setConfirm(n)}>
-          Forcer l'envoi
-        </Button>
+        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+          <Button
+            size="sm"
+            variant="ghost"
+            disabled={sendPaymentLink.isPending}
+            onClick={() => sendPaymentLink.mutate(n.id)}
+            title="Envoyer un rappel de paiement sur WhatsApp au parent"
+          >
+            💬 Rappel paiement
+          </Button>
+          <Button size="sm" variant="primary" onClick={() => setConfirm(n)}>
+            Forcer l'envoi
+          </Button>
+        </div>
       ),
     },
   ];

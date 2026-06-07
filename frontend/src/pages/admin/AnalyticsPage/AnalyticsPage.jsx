@@ -4,11 +4,15 @@ import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
 } from 'recharts';
+import { useState } from 'react';
 import { analyticsService } from '../../../services/analyticsService';
+import { exportService } from '../../../services/exportService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Card from '../../../components/common/Card/Card';
 import Loading from '../../../components/common/Loading/Loading';
+import Button from '../../../components/common/Button/Button';
+import toast from 'react-hot-toast';
 import './AnalyticsPage.css';
 
 const PAYMENT_COLORS = {
@@ -37,9 +41,18 @@ function StatCard({ label, value, icon, sub }) {
   );
 }
 
+function currentAcademicYear() {
+  const now = new Date();
+  const y = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
+  return `${y}-${y + 1}`;
+}
+
 function AnalyticsPage() {
   const { t } = useTranslation();
   const locale = navigator.language || 'fr-FR';
+  const [exportTerm, setExportTerm] = useState('Trimestre 1');
+  const [exportYear, setExportYear] = useState(currentAcademicYear);
+  const [exporting, setExporting]   = useState('');
   const { data: overview, isLoading: l1 } = useQuery({
     queryKey: ['analytics', 'overview'],
     queryFn: () => analyticsService.overview().then((r) => r.data),
@@ -181,6 +194,76 @@ function AnalyticsPage() {
           </Card>
         )}
       </div>
+
+      {/* ── Government exports ─────────────────────────────────────────── */}
+      <Card style={{ marginTop: '1.5rem' }}>
+        <h3 className="analytics-chart-card__title" style={{ marginBottom: '1rem' }}>
+          Exports officiels
+        </h3>
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+          <div>
+            <label style={{ fontSize: '0.75rem', fontWeight: 600, display: 'block', marginBottom: 4 }}>
+              Année scolaire
+            </label>
+            <input
+              type="text"
+              value={exportYear}
+              onChange={(e) => setExportYear(e.target.value)}
+              style={{ padding: '0.45rem 0.75rem', border: '1px solid var(--color-border)', borderRadius: 8, fontSize: '0.875rem', width: 110 }}
+            />
+          </div>
+          <div>
+            <label style={{ fontSize: '0.75rem', fontWeight: 600, display: 'block', marginBottom: 4 }}>
+              Trimestre (résultats)
+            </label>
+            <select
+              value={exportTerm}
+              onChange={(e) => setExportTerm(e.target.value)}
+              style={{ padding: '0.45rem 0.75rem', border: '1px solid var(--color-border)', borderRadius: 8, fontSize: '0.875rem' }}
+            >
+              <option>Trimestre 1</option>
+              <option>Trimestre 2</option>
+              <option>Trimestre 3</option>
+            </select>
+          </div>
+          <Button
+            variant="secondary"
+            disabled={exporting === 'students'}
+            onClick={async () => {
+              setExporting('students');
+              try { await exportService.downloadStudents(); }
+              catch { toast.error('Erreur export élèves'); }
+              finally { setExporting(''); }
+            }}
+          >
+            ↓ Effectifs élèves
+          </Button>
+          <Button
+            variant="secondary"
+            disabled={exporting === 'results'}
+            onClick={async () => {
+              setExporting('results');
+              try { await exportService.downloadClassResults(exportYear, exportTerm); }
+              catch { toast.error('Erreur export résultats'); }
+              finally { setExporting(''); }
+            }}
+          >
+            ↓ Résultats de classe
+          </Button>
+          <Button
+            variant="secondary"
+            disabled={exporting === 'fees'}
+            onClick={async () => {
+              setExporting('fees');
+              try { await exportService.downloadFees(exportYear); }
+              catch { toast.error('Erreur export frais'); }
+              finally { setExporting(''); }
+            }}
+          >
+            ↓ Rapport des frais
+          </Button>
+        </div>
+      </Card>
     </AppShell>
   );
 }

@@ -1,0 +1,34 @@
+.network-banner {
+  position: fixed;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.5rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  z-index: 9999;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+  animation: net-slide-up 0.3s ease;
+  white-space: nowrap;
+}
+
+@keyframes net-slide-up {
+  from { transform: translateX(-50%) translateY(120%); opacity: 0; }
+  to   { transform: translateX(-50%) translateY(0);    opacity: 1; }
+}
+
+.network-banner--offline {
+  background: #111827;
+  color:      #f3f4f6;
+}
+
+.network-banner--back {
+  background: #166534;
+  color:      #fff;
+}
+
+.network-banner__icon { font-size: 1rem; line-height: 1; }

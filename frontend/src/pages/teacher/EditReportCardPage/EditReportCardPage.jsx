@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { reportsService } from '../../../services/reportsService';
 import { gradesService } from '../../../services/gradesService';
+import { aiService } from '../../../services/aiService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Card from '../../../components/common/Card/Card';
@@ -190,6 +191,7 @@ function EditReportCardPage() {
   const [lates, setLates]                 = useState('');
   const [confirmPublish, setConfirmPublish] = useState(false);
   const [dirty, setDirty]                 = useState(false);
+  const [aiLoading, setAiLoading]         = useState(false);
 
   const { data: report, isLoading: loadingReport } = useQuery({
     queryKey: ['report', id],
@@ -295,6 +297,32 @@ function EditReportCardPage() {
   const locked   = report.status === 'PUBLISHED';
   const canSubmit  = report.status === 'DRAFT';
   const canPublish = report.status === 'REVIEW' || report.status === 'DRAFT';
+
+  async function handleAiComment() {
+    if (avg === null || gradeRows.filter((r) => r.score !== '').length === 0) {
+      toast('Saisissez au moins une note avant de générer un commentaire.', { icon: 'ℹ️' });
+      return;
+    }
+    setAiLoading(true);
+    try {
+      const res = await aiService.generateReportComment({
+        studentName: report.student?.user?.name ?? report.student?.admissionNumber ?? 'Élève',
+        className:   report.class?.name ?? 'la classe',
+        avg,
+        mention,
+        grades: gradeRows
+          .filter((r) => r.score !== '')
+          .map((r) => ({ subject: r.subjectName, score: Number(r.score), coefficient: Number(r.coefficient) })),
+      });
+      setComment(res.data.comment);
+      setDirty(true);
+      toast.success('Appréciation générée');
+    } catch (err) {
+      toast.error(err?.response?.data?.message ?? "Erreur lors de la génération");
+    } finally {
+      setAiLoading(false);
+    }
+  }
 
   const avg = calculateAverage(gradeRows);
   const mention = getMention(avg);
@@ -404,10 +432,21 @@ function EditReportCardPage() {
           <Card className="edit-report__comment-card">
             <div className="edit-report__comment-header">
               <h3 className="edit-report__section-title">Appréciation du professeur principal</h3>
-              <TemplatesPicker
-                onSelect={(phrase) => { setComment(phrase); setDirty(true); }}
-                disabled={locked}
-              />
+              <div className="edit-report__comment-actions">
+                <TemplatesPicker
+                  onSelect={(phrase) => { setComment(phrase); setDirty(true); }}
+                  disabled={locked}
+                />
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  disabled={locked || aiLoading}
+                  onClick={handleAiComment}
+                  title="Générer une appréciation avec l'IA"
+                >
+                  {aiLoading ? '⏳ Génération…' : '✨ IA'}
+                </Button>
+              </div>
             </div>
             <textarea
               className="edit-report__textarea"

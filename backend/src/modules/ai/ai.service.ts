@@ -56,6 +56,51 @@ export class AiService {
     }
   }
 
+  async generateReportComment(opts: {
+    studentName: string;
+    className: string;
+    avg: number;
+    mention: string;
+    grades: { subject: string; score: number; coefficient: number }[];
+  }): Promise<string> {
+    if (!this.enabled || !this.client) {
+      throw new Error("L'assistant IA n'est pas encore configuré.");
+    }
+
+    const { studentName, className, avg, mention, grades } = opts;
+    const gradeList = grades
+      .map((g) => `  - ${g.subject} : ${g.score}/20 (coef. ${g.coefficient})`)
+      .join('\n');
+
+    const prompt =
+      `Rédige une appréciation de bulletin scolaire pour un(e) élève de ${className}.\n\n` +
+      `Données :\n` +
+      `- Nom : ${studentName}\n` +
+      `- Moyenne générale : ${avg.toFixed(2)}/20\n` +
+      `- Mention : ${mention}\n` +
+      `- Notes par matière :\n${gradeList}\n\n` +
+      `Rédigez une appréciation de 2-3 phrases, bienveillante mais honnête, adaptée à la moyenne. ` +
+      `Sans émojis. Vouvoiement non. Tutoyer l'élève. Répondez uniquement avec le texte de l'appréciation.`;
+
+    try {
+      const response = await this.client.messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 256,
+        system:
+          'Tu es un professeur principal dans une école d\'Afrique francophone (Togo). ' +
+          'Tu rédiges des appréciations de bulletins scolaires en français, de manière concise et professionnelle. ' +
+          'Réponds uniquement avec le texte de l\'appréciation, sans introduction ni guillemets.',
+        messages: [{ role: 'user', content: prompt }],
+      });
+      const text = response.content[0];
+      if (text.type === 'text') return text.text.trim();
+      return '';
+    } catch (err: any) {
+      this.logger.error('Report comment generation error:', err?.message);
+      throw new Error("Impossible de générer l'appréciation. Réessayez.");
+    }
+  }
+
   async chat(message: string, role: string, context?: string): Promise<string> {
     if (!this.enabled || !this.client) {
       return "L'assistant IA n'est pas encore configuré. Veuillez contacter l'administrateur de la plateforme.";

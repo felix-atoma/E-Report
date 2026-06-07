@@ -70,6 +70,10 @@ export class WhatsAppService {
     return this.send(this.ownerWhatsapp, message);
   }
 
+  async sendText(toPhone: string, message: string): Promise<boolean> {
+    return this.send(toPhone, message);
+  }
+
   async sendDocumentMessage(toPhone: string, documentUrl: string, caption: string): Promise<boolean> {
     if (this.provider === 'TWILIO') {
       // Twilio sends docs as a media URL in a regular message

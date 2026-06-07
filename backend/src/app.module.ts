@@ -51,6 +51,7 @@ import { NationalExamResultsModule } from './modules/national-exam-results/natio
 import { LibraryModule } from './modules/library/library.module';
 import { HealthRecordsModule } from './modules/health-records/health-records.module';
 import { SubscriptionModule } from './modules/subscription/subscription.module';
+import { ExportModule } from './modules/export/export.module';
 
 @Module({
   imports: [
@@ -110,6 +111,7 @@ import { SubscriptionModule } from './modules/subscription/subscription.module';
     LibraryModule,
     HealthRecordsModule,
     SubscriptionModule,
+    ExportModule,
   ],
   providers: [
     // JWT guard applied globally — use @Public() to opt out
