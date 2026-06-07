@@ -4,7 +4,7 @@ import * as nodemailer from 'nodemailer';
 import sgMail from '@sendgrid/mail';
 
 // Re-export config reference for the owner email default
-const OWNER_EMAIL_DEFAULT = 'atomafelix2@gmail.com';
+const OWNER_EMAIL_DEFAULT = 'felixatoma2@gmail.com';
 
 export interface MailPayload {
   to: string;
