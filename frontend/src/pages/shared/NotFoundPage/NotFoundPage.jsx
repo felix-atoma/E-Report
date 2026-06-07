@@ -1,23 +1,23 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import '../ErrorPages.css';
 
 function NotFoundPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   return (
     <div className="err">
       <div className="err__card">
-        <img src="/error-404.svg" alt="404 — Page introuvable" className="err__illustration" />
+        <img src="/error-404.svg" alt="404" className="err__illustration" />
         <div className="err__body">
-          <h1 className="err__title">Page introuvable</h1>
-          <p className="err__desc">
-            Cette page a disparu dans les airs. Même notre fantôme ne la trouve plus.
-          </p>
+          <h1 className="err__title">{t('error.404.title')}</h1>
+          <p className="err__desc">{t('error.404.desc')}</p>
           <div className="err__actions">
             <button className="err__btn err__btn--secondary" onClick={() => navigate(-1)}>
-              ← Retour
+              {t('error.back')}
             </button>
             <Link to="/" className="err__btn err__btn--primary">
-              Accueil
+              {t('error.home')}
             </Link>
           </div>
         </div>

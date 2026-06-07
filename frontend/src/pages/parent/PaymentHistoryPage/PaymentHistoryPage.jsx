@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { paymentsService } from '../../../services/paymentsService';
 import { studentsService } from '../../../services/studentsService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
@@ -8,17 +9,12 @@ import Badge from '../../../components/common/Badge/Badge';
 import EmptyState from '../../../components/common/EmptyState/EmptyState';
 import './PaymentHistoryPage.css';
 
-const METHOD_LABEL = {
-  CASH:     'Espèces',
-  TMONEY:   'TMoney',
-  FLOOZ:    'Flooz',
-  MOMO:     'MoMo',
-  TRANSFER: 'Virement',
-  CHEQUE:   'Chèque',
-  OTHER:    'Autre',
-};
+const STATUS_KEY = { PAID: 'upToDate', PARTIAL: 'partial', UNPAID: 'unpaid' };
 
 function PaymentHistoryPage() {
+  const { t } = useTranslation();
+  const locale = navigator.language || 'fr-FR';
+
   const { data: payments = [], isLoading } = useQuery({
     queryKey: ['parent-payments'],
     queryFn: () => paymentsService.myHistory().then((r) => r.data),
@@ -34,7 +30,7 @@ function PaymentHistoryPage() {
   const columns = [
     {
       key: 'student',
-      label: 'Élève',
+      label: t('payments.student'),
       render: (p) => {
         const child = children.find((c) => c.id === p.studentId);
         const name  = child
@@ -47,69 +43,70 @@ function PaymentHistoryPage() {
     },
     {
       key: 'amount',
-      label: 'Montant',
+      label: t('payments.amount'),
       render: (p) => (
         <span className="payments-hist__amount">
-          {Number(p.amount).toLocaleString('fr-FR')} FCFA
+          {Number(p.amount).toLocaleString(locale)} FCFA
         </span>
       ),
     },
     {
       key: 'method',
-      label: 'Méthode',
-      render: (p) => METHOD_LABEL[p.method] ?? p.method ?? '—',
+      label: t('payments.method'),
+      render: (p) => {
+        const key = p.method ?? '';
+        return t(`payment.methods.${key}`, key) || '—';
+      },
     },
     {
       key: 'reference',
-      label: 'Référence',
+      label: t('payments.reference'),
       render: (p) => p.reference ?? <span className="payments-hist__empty">—</span>,
     },
     {
       key: 'status',
-      label: 'Statut résultant',
+      label: t('paymentHistory.resultingStatus'),
       render: (p) =>
-        p.status
-          ? <Badge variant={
-              p.status === 'PAID'    ? 'success' :
-              p.status === 'PARTIAL' ? 'warning' : 'danger'
-            }>
-              {p.status === 'PAID' ? 'À jour' : p.status === 'PARTIAL' ? 'Partiel' : 'Non payé'}
-            </Badge>
-          : '—',
+        p.status ? (
+          <Badge variant={
+            p.status === 'PAID'    ? 'success' :
+            p.status === 'PARTIAL' ? 'warning' : 'danger'
+          }>
+            {t(`payment.${STATUS_KEY[p.status] ?? p.status}`, p.status)}
+          </Badge>
+        ) : '—',
     },
     {
       key: 'date',
-      label: 'Date',
+      label: t('payments.date'),
       render: (p) =>
-        p.createdAt
-          ? new Date(p.createdAt).toLocaleDateString('fr-FR')
-          : '—',
+        p.createdAt ? new Date(p.createdAt).toLocaleDateString(locale) : '—',
     },
   ];
 
   return (
-    <AppShell title="Historique des paiements">
+    <AppShell title={t('nav.paymentHistory')}>
       <PageHeader
-        title="Historique des paiements"
+        title={t('nav.paymentHistory')}
         subtitle={
           payments.length > 0
-            ? `${payments.length} paiement${payments.length !== 1 ? 's' : ''} — Total : ${total.toLocaleString('fr-FR')} FCFA`
-            : 'Aucun paiement enregistré'
+            ? `${payments.length} ${t('nav.payments').toLowerCase()} — Total : ${total.toLocaleString(locale)} FCFA`
+            : t('payments.noPayments')
         }
       />
 
       {!isLoading && payments.length === 0 ? (
         <EmptyState
           icon="💳"
-          message="Aucun paiement enregistré"
-          description="Les paiements effectués pour vos enfants apparaîtront ici."
+          message={t('payments.noPayments')}
+          description={t('paymentHistory.noPaymentsDesc')}
         />
       ) : (
         <Table
           columns={columns}
           rows={payments}
           loading={isLoading}
-          emptyMessage="Aucun paiement enregistré"
+          emptyMessage={t('payments.noPayments')}
         />
       )}
     </AppShell>

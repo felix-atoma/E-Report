@@ -12,6 +12,7 @@ import { MailService } from '../mail/mail.service';
 import { WhatsAppService } from '../whatsapp/whatsapp.service';
 import { RegisterInstitutionDto } from './dto/register-institution.dto';
 import { Role } from '../../common/enums/role.enum';
+import { SubscriptionService } from '../subscription/subscription.service';
 
 @Injectable()
 export class SuperAdminService {
@@ -23,6 +24,7 @@ export class SuperAdminService {
     private readonly whatsapp: WhatsAppService,
     private readonly config: ConfigService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly subscription: SubscriptionService,
   ) {}
 
   // ─── Public: Register a new school (PENDING) ────────────────────────────────
@@ -167,6 +169,11 @@ export class SuperAdminService {
         data: { isActive: true },
       }),
     ]);
+
+    // Start 30-day trial subscription
+    this.subscription.startTrial(id).catch((e) =>
+      this.logger.error('startTrial failed', e),
+    );
 
     // Send activation email to admin(s)
     const admins = await this.prisma.user.findMany({

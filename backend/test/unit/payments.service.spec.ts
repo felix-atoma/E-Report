@@ -2,12 +2,19 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { PaymentsService } from '../../src/modules/payments/payments.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
+import { NotchpayService } from '../../src/modules/payments/notchpay.service';
 import { createPrismaMock, PrismaMock } from '../helpers/prisma-mock.helper';
 import {
   studentFixture,
   institutionFixture,
   teacherUserFixture,
 } from '../fixtures/institution.fixture';
+
+const notchpayMock = {
+  createTransaction: jest.fn(),
+  verifyWebhookSignature: jest.fn().mockReturnValue(true),
+  verifyTransaction: jest.fn(),
+};
 
 describe('PaymentsService', () => {
   let service: PaymentsService;
@@ -20,6 +27,7 @@ describe('PaymentsService', () => {
       providers: [
         PaymentsService,
         { provide: PrismaService, useValue: prisma },
+        { provide: NotchpayService, useValue: notchpayMock },
       ],
     }).compile();
 

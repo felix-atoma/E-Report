@@ -14,6 +14,7 @@
     "payments":       "Payments",
     "notifications":  "Notifications",
     "analytics":      "Analytics",
+    "subscription":   "Subscription",
     "branding":       "Branding",
     "settings":       "Settings",
     "myProfile":      "My Profile",
@@ -318,9 +319,13 @@
   "payments": {
     "title":"Payments","addPayment":"Record payment","student":"Student","fee":"Fee",
     "amount":"Amount (FCFA)","method":"Payment method","date":"Date","reference":"Reference",
+    "note":"Note","selectStudent":"Select a student",
+    "searchPlaceholder":"Search by student or reference…",
+    "allStatuses":"All statuses","recording":"Recording…",
     "noPayments":"No payments recorded","receipt":"Receipt",
     "errors":{"studentRequired":"Student required","feeRequired":"Fee required",
-    "amountRequired":"Amount required","methodRequired":"Payment method required"},
+    "amountRequired":"Amount required","methodRequired":"Payment method required",
+    "amountInvalid":"Invalid amount"},
     "toast":{"created":"Payment recorded","deleted":"Payment cancelled"}
   },
 
@@ -355,5 +360,104 @@
   "legal": {
     "tos":"Terms of Use","privacy":"Privacy Policy",
     "accept":"By submitting this form, you accept our","and":"and our"
+  },
+
+  "topbar": {
+    "searchPlaceholder": "Quick search…",
+    "openMenu": "Open menu",
+    "notifications": "Notifications",
+    "noNotifications": "No notifications",
+    "viewAllNotifications": "View all notifications →",
+    "userMenu": "User menu",
+    "myProfile": "My profile",
+    "dashboard": "Dashboard",
+    "newNotifBadge_one": "{{count}} new",
+    "newNotifBadge_other": "{{count}} new",
+    "timeAgo": {
+      "now": "Just now",
+      "minutes": "{{count}} min ago",
+      "hours": "{{count}} h ago",
+      "days": "{{count}} d ago"
+    },
+    "notifStatus": {
+      "HELD_UNPAID":  "Held — unpaid fees",
+      "HELD_PARTIAL": "Held — partial payment",
+      "DELIVERED":    "Report sent",
+      "PENDING":      "Awaiting dispatch"
+    }
+  },
+
+  "bursar": {
+    "title":           "Bursar",
+    "subtitle":        "Payment dashboard",
+    "hello":           "Hello, {{name}}",
+    "bursar":          "Bursar",
+    "totalCollected":  "Total collected (FCFA)",
+    "collectedToday":  "Collected today (FCFA)",
+    "unpaidStudents":  "Unpaid students",
+    "partialPayments": "Partial payments",
+    "recentPayments":  "Recent payments",
+    "seeAll":          "See all →",
+    "noPayments":      "No payments recorded.",
+    "quickActions":    "Quick actions",
+    "recordPayment":   "Record a payment",
+    "manageFees":      "Manage fees",
+    "heldReports":     "Held reports"
+  },
+
+  "error": {
+    "back": "← Back",
+    "home": "Home",
+    "403": {
+      "title": "Access denied",
+      "desc":  "You don't have the necessary permissions to access this page. Contact your administrator."
+    },
+    "404": {
+      "title": "Page not found",
+      "desc":  "This page has vanished into thin air. Even our ghost can't find it."
+    },
+    "500": {
+      "title": "Server error",
+      "desc":  "Our server has overheated. We're already fixing it — check back in a few moments."
+    }
+  },
+
+  "paymentHistory": {
+    "resultingStatus": "Resulting status",
+    "noPaymentsDesc":  "Payments made for your children will appear here."
+  },
+
+  "analytics": {
+    "title":         "Analytics dashboard",
+    "paymentStatus": "Payment status",
+    "reportStatus":  "Report card status",
+    "noPaymentData": "No payment data available",
+    "studentsUnit":  "{{count}} students",
+    "collected":     "collected",
+    "amountDetail":  "{{paid}} FCFA out of {{total}} FCFA expected"
+  },
+
+  "auth": {
+    "schoolManagement": "School management",
+    "backToLogin": "← Back to login",
+    "forgotPassword": {
+      "title":      "Forgot your password?",
+      "subtitle":   "No worries, it happens!",
+      "desc":       "Enter your email address below and we'll send you a link to reset your password.",
+      "secureReset":"Secure reset",
+      "resetHint":  "A reset link will be sent to your email address.",
+      "steps":      ["Enter your email", "Open the link received", "Create a new password"],
+      "heading":    "Reset your password",
+      "subheading": "Enter the email associated with your account and follow the instructions."
+    },
+    "resetPassword": {
+      "title":      "New password",
+      "subtitle":   "Secure your account",
+      "desc":       "Choose a strong password with at least 8 characters including letters and numbers.",
+      "protected":  "Account protected",
+      "encrypted":  "Your new password will be encrypted and secured.",
+      "heading":    "Create a new password",
+      "subheading": "Enter your new password below."
+    }
   }
 }

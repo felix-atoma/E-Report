@@ -757,3 +757,56 @@
   .sa-action-btn { font-size: 0.72rem; padding: 0.35rem 0.4rem; }
   .sa-alert-banner__icon { font-size: 1.5rem; }
 }
+
+/* ── Pending subscription payments panel ──────────────────────────────────── */
+.sa-sub-panel {
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border: 1.5px solid #22c55e;
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+.sa-sub-panel__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.875rem;
+}
+.sa-sub-panel__icon { font-size: 1.5rem; }
+.sa-sub-panel__count {
+  display: inline-block;
+  background: #22c55e;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-left: 0.5rem;
+}
+.sa-sub-list { display: flex; flex-direction: column; gap: 0.75rem; }
+.sa-sub-item {
+  background: #fff;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  padding: 0.875rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.sa-sub-item__info { display: flex; flex-direction: column; gap: 3px; }
+.sa-sub-item__school { font-weight: 700; font-size: 0.9rem; }
+.sa-sub-item__plan { font-size: 0.8rem; color: #166534; font-weight: 600; }
+.sa-sub-item__meta { font-size: 0.78rem; color: #374151; }
+.sa-sub-item__meta code { background: #f3f4f6; padding: 1px 4px; border-radius: 3px; font-size: 0.75rem; }
+.sa-sub-item__date { font-size: 0.72rem; color: #6b7280; }
+.sa-sub-item__actions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.sa-sub-reject-reason {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 0.78rem;
+  font-family: inherit;
+  width: 180px;
+}

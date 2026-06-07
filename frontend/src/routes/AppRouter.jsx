@@ -52,6 +52,7 @@ const NationalExamResultsPage = lazy(() => import('../pages/admin/NationalExamRe
 const LibraryPage            = lazy(() => import('../pages/admin/LibraryPage/LibraryPage'));
 const HealthRecordsPage      = lazy(() => import('../pages/admin/HealthRecordsPage/HealthRecordsPage'));
 const TimetableBuilderPage   = lazy(() => import('../pages/admin/TimetableBuilderPage/TimetableBuilderPage'));
+const SubscriptionPage       = lazy(() => import('../pages/admin/SubscriptionPage/SubscriptionPage'));
 
 // ── Bursar ────────────────────────────────────────────────────────────────────
 const BursarDashboardPage    = lazy(() => import('../pages/bursar/BursarDashboardPage/BursarDashboardPage'));
@@ -169,6 +170,7 @@ function AppRouter() {
         <Route path="/admin/mock-exams/:id/grades"   element={<ProtectedRoute roles={['ADMIN']}><MockExamGradePage /></ProtectedRoute>} />
         <Route path="/admin/mock-exam-fiches"        element={<ProtectedRoute roles={['ADMIN']}><MockExamFichesListPage /></ProtectedRoute>} />
         <Route path="/admin/mock-exam-results"       element={<ProtectedRoute roles={['ADMIN']}><MockExamResultsPage /></ProtectedRoute>} />
+        <Route path="/admin/subscription"            element={<ProtectedRoute roles={['ADMIN']}><SubscriptionPage /></ProtectedRoute>} />
 
         {/* Bursar */}
         <Route path="/bursar"              element={<ProtectedRoute roles={['BURSAR']}><BursarDashboardPage /></ProtectedRoute>} />

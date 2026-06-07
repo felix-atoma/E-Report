@@ -400,6 +400,68 @@ export class MailService {
     return this.send({ to, subject, html, text });
   }
 
+  // ─── Subscription confirmation ───────────────────────────────────────────────
+  async sendSubscriptionConfirmation(institutionName: string, to: string, plan: string, expiry: Date): Promise<boolean> {
+    const planLabel = plan === 'ANNUAL' ? 'Annuel' : 'Mensuel';
+    const expiryStr = expiry.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+    const subject = 'NovaBulletin - Abonnement activé';
+    const frontendUrl = this.config.get('FRONTEND_URL', 'http://localhost:3000');
+
+    const html = `
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:40px 0;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+      <tr>
+        <td style="background:linear-gradient(135deg,#065f46 0%,#059669 100%);border-radius:12px 12px 0 0;padding:36px 40px;text-align:center;">
+          <h1 style="color:#fff;margin:0;font-size:26px;font-weight:800;">NovaBulletin</h1>
+          <p style="color:#a7f3d0;margin:6px 0 0;font-size:14px;">Abonnement activé</p>
+        </td>
+      </tr>
+      <tr>
+        <td style="background:#fff;padding:40px;border:1px solid #e5e7eb;">
+          <h2 style="color:#111827;font-size:22px;margin:0 0 16px;">Félicitations, ${institutionName} !</h2>
+          <p style="color:#4b5563;font-size:15px;line-height:1.7;margin:0 0 24px;">
+            Votre paiement a été reçu et votre abonnement <strong>Plan ${planLabel}</strong> est maintenant actif.
+          </p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdf4;border-radius:10px;margin-bottom:28px;">
+            <tr><td style="padding:20px 24px;">
+              <p style="margin:0 0 8px;color:#065f46;font-weight:700;">Détails de l'abonnement</p>
+              <p style="margin:0 0 4px;color:#374151;font-size:14px;">Plan : <strong>${planLabel}</strong></p>
+              <p style="margin:0;color:#374151;font-size:14px;">Valide jusqu'au : <strong>${expiryStr}</strong></p>
+            </td></tr>
+          </table>
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+            <tr><td align="center">
+              <a href="${frontendUrl}/admin" style="display:inline-block;background:#059669;color:#fff;text-decoration:none;padding:14px 40px;border-radius:8px;font-size:15px;font-weight:700;">
+                Accéder à mon tableau de bord
+              </a>
+            </td></tr>
+          </table>
+          <p style="color:#9ca3af;font-size:12px;">Merci de faire confiance à NovaBulletin pour la gestion de votre établissement.</p>
+        </td>
+      </tr>
+      <tr>
+        <td style="background:#f9fafb;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 12px 12px;padding:16px 40px;text-align:center;">
+          <p style="margin:0;color:#9ca3af;font-size:12px;">&copy; ${new Date().getFullYear()} NovaBulletin</p>
+        </td>
+      </tr>
+    </table>
+  </td></tr>
+</table>
+</body></html>`;
+
+    const text =
+      `Félicitations ${institutionName} !\n\n` +
+      `Votre abonnement Plan ${planLabel} est actif.\n` +
+      `Valide jusqu'au : ${expiryStr}\n\n` +
+      `Accédez à votre tableau de bord : ${frontendUrl}/admin\n\n` +
+      `Merci de faire confiance à NovaBulletin.`;
+
+    return this.send({ to, subject, html, text });
+  }
+
   private buildBulletinEmail(p: MailPayload): string {
     const pdfSection = p.pdfUrl
       ? `<a href="${p.pdfUrl}" style="display:inline-block;background:#1e3a8a;color:#fff;padding:10px 20px;border-radius:4px;text-decoration:none;margin-top:12px;">

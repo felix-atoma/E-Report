@@ -90,6 +90,32 @@ enum Language {
   EN
 }
 
+enum SubscriptionTier {
+  STARTER
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  EXPIRED
+  SUSPENDED
+}
+
+enum SubPaymentMethod {
+  MOMO_MANUAL
+  NOTCHPAY
+}
+
+enum SubPaymentStatus {
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+  FAILED
+}
+
 enum DayOfWeek {
   LUNDI
   MARDI
@@ -165,11 +191,15 @@ model Institution {
   status               InstitutionStatus @default(PENDING)
   declaredStudentCount Int?
   subscriptionPlan     String?
+  subscriptionStatus   SubscriptionStatus @default(TRIAL)
+  subscriptionExpiry   DateTime?
+  trialEndsAt          DateTime?
   ownerNotes           String?
-  createdAt            DateTime          @default(now())
-  updatedAt            DateTime          @updatedAt
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
 
-  users               User[]
+  users                User[]
+  subscriptionPayments SubscriptionPayment[]
   classes             Class[]
   students            Student[]
   subjects            Subject[]
@@ -1396,6 +1426,38 @@ model HealthRecord {
 
   student     Student     @relation(fields: [studentId], references: [id])
   institution Institution @relation(fields: [institutionId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─── Platform Subscriptions ───────────────────────────────────────────────────
+
+model SubscriptionPayment {
+  id            String           @id @default(uuid())
+  institutionId String
+  institution   Institution      @relation(fields: [institutionId], references: [id])
+  plan          String           // 'MONTHLY' | 'ANNUAL' (billing period)
+  tier          SubscriptionTier? // auto-detected from student count at payment time
+  amount        Int              // in XOF
+  currency      String           @default("XOF")
+  method        SubPaymentMethod
+  status        SubPaymentStatus @default(PENDING_REVIEW)
+
+  // MoMo manual fields
+  momoPhone     String?          // school's phone number used to pay
+  momoReference String?          // transaction ID from the operator
+  momoOperator  String?          // TMONEY | FLOOZ | MOOV
+
+  // Notchpay fields
+  notchpayRef   String?          @unique
+  notchpayUrl   String?
+
+  // Review
+  approvedById  String?
+  approvedAt    DateTime?
+  rejectedReason String?
+  monthsGranted Int              @default(1)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -1,20 +1,20 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import ResetPasswordForm from '../../../components/auth/ResetPasswordForm/ResetPasswordForm';
 import logoIcon from '../../../assets/images/novaBulletin-icon.svg';
 import './ResetPasswordPage.css';
 
 function ResetPasswordPage() {
+  const { t } = useTranslation();
   return (
     <div className="asl-page">
       <div className="asl-card-wrap">
 
         {/* ── Left panel ─────────────────────────────────────────── */}
         <div className="asl-left">
-          <h1 className="asl-left__title">Nouveau mot de passe</h1>
-          <p className="asl-left__subtitle">Sécurisez votre compte</p>
-          <p className="asl-left__desc">
-            Choisissez un mot de passe fort d'au moins 8 caractères incluant lettres et chiffres.
-          </p>
+          <h1 className="asl-left__title">{t('auth.resetPassword.title')}</h1>
+          <p className="asl-left__subtitle">{t('auth.resetPassword.subtitle')}</p>
+          <p className="asl-left__desc">{t('auth.resetPassword.desc')}</p>
           <div className="asl-illustration asl-illustration--lock" style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
             <div className="asl-card" style={{ padding: '28px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', maxWidth: '200px' }}>
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none"
@@ -23,10 +23,10 @@ function ResetPasswordPage() {
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
               </svg>
               <p style={{ fontSize: '0.7rem', fontWeight: 700, color: 'rgba(255,255,255,0.9)', margin: 0, textAlign: 'center' }}>
-                Compte protégé
+                {t('auth.resetPassword.protected')}
               </p>
               <p style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.5)', margin: 0, textAlign: 'center', lineHeight: 1.5 }}>
-                Votre nouveau mot de passe sera chiffré et sécurisé.
+                {t('auth.resetPassword.encrypted')}
               </p>
             </div>
           </div>
@@ -43,17 +43,17 @@ function ResetPasswordPage() {
             <img src={logoIcon} alt="NovaBulletin" className="asl-brand__logo" />
             <div>
               <div className="asl-brand__name">NovaBulletin</div>
-              <div className="asl-brand__role">Gestion scolaire</div>
+              <div className="asl-brand__role">{t('auth.schoolManagement')}</div>
             </div>
           </div>
 
-          <h2 className="asl-heading">Créer un nouveau mot de passe</h2>
-          <p className="asl-subheading">Saisissez votre nouveau mot de passe ci-dessous.</p>
+          <h2 className="asl-heading">{t('auth.resetPassword.heading')}</h2>
+          <p className="asl-subheading">{t('auth.resetPassword.subheading')}</p>
 
           <ResetPasswordForm />
 
           <Link to="/login" className="asl-back-link">
-            ← Retour à la connexion
+            {t('auth.backToLogin')}
           </Link>
         </div>
       </div>

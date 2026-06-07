@@ -43,14 +43,15 @@ describe('ReportsService', () => {
   // ─── create ─────────────────────────────────────────────────────────────
 
   describe('create', () => {
-    it('creates a report card in DRAFT status', async () => {
-      prisma.class.findFirst.mockResolvedValue(classFixture);
-      prisma.student.findFirst.mockResolvedValue(studentFixture);
-      prisma.reportCard.create.mockResolvedValue({ ...reportCardFixture, status: 'DRAFT' });
+    it('creates report cards for every student in the class', async () => {
+      prisma.class.findFirst.mockResolvedValue({
+        ...classFixture,
+        students: [{ studentId: studentFixture.id }],
+      });
+      prisma.reportCard.upsert.mockResolvedValue({ ...reportCardFixture, status: 'DRAFT' });
 
       const result = await service.create(
         {
-          studentId: studentFixture.id,
           classId: classFixture.id,
           academicYear: '2024-2025',
           termType: 'TRIMESTRE' as any,
@@ -61,8 +62,8 @@ describe('ReportsService', () => {
         teacherUserFixture.id,
       );
 
-      expect(result.status).toBe('DRAFT');
-      expect(prisma.reportCard.create).toHaveBeenCalledTimes(1);
+      expect(result.count).toBe(1);
+      expect(prisma.reportCard.upsert).toHaveBeenCalledTimes(1);
     });
 
     it('throws NotFoundException when class does not belong to institution', async () => {
@@ -70,7 +71,7 @@ describe('ReportsService', () => {
 
       await expect(
         service.create(
-          { studentId: 's1', classId: 'bad-id', academicYear: '2024-2025', termType: 'TRIMESTRE' as any, termNumber: 1, termName: 'T1' },
+          { classId: 'bad-id', academicYear: '2024-2025', termType: 'TRIMESTRE' as any, termNumber: 1, termName: 'T1' },
           institutionFixture.id,
           teacherUserFixture.id,
         ),
@@ -148,6 +149,8 @@ describe('ReportsService', () => {
 
       prisma.reportCard.findFirst.mockResolvedValue(reportWithGrades);
       prisma.reportCard.findMany.mockResolvedValue([]); // no siblings yet
+      prisma.classSubject.findMany.mockResolvedValue([]); // all subjects signed
+      prisma.gradeFiche.findMany.mockResolvedValue([]);   // no unsigned fiches
       prisma.reportCard.update.mockImplementation(({ data }) =>
         Promise.resolve({ ...reportCardFixture, ...data }),
       );
@@ -226,6 +229,8 @@ describe('ReportsService', () => {
       });
       // Sibling already published with average 10 (lower)
       prisma.reportCard.findMany.mockResolvedValue([{ id: siblingId, overallAverage: 10 }]);
+      prisma.classSubject.findMany.mockResolvedValue([]);
+      prisma.gradeFiche.findMany.mockResolvedValue([]);
       prisma.reportCard.update.mockImplementation(({ data }) =>
         Promise.resolve({ ...reportCardFixture, ...data }),
       );

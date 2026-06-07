@@ -4,6 +4,13 @@ import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
 import * as path from 'path';
 import { UploadService, UploadedFileInfo } from '../../src/modules/upload/upload.service';
+import { CloudinaryService } from '../../src/modules/cloudinary/cloudinary.service';
+
+const cloudinaryMock = {
+  enabled: false,
+  uploadFile: jest.fn(),
+  deleteByUrl: jest.fn(),
+};
 
 jest.mock('fs');
 const fsMock = fs as jest.Mocked<typeof fs>;
@@ -45,6 +52,7 @@ describe('UploadService', () => {
       providers: [
         UploadService,
         { provide: ConfigService, useValue: makeConfig() },
+        { provide: CloudinaryService, useValue: cloudinaryMock },
       ],
     }).compile();
 
@@ -54,9 +62,9 @@ describe('UploadService', () => {
   // ─── handleFileUpload ────────────────────────────────────────────────────
 
   describe('handleFileUpload', () => {
-    it('returns url, filename, size, and mimetype on success', () => {
+    it('returns url, filename, size, and mimetype on success', async () => {
       const file = makeFile();
-      const result = service.handleFileUpload(file, 'logo', 'inst-001');
+      const result = await service.handleFileUpload(file, 'logo', 'inst-001');
 
       expect(result.url).toMatch(/^http:\/\/localhost:4000\/uploads\/logos\//);
       expect(result.mimetype).toBe('image/png');
@@ -84,51 +92,51 @@ describe('UploadService', () => {
       );
     });
 
-    it('prefixes filename with institutionId', () => {
+    it('prefixes filename with institutionId', async () => {
       const file = makeFile();
-      const result = service.handleFileUpload(file, 'logo', 'inst-XYZ');
+      const result = await service.handleFileUpload(file, 'logo', 'inst-XYZ');
 
       expect(result.filename).toMatch(/^inst-XYZ-/);
     });
 
-    it('preserves original file extension', () => {
+    it('preserves original file extension', async () => {
       const file = makeFile({ originalname: 'stamp.WEBP', mimetype: 'image/webp' });
-      const result = service.handleFileUpload(file, 'stamp', 'inst-001');
+      const result = await service.handleFileUpload(file, 'stamp', 'inst-001');
 
       expect(result.filename).toMatch(/\.webp$/i);
     });
 
-    it('throws BadRequestException when no file is provided', () => {
-      expect(() =>
+    it('throws BadRequestException when no file is provided', async () => {
+      await expect(
         service.handleFileUpload(null as any, 'logo', 'inst-001'),
-      ).toThrow(BadRequestException);
+      ).rejects.toThrow(BadRequestException);
     });
 
-    it('throws BadRequestException for disallowed mimetype', () => {
+    it('throws BadRequestException for disallowed mimetype', async () => {
       const file = makeFile({ mimetype: 'text/html' });
 
-      expect(() =>
+      await expect(
         service.handleFileUpload(file, 'logo', 'inst-001'),
-      ).toThrow(BadRequestException);
+      ).rejects.toThrow(BadRequestException);
     });
 
-    it('throws BadRequestException when file exceeds 5 MB', () => {
+    it('throws BadRequestException when file exceeds 5 MB', async () => {
       const file = makeFile({ size: 6 * 1024 * 1024 });
 
-      expect(() =>
+      await expect(
         service.handleFileUpload(file, 'logo', 'inst-001'),
-      ).toThrow(BadRequestException);
+      ).rejects.toThrow(BadRequestException);
     });
 
-    it('accepts PDF mimetype for attachment type', () => {
+    it('accepts PDF mimetype for attachment type', async () => {
       const file = makeFile({ originalname: 'receipt.pdf', mimetype: 'application/pdf' });
 
-      expect(() =>
+      await expect(
         service.handleFileUpload(file, 'attachment', 'inst-001'),
-      ).not.toThrow();
+      ).resolves.not.toThrow();
     });
 
-    it('accepts all supported image mimetypes', () => {
+    it('accepts all supported image mimetypes', async () => {
       const types = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/svg+xml'];
 
       for (const mimetype of types) {
@@ -137,9 +145,9 @@ describe('UploadService', () => {
         fsMock.renameSync.mockImplementation(() => undefined);
 
         const file = makeFile({ mimetype, originalname: 'img.jpg' });
-        expect(() =>
+        await expect(
           service.handleFileUpload(file, 'logo', 'inst-001'),
-        ).not.toThrow();
+        ).resolves.not.toThrow();
       }
     });
   });
@@ -185,6 +193,7 @@ describe('UploadService', () => {
         providers: [
           UploadService,
           { provide: ConfigService, useValue: makeConfig() },
+          { provide: CloudinaryService, useValue: cloudinaryMock },
         ],
       }).compile();
 

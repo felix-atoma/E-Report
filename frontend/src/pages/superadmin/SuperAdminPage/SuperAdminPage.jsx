@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { institutionsService } from '../../../services/institutionsService';
+import { subscriptionService } from '../../../services/subscriptionService';
 import api from '../../../services/api';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import './SuperAdminPage.css';
@@ -212,6 +213,108 @@ function SchoolProfile({ inst, notesMap, setNotesMap, savingNotes, saveNotes, sa
   );
 }
 
+// ─── Pending MoMo subscriptions panel ─────────────────────────────────────────
+function PendingSubscriptionsPanel() {
+  const [payments, setPayments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState({});
+  const [rejectState, setRejectState] = useState({}); // { [id]: reason }
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const res = await subscriptionService.getPending();
+      setPayments(res.data ?? []);
+    } catch { /* ignore */ }
+    finally { setLoading(false); }
+  };
+
+  useEffect(() => { load(); }, []);
+
+  if (loading) return null;
+  if (!payments.length) return null;
+
+  const handleApprove = async (id) => {
+    setActionLoading((p) => ({ ...p, [id]: 'approve' }));
+    try {
+      await subscriptionService.approve(id);
+      toast.success('Abonnement approuvé et activé.');
+      load();
+    } catch {
+      toast.error('Erreur lors de l\'approbation.');
+    } finally {
+      setActionLoading((p) => ({ ...p, [id]: null }));
+    }
+  };
+
+  const handleReject = async (id) => {
+    setActionLoading((p) => ({ ...p, [id]: 'reject' }));
+    try {
+      await subscriptionService.reject(id, rejectState[id] ?? '');
+      toast.success('Paiement rejeté.');
+      load();
+    } catch {
+      toast.error('Erreur lors du rejet.');
+    } finally {
+      setActionLoading((p) => ({ ...p, [id]: null }));
+    }
+  };
+
+  return (
+    <div className="sa-sub-panel">
+      <div className="sa-sub-panel__header">
+        <span className="sa-sub-panel__icon">💰</span>
+        <div>
+          <strong>Paiements d'abonnement en attente</strong>
+          <span className="sa-sub-panel__count">{payments.length} à vérifier</span>
+        </div>
+      </div>
+      <div className="sa-sub-list">
+        {payments.map((p) => {
+          const aL = actionLoading[p.id];
+          return (
+            <div key={p.id} className="sa-sub-item">
+              <div className="sa-sub-item__info">
+                <span className="sa-sub-item__school">{p.institution?.name ?? '—'}</span>
+                <span className="sa-sub-item__plan">
+                  {p.tier && <strong>{p.tier} · </strong>}
+                  {p.plan === 'ANNUAL' ? 'Annuel' : 'Mensuel'} — {Number(p.amount).toLocaleString(locale)} FCFA
+                </span>
+                <span className="sa-sub-item__meta">
+                  📱 {p.momoPhone} ({p.momoOperator}) · Réf : <code>{p.momoReference}</code>
+                </span>
+                <span className="sa-sub-item__date">{fmtDateTime(p.createdAt)}</span>
+              </div>
+              <div className="sa-sub-item__actions">
+                <input
+                  className="sa-sub-reject-reason"
+                  placeholder="Motif de rejet (optionnel)"
+                  value={rejectState[p.id] ?? ''}
+                  onChange={(e) => setRejectState((s) => ({ ...s, [p.id]: e.target.value }))}
+                />
+                <button
+                  className="sa-action-btn sa-action-btn--approve"
+                  onClick={() => handleApprove(p.id)}
+                  disabled={!!aL}
+                >
+                  {aL === 'approve' ? '...' : 'Approuver'}
+                </button>
+                <button
+                  className="sa-action-btn sa-action-btn--reject"
+                  onClick={() => handleReject(p.id)}
+                  disabled={!!aL}
+                >
+                  {aL === 'reject' ? '...' : 'Rejeter'}
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main page ─────────────────────────────────────────────────────────────────
 function SuperAdminPage() {
   const [institutions, setInstitutions] = useState([]);
@@ -416,6 +519,9 @@ function SuperAdminPage() {
             </div>
           </div>
         )}
+
+        {/* Pending MoMo subscription payments */}
+        <PendingSubscriptionsPanel />
 
         {/* Header */}
         <div className="sa-header">

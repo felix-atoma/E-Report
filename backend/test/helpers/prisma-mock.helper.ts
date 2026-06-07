@@ -33,6 +33,8 @@ export function createPrismaMock() {
     studentFee: modelMock(),
     payment: modelMock(),
     notificationLog: modelMock(),
+    subscriptionPayment: modelMock(),
+    gradeFiche: modelMock(),
     bulletin: modelMock(),
     brandingAsset: modelMock(),
     refreshToken: modelMock(),

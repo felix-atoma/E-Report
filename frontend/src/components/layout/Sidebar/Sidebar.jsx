@@ -45,6 +45,7 @@ const NAV = {
     { divider: true,              sectionKey: 'section.system' },
     { to: '/admin/notifications', icon: 'bell',      labelKey: 'nav.notifications' },
     { to: '/admin/analytics',     icon: 'chart',     labelKey: 'nav.analytics' },
+    { to: '/admin/subscription',  icon: 'subscription', labelKey: 'nav.subscription' },
     { to: '/admin/branding',      icon: 'palette',   labelKey: 'nav.branding' },
     { to: '/admin/settings',      icon: 'settings',  labelKey: 'nav.settings' },
   ],
@@ -161,6 +162,12 @@ const ICONS = {
   lms: (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+    </svg>
+  ),
+  subscription: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+      <line x1="1" y1="10" x2="23" y2="10"/>
     </svg>
   ),
   palette: (

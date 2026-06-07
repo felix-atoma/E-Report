@@ -50,6 +50,7 @@ import { InventoryModule } from './modules/inventory/inventory.module';
 import { NationalExamResultsModule } from './modules/national-exam-results/national-exam-results.module';
 import { LibraryModule } from './modules/library/library.module';
 import { HealthRecordsModule } from './modules/health-records/health-records.module';
+import { SubscriptionModule } from './modules/subscription/subscription.module';
 
 @Module({
   imports: [
@@ -108,6 +109,7 @@ import { HealthRecordsModule } from './modules/health-records/health-records.mod
     NationalExamResultsModule,
     LibraryModule,
     HealthRecordsModule,
+    SubscriptionModule,
   ],
   providers: [
     // JWT guard applied globally — use @Public() to opt out

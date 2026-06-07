@@ -14,6 +14,7 @@
     "payments":       "Paiements",
     "notifications":  "Notifications",
     "analytics":      "Analytiques",
+    "subscription":   "Abonnement",
     "branding":       "Apparence",
     "settings":       "Paramètres",
     "myProfile":      "Mon profil",
@@ -382,13 +383,19 @@
     "method":         "Mode de paiement",
     "date":           "Date",
     "reference":      "Référence",
+    "note":           "Note",
+    "selectStudent":  "Sélectionner un élève",
+    "searchPlaceholder": "Rechercher par élève ou référence…",
+    "allStatuses":    "Tous les statuts",
+    "recording":      "Enregistrement…",
     "noPayments":     "Aucun paiement enregistré",
     "receipt":        "Reçu",
     "errors": {
       "studentRequired": "Élève requis",
       "feeRequired":     "Cotisation requise",
       "amountRequired":  "Montant requis",
-      "methodRequired":  "Mode de paiement requis"
+      "methodRequired":  "Mode de paiement requis",
+      "amountInvalid":   "Montant invalide"
     },
     "toast": {
       "created": "Paiement enregistré",
@@ -455,5 +462,104 @@
     "privacy": "Politique de confidentialité",
     "accept":  "En soumettant ce formulaire, vous acceptez nos",
     "and":     "et notre"
+  },
+
+  "topbar": {
+    "searchPlaceholder": "Recherche rapide…",
+    "openMenu": "Ouvrir le menu",
+    "notifications": "Notifications",
+    "noNotifications": "Aucune notification",
+    "viewAllNotifications": "Voir toutes les notifications →",
+    "userMenu": "Menu utilisateur",
+    "myProfile": "Mon profil",
+    "dashboard": "Tableau de bord",
+    "newNotifBadge_one": "{{count}} nouvelle",
+    "newNotifBadge_other": "{{count}} nouvelles",
+    "timeAgo": {
+      "now": "À l'instant",
+      "minutes": "Il y a {{count}} min",
+      "hours": "Il y a {{count}} h",
+      "days": "Il y a {{count}} j"
+    },
+    "notifStatus": {
+      "HELD_UNPAID":  "Retenu — frais impayés",
+      "HELD_PARTIAL": "Retenu — paiement partiel",
+      "DELIVERED":    "Bulletin envoyé",
+      "PENDING":      "En attente d'envoi"
+    }
+  },
+
+  "bursar": {
+    "title":           "Économat",
+    "subtitle":        "Tableau de bord des paiements",
+    "hello":           "Bonjour, {{name}}",
+    "bursar":          "Économe",
+    "totalCollected":  "Total collecté (FCFA)",
+    "collectedToday":  "Perçu aujourd'hui (FCFA)",
+    "unpaidStudents":  "Élèves non payés",
+    "partialPayments": "Paiements partiels",
+    "recentPayments":  "Paiements récents",
+    "seeAll":          "Voir tout →",
+    "noPayments":      "Aucun paiement enregistré.",
+    "quickActions":    "Actions rapides",
+    "recordPayment":   "Enregistrer un paiement",
+    "manageFees":      "Gérer les frais",
+    "heldReports":     "Bulletins retenus"
+  },
+
+  "error": {
+    "back": "← Retour",
+    "home": "Accueil",
+    "403": {
+      "title": "Accès refusé",
+      "desc":  "Vous n'avez pas les droits nécessaires pour accéder à cette page. Contactez votre administrateur."
+    },
+    "404": {
+      "title": "Page introuvable",
+      "desc":  "Cette page a disparu dans les airs. Même notre fantôme ne la trouve plus."
+    },
+    "500": {
+      "title": "Erreur serveur",
+      "desc":  "Notre serveur a surchauffé. Nous sommes déjà en train de réparer — revenez dans quelques instants."
+    }
+  },
+
+  "paymentHistory": {
+    "resultingStatus": "Statut résultant",
+    "noPaymentsDesc":  "Les paiements effectués pour vos enfants apparaîtront ici."
+  },
+
+  "analytics": {
+    "title":         "Tableau de bord analytique",
+    "paymentStatus": "Statut des paiements",
+    "reportStatus":  "État des bulletins",
+    "noPaymentData": "Aucune donnée de paiement disponible",
+    "studentsUnit":  "{{count}} élèves",
+    "collected":     "collecté",
+    "amountDetail":  "{{paid}} FCFA sur {{total}} FCFA attendus"
+  },
+
+  "auth": {
+    "schoolManagement": "Gestion scolaire",
+    "backToLogin": "← Retour à la connexion",
+    "forgotPassword": {
+      "title":      "Mot de passe oublié ?",
+      "subtitle":   "Pas de panique, ça arrive !",
+      "desc":       "Entrez votre adresse email ci-contre et nous vous enverrons un lien pour réinitialiser votre mot de passe.",
+      "secureReset":"Réinitialisation sécurisée",
+      "resetHint":  "Un lien de réinitialisation sera envoyé à votre adresse email.",
+      "steps":      ["Entrez votre email", "Ouvrez le lien reçu", "Créez un nouveau mot de passe"],
+      "heading":    "Réinitialiser le mot de passe",
+      "subheading": "Saisissez l'email associé à votre compte et suivez les instructions."
+    },
+    "resetPassword": {
+      "title":      "Nouveau mot de passe",
+      "subtitle":   "Sécurisez votre compte",
+      "desc":       "Choisissez un mot de passe fort d'au moins 8 caractères incluant lettres et chiffres.",
+      "protected":  "Compte protégé",
+      "encrypted":  "Votre nouveau mot de passe sera chiffré et sécurisé.",
+      "heading":    "Créer un nouveau mot de passe",
+      "subheading": "Saisissez votre nouveau mot de passe ci-dessous."
+    }
   }
 }

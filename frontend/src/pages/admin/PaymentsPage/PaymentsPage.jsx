@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { paymentsService } from '../../../services/paymentsService';
 import { studentsService } from '../../../services/studentsService';
@@ -15,43 +16,20 @@ import Badge from '../../../components/common/Badge/Badge';
 import SearchBar from '../../../components/common/SearchBar/SearchBar';
 import './PaymentsPage.css';
 
-const METHODS = [
-  { value: 'CASH',                  label: 'Espèces' },
-  { value: 'MOBILE_MONEY_TMONEY',   label: 'TMoney' },
-  { value: 'MOBILE_MONEY_FLOOZ',    label: 'Flooz' },
-  { value: 'MOBILE_MONEY_MOMO',     label: 'MoMo' },
-  { value: 'BANK_TRANSFER',         label: 'Virement bancaire' },
-  { value: 'CHEQUE',                label: 'Chèque' },
-  { value: 'OTHER',                 label: 'Autre' },
-];
-
-const STATUS_OPTIONS = [
-  { value: 'PAID',    label: 'À jour' },
-  { value: 'PARTIAL', label: 'Paiement partiel' },
-  { value: 'UNPAID',  label: 'Non payé' },
-  { value: 'EXEMPT',  label: 'Exonéré' },
-];
-
-const STATUS_VARIANT = {
-  PAID:    'success',
-  PARTIAL: 'warning',
-  UNPAID:  'danger',
-  EXEMPT:  'default',
-};
-
+const STATUS_VARIANT = { PAID: 'success', PARTIAL: 'warning', UNPAID: 'danger', EXEMPT: 'default' };
 const EMPTY_FORM = { studentId: '', amount: '', paymentMethod: 'CASH', referenceNumber: '', notes: '' };
 
-function validate(form) {
+function validate(form, t) {
   const errors = {};
-  if (!form.studentId)      errors.studentId      = 'Élève requis';
-  if (!form.amount)         errors.amount         = 'Montant requis';
+  if (!form.studentId)     errors.studentId     = t('payments.errors.studentRequired');
+  if (!form.amount)        errors.amount        = t('payments.errors.amountRequired');
   else if (isNaN(Number(form.amount)) || Number(form.amount) <= 0)
-    errors.amount = 'Montant invalide';
-  if (!form.paymentMethod)  errors.paymentMethod  = 'Méthode requise';
+    errors.amount = t('payments.errors.amountInvalid');
+  if (!form.paymentMethod) errors.paymentMethod = t('payments.errors.methodRequired');
   return errors;
 }
 
-function PaymentForm({ form, errors, onChange, students }) {
+function PaymentForm({ form, errors, onChange, students, methods, t }) {
   const studentOptions = students.map((s) => {
     const cls = s.classes?.[0]?.class ?? s.class;
     return {
@@ -63,36 +41,36 @@ function PaymentForm({ form, errors, onChange, students }) {
   return (
     <div className="payment-form">
       <Select
-        id="pay-student" label="Élève" required
+        id="pay-student" label={t('payments.student')} required
         value={form.studentId} error={errors.studentId}
-        placeholder="Sélectionner un élève"
+        placeholder={t('payments.selectStudent')}
         options={studentOptions}
         onChange={(e) => onChange('studentId', e.target.value)}
       />
       <div className="payment-form__row">
         <Input
-          id="pay-amount" label="Montant (FCFA)" type="number" min="0" required
+          id="pay-amount" label={t('payments.amount')} type="number" min="0" required
           value={form.amount} error={errors.amount}
           placeholder="ex: 25000"
           onChange={(e) => onChange('amount', e.target.value)}
         />
         <Select
-          id="pay-method" label="Méthode" required
+          id="pay-method" label={t('payments.method')} required
           value={form.paymentMethod} error={errors.paymentMethod}
-          options={METHODS}
+          options={methods}
           onChange={(e) => onChange('paymentMethod', e.target.value)}
         />
       </div>
       <Input
-        id="pay-ref" label="Référence / N° reçu"
+        id="pay-ref" label={t('payments.reference')}
         value={form.referenceNumber}
-        placeholder="Optionnel"
+        placeholder={t('common.optional')}
         onChange={(e) => onChange('referenceNumber', e.target.value)}
       />
       <Input
-        id="pay-note" label="Note"
+        id="pay-note" label={t('payments.note')}
         value={form.notes}
-        placeholder="Optionnel"
+        placeholder={t('common.optional')}
         onChange={(e) => onChange('notes', e.target.value)}
       />
     </div>
@@ -100,6 +78,8 @@ function PaymentForm({ form, errors, onChange, students }) {
 }
 
 function PaymentsPage() {
+  const { t } = useTranslation();
+  const locale = navigator.language || 'fr-FR';
   const qc = useQueryClient();
   const { institution } = useInstitution();
   const [search, setSearch]       = useState('');
@@ -107,6 +87,23 @@ function PaymentsPage() {
   const [modal, setModal]         = useState(false);
   const [form, setForm]           = useState(EMPTY_FORM);
   const [errors, setErrors]       = useState({});
+
+  const METHODS = useMemo(() => [
+    { value: 'CASH',                label: t('payment.methods.CASH')  },
+    { value: 'MOBILE_MONEY_TMONEY', label: t('payment.methods.TMONEY') },
+    { value: 'MOBILE_MONEY_FLOOZ',  label: t('payment.methods.FLOOZ') },
+    { value: 'MOBILE_MONEY_MOMO',   label: t('payment.methods.MOMO')  },
+    { value: 'BANK_TRANSFER',       label: t('payment.methods.BANK')  },
+    { value: 'CHEQUE',              label: t('payment.methods.CHECK') },
+    { value: 'OTHER',               label: t('payment.methods.OTHER') },
+  ], [t]);
+
+  const STATUS_OPTIONS = useMemo(() => [
+    { value: 'PAID',    label: t('payment.upToDate') },
+    { value: 'PARTIAL', label: t('payment.partial')  },
+    { value: 'UNPAID',  label: t('payment.unpaid')   },
+    { value: 'EXEMPT',  label: t('payment.exempted') },
+  ], [t]);
 
   const { data: payments = [], isLoading } = useQuery({
     queryKey: ['payments'],
@@ -133,12 +130,12 @@ function PaymentsPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['payments'] });
       qc.invalidateQueries({ queryKey: ['analytics'] });
-      toast.success('Paiement enregistré');
+      toast.success(t('payments.toast.created'));
       setModal(false);
       setForm(EMPTY_FORM);
       setErrors({});
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur d\'enregistrement'),
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('common.errorGeneric')),
   });
 
   function handleChange(field, value) {
@@ -147,7 +144,7 @@ function PaymentsPage() {
   }
 
   function handleSubmit() {
-    const errs = validate(form);
+    const errs = validate(form, t);
     if (Object.keys(errs).length) { setErrors(errs); return; }
     recordMutation.mutate({
       studentId:       form.studentId,
@@ -159,22 +156,18 @@ function PaymentsPage() {
     });
   }
 
-  const totals = useMemo(() => {
-    const sum = payments.reduce((acc, p) => acc + (p.amount ?? 0), 0);
-    return sum;
-  }, [payments]);
+  const totals = useMemo(() => payments.reduce((acc, p) => acc + (p.amount ?? 0), 0), [payments]);
 
   function printReceipt(p) {
     const studentName  = p.student?.user?.name ?? p.student?.admissionNumber ?? '—';
     const studentClass = p.student?.classes?.[0]?.class?.name ?? p.student?.class?.name ?? '';
     const method       = METHODS.find((m) => m.value === p.paymentMethod)?.label ?? p.paymentMethod;
-    const date         = p.paymentDate
-      ? new Date(p.paymentDate).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
-      : new Date(p.createdAt ?? Date.now()).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
-    const schoolName   = institution?.name ?? 'Établissement';
+    const fmtDate      = (iso) => new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'long', year: 'numeric' });
+    const date         = fmtDate(p.paymentDate ?? p.createdAt ?? Date.now());
+    const schoolName   = institution?.name ?? 'NovaBulletin';
     const receiptNo    = p.receiptNumber ?? p.referenceNumber ?? `REC-${p.id?.slice(-6).toUpperCase()}`;
 
-    const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+    const html = `<!DOCTYPE html><html lang="${locale.slice(0,2)}"><head><meta charset="UTF-8">
 <title>Reçu de paiement</title>
 <style>
   body{font-family:Arial,sans-serif;margin:0;padding:24px;color:#111}
@@ -195,19 +188,18 @@ function PaymentsPage() {
 <div class="receipt">
   <div class="receipt__header">
     <div class="receipt__school">${schoolName}</div>
-    <div class="receipt__title">Reçu de Paiement</div>
+    <div class="receipt__title">${t('payments.receipt')}</div>
     <div class="receipt__no">N° ${receiptNo}</div>
   </div>
-  <div class="receipt__amount">${Number(p.amount).toLocaleString('fr-FR')} FCFA</div>
-  <div class="receipt__row"><span class="receipt__label">Élève</span><span class="receipt__value">${studentName}</span></div>
-  ${studentClass ? `<div class="receipt__row"><span class="receipt__label">Classe</span><span class="receipt__value">${studentClass}</span></div>` : ''}
-  <div class="receipt__row"><span class="receipt__label">Date</span><span class="receipt__value">${date}</span></div>
-  <div class="receipt__row"><span class="receipt__label">Mode de paiement</span><span class="receipt__value">${method}</span></div>
-  ${p.academicYear ? `<div class="receipt__row"><span class="receipt__label">Année scolaire</span><span class="receipt__value">${p.academicYear}</span></div>` : ''}
-  ${p.term ? `<div class="receipt__row"><span class="receipt__label">Trimestre</span><span class="receipt__value">${p.term}</span></div>` : ''}
-  ${p.notes ? `<div class="receipt__row"><span class="receipt__label">Note</span><span class="receipt__value">${p.notes}</span></div>` : ''}
-  <div class="receipt__stamp">PAYÉ ✓</div>
-  <div class="receipt__footer">Ce reçu est un justificatif officiel de paiement.<br>Émis par NovaBulletin — ${new Date().toLocaleDateString('fr-FR')}</div>
+  <div class="receipt__amount">${Number(p.amount).toLocaleString(locale)} FCFA</div>
+  <div class="receipt__row"><span class="receipt__label">${t('payments.student')}</span><span class="receipt__value">${studentName}</span></div>
+  ${studentClass ? `<div class="receipt__row"><span class="receipt__label">${t('classes.title')}</span><span class="receipt__value">${studentClass}</span></div>` : ''}
+  <div class="receipt__row"><span class="receipt__label">${t('payments.date')}</span><span class="receipt__value">${date}</span></div>
+  <div class="receipt__row"><span class="receipt__label">${t('payments.method')}</span><span class="receipt__value">${method}</span></div>
+  ${p.academicYear ? `<div class="receipt__row"><span class="receipt__label">${t('settings.academicYear')}</span><span class="receipt__value">${p.academicYear}</span></div>` : ''}
+  ${p.notes ? `<div class="receipt__row"><span class="receipt__label">${t('payments.note')}</span><span class="receipt__value">${p.notes}</span></div>` : ''}
+  <div class="receipt__stamp">✓</div>
+  <div class="receipt__footer">${new Date().toLocaleDateString(locale)}</div>
 </div>
 <script>window.onload=function(){window.print();window.close();}<\/script>
 </body></html>`;
@@ -220,7 +212,7 @@ function PaymentsPage() {
   const columns = [
     {
       key: 'student',
-      label: 'Élève',
+      label: t('payments.student'),
       render: (p) => (
         <div>
           <div className="payments-table__name">
@@ -236,21 +228,21 @@ function PaymentsPage() {
     },
     {
       key: 'amount',
-      label: 'Montant',
+      label: t('payments.amount'),
       render: (p) => (
         <span className="payments-table__amount">
-          {Number(p.amount).toLocaleString('fr-FR')} FCFA
+          {Number(p.amount).toLocaleString(locale)} FCFA
         </span>
       ),
     },
     {
       key: 'method',
-      label: 'Méthode',
+      label: t('payments.method'),
       render: (p) => METHODS.find((m) => m.value === p.paymentMethod)?.label ?? p.paymentMethod,
     },
     {
       key: 'status',
-      label: 'Statut',
+      label: t('common.status'),
       render: (p) => (
         <Badge variant={STATUS_VARIANT[p.status] ?? 'default'}>
           {STATUS_OPTIONS.find((s) => s.value === p.status)?.label ?? p.status}
@@ -259,15 +251,13 @@ function PaymentsPage() {
     },
     {
       key: 'date',
-      label: 'Date',
+      label: t('payments.date'),
       render: (p) =>
-        p.createdAt
-          ? new Date(p.createdAt).toLocaleDateString('fr-FR')
-          : '—',
+        p.createdAt ? new Date(p.createdAt).toLocaleDateString(locale) : '—',
     },
     {
       key: 'reference',
-      label: 'Référence',
+      label: t('payments.reference'),
       render: (p) => p.referenceNumber ?? <span className="payments-table__empty">—</span>,
     },
     {
@@ -275,32 +265,32 @@ function PaymentsPage() {
       label: '',
       style: { width: '80px', textAlign: 'right' },
       render: (p) => (
-        <Button size="sm" variant="ghost" onClick={() => printReceipt(p)} title="Imprimer le reçu">
-          🧾 Reçu
+        <Button size="sm" variant="ghost" onClick={() => printReceipt(p)} title={t('payments.receipt')}>
+          🧾 {t('payments.receipt')}
         </Button>
       ),
     },
   ];
 
   return (
-    <AppShell title="Paiements">
+    <AppShell title={t('payments.title')}>
       <PageHeader
-        title="Paiements"
-        subtitle={`${payments.length} paiement${payments.length !== 1 ? 's' : ''} — Total : ${totals.toLocaleString('fr-FR')} FCFA`}
-        actions={<Button icon="+" onClick={() => setModal(true)}>Enregistrer un paiement</Button>}
+        title={t('payments.title')}
+        subtitle={`${payments.length} ${t('payments.title').toLowerCase()} — Total : ${totals.toLocaleString(locale)} FCFA`}
+        actions={<Button icon="+" onClick={() => setModal(true)}>{t('payments.addPayment')}</Button>}
       />
 
       <div className="payments-page__toolbar">
         <SearchBar
           value={search}
           onChange={setSearch}
-          placeholder="Rechercher par élève ou référence…"
+          placeholder={t('payments.searchPlaceholder')}
           className="payments-page__search"
         />
         <Select
           id="status-filter"
           value={statusFilter}
-          placeholder="Tous les statuts"
+          placeholder={t('payments.allStatuses')}
           options={STATUS_OPTIONS}
           onChange={(e) => setStatus(e.target.value)}
           className="payments-page__status-filter"
@@ -311,26 +301,26 @@ function PaymentsPage() {
         columns={columns}
         rows={filtered}
         loading={isLoading}
-        emptyMessage="Aucun paiement trouvé"
+        emptyMessage={t('payments.noPayments')}
       />
 
       <OffCanvas
         open={modal}
         onClose={() => { setModal(false); setForm(EMPTY_FORM); setErrors({}); }}
-        title="Enregistrer un paiement"
+        title={t('payments.addPayment')}
         size="md"
         footer={
           <>
             <Button variant="ghost" onClick={() => setModal(false)} disabled={recordMutation.isPending}>
-              Annuler
+              {t('action.cancel')}
             </Button>
             <Button onClick={handleSubmit} disabled={recordMutation.isPending}>
-              {recordMutation.isPending ? 'Enregistrement…' : 'Enregistrer'}
+              {recordMutation.isPending ? t('payments.recording') : t('action.save')}
             </Button>
           </>
         }
       >
-        <PaymentForm form={form} errors={errors} onChange={handleChange} students={students} />
+        <PaymentForm form={form} errors={errors} onChange={handleChange} students={students} methods={METHODS} t={t} />
       </OffCanvas>
     </AppShell>
   );
