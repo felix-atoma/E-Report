@@ -89,9 +89,9 @@ function LoginPage() {
     if (user) {
       const from = location.state?.from?.pathname;
       const dest = from ?? ROLE_HOME[user.role] ?? '/';
-      window.location.replace(dest);
+      navigate(dest, { replace: true });
     }
-  }, [user, location.state]);
+  }, [user, location.state, navigate]);
 
   return (
     <div className="asl-page">

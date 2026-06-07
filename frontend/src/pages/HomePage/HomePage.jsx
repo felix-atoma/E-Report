@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import LandingPage from '../public/LandingPage/LandingPage';
 import Loading from '../../components/common/Loading/Loading';
@@ -11,12 +12,13 @@ const ROLE_HOME = {
 
 function HomePage() {
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!loading && user) {
-      window.location.replace(ROLE_HOME[user.role] ?? '/login');
+      navigate(ROLE_HOME[user.role] ?? '/login', { replace: true });
     }
-  }, [user, loading]);
+  }, [user, loading, navigate]);
 
   if (loading) return <Loading fullPage />;
 
