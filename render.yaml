@@ -5,7 +5,7 @@ services:
     region: frankfurt      # closest to West Africa
     plan: free
     rootDir: backend
-    buildCommand: wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor > /usr/share/keyrings/google-chrome.gpg && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && apt-get update -qq && apt-get install -y google-chrome-stable && npm install && npm run build && npx prisma generate && DATABASE_URL=$DIRECT_URL npx prisma db push
+    buildCommand: wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor > /usr/share/keyrings/google-chrome.gpg && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && apt-get update -qq && apt-get install -y google-chrome-stable && npm install && npm run build && DATABASE_URL=$DIRECT_URL npx prisma db push
     startCommand: node dist/main
     healthCheckPath: /api/health
 
@@ -147,6 +147,30 @@ services:
         sync: false
       - key: OWNER_WHATSAPP
         sync: false
+
+      # ── Subscription pricing (tier auto-detected from student count) ─────────
+      - key: OWNER_MOMO_NUMBER
+        sync: false
+      - key: OWNER_MOMO_OPERATOR
+        value: TMoney
+      - key: SUBSCRIPTION_TRIAL_DAYS
+        value: "30"
+      - key: SUBSCRIPTION_STARTER_MONTHLY_XOF
+        value: "5000"
+      - key: SUBSCRIPTION_STARTER_ANNUAL_XOF
+        value: "50000"
+      - key: SUBSCRIPTION_BASIC_MONTHLY_XOF
+        value: "10000"
+      - key: SUBSCRIPTION_BASIC_ANNUAL_XOF
+        value: "100000"
+      - key: SUBSCRIPTION_PRO_MONTHLY_XOF
+        value: "20000"
+      - key: SUBSCRIPTION_PRO_ANNUAL_XOF
+        value: "200000"
+      - key: SUBSCRIPTION_ENTERPRISE_MONTHLY_XOF
+        value: "35000"
+      - key: SUBSCRIPTION_ENTERPRISE_ANNUAL_XOF
+        value: "350000"
 
       # ── Redis / BullMQ (add when provisioned) ─────────────────────────────────
       - key: REDIS_HOST
