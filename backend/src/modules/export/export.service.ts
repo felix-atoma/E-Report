@@ -94,7 +94,9 @@ export class ExportService {
   // ── Fee report ────────────────────────────────────────────────────────────
 
   async feeReport(institutionId: string, academicYear: string): Promise<string> {
-    const fees = await this.prisma.studentFee.findMany({
+    const db = this.prisma as any;
+
+    const fees = await db.studentFee.findMany({
       where: { student: { institutionId }, academicYear },
       include: {
         student: {
@@ -103,31 +105,25 @@ export class ExportService {
             classes: { include: { class: { select: { name: true } } }, take: 1 },
           },
         },
-        feeType: { select: { name: true } },
+        fee: { select: { name: true, feeType: true } },
       },
       orderBy: { student: { admissionNumber: 'asc' } },
     });
 
     const headers = [
       'N° Matricule', 'Nom complet', 'Classe', 'Type de frais',
-      'Montant dû (XOF)', 'Montant payé (XOF)', 'Solde restant (XOF)',
-      'Exempté', 'Année scolaire',
+      'Montant dû (XOF)', 'Exempté', 'Année scolaire',
     ];
 
-    const rows = fees.map((f) => {
-      const paid = Number(f.amountDue) - Number(f.balance ?? f.amountDue);
-      return [
-        f.student?.admissionNumber ?? '',
-        f.student?.user?.name ?? '',
-        f.student?.classes?.[0]?.class?.name ?? '',
-        (f.feeType as any)?.name ?? '',
-        Number(f.amountDue),
-        paid,
-        Number(f.balance ?? f.amountDue),
-        f.isExempt ? 'Oui' : 'Non',
-        f.academicYear ?? '',
-      ];
-    });
+    const rows = fees.map((f: any) => [
+      f.student?.admissionNumber ?? '',
+      f.student?.user?.name ?? '',
+      f.student?.classes?.[0]?.class?.name ?? '',
+      f.fee?.name ?? '',
+      Number(f.amountDue),
+      f.isExempt ? 'Oui' : 'Non',
+      f.academicYear ?? '',
+    ]);
 
     return buildCsv(headers, rows);
   }
