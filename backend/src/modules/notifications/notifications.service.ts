@@ -8,6 +8,7 @@ import { WhatsAppService } from '../whatsapp/whatsapp.service';
 @Injectable()
 export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
+  private dispatching = false;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -134,10 +135,24 @@ export class NotificationsService {
     });
   }
 
-  // ─── Cron: dispatch PENDING notifications every 2 minutes ────────────────
+  // ─── Cron: dispatch PENDING notifications every 5 minutes ────────────────
 
-  @Cron('*/2 * * * *')
+  @Cron('*/5 * * * *')
   async dispatchPendingNotifications() {
+    if (this.dispatching) {
+      this.logger.warn('Dispatch already in progress — skipping this tick');
+      return;
+    }
+    this.dispatching = true;
+    try {
+      await this._dispatch();
+    } finally {
+      this.dispatching = false;
+    }
+  }
+
+  private async _dispatch() {
+    const now = new Date();
     const pending = await this.prisma.notificationLog.findMany({
       where: { status: 'PENDING', channel: { in: ['WHATSAPP', 'EMAIL'] } },
       include: {
@@ -164,12 +179,16 @@ export class NotificationsService {
 
     this.logger.log(`Dispatching ${pending.length} pending notifications`);
 
-    for (const log of pending) {
-      await this.prisma.notificationLog.update({
-        where: { id: log.id },
-        data: { attemptCount: { increment: 1 }, lastAttemptAt: new Date() },
-      });
+    // Mark all as in-flight in one query
+    await this.prisma.notificationLog.updateMany({
+      where: { id: { in: pending.map((l) => l.id) } },
+      data: { attemptCount: { increment: 1 }, lastAttemptAt: now },
+    });
 
+    const sentIds: string[] = [];
+    const failedIds: string[] = [];
+
+    for (const log of pending) {
       const studentName = log.student?.user?.name ?? 'Élève';
       const institutionName = (log.student as any)?.institution?.name ?? 'NovaBulletin';
       const average = log.reportCard?.overallAverage != null
@@ -181,45 +200,38 @@ export class NotificationsService {
       const pdfUrl = log.reportCard?.pdfUrl ?? null;
 
       let success = false;
-
       try {
         if (log.channel === 'EMAIL' && log.recipient.email) {
           success = await this.mail.sendBulletinReady({
-            to: log.recipient.email,
-            studentName,
-            termName,
-            academicYear,
-            average,
-            mention,
-            pdfUrl,
-            institutionName,
+            to: log.recipient.email, studentName, termName,
+            academicYear, average, mention, pdfUrl, institutionName,
           });
         } else if (log.channel === 'WHATSAPP' && log.recipient.whatsappNumber) {
           success = await this.whatsapp.sendBulletinReady({
-            toPhone: log.recipient.whatsappNumber,
-            studentName,
-            termName,
-            academicYear,
-            average,
-            mention,
-            pdfUrl,
-            institutionName,
+            toPhone: log.recipient.whatsappNumber, studentName, termName,
+            academicYear, average, mention, pdfUrl, institutionName,
           });
-        } else {
-          // No contact info available — skip
-          success = false;
         }
       } catch (err) {
         this.logger.error(`Dispatch error for notification ${log.id}`, err);
-        success = false;
       }
 
-      await this.prisma.notificationLog.update({
-        where: { id: log.id },
-        data: success
-          ? { status: 'SENT', deliveredAt: new Date() }
-          : { status: 'FAILED', errorMessage: 'Delivery attempt failed' },
-      });
+      (success ? sentIds : failedIds).push(log.id);
     }
+
+    // Two bulk updates instead of 50 individual ones
+    const deliveredAt = new Date();
+    await Promise.all([
+      sentIds.length > 0 && this.prisma.notificationLog.updateMany({
+        where: { id: { in: sentIds } },
+        data: { status: 'SENT', deliveredAt },
+      }),
+      failedIds.length > 0 && this.prisma.notificationLog.updateMany({
+        where: { id: { in: failedIds } },
+        data: { status: 'FAILED', errorMessage: 'Delivery attempt failed' },
+      }),
+    ]);
+
+    this.logger.log(`Done — sent: ${sentIds.length}, failed: ${failedIds.length}`);
   }
 }
