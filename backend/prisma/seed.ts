@@ -125,9 +125,21 @@ async function main() {
   await prisma.classStudent.deleteMany({});
   await prisma.timetableSlot.deleteMany({});
   await prisma.bulletin.deleteMany({});
+  await prisma.announcement.deleteMany({});
+  await prisma.courseMaterial.deleteMany({});
+  await prisma.subjectHoursLog.deleteMany({});
+  await prisma.subscriptionPayment.deleteMany({});
+  await prisma.schoolDocument.deleteMany({});
+  await prisma.libraryLoan.deleteMany({});
+  await prisma.inventoryItem.deleteMany({});
   await prisma.assignmentSubmission.deleteMany({});
+  await prisma.quizAnswer.deleteMany({});
   await prisma.quizAttempt.deleteMany({});
+  await prisma.quiz.deleteMany({});
+  await prisma.assignment.deleteMany({});
   await prisma.mockExamGrade.deleteMany({});
+  await prisma.mockExamSubjectFiche.deleteMany({});
+  await prisma.mockExam.deleteMany({});
   await prisma.paymentIntent.deleteMany({});
   await prisma.attendance.deleteMany({});
   await prisma.disciplinaryRecord.deleteMany({});
@@ -140,6 +152,8 @@ async function main() {
   // Remove stale seed classes (by fixed IDs) so upserts below re-create under the correct institution
   const seedClassIds = ['seed-class-6a','seed-class-3b','seed-class-2a','seed-class-tle-d'];
   await prisma.classSubject.deleteMany({ where: { classId: { in: seedClassIds } } });
+  await prisma.programChapter.deleteMany({});
+  await prisma.subjectProgram.deleteMany({});
   await prisma.class.deleteMany({ where: { id: { in: seedClassIds } } });
   // Remove the stale demo institution (seed-institution-01) and all its remaining data
   // Skip if the active institution IS seed-institution-01 to prevent self-deletion
@@ -555,13 +569,11 @@ async function main() {
     { title: 'Fin d\'année scolaire',      type: 'EVENT',   startDate: new Date('2025-07-11'), color: '#16a34a' },
   ];
   await prisma.calendarEvent.createMany({
-    data: calEvents.map(e => ({ ...e, institutionId: inst.id, allDay: true, isPublic: true })),
+    data: calEvents.map(e => ({ ...e, type: e.type as any, institutionId: inst.id, allDay: true, isPublic: true })),
   });
   console.log(`✅ Calendar events (${calEvents.length})`);
 
   // ── 14d. Subject programs (feuille de route) ─────────────────────────────
-  await prisma.programChapter.deleteMany({});
-  await prisma.subjectProgram.deleteMany({});
 
   const programDefs: { classId: string; code: string; chapters: { title: string; plan: string; duration: string; isCompleted: boolean }[] }[] = [
     { classId: classTleD.id, code: 'MATH', chapters: [
@@ -676,6 +688,354 @@ async function main() {
   await prisma.mockExamSubjectFiche.createMany({ data: mockFicheRows });
   console.log(`✅ Mock exam (Terminale D — ${mockGradeRows.length} notes)`);
 
+  // ── 14g. Attendance — 20 school days (Oct–Nov 2024, T1) ─────────────────
+  const attDates = [
+    '2024-10-07','2024-10-08','2024-10-09','2024-10-10','2024-10-11',
+    '2024-10-14','2024-10-15','2024-10-16','2024-10-17','2024-10-18',
+    '2024-10-21','2024-10-22','2024-10-23','2024-10-24','2024-10-25',
+    '2024-10-28','2024-10-29','2024-10-30','2024-10-31','2024-11-04',
+  ].map(s => new Date(s));
+  // Pattern: ~85% present, occasional LATE/ABSENT/EXCUSED per student-day combo
+  const attStatuses = ['PRESENT','PRESENT','PRESENT','PRESENT','PRESENT','PRESENT','PRESENT','PRESENT','PRESENT','PRESENT','PRESENT','PRESENT','LATE','ABSENT','PRESENT','PRESENT','PRESENT','PRESENT','ABSENT','EXCUSED'] as const;
+  const attRows: any[] = [];
+  for (const { cls, students } of [
+    { cls: class6A, students: s6A }, { cls: class3B, students: s3B },
+    { cls: class2A, students: s2A }, { cls: classTleD, students: sTleD },
+  ]) {
+    for (let si = 0; si < students.length; si++) {
+      for (let di = 0; di < attDates.length; di++) {
+        attRows.push({
+          studentId: students[si].id, classId: cls.id,
+          institutionId: inst.id, date: attDates[di],
+          status: attStatuses[(si * 7 + di * 3) % attStatuses.length],
+          recordedBy: admin.id,
+        });
+      }
+    }
+  }
+  await prisma.attendance.createMany({ data: attRows, skipDuplicates: true });
+  console.log(`✅ Attendance (${attRows.length} records, ${attDates.length} days × 200 students)`);
+
+  // ── 14h. Course materials (LMS) ──────────────────────────────────────────
+  await prisma.courseMaterial.createMany({
+    data: [
+      // Terminale D
+      { title: 'Cours — Limites et continuité', description: 'Cours complet T2 chapitres 1-3', type: 'DOCUMENT', url: 'https://example.com/docs/math-tled-limites.pdf', classId: classTleD.id, subjectId: subs['MATH'].id, academicYear: AY, termNumber: 2, uploadedById: t1.id, institutionId: inst.id },
+      { title: 'Vidéo — Dérivées et primitives', description: 'Tutoriel vidéo 25 min', type: 'VIDEO', url: 'https://www.youtube.com/watch?v=example1', classId: classTleD.id, subjectId: subs['MATH'].id, academicYear: AY, termNumber: 2, uploadedById: t1.id, institutionId: inst.id },
+      { title: 'TP numérique — Oscillateur', description: 'Simulation Phet oscillateur harmonique', type: 'LINK', url: 'https://phet.colorado.edu/fr/simulations/pendulum-lab', classId: classTleD.id, subjectId: subs['PC'].id, academicYear: AY, termNumber: 2, uploadedById: t2.id, institutionId: inst.id },
+      { title: 'Cours — Génétique moléculaire', description: 'Chapitres ADN, réplication, transcription', type: 'DOCUMENT', url: 'https://example.com/docs/svt-tled-genetique.pdf', classId: classTleD.id, subjectId: subs['SVT'].id, academicYear: AY, termNumber: 2, uploadedById: t2.id, institutionId: inst.id },
+      // 3ème B
+      { title: 'Fascicule — Équations 2nd degré', description: 'Exercices corrigés niveau BEPC', type: 'DOCUMENT', url: 'https://example.com/docs/math-3b-eq2.pdf', classId: class3B.id, subjectId: subs['MATH'].id, academicYear: AY, termNumber: 2, uploadedById: t3.id, institutionId: inst.id },
+      { title: 'Cours — La colonisation', description: 'Histoire Afrique de l\'Ouest 19ème siècle', type: 'DOCUMENT', url: 'https://example.com/docs/hist-3b-colonisation.pdf', classId: class3B.id, subjectId: subs['HIST'].id, academicYear: AY, termNumber: 2, uploadedById: t3.id, institutionId: inst.id },
+      // 2nde A
+      { title: 'Cours — Phonétique anglaise', description: 'Sons et prononciation niveau 2nde', type: 'LINK', url: 'https://www.bbc.co.uk/learningenglish/sounds', classId: class2A.id, subjectId: subs['ANGL'].id, academicYear: AY, termNumber: 1, uploadedById: t4.id, institutionId: inst.id },
+      { title: 'Fiche — Notions d\'économie', description: 'Introduction aux circuits économiques', type: 'DOCUMENT', url: 'https://example.com/docs/econ-2a-intro.pdf', classId: class2A.id, subjectId: subs['ECON'].id, academicYear: AY, termNumber: 1, uploadedById: t4.id, institutionId: inst.id },
+      // 6ème A
+      { title: 'Cours — Fractions et décimaux', description: 'Notions fondamentales 6ème', type: 'DOCUMENT', url: 'https://example.com/docs/math-6a-fractions.pdf', classId: class6A.id, subjectId: subs['MATH'].id, academicYear: AY, termNumber: 1, uploadedById: t1.id, institutionId: inst.id },
+      { title: 'Vidéo — La cellule vivante', description: 'Cours SVT animation 15 min', type: 'VIDEO', url: 'https://www.youtube.com/watch?v=example2', classId: class6A.id, subjectId: subs['SVT'].id, academicYear: AY, termNumber: 1, uploadedById: t1.id, institutionId: inst.id },
+    ],
+  });
+  console.log('✅ Course materials (10 LMS resources)');
+
+  // ── 14i. Assignment submissions ──────────────────────────────────────────
+  const allAssignments = await prisma.assignment.findMany({
+    where: { institutionId: inst.id, academicYear: AY, status: { in: ['PUBLISHED', 'CLOSED'] as any } },
+    select: { id: true, classId: true, maxScore: true },
+  });
+  const subRows: any[] = [];
+  for (const asgn of allAssignments) {
+    const students = asgn.classId === classTleD.id ? sTleD
+      : asgn.classId === class3B.id  ? s3B
+      : asgn.classId === class2A.id  ? s2A : s6A;
+    const submitCount = Math.floor(students.length * 0.78);
+    for (let si = 0; si < submitCount; si++) {
+      const score = si < submitCount * 0.7 ? Math.round((12 + (si % 8)) * 10) / 10 : undefined;
+      subRows.push({
+        assignmentId: asgn.id, studentId: students[si].id,
+        content: `Travail rendu par ${students[si].id.slice(-4)}. Voir pièce jointe.`,
+        status: score !== undefined ? 'GRADED' : 'SUBMITTED',
+        score: score ?? null,
+        submittedAt: new Date('2025-01-20T10:00:00'),
+        gradedAt: score !== undefined ? new Date('2025-01-25T14:00:00') : null,
+        gradedById: score !== undefined ? admin.id : null,
+      });
+    }
+  }
+  if (subRows.length) await prisma.assignmentSubmission.createMany({ data: subRows, skipDuplicates: true });
+  console.log(`✅ Assignment submissions (${subRows.length} soumissions)`);
+
+  // ── 14j. Quizzes with questions, options, and student attempts ───────────
+  await prisma.$disconnect(); await prisma.$connect();
+  // Quiz 1 — Mathématiques Terminale D
+  const quizTleD = await prisma.quiz.create({
+    data: {
+      title: 'Quiz T2 — Limites et dérivées',
+      description: 'Évaluation formative sur les chapitres 4 et 5.',
+      status: 'CLOSED' as any, durationMinutes: 20, maxAttempts: 1,
+      openAt: new Date('2025-01-20T08:00:00'), closeAt: new Date('2025-01-25T18:00:00'),
+      classId: classTleD.id, subjectId: subs['MATH'].id, academicYear: AY, termNumber: 2,
+      createdById: t1.id, institutionId: inst.id,
+    },
+  });
+  const q1Defs = [
+    { text: 'Quelle est la limite de (3x² + 2x) / x² quand x → +∞ ?', type: 'MCQ' as const, order: 1, pts: 2, opts: [{ text: '0', ok: false }, { text: '3', ok: true }, { text: '+∞', ok: false }, { text: '2', ok: false }] },
+    { text: 'Une fonction dérivable en a est nécessairement continue en a.', type: 'TRUE_FALSE' as const, order: 2, pts: 1, opts: [{ text: 'Vrai', ok: true }, { text: 'Faux', ok: false }] },
+    { text: 'La dérivée de f(x) = x³ est :', type: 'MCQ' as const, order: 3, pts: 2, opts: [{ text: 'x²', ok: false }, { text: '3x²', ok: true }, { text: '3x', ok: false }, { text: 'x⁴/4', ok: false }] },
+    { text: 'Si f\'(a) > 0 alors f est croissante au voisinage de a.', type: 'TRUE_FALSE' as const, order: 4, pts: 1, opts: [{ text: 'Vrai', ok: true }, { text: 'Faux', ok: false }] },
+    { text: 'La limite de sin(x)/x quand x → 0 est :', type: 'MCQ' as const, order: 5, pts: 2, opts: [{ text: '0', ok: false }, { text: '∞', ok: false }, { text: '1', ok: true }, { text: '-1', ok: false }] },
+  ];
+  const q1Built: { id: string; order: number; opts: { id: string; isCorrect: boolean }[] }[] = [];
+  for (const qd of q1Defs) {
+    const q = await prisma.quizQuestion.create({ data: { quizId: quizTleD.id, text: qd.text, type: qd.type, points: qd.pts, order: qd.order } });
+    const opts = await Promise.all(qd.opts.map((o, i) => prisma.quizOption.create({ data: { questionId: q.id, text: o.text, isCorrect: o.ok, order: i + 1 } })));
+    q1Built.push({ id: q.id, order: qd.order, opts: opts.map(o => ({ id: o.id, isCorrect: o.isCorrect })) });
+  }
+  const maxQ1 = q1Defs.reduce((s, q) => s + q.pts, 0);
+  for (let si = 0; si < Math.min(18, sTleD.length); si++) {
+    const att = await prisma.quizAttempt.create({ data: { quizId: quizTleD.id, studentId: sTleD[si].id, startedAt: new Date('2025-01-22T09:00:00'), submittedAt: new Date('2025-01-22T09:18:00'), maxScore: maxQ1 } });
+    let earned = 0;
+    for (const q of q1Built) {
+      const pickCorrect = (si + q.order) % 4 !== 0;
+      const chosen = pickCorrect ? q.opts.find(o => o.isCorrect)! : q.opts.find(o => !o.isCorrect)!;
+      const pts = chosen.isCorrect ? q1Defs[q.order - 1].pts : 0;
+      earned += pts;
+      await prisma.quizAnswer.create({ data: { attemptId: att.id, questionId: q.id, selectedOptionId: chosen.id, isCorrect: chosen.isCorrect, pointsEarned: pts } });
+    }
+    await prisma.quizAttempt.update({ where: { id: att.id }, data: { score: earned } });
+  }
+
+  // Quiz 2 — Mathématiques 3ème B
+  const quiz3B = await prisma.quiz.create({
+    data: {
+      title: 'Quiz T2 — Équations et inéquations',
+      description: 'Révision BEPC : résolution d\'équations.',
+      status: 'OPEN' as any, durationMinutes: 15, maxAttempts: 1,
+      openAt: new Date('2025-01-22T08:00:00'), closeAt: new Date('2025-02-05T18:00:00'),
+      classId: class3B.id, subjectId: subs['MATH'].id, academicYear: AY, termNumber: 2,
+      createdById: t3.id, institutionId: inst.id,
+    },
+  });
+  const q2Defs = [
+    { text: 'La solution de 2x + 6 = 0 est :', type: 'MCQ' as const, order: 1, pts: 2, opts: [{ text: 'x = 3', ok: false }, { text: 'x = -3', ok: true }, { text: 'x = 6', ok: false }, { text: 'x = -6', ok: false }] },
+    { text: 'L\'inéquation x > 0 est vérifiée par x = -1.', type: 'TRUE_FALSE' as const, order: 2, pts: 1, opts: [{ text: 'Vrai', ok: false }, { text: 'Faux', ok: true }] },
+    { text: 'Le discriminant de x² - 5x + 6 = 0 est :', type: 'MCQ' as const, order: 3, pts: 2, opts: [{ text: '1', ok: true }, { text: '-1', ok: false }, { text: '5', ok: false }, { text: '36', ok: false }] },
+  ];
+  const q2Built: { id: string; order: number; opts: { id: string; isCorrect: boolean }[] }[] = [];
+  for (const qd of q2Defs) {
+    const q = await prisma.quizQuestion.create({ data: { quizId: quiz3B.id, text: qd.text, type: qd.type, points: qd.pts, order: qd.order } });
+    const opts = await Promise.all(qd.opts.map((o, i) => prisma.quizOption.create({ data: { questionId: q.id, text: o.text, isCorrect: o.ok, order: i + 1 } })));
+    q2Built.push({ id: q.id, order: qd.order, opts: opts.map(o => ({ id: o.id, isCorrect: o.isCorrect })) });
+  }
+  const maxQ2 = q2Defs.reduce((s, q) => s + q.pts, 0);
+  for (let si = 0; si < Math.min(20, s3B.length); si++) {
+    const att = await prisma.quizAttempt.create({ data: { quizId: quiz3B.id, studentId: s3B[si].id, startedAt: new Date('2025-01-24T10:00:00'), submittedAt: new Date('2025-01-24T10:14:00'), maxScore: maxQ2 } });
+    let earned = 0;
+    for (const q of q2Built) {
+      const pickCorrect = (si + q.order) % 5 !== 0;
+      const chosen = pickCorrect ? q.opts.find(o => o.isCorrect)! : q.opts.find(o => !o.isCorrect)!;
+      const pts = chosen.isCorrect ? q2Defs[q.order - 1].pts : 0;
+      earned += pts;
+      await prisma.quizAnswer.create({ data: { attemptId: att.id, questionId: q.id, selectedOptionId: chosen.id, isCorrect: chosen.isCorrect, pointsEarned: pts } });
+    }
+    await prisma.quizAttempt.update({ where: { id: att.id }, data: { score: earned } });
+  }
+  console.log('✅ Quizzes (2 quizzes, questions, options, student attempts)');
+
+  // ── 14k. Disciplinary records ────────────────────────────────────────────
+  await prisma.disciplinaryRecord.createMany({
+    data: [
+      { studentId: sTleD[3].id, institutionId: inst.id, date: new Date('2024-11-05'), type: 'WARNING' as any, description: 'Utilisation du téléphone portable pendant le cours de Mathématiques.', sanction: 'Avertissement oral', recordedByName: t1.name, recordedById: t1.id, resolved: true },
+      { studentId: s3B[7].id,   institutionId: inst.id, date: new Date('2024-11-12'), type: 'SUSPENSION' as any, description: 'Bagarre dans la cour de récréation avec un élève de 3ème A.', sanction: '3 jours de suspension', sanctionStart: new Date('2024-11-13'), sanctionEnd: new Date('2024-11-15'), recordedByName: admin.name, recordedById: admin.id, resolved: true },
+      { studentId: s6A[12].id,  institutionId: inst.id, date: new Date('2024-10-22'), type: 'NOTE' as any, description: 'Oubli répété du matériel scolaire (3ème fois ce mois).', recordedByName: t1.name, recordedById: t1.id, resolved: false },
+      { studentId: s2A[5].id,   institutionId: inst.id, date: new Date('2024-12-03'), type: 'WARNING' as any, description: 'Retard injustifié de 45 minutes sans excuse valable.', sanction: 'Avertissement écrit aux parents', recordedByName: t4.name, recordedById: t4.id, resolved: true },
+      { studentId: sTleD[15].id,institutionId: inst.id, date: new Date('2025-01-09'), type: 'COMMENDATION' as any, description: 'Excellent comportement lors de l\'examen blanc. A aidé ses camarades à se préparer.', recordedByName: t2.name, recordedById: t2.id, resolved: false },
+      { studentId: s3B[22].id,  institutionId: inst.id, date: new Date('2024-10-30'), type: 'NOTE' as any, description: 'Copie sur un camarade lors du devoir de Physique-Chimie.', sanction: 'Note annulée, devoir refait sous surveillance', recordedByName: t3.name, recordedById: t3.id, resolved: true },
+      { studentId: s6A[30].id,  institutionId: inst.id, date: new Date('2025-01-15'), type: 'COMMENDATION' as any, description: 'Prix du meilleur élève au concours de lecture à voix haute inter-classes.', recordedByName: admin.name, recordedById: admin.id, resolved: false },
+    ],
+  });
+  console.log('✅ Disciplinary records (7 records)');
+
+  // ── 14l. Health records ──────────────────────────────────────────────────
+  await prisma.healthRecord.createMany({
+    data: [
+      { institutionId: inst.id, studentId: s6A[4].id,   date: new Date('2024-10-15'), visitType: 'CONSULTATION' as any, complaint: 'Maux de tête et fatigue', diagnosis: 'Fatigue oculaire', treatment: 'Repos, recommandation de consulter un ophtalmologue', attendedByName: 'Infirmier Yao Atsou' },
+      { institutionId: inst.id, studentId: s3B[10].id,  date: new Date('2024-11-03'), visitType: 'ACCIDENT' as any, complaint: 'Chute dans les escaliers, douleur genou droit', diagnosis: 'Contusion genou droit', treatment: 'Désinfection, bandage compressif, glace', attendedByName: 'Infirmier Yao Atsou' },
+      { institutionId: inst.id, studentId: sTleD[8].id, date: new Date('2024-11-20'), visitType: 'CONSULTATION' as any, complaint: 'Douleurs abdominales sévères', diagnosis: 'Suspicion gastro-entérite', treatment: 'Référé à l\'hôpital de référence', referredToHospital: true, hospital: 'CHU Sylvanus Olympio, Lomé', attendedByName: 'Infirmier Yao Atsou' },
+      { institutionId: inst.id, studentId: s2A[18].id,  date: new Date('2024-12-10'), visitType: 'VACCINATION' as any, complaint: 'Campagne de vaccination Méningite A', diagnosis: 'RAS', treatment: 'Vaccin administré', attendedByName: 'Équipe sanitaire MSHP' },
+      { institutionId: inst.id, studentId: s6A[25].id,  date: new Date('2025-01-08'), visitType: 'DRESSING' as any, complaint: 'Plaie superficielle main droite (coupure lame crayon)', diagnosis: 'Plaie superficielle', treatment: 'Désinfection et pansement', attendedByName: 'Infirmier Yao Atsou' },
+      { institutionId: inst.id, studentId: s3B[33].id,  date: new Date('2025-01-14'), visitType: 'CONSULTATION' as any, complaint: 'Fièvre 38.5°C, frissons', diagnosis: 'Possible paludisme', treatment: 'Test TDR positif, CTA prescrit, parents prévenus', referredToHospital: true, hospital: 'Clinique de l\'Espoir, Lomé', attendedByName: 'Infirmier Yao Atsou' },
+    ],
+  });
+  console.log('✅ Health records (6 medical visits)');
+
+  // ── 14m. National exam results (BEPC + BAC) ──────────────────────────────
+  await prisma.$disconnect(); await prisma.$connect();
+  // BEPC — 3ème B students (June 2024 — previous session)
+  const bepcResults = ['ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','AJOURNE','AJOURNE','AJOURNE','ABSENT','ABSENT'] as const;
+  const mentions = ['Passable','Passable','Assez Bien','Bien','Bien','Assez Bien','Passable','Assez Bien','Passable','Bien','Bien','Assez Bien','Passable','Passable','Assez Bien','Bien','Passable','Passable','Assez Bien','Bien','Passable','Passable','Assez Bien','Passable','Bien','Très Bien','Bien','Assez Bien','Passable','Passable','Bien','Assez Bien','Passable','Bien','Passable','Assez Bien','Passable','Bien','Passable','Passable','Assez Bien','Passable','Passable','Bien','Passable',null,null,null,null,null];
+  const bepcRows = s3B.map((st: any, i: number) => ({
+    institutionId: inst.id, studentId: st.id, examType: 'BEPC' as any,
+    session: 'Juin 2024', academicYear: '2023-2024',
+    registrationNumber: `BEPC-2024-${String(i + 1).padStart(4, '0')}`,
+    center: 'CEG Agoè — Lomé', series: null,
+    result: bepcResults[i] as any, mention: mentions[i],
+    totalScore: bepcResults[i] === 'ADMIS' ? 90 + (i % 30) : bepcResults[i] === 'AJOURNE' ? 70 + i : null,
+  }));
+  await prisma.nationalExamResult.createMany({ data: bepcRows, skipDuplicates: true });
+
+  // BAC — Terminale D (June 2025 — anticipated for demo purposes)
+  const bacResults = ['ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','ADMIS','AJOURNE','AJOURNE','AJOURNE','AJOURNE','AJOURNE','ABSENT','ABSENT'] as const;
+  const bacMentions = ['Passable','Passable','Assez Bien','Bien','Très Bien','Assez Bien','Passable','Assez Bien','Passable','Bien','Bien','Assez Bien','Passable','Passable','Assez Bien','Bien','Passable','Passable','Assez Bien','Bien','Passable','Passable','Assez Bien','Passable','Bien','Très Bien','Bien','Assez Bien','Passable','Passable','Bien','Assez Bien','Passable','Bien','Passable','Assez Bien','Passable','Bien','Passable','Passable','Assez Bien','Passable','Passable',null,null,null,null,null,null,null];
+  const bacRows = sTleD.map((st: any, i: number) => ({
+    institutionId: inst.id, studentId: st.id, examType: 'BAC' as any,
+    session: 'Juin 2025', academicYear: '2024-2025',
+    registrationNumber: `BAC-2025-D-${String(i + 1).padStart(4, '0')}`,
+    center: 'Lycée de Tokoin — Lomé', series: 'D',
+    result: bacResults[i] as any, mention: bacMentions[i],
+    totalScore: bacResults[i] === 'ADMIS' ? 100 + (i % 40) : bacResults[i] === 'AJOURNE' ? 75 + i : null,
+  }));
+  await prisma.nationalExamResult.createMany({ data: bacRows, skipDuplicates: true });
+  console.log(`✅ National exam results (${bepcRows.length} BEPC + ${bacRows.length} BAC)`);
+
+  // ── 14n. Alumni records ──────────────────────────────────────────────────
+  await prisma.$disconnect(); await prisma.$connect();
+  // Create 6 "graduated" students from previous year (2023-2024 Terminale D)
+  const alumniUserPw = await hash('Student@123');
+  const alumniDefs = [
+    { name: 'Komlan Mensah',    email: 'alumni.2024.1@demo.novabulletin.local', sex: 'M', dob: '2004-03-12', adm: 'LYC-TLD23-M01', result: 'ADMIS',    mention: 'Assez Bien', further: 'Université de Lomé — Licence Mathématiques' },
+    { name: 'Abra Kpodo',       email: 'alumni.2024.2@demo.novabulletin.local', sex: 'F', dob: '2004-07-22', adm: 'LYC-TLD23-F01', result: 'ADMIS',    mention: 'Bien',       further: 'INSTI — Génie Civil' },
+    { name: 'Dodzi Agbevor',    email: 'alumni.2024.3@demo.novabulletin.local', sex: 'M', dob: '2003-11-05', adm: 'LYC-TLD23-M02', result: 'ADMIS',    mention: 'Très Bien',  further: 'EAMAU — Architecture' },
+    { name: 'Sena Atsu',        email: 'alumni.2024.4@demo.novabulletin.local', sex: 'F', dob: '2004-01-30', adm: 'LYC-TLD23-F02', result: 'ADMIS',    mention: 'Passable',   further: 'IAG — Gestion' },
+    { name: 'Elikem Blewu',     email: 'alumni.2024.5@demo.novabulletin.local', sex: 'M', dob: '2003-09-18', adm: 'LYC-TLD23-M03', result: 'AJOURNE',  mention: null,         further: null },
+    { name: 'Patience Dewotor', email: 'alumni.2024.6@demo.novabulletin.local', sex: 'F', dob: '2004-05-14', adm: 'LYC-TLD23-F03', result: 'ADMIS',    mention: 'Assez Bien', further: 'CREDEL — Infirmière' },
+  ];
+  const alumniUsers = await (prisma.user as any).createManyAndReturn({
+    data: alumniDefs.map(a => ({ email: a.email, password: alumniUserPw, name: a.name, role: 'STUDENT', institutionId: inst.id })),
+  });
+  const alumniStudents = await (prisma.student as any).createManyAndReturn({
+    data: alumniDefs.map((a, i) => ({ admissionNumber: a.adm, dateOfBirth: new Date(a.dob), sex: a.sex, institutionId: inst.id, userId: alumniUsers[i].id })),
+  });
+  await prisma.alumniRecord.createMany({
+    data: alumniDefs.map((a, i) => ({
+      studentId: alumniStudents[i].id, institutionId: inst.id,
+      graduationYear: 2024, lastClass: 'Terminale D', examType: 'BAC', examSession: 'Juin 2024',
+      examResult: a.result, nationalExamCenter: 'Lycée de Tokoin — Lomé',
+      furtherEducation: a.further ?? null, contactPhone: null, notes: null,
+      diplomaNumber: a.result === 'ADMIS' ? `BAC-D-2024-${String(i + 1).padStart(5, '0')}` : null,
+    })),
+  });
+  console.log(`✅ Alumni records (${alumniDefs.length} diplômés 2024)`);
+
+  // ── 14o. Student transfers ───────────────────────────────────────────────
+  // Transfer IN — new student arriving from another school
+  const transferInUser = await prisma.user.create({
+    data: { email: 'transfer.in.2025@demo.novabulletin.local', password: alumniUserPw, name: 'Kodjo Tetteh', role: 'STUDENT', institutionId: inst.id },
+  });
+  const transferInStudent = await prisma.student.create({
+    data: { admissionNumber: 'LYC-TRANS-IN-01', dateOfBirth: new Date('2007-06-10'), sex: 'M', institutionId: inst.id, userId: transferInUser.id },
+  });
+  await prisma.studentTransfer.create({
+    data: {
+      studentId: transferInStudent.id, institutionId: inst.id,
+      direction: 'IN' as any, otherSchool: 'CEG Baguida', transferDate: new Date('2024-10-01'),
+      academicYear: AY, reason: 'Déménagement familial à Lomé',
+      processedByName: admin.name, processedById: admin.id,
+    },
+  });
+  // Transfer OUT — existing student leaving
+  await prisma.studentTransfer.create({
+    data: {
+      studentId: s2A[49].id, institutionId: inst.id,
+      direction: 'OUT' as any, otherSchool: 'Lycée Bilingue de Kara',
+      transferDate: new Date('2024-11-15'), academicYear: AY,
+      reason: 'Mutation du parent fonctionnaire vers Kara',
+      processedByName: admin.name, processedById: admin.id,
+    },
+  });
+  console.log('✅ Student transfers (1 IN + 1 OUT)');
+
+  // ── 14p. Inventory + library loans ──────────────────────────────────────
+  const inventoryItems = await (prisma.inventoryItem as any).createManyAndReturn({
+    data: [
+      { institutionId: inst.id, name: 'Mathématiques Terminale D — Fascicule', category: 'BOOK', quantity: 40, condition: 'GOOD', location: 'Bibliothèque centrale', purchaseDate: new Date('2023-09-01'), purchaseValue: 4500 },
+      { institutionId: inst.id, name: 'Sciences de la Vie et de la Terre — 3ème', category: 'BOOK', quantity: 35, condition: 'GOOD', location: 'Bibliothèque centrale', purchaseDate: new Date('2023-09-01'), purchaseValue: 3800 },
+      { institutionId: inst.id, name: 'Histoire-Géographie — 6ème', category: 'BOOK', quantity: 45, condition: 'FAIR', location: 'Bibliothèque centrale', purchaseDate: new Date('2022-09-01'), purchaseValue: 3200 },
+      { institutionId: inst.id, name: 'Dictionnaire Larousse Collège', category: 'BOOK', quantity: 20, condition: 'GOOD', location: 'Bibliothèque centrale', purchaseDate: new Date('2023-09-01'), purchaseValue: 12000 },
+      { institutionId: inst.id, name: 'Physique-Chimie — 2nde', category: 'BOOK', quantity: 30, condition: 'GOOD', location: 'Bibliothèque centrale', purchaseDate: new Date('2023-09-01'), purchaseValue: 4200 },
+      { institutionId: inst.id, name: 'Tables de laboratoire', category: 'FURNITURE', quantity: 8, condition: 'GOOD', location: 'Salle de sciences', purchaseDate: new Date('2020-06-01'), purchaseValue: 85000 },
+      { institutionId: inst.id, name: 'Chaises salle de cours', category: 'FURNITURE', quantity: 220, condition: 'FAIR', location: 'Salles de cours', purchaseDate: new Date('2019-09-01'), purchaseValue: 8500 },
+      { institutionId: inst.id, name: 'Ordinateurs portables enseignants', category: 'IT', quantity: 4, condition: 'GOOD', location: 'Salle des professeurs', purchaseDate: new Date('2022-01-15'), purchaseValue: 350000, supplier: 'Informatique Express Lomé' },
+      { institutionId: inst.id, name: 'Projecteur datashow', category: 'IT', quantity: 2, condition: 'GOOD', location: 'Salle des professeurs', purchaseDate: new Date('2021-03-10'), purchaseValue: 180000 },
+      { institutionId: inst.id, name: 'Microscopes optiques', category: 'LAB', quantity: 6, condition: 'GOOD', location: 'Laboratoire SVT', purchaseDate: new Date('2020-09-01'), purchaseValue: 120000 },
+      { institutionId: inst.id, name: 'Ballon de football', category: 'SPORT', quantity: 4, condition: 'GOOD', location: 'Terrain de sport', purchaseDate: new Date('2023-09-01'), purchaseValue: 15000 },
+      { institutionId: inst.id, name: 'Matelas de sol (sport)', category: 'SPORT', quantity: 10, condition: 'FAIR', location: 'Terrain de sport', purchaseDate: new Date('2021-01-01'), purchaseValue: 25000 },
+    ],
+  });
+  // Library loans — books to students
+  const bookItems = inventoryItems.filter((it: any) => it.category === 'BOOK');
+  await prisma.libraryLoan.createMany({
+    data: [
+      { institutionId: inst.id, itemId: bookItems[0].id, studentId: sTleD[0].id, borrowerName: sTleD[0].id, loanDate: new Date('2025-01-10'), dueDate: new Date('2025-02-10'), issuedByName: admin.name },
+      { institutionId: inst.id, itemId: bookItems[0].id, studentId: sTleD[5].id, borrowerName: sTleD[5].id, loanDate: new Date('2025-01-10'), dueDate: new Date('2025-02-10'), issuedByName: admin.name },
+      { institutionId: inst.id, itemId: bookItems[1].id, studentId: s3B[2].id,   borrowerName: s3B[2].id,   loanDate: new Date('2024-11-15'), dueDate: new Date('2024-12-15'), isReturned: false, issuedByName: admin.name },
+      { institutionId: inst.id, itemId: bookItems[2].id, studentId: s6A[8].id,   borrowerName: s6A[8].id,   loanDate: new Date('2024-10-20'), dueDate: new Date('2024-11-20'), returnDate: new Date('2024-11-18'), isReturned: true, issuedByName: admin.name },
+      { institutionId: inst.id, itemId: bookItems[3].id, studentId: s2A[12].id,  borrowerName: s2A[12].id,  loanDate: new Date('2025-01-08'), dueDate: new Date('2025-02-08'), issuedByName: admin.name },
+      { institutionId: inst.id, itemId: bookItems[4].id, studentId: s2A[20].id,  borrowerName: s2A[20].id,  loanDate: new Date('2025-01-12'), dueDate: new Date('2025-02-12'), issuedByName: admin.name },
+      { institutionId: inst.id, itemId: bookItems[0].id, studentId: sTleD[15].id,borrowerName: sTleD[15].id,loanDate: new Date('2024-12-02'), dueDate: new Date('2025-01-02'), returnDate: new Date('2024-12-28'), isReturned: true, issuedByName: admin.name },
+      { institutionId: inst.id, itemId: bookItems[1].id, studentId: s3B[18].id,  borrowerName: s3B[18].id,  loanDate: new Date('2024-12-10'), dueDate: new Date('2025-01-10'), issuedByName: admin.name },
+    ],
+  });
+  console.log(`✅ Inventory (${inventoryItems.length} items) + library loans (8)`);
+
+  // ── 14q. School documents ────────────────────────────────────────────────
+  await prisma.schoolDocument.createMany({
+    data: [
+      { institutionId: inst.id, title: 'Circulaire n°01/2024 — Rentrée scolaire 2024-2025', category: 'CIRCULAR', fileUrl: 'https://example.com/docs/circulaire-rentree-2024.pdf', description: 'Modalités d\'organisation de la rentrée scolaire 2024-2025', uploadedById: admin.id, isPublic: true },
+      { institutionId: inst.id, title: 'Emploi du temps T2 — Terminale D', category: 'SCHEDULE', fileUrl: 'https://example.com/docs/edt-t2-tle-d.pdf', description: 'Emploi du temps 2ème trimestre Terminale D', uploadedById: admin.id, isPublic: false },
+      { institutionId: inst.id, title: 'Emploi du temps T2 — 3ème B', category: 'SCHEDULE', fileUrl: 'https://example.com/docs/edt-t2-3b.pdf', description: 'Emploi du temps 2ème trimestre 3ème B', uploadedById: admin.id, isPublic: false },
+      { institutionId: inst.id, title: 'Rapport financier T1 2024-2025', category: 'FINANCIAL', fileUrl: 'https://example.com/docs/rapport-financier-t1-2024.pdf', description: 'Bilan des recettes et dépenses du 1er trimestre', uploadedById: admin.id, isPublic: false },
+      { institutionId: inst.id, title: 'Contrat de travail — Kofi Agbesi', category: 'CONTRACT', fileUrl: 'https://example.com/docs/contrat-agbesi-2024.pdf', description: 'Contrat CDI enseignant Mathématiques', uploadedById: admin.id, isPublic: false },
+      { institutionId: inst.id, title: 'PV Conseil d\'Établissement — Nov 2024', category: 'REPORT', fileUrl: 'https://example.com/docs/pv-conseil-nov2024.pdf', description: 'Procès-verbal du conseil d\'établissement du 18 novembre 2024', uploadedById: admin.id, isPublic: false },
+    ],
+  });
+  console.log('✅ School documents (6 documents)');
+
+  // ── 14r. Subject hours log (T1 + T2) ────────────────────────────────────
+  const hoursLogRows: any[] = [];
+  for (const { cls, codes } of classCfg) {
+    for (const code of codes) {
+      hoursLogRows.push({ subjectId: subs[code].id, classId: cls.id, academicYear: AY, termNumber: 1, termName: '1er Trimestre', heuresPrevues: 48, heuresEffectuees: 44, absences: Math.floor(Math.random() * 8), retards: Math.floor(Math.random() * 5) });
+      hoursLogRows.push({ subjectId: subs[code].id, classId: cls.id, academicYear: AY, termNumber: 2, termName: '2ème Trimestre', heuresPrevues: 52, heuresEffectuees: 48, absences: Math.floor(Math.random() * 6), retards: Math.floor(Math.random() * 4) });
+    }
+  }
+  await prisma.subjectHoursLog.createMany({ data: hoursLogRows, skipDuplicates: true });
+  console.log(`✅ Subject hours log (${hoursLogRows.length} entries)`);
+
+  // ── 14s. Subscription payment ────────────────────────────────────────────
+  await prisma.subscriptionPayment.create({
+    data: {
+      institutionId: inst.id, plan: 'ANNUAL', tier: 'PRO' as any,
+      amount: 200000, currency: 'XOF', method: 'MOMO_MANUAL' as any,
+      status: 'APPROVED' as any, momoPhone: '+22890000001',
+      momoReference: 'TM-2024-089123', momoOperator: 'TMoney',
+      monthsGranted: 12, approvedAt: new Date('2024-09-05'),
+    },
+  });
+  console.log('✅ Subscription payment (200 000 XOF ANNUAL/PRO — APPROVED)');
+
+  // ── 14t. Announcements ───────────────────────────────────────────────────
+  await prisma.announcement.createMany({
+    data: [
+      { title: 'Réunion parents d\'élèves — 25 janvier', body: 'Une réunion parents d\'élèves est organisée le samedi 25 janvier 2025 à 9h00 dans la grande salle. Présence obligatoire pour les parents de Terminale D et 3ème B. Ordre du jour : résultats T1, préparation BEPC/BAC.', audience: 'PARENTS' as any, isPinned: true, publishedAt: new Date('2025-01-10'), expiresAt: new Date('2025-01-26'), authorId: admin.id, institutionId: inst.id },
+      { title: 'Calendrier des compositions T2 — 10 au 15 mars 2025', body: 'Les compositions du 2ème trimestre se dérouleront du lundi 10 au samedi 15 mars 2025. Les emplois du temps de composition seront affichés à l\'administration et partagés par classe. Les enseignants sont priés de déposer leurs sujets avant le 7 mars.', audience: 'ALL' as any, isPinned: true, publishedAt: new Date('2025-02-20'), authorId: admin.id, institutionId: inst.id },
+      { title: 'Fermeture exceptionnelle — 28 janvier 2025', body: 'L\'établissement sera fermé le mardi 28 janvier 2025 à l\'occasion de la fête nationale. Les cours reprennent normalement le mercredi 29 janvier.', audience: 'ALL' as any, isPinned: false, publishedAt: new Date('2025-01-24'), expiresAt: new Date('2025-01-29'), authorId: admin.id, institutionId: inst.id },
+      { title: 'Réunion pédagogique mensuelle — vendredi 31 janvier', body: 'Tous les enseignants sont convoqués à la réunion pédagogique mensuelle le vendredi 31 janvier à 14h30 en salle des professeurs. Thème : bilan des performances T1 et stratégies de remédiation.', audience: 'TEACHERS' as any, isPinned: false, publishedAt: new Date('2025-01-27'), expiresAt: new Date('2025-01-31'), authorId: admin.id, institutionId: inst.id },
+      { title: 'Palmarès T1 — Félicitations aux meilleurs élèves', body: 'Le lycée félicite les 10 premiers élèves de chaque classe pour leurs excellents résultats du 1er trimestre. La cérémonie de remise des prix se tiendra lors de l\'assemblée générale de fin T1. Bravo à tous !', audience: 'ALL' as any, isPinned: false, publishedAt: new Date('2025-01-05'), authorId: admin.id, institutionId: inst.id },
+      { title: 'Révisions BAC — Programme de soutien scolaire', body: 'Un programme de soutien scolaire pour les élèves de Terminale D est mis en place tous les samedis matin de 8h00 à 11h00. Matières : Mathématiques, Physique-Chimie, SVT. Inscription obligatoire auprès du prof principal.', audience: 'CLASS' as any, classId: classTleD.id, isPinned: true, publishedAt: new Date('2025-01-13'), authorId: t2.id, institutionId: inst.id },
+    ],
+  });
+  console.log('✅ Announcements (6 announcements)');
+
   // ── 15. Superadmin ───────────────────────────────────────────────────────
   // Credentials come ONLY from env vars — never hardcoded
   const superEmail = process.env.SUPERADMIN_EMAIL;
@@ -701,16 +1061,28 @@ async function main() {
 ║              ✅  SEED COMPLETE — NovaBulletin Demo                   ║
 ╠══════════════════════════════════════════════════════════════════════╣
 ║  📚 Classes        : 4 (6ème A · 3ème B · 2nde A · Terminale D)     ║
-║  👥 Students       : ${totalStudents} (50 per class, 25M/25F)                  ║
+║  👥 Students       : ${totalStudents} + 6 alumni + 1 transfert              ║
 ║  📋 Report cards   : ~${totalRC} (T1×4 · T2×2 · T3×1)                    ║
 ║  📝 Grade fiches   : 3 trimestres × 4 classes                        ║
 ║  🗓  Timetables    : 4 classes (Lundi–Samedi)                        ║
-║  📢 Bulletins      : 10 annonces                                     ║
+║  📢 Bulletins      : 10 annonces + 6 announcements                  ║
 ║  👔 Staff profiles : 4 enseignants                                   ║
 ║  📅 Calendar       : 17 événements annuels                           ║
 ║  📖 Programmes     : 6 feuilles de route avec chapitres              ║
-║  📌 Assignments    : 8 devoirs à rendre                              ║
+║  📌 Assignments    : 8 devoirs + soumissions élèves                  ║
 ║  📝 Examen blanc   : Terminale D (${mockGradeRows.length} notes BAC)                   ║
+║  🏫 Présences      : 4000 enregistrements (20 jours)                 ║
+║  🎯 Quizzes        : 2 quiz LMS + questions + tentatives élèves      ║
+║  📁 LMS materials  : 10 ressources pédagogiques                      ║
+║  ⚕️  Santé          : 6 visites infirmerie                            ║
+║  ⚖️  Discipline     : 7 dossiers disciplinaires                       ║
+║  🎓 Examen national: 50 BEPC (3ème B) + 50 BAC (Terminale D)        ║
+║  🏛️  Alumni        : 6 diplômés 2024                                 ║
+║  🔄 Transferts     : 1 arrivée + 1 départ                            ║
+║  📦 Inventaire     : 12 items + 8 prêts bibliothèque                 ║
+║  📄 Documents      : 6 documents administratifs                      ║
+║  🕐 Heures cours   : ${hoursLogRows.length} entrées feuilles de route                  ║
+║  💳 Abonnement     : 1 paiement ANNUAL/PRO approuvé                  ║
 ╠══════════════════════════════════════════════════════════════════════╣
 ║  DEMO LOGINS                                                         ║
 ║  ADMIN    admin@demo.novabulletin.local         Admin@123            ║
