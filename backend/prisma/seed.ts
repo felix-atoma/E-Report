@@ -720,19 +720,19 @@ async function main() {
   await prisma.courseMaterial.createMany({
     data: [
       // Terminale D
-      { title: 'Cours — Limites et continuité', description: 'Cours complet T2 chapitres 1-3', type: 'DOCUMENT', url: 'https://example.com/docs/math-tled-limites.pdf', classId: classTleD.id, subjectId: subs['MATH'].id, academicYear: AY, termNumber: 2, uploadedById: t1.id, institutionId: inst.id },
-      { title: 'Vidéo — Dérivées et primitives', description: 'Tutoriel vidéo 25 min', type: 'VIDEO', url: 'https://www.youtube.com/watch?v=example1', classId: classTleD.id, subjectId: subs['MATH'].id, academicYear: AY, termNumber: 2, uploadedById: t1.id, institutionId: inst.id },
+      { title: 'Cours — Limites et continuité', description: 'Cours complet T2 chapitres 1-3', type: 'DOCUMENT', url: 'https://www.w3.org/WAI/WCAG21/Techniques/pdf/PDF1.pdf', classId: classTleD.id, subjectId: subs['MATH'].id, academicYear: AY, termNumber: 2, uploadedById: t1.id, institutionId: inst.id },
+      { title: 'Vidéo — Dérivées et primitives', description: 'Tutoriel vidéo 25 min', type: 'VIDEO', url: 'https://www.youtube.com/watch?v=WUvTyaaNkzM', classId: classTleD.id, subjectId: subs['MATH'].id, academicYear: AY, termNumber: 2, uploadedById: t1.id, institutionId: inst.id },
       { title: 'TP numérique — Oscillateur', description: 'Simulation Phet oscillateur harmonique', type: 'LINK', url: 'https://phet.colorado.edu/fr/simulations/pendulum-lab', classId: classTleD.id, subjectId: subs['PC'].id, academicYear: AY, termNumber: 2, uploadedById: t2.id, institutionId: inst.id },
-      { title: 'Cours — Génétique moléculaire', description: 'Chapitres ADN, réplication, transcription', type: 'DOCUMENT', url: 'https://example.com/docs/svt-tled-genetique.pdf', classId: classTleD.id, subjectId: subs['SVT'].id, academicYear: AY, termNumber: 2, uploadedById: t2.id, institutionId: inst.id },
+      { title: 'Cours — Génétique moléculaire', description: 'Chapitres ADN, réplication, transcription', type: 'DOCUMENT', url: 'https://www.w3.org/WAI/WCAG21/Techniques/pdf/PDF1.pdf', classId: classTleD.id, subjectId: subs['SVT'].id, academicYear: AY, termNumber: 2, uploadedById: t2.id, institutionId: inst.id },
       // 3ème B
-      { title: 'Fascicule — Équations 2nd degré', description: 'Exercices corrigés niveau BEPC', type: 'DOCUMENT', url: 'https://example.com/docs/math-3b-eq2.pdf', classId: class3B.id, subjectId: subs['MATH'].id, academicYear: AY, termNumber: 2, uploadedById: t3.id, institutionId: inst.id },
-      { title: 'Cours — La colonisation', description: 'Histoire Afrique de l\'Ouest 19ème siècle', type: 'DOCUMENT', url: 'https://example.com/docs/hist-3b-colonisation.pdf', classId: class3B.id, subjectId: subs['HIST'].id, academicYear: AY, termNumber: 2, uploadedById: t3.id, institutionId: inst.id },
+      { title: 'Fascicule — Équations 2nd degré', description: 'Exercices corrigés niveau BEPC', type: 'DOCUMENT', url: 'https://www.w3.org/WAI/WCAG21/Techniques/pdf/PDF1.pdf', classId: class3B.id, subjectId: subs['MATH'].id, academicYear: AY, termNumber: 2, uploadedById: t3.id, institutionId: inst.id },
+      { title: 'Cours — La colonisation', description: 'Histoire Afrique de l\'Ouest 19ème siècle', type: 'DOCUMENT', url: 'https://www.w3.org/WAI/WCAG21/Techniques/pdf/PDF1.pdf', classId: class3B.id, subjectId: subs['HIST'].id, academicYear: AY, termNumber: 2, uploadedById: t3.id, institutionId: inst.id },
       // 2nde A
       { title: 'Cours — Phonétique anglaise', description: 'Sons et prononciation niveau 2nde', type: 'LINK', url: 'https://www.bbc.co.uk/learningenglish/sounds', classId: class2A.id, subjectId: subs['ANGL'].id, academicYear: AY, termNumber: 1, uploadedById: t4.id, institutionId: inst.id },
-      { title: 'Fiche — Notions d\'économie', description: 'Introduction aux circuits économiques', type: 'DOCUMENT', url: 'https://example.com/docs/econ-2a-intro.pdf', classId: class2A.id, subjectId: subs['ECON'].id, academicYear: AY, termNumber: 1, uploadedById: t4.id, institutionId: inst.id },
+      { title: 'Fiche — Notions d\'économie', description: 'Introduction aux circuits économiques', type: 'DOCUMENT', url: 'https://www.w3.org/WAI/WCAG21/Techniques/pdf/PDF1.pdf', classId: class2A.id, subjectId: subs['ECON'].id, academicYear: AY, termNumber: 1, uploadedById: t4.id, institutionId: inst.id },
       // 6ème A
-      { title: 'Cours — Fractions et décimaux', description: 'Notions fondamentales 6ème', type: 'DOCUMENT', url: 'https://example.com/docs/math-6a-fractions.pdf', classId: class6A.id, subjectId: subs['MATH'].id, academicYear: AY, termNumber: 1, uploadedById: t1.id, institutionId: inst.id },
-      { title: 'Vidéo — La cellule vivante', description: 'Cours SVT animation 15 min', type: 'VIDEO', url: 'https://www.youtube.com/watch?v=example2', classId: class6A.id, subjectId: subs['SVT'].id, academicYear: AY, termNumber: 1, uploadedById: t1.id, institutionId: inst.id },
+      { title: 'Cours — Fractions et décimaux', description: 'Notions fondamentales 6ème', type: 'DOCUMENT', url: 'https://www.w3.org/WAI/WCAG21/Techniques/pdf/PDF1.pdf', classId: class6A.id, subjectId: subs['MATH'].id, academicYear: AY, termNumber: 1, uploadedById: t1.id, institutionId: inst.id },
+      { title: 'Vidéo — La cellule vivante', description: 'Cours SVT animation 15 min', type: 'VIDEO', url: 'https://www.youtube.com/watch?v=Rdtn_M-4GgU', classId: class6A.id, subjectId: subs['SVT'].id, academicYear: AY, termNumber: 1, uploadedById: t1.id, institutionId: inst.id },
     ],
   });
   console.log('✅ Course materials (10 LMS resources)');
@@ -990,12 +990,12 @@ async function main() {
   // ── 14q. School documents ────────────────────────────────────────────────
   await prisma.schoolDocument.createMany({
     data: [
-      { institutionId: inst.id, title: 'Circulaire n°01/2024 — Rentrée scolaire 2024-2025', category: 'CIRCULAR', fileUrl: 'https://example.com/docs/circulaire-rentree-2024.pdf', description: 'Modalités d\'organisation de la rentrée scolaire 2024-2025', uploadedById: admin.id, isPublic: true },
-      { institutionId: inst.id, title: 'Emploi du temps T2 — Terminale D', category: 'SCHEDULE', fileUrl: 'https://example.com/docs/edt-t2-tle-d.pdf', description: 'Emploi du temps 2ème trimestre Terminale D', uploadedById: admin.id, isPublic: false },
-      { institutionId: inst.id, title: 'Emploi du temps T2 — 3ème B', category: 'SCHEDULE', fileUrl: 'https://example.com/docs/edt-t2-3b.pdf', description: 'Emploi du temps 2ème trimestre 3ème B', uploadedById: admin.id, isPublic: false },
-      { institutionId: inst.id, title: 'Rapport financier T1 2024-2025', category: 'FINANCIAL', fileUrl: 'https://example.com/docs/rapport-financier-t1-2024.pdf', description: 'Bilan des recettes et dépenses du 1er trimestre', uploadedById: admin.id, isPublic: false },
-      { institutionId: inst.id, title: 'Contrat de travail — Kofi Agbesi', category: 'CONTRACT', fileUrl: 'https://example.com/docs/contrat-agbesi-2024.pdf', description: 'Contrat CDI enseignant Mathématiques', uploadedById: admin.id, isPublic: false },
-      { institutionId: inst.id, title: 'PV Conseil d\'Établissement — Nov 2024', category: 'REPORT', fileUrl: 'https://example.com/docs/pv-conseil-nov2024.pdf', description: 'Procès-verbal du conseil d\'établissement du 18 novembre 2024', uploadedById: admin.id, isPublic: false },
+      { institutionId: inst.id, title: 'Circulaire n°01/2024 — Rentrée scolaire 2024-2025', category: 'CIRCULAR', fileUrl: 'https://www.w3.org/WAI/WCAG21/Techniques/pdf/PDF1.pdf', description: 'Modalités d\'organisation de la rentrée scolaire 2024-2025', uploadedById: admin.id, isPublic: true },
+      { institutionId: inst.id, title: 'Emploi du temps T2 — Terminale D', category: 'SCHEDULE', fileUrl: 'https://www.w3.org/WAI/WCAG21/Techniques/pdf/PDF1.pdf', description: 'Emploi du temps 2ème trimestre Terminale D', uploadedById: admin.id, isPublic: false },
+      { institutionId: inst.id, title: 'Emploi du temps T2 — 3ème B', category: 'SCHEDULE', fileUrl: 'https://www.w3.org/WAI/WCAG21/Techniques/pdf/PDF1.pdf', description: 'Emploi du temps 2ème trimestre 3ème B', uploadedById: admin.id, isPublic: false },
+      { institutionId: inst.id, title: 'Rapport financier T1 2024-2025', category: 'FINANCIAL', fileUrl: 'https://www.w3.org/WAI/WCAG21/Techniques/pdf/PDF1.pdf', description: 'Bilan des recettes et dépenses du 1er trimestre', uploadedById: admin.id, isPublic: false },
+      { institutionId: inst.id, title: 'Contrat de travail — Kofi Agbesi', category: 'CONTRACT', fileUrl: 'https://www.w3.org/WAI/WCAG21/Techniques/pdf/PDF1.pdf', description: 'Contrat CDI enseignant Mathématiques', uploadedById: admin.id, isPublic: false },
+      { institutionId: inst.id, title: 'PV Conseil d\'Établissement — Nov 2024', category: 'REPORT', fileUrl: 'https://www.w3.org/WAI/WCAG21/Techniques/pdf/PDF1.pdf', description: 'Procès-verbal du conseil d\'établissement du 18 novembre 2024', uploadedById: admin.id, isPublic: false },
     ],
   });
   console.log('✅ School documents (6 documents)');
