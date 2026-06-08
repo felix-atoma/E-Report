@@ -12,13 +12,15 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
-  Sentry.init({
-    dsn: process.env.SENTRY_DSN || "https://e23f50286f8b8847ccdb82a0c495fe7c@o4511477173518336.ingest.de.sentry.io/4511477289975888",
-    environment: process.env.NODE_ENV ?? 'development',
-    sendDefaultPii: true,
-    integrations: [nodeProfilingIntegration()],
-    tracesSampleRate: 0.2,
-  });
+  if (process.env.SENTRY_DSN) {
+    Sentry.init({
+      dsn: process.env.SENTRY_DSN,
+      environment: process.env.NODE_ENV ?? 'development',
+      sendDefaultPii: true,
+      integrations: [nodeProfilingIntegration()],
+      tracesSampleRate: 0.2,
+    });
+  }
 
   const app = await NestFactory.create(AppModule);
   const config = app.get(ConfigService);
@@ -55,14 +57,13 @@ async function bootstrap() {
     console.warn('⚠️  FRONTEND_URL not set — falling back to hardcoded allowed origins');
   }
 
-  // Build allowed origins list: FRONTEND_URL (comma-separated) + dev defaults
+  // Build allowed origins: dev localhost + all values from FRONTEND_URL env var (comma-separated)
+  // In production, set FRONTEND_URL to your actual frontend domain(s)
   const allowedOrigins = new Set<string>([
     'http://localhost:3000',
     'http://localhost:5173',
     'http://localhost:8081',
     'http://localhost:19006',
-    // Production Vercel deployment — always allowed even without FRONTEND_URL env var
-    'https://e-report-frontend.vercel.app',
   ]);
   if (frontendUrl) {
     frontendUrl.split(',').map(o => o.trim()).filter(Boolean).forEach(o => allowedOrigins.add(o));

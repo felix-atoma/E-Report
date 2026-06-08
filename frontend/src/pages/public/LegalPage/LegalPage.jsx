@@ -4,8 +4,8 @@ import './LegalPage.css';
 
 const LAST_UPDATED = '30 mai 2026';
 const COMPANY = 'NovaBulletin';
-const EMAIL = 'felixatoma2@gmail.com';
-const SITE = 'https://e-report-frontend.vercel.app';
+const EMAIL = import.meta.env.VITE_SUPPORT_EMAIL ?? 'contact@novabulletin.app';
+const SITE = import.meta.env.VITE_APP_URL ?? (typeof window !== 'undefined' ? window.location.origin : 'https://novabulletin.app');
 
 const TOS = () => (
   <>

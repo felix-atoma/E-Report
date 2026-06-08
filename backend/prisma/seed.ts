@@ -517,47 +517,213 @@ async function main() {
   }
   console.log(`✅ Bulletins (${bulletins.length} annonces)`);
 
-  // ── 14. Summary ──────────────────────────────────────────────────────────────
-  const totalStudents = s6A.length + s3B.length + s2A.length + sTleD.length;
-  const totalRC = totalStudents + sTleD.length + s3B.length + sTleD.length; // T1+T2(TleD+3B)+T3(TleD)
+  // ── 14b. Staff profiles ──────────────────────────────────────────────────
+  const staffDefs = [
+    { userId: t1.id, staffNumber: 'ENS-001', contractType: 'Titulaire', qualification: 'CAPES Mathématiques', specialization: 'Mathématiques & Physique', experienceYears: 8, nationality: 'Togolaise' },
+    { userId: t2.id, staffNumber: 'ENS-002', contractType: 'Titulaire', qualification: 'CAPES Sciences', specialization: 'Sciences de la Vie et de la Terre', experienceYears: 6, nationality: 'Togolaise' },
+    { userId: t3.id, staffNumber: 'ENS-003', contractType: 'Contractuel', qualification: 'Licence Mathématiques', specialization: 'Mathématiques & Informatique', experienceYears: 4, nationality: 'Togolaise' },
+    { userId: t4.id, staffNumber: 'ENS-004', contractType: 'Titulaire', qualification: 'CAPES Lettres Modernes', specialization: 'Français & Philosophie', experienceYears: 10, nationality: 'Togolaise' },
+  ];
+  for (const sp of staffDefs) {
+    await prisma.staffProfile.upsert({
+      where: { userId: sp.userId },
+      update: {},
+      create: { ...sp, institutionId: inst.id, employmentDate: new Date('2020-09-01'), city: 'Lomé', isActive: true },
+    });
+  }
+  console.log('✅ Staff profiles (4 teachers)');
 
-  // ── Superadmin ────────────────────────────────────────────────────────────
-  await prisma.user.upsert({
-    where: { email: 'felixatoma2@gmail.com' },
-    update: { password: await hash('Adjola12.,'), role: 'SUPERADMIN' as any, isActive: true, institutionId: null },
-    create: {
-      name: 'Felix Atoma',
-      email: 'felixatoma2@gmail.com',
-      password: await hash('Adjola12.,'),
-      role: 'SUPERADMIN' as any,
-      isActive: true,
+  // ── 14c. Calendar events ─────────────────────────────────────────────────
+  await prisma.calendarEvent.deleteMany({ where: { institutionId: inst.id } });
+  const calEvents = [
+    { title: 'Rentrée scolaire 2024-2025', type: 'EVENT',   startDate: new Date('2024-09-16'), color: '#16a34a', description: 'Début de l\'année scolaire 2024-2025' },
+    { title: '1er Trimestre',              type: 'EVENT',   startDate: new Date('2024-09-16'), endDate: new Date('2024-12-20'), color: '#2563eb', description: 'Période du 1er trimestre' },
+    { title: 'Vacances Toussaint',         type: 'HOLIDAY', startDate: new Date('2024-10-26'), endDate: new Date('2024-11-03'), color: '#f59e0b' },
+    { title: 'Conseils de classe T1',      type: 'MEETING', startDate: new Date('2024-12-16'), endDate: new Date('2024-12-19'), color: '#7c3aed', description: 'Délibérations du 1er trimestre — toutes classes' },
+    { title: 'Vacances de Noël',           type: 'HOLIDAY', startDate: new Date('2024-12-21'), endDate: new Date('2025-01-05'), color: '#f59e0b' },
+    { title: '2ème Trimestre',             type: 'EVENT',   startDate: new Date('2025-01-06'), endDate: new Date('2025-04-05'), color: '#2563eb', description: 'Période du 2ème trimestre' },
+    { title: 'Réunion parents — T1',       type: 'PARENT_MEETING', startDate: new Date('2025-01-18'), color: '#0891b2', description: 'Distribution des bulletins T1 et rencontre parents-professeurs' },
+    { title: 'Examens blancs BAC — TleD',  type: 'EXAM',   startDate: new Date('2025-03-10'), endDate: new Date('2025-03-14'), color: '#dc2626', description: 'Examens blancs baccalauréat pour Terminale D' },
+    { title: 'Journée culturelle',         type: 'CULTURAL', startDate: new Date('2025-03-08'), color: '#db2777', description: 'Journée internationale des droits des femmes — programme culturel' },
+    { title: 'Tournoi sportif inter-classes', type: 'SPORT', startDate: new Date('2025-02-24'), endDate: new Date('2025-02-28'), color: '#ea580c' },
+    { title: 'Vacances de Pâques',         type: 'HOLIDAY', startDate: new Date('2025-04-06'), endDate: new Date('2025-04-20'), color: '#f59e0b' },
+    { title: '3ème Trimestre',             type: 'EVENT',   startDate: new Date('2025-04-21'), endDate: new Date('2025-07-10'), color: '#2563eb', description: 'Période du 3ème trimestre' },
+    { title: 'Conseils de classe T2',      type: 'MEETING', startDate: new Date('2025-04-01'), endDate: new Date('2025-04-04'), color: '#7c3aed' },
+    { title: 'BEPC — 3ème B',              type: 'EXAM',   startDate: new Date('2025-06-09'), endDate: new Date('2025-06-13'), color: '#dc2626', description: 'Brevet d\'Études du Premier Cycle' },
+    { title: 'Baccalauréat — TleD',        type: 'EXAM',   startDate: new Date('2025-06-16'), endDate: new Date('2025-06-20'), color: '#991b1b', description: 'Examen national du Baccalauréat' },
+    { title: 'Conseils de classe T3',      type: 'MEETING', startDate: new Date('2025-07-07'), endDate: new Date('2025-07-09'), color: '#7c3aed' },
+    { title: 'Fin d\'année scolaire',      type: 'EVENT',   startDate: new Date('2025-07-11'), color: '#16a34a' },
+  ];
+  await prisma.calendarEvent.createMany({
+    data: calEvents.map(e => ({ ...e, institutionId: inst.id, allDay: true, isPublic: true })),
+  });
+  console.log(`✅ Calendar events (${calEvents.length})`);
+
+  // ── 14d. Subject programs (feuille de route) ─────────────────────────────
+  await prisma.programChapter.deleteMany({});
+  await prisma.subjectProgram.deleteMany({});
+
+  const programDefs: { classId: string; code: string; chapters: { title: string; plan: string; duration: string; isCompleted: boolean }[] }[] = [
+    { classId: classTleD.id, code: 'MATH', chapters: [
+      { title: 'Fonctions numériques — Limites & Continuité', plan: 'Définition, limites, continuité, théorème des valeurs intermédiaires', duration: '4 semaines', isCompleted: true },
+      { title: 'Dérivabilité & Étude de fonctions', plan: 'Dérivée, variations, extrema, courbes', duration: '4 semaines', isCompleted: true },
+      { title: 'Primitives & Intégration', plan: 'Primitives usuelles, intégrale de Riemann, aire', duration: '3 semaines', isCompleted: true },
+      { title: 'Suites numériques', plan: 'Suites arithmétiques, géométriques, convergence', duration: '3 semaines', isCompleted: false },
+      { title: 'Probabilités & Statistiques', plan: 'Probabilités conditionnelles, loi binomiale, espérance', duration: '3 semaines', isCompleted: false },
+    ]},
+    { classId: classTleD.id, code: 'PC', chapters: [
+      { title: 'Mécanique — Lois de Newton', plan: 'Dynamique du point, forces, énergie cinétique', duration: '3 semaines', isCompleted: true },
+      { title: 'Oscillations & Ondes', plan: 'Pendule, ressort, ondes mécaniques', duration: '3 semaines', isCompleted: true },
+      { title: 'Chimie organique', plan: 'Alcools, acides carboxyliques, estérification', duration: '4 semaines', isCompleted: false },
+      { title: 'Électricité — Circuits RC & RL', plan: 'Charge, décharge, régimes transitoires', duration: '3 semaines', isCompleted: false },
+    ]},
+    { classId: classTleD.id, code: 'SVT', chapters: [
+      { title: 'Génétique & Hérédité', plan: 'Lois de Mendel, ADN, mutation, génie génétique', duration: '4 semaines', isCompleted: true },
+      { title: 'Immunologie', plan: 'Immunité innée et adaptative, vaccins, SIDA', duration: '3 semaines', isCompleted: true },
+      { title: 'Géologie — Tectonique des plaques', plan: 'Dérive des continents, séismes, volcans', duration: '3 semaines', isCompleted: false },
+    ]},
+    { classId: class3B.id, code: 'MATH', chapters: [
+      { title: 'Calcul algébrique', plan: 'Développement, factorisation, équations du 2nd degré', duration: '3 semaines', isCompleted: true },
+      { title: 'Géométrie dans l\'espace', plan: 'Plans, droites, sections planes, volumes', duration: '3 semaines', isCompleted: true },
+      { title: 'Statistiques & Probabilités', plan: 'Fréquences, moyennes, probabilités simples', duration: '2 semaines', isCompleted: false },
+    ]},
+    { classId: class3B.id, code: 'FR', chapters: [
+      { title: 'Argumentation — Essai et dissertation', plan: 'Thèse, arguments, exemples, plan dialectique', duration: '3 semaines', isCompleted: true },
+      { title: 'Littérature africaine', plan: 'Textes de Senghor, Beti, Oyono — analyse et commentaire', duration: '3 semaines', isCompleted: false },
+    ]},
+    { classId: class6A.id, code: 'MATH', chapters: [
+      { title: 'Nombres entiers & décimaux', plan: 'Opérations, fractions, multiples et diviseurs', duration: '3 semaines', isCompleted: true },
+      { title: 'Géométrie plane', plan: 'Droites, angles, triangles, quadrilatères, cercles', duration: '3 semaines', isCompleted: true },
+      { title: 'Proportionnalité', plan: 'Tableaux de proportionnalité, pourcentages, règle de 3', duration: '2 semaines', isCompleted: false },
+    ]},
+  ];
+
+  for (const pd of programDefs) {
+    const prog = await prisma.subjectProgram.create({
+      data: {
+        classId: pd.classId,
+        subjectId: subs[pd.code].id,
+        academicYear: AY,
+        description: `Programme de ${subs[pd.code].nameFr} — Année ${AY}`,
+      },
+    });
+    await prisma.programChapter.createMany({
+      data: pd.chapters.map((ch, i) => ({ programId: prog.id, order: i + 1, ...ch })),
+    });
+  }
+  console.log(`✅ Subject programs (feuille de route — ${programDefs.length} programmes)`);
+
+  // ── 14e. Assignments (devoirs à rendre) ──────────────────────────────────
+  await prisma.assignmentSubmission.deleteMany({});
+  await prisma.assignment.deleteMany({ where: { institutionId: inst.id } });
+
+  const assignmentDefs = [
+    { classId: classTleD.id, code: 'MATH', title: 'Devoir maison n°1 — Limites et continuité', instructions: 'Résoudre les exercices du fascicule pages 45-47. Présenter une copie double propre.', dueDate: new Date('2025-01-20'), status: 'PUBLISHED' as const, termNumber: 2 },
+    { classId: classTleD.id, code: 'PC',   title: 'TP — Oscillateur harmonique', instructions: 'Rédiger un compte-rendu complet du TP réalisé en classe. Inclure schémas, mesures et conclusions.', dueDate: new Date('2025-01-25'), status: 'PUBLISHED' as const, termNumber: 2 },
+    { classId: classTleD.id, code: 'FR',   title: 'Commentaire de texte — Senghor', instructions: 'Proposer un commentaire composé du poème "Femme noire" de L.S. Senghor. 3-4 pages.', dueDate: new Date('2025-02-03'), status: 'PUBLISHED' as const, termNumber: 2 },
+    { classId: class3B.id,   code: 'MATH', title: 'Exercices — Équations du 2nd degré', instructions: 'Résoudre les 10 équations du polycopié distribué en classe. Montrer toutes les étapes.', dueDate: new Date('2025-01-22'), status: 'PUBLISHED' as const, termNumber: 2 },
+    { classId: class3B.id,   code: 'FR',   title: 'Rédaction — Mon ambition professionnelle', instructions: 'Rédiger un texte argumentatif de 300-400 mots sur votre projet professionnel et les étapes pour y parvenir.', dueDate: new Date('2025-02-07'), status: 'PUBLISHED' as const, termNumber: 2 },
+    { classId: class6A.id,   code: 'MATH', title: 'Calcul mental — Tables et fractions', instructions: 'Compléter la fiche de calcul mental distribuée. 20 questions, 10 minutes en classe vendredi.', dueDate: new Date('2025-01-17'), status: 'CLOSED' as const, termNumber: 2 },
+    { classId: class2A.id,   code: 'HIST', title: 'Exposé — La colonisation en Afrique de l\'Ouest', instructions: 'Par binômes. Présentation orale de 10 minutes + diaporama. Choisir un pays parmi : Togo, Bénin, Côte d\'Ivoire, Sénégal.', dueDate: new Date('2025-02-14'), status: 'PUBLISHED' as const, termNumber: 2 },
+    { classId: classTleD.id, code: 'MATH', title: 'Devoir maison n°2 — Suites et probabilités', instructions: 'Exercices complets sur les suites numériques et probabilités conditionnelles. Rendu obligatoire.', dueDate: new Date('2025-03-15'), status: 'DRAFT' as const, termNumber: 3 },
+  ];
+
+  for (const a of assignmentDefs) {
+    const teacher = classCfg.find(c => c.cls.id === a.classId)?.teacher ?? t1;
+    await prisma.assignment.create({
+      data: {
+        title: a.title, instructions: a.instructions, dueDate: a.dueDate,
+        status: a.status, maxScore: 20, termNumber: a.termNumber,
+        classId: a.classId, subjectId: subs[a.code].id,
+        academicYear: AY, institutionId: inst.id, createdById: teacher.id,
+      },
+    });
+  }
+  console.log(`✅ Assignments (${assignmentDefs.length} devoirs)`);
+
+  // ── 14f. Mock exam — Terminale D Examen Blanc ────────────────────────────
+  const mockExam = await prisma.mockExam.create({
+    data: {
+      institutionId: inst.id,
+      classId: classTleD.id,
+      academicYear: AY,
+      examType: 'BLANC',
+      label: 'Examen Blanc BAC — Terminale D — Mars 2025',
+      examDate: new Date('2025-03-10'),
+      examEndDate: new Date('2025-03-14'),
+      status: 'PUBLISHED' as any,
+      createdById: admin.id,
     },
   });
-  console.log('✅ Superadmin: felixatoma2@gmail.com');
+
+  // Mock exam grades for Terminale D — all 9 subjects
+  const mockGradeRows: any[] = [];
+  const mockFicheRows: any[] = [];
+  for (const code of classCfg[3].codes) {
+    mockFicheRows.push({ mockExamId: mockExam.id, subjectId: subs[code].id, signedAt: new Date('2025-03-15'), signedByName: t2.name, signedById: t2.id });
+    for (let si = 0; si < sTleD.length; si++) {
+      const gr = makeGrade(si, classCfg[3].codes.indexOf(code), lvl(si, sTleD.length));
+      mockGradeRows.push({
+        mockExamId: mockExam.id,
+        studentId: sTleD[si].id,
+        subjectId: subs[code].id,
+        score: calcMoy(gr.i1, gr.i2, gr.devoir, gr.compo),
+        coefficient: classCfg[3].coefs[code],
+      });
+    }
+  }
+  await prisma.mockExamGrade.createMany({ data: mockGradeRows });
+  await prisma.mockExamSubjectFiche.createMany({ data: mockFicheRows });
+  console.log(`✅ Mock exam (Terminale D — ${mockGradeRows.length} notes)`);
+
+  // ── 15. Superadmin ───────────────────────────────────────────────────────
+  // Credentials come ONLY from env vars — never hardcoded
+  const superEmail = process.env.SUPERADMIN_EMAIL;
+  const superPass  = process.env.SUPERADMIN_PASSWORD;
+  if (!superEmail || !superPass) {
+    console.warn('⚠️  SUPERADMIN_EMAIL or SUPERADMIN_PASSWORD not set — skipping superadmin upsert.');
+    console.warn('   Set them in your .env file and re-run the seed to create the superadmin.');
+  } else {
+    await prisma.user.upsert({
+      where: { email: superEmail },
+      update: { password: await hash(superPass), role: 'SUPERADMIN' as any, isActive: true, institutionId: null },
+      create: { name: 'Super Admin', email: superEmail, password: await hash(superPass), role: 'SUPERADMIN' as any, isActive: true },
+    });
+    console.log(`✅ Superadmin: ${superEmail}`);
+  }
+
+  // ── 16. Summary ──────────────────────────────────────────────────────────
+  const totalStudents = s6A.length + s3B.length + s2A.length + sTleD.length;
+  const totalRC = totalStudents + sTleD.length + s3B.length + sTleD.length;
 
   console.log(`
-╔══════════════════════════════════════════════════════════════════╗
-║               ✅  SEED COMPLETE — NovaBulletin Demo              ║
-╠══════════════════════════════════════════════════════════════════╣
-║  📚 Classes      : 4  (6ème A · 3ème B · 2nde A · Terminale D)  ║
-║  👥 Students     : ${totalStudents} (50 per class, 25M/25F each)           ║
-║  📋 Report cards : ~${totalRC} (T1×4 · T2×2 · T3×1)                  ║
-║  📝 Grade fiches : 3 terms × 4 classes (varying signed status)   ║
-║  🗓  Timetables  : 4 classes (Lundi–Samedi)                      ║
-║  📢 Bulletins    : 10 announcements                              ║
-╠══════════════════════════════════════════════════════════════════╣
-║  LOGINS                                                          ║
-║  ADMIN    admin@demo.novabulletin.local         Admin@123        ║
-║  TEACHER  kofi.agbesi@demo.novabulletin.local   Teacher@123      ║
-║  TEACHER  ama.dossou@demo.novabulletin.local    Teacher@123      ║
-║  TEACHER  edem.kpodo@demo.novabulletin.local    Teacher@123      ║
-║  TEACHER  akosua.lawson@demo.novabulletin.local Teacher@123      ║
-║  BURSAR   bursar@demo.novabulletin.local        Bursar@123       ║
-║  PARENT   parent.edem@demo.novabulletin.local   Parent@123       ║
-║  STUDENT  s.6a.m1@student.demo…                Student@123      ║
-╠══════════════════════════════════════════════════════════════════╣
-║  SUPERADMIN  felixatoma2@gmail.com             Adjola12.,       ║
-╚══════════════════════════════════════════════════════════════════╝
+╔══════════════════════════════════════════════════════════════════════╗
+║              ✅  SEED COMPLETE — NovaBulletin Demo                   ║
+╠══════════════════════════════════════════════════════════════════════╣
+║  📚 Classes        : 4 (6ème A · 3ème B · 2nde A · Terminale D)     ║
+║  👥 Students       : ${totalStudents} (50 per class, 25M/25F)                  ║
+║  📋 Report cards   : ~${totalRC} (T1×4 · T2×2 · T3×1)                    ║
+║  📝 Grade fiches   : 3 trimestres × 4 classes                        ║
+║  🗓  Timetables    : 4 classes (Lundi–Samedi)                        ║
+║  📢 Bulletins      : 10 annonces                                     ║
+║  👔 Staff profiles : 4 enseignants                                   ║
+║  📅 Calendar       : 17 événements annuels                           ║
+║  📖 Programmes     : 6 feuilles de route avec chapitres              ║
+║  📌 Assignments    : 8 devoirs à rendre                              ║
+║  📝 Examen blanc   : Terminale D (${mockGradeRows.length} notes BAC)                   ║
+╠══════════════════════════════════════════════════════════════════════╣
+║  DEMO LOGINS                                                         ║
+║  ADMIN    admin@demo.novabulletin.local         Admin@123            ║
+║  TEACHER  kofi.agbesi@demo.novabulletin.local   Teacher@123         ║
+║  TEACHER  ama.dossou@demo.novabulletin.local    Teacher@123         ║
+║  TEACHER  edem.kpodo@demo.novabulletin.local    Teacher@123         ║
+║  TEACHER  akosua.lawson@demo.novabulletin.local Teacher@123         ║
+║  BURSAR   bursar@demo.novabulletin.local        Bursar@123          ║
+║  PARENT   parent.edem@demo.novabulletin.local   Parent@123          ║
+║  STUDENT  s.6a.m1@student.demo.novabulletin.local  Student@123     ║
+╠══════════════════════════════════════════════════════════════════════╣
+║  SUPERADMIN → set SUPERADMIN_EMAIL + SUPERADMIN_PASSWORD in .env    ║
+╚══════════════════════════════════════════════════════════════════════╝
 `);
 }
 

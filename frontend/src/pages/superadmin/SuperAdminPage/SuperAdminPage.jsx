@@ -338,7 +338,7 @@ function SuperAdminPage() {
     const token = localStorage.getItem('accessToken');
     if (!token) return;
 
-    const BASE = api.defaults.baseURL ?? 'https://e-report-y4g9.onrender.com/api';
+    const BASE = api.defaults.baseURL ?? import.meta.env.VITE_API_URL ?? '/api';
     let active = true;
     const ctrl = new AbortController();
 

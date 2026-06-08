@@ -1,7 +1,12 @@
 import axios from 'axios';
 
+const baseURL = import.meta.env.VITE_API_URL;
+if (!baseURL) {
+  console.error('❌ VITE_API_URL is not set. Create frontend/.env.local with VITE_API_URL=http://localhost:4000/api');
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://e-report-y4g9.onrender.com/api',
+  baseURL: baseURL ?? '/api',
   withCredentials: true,
 });
 
