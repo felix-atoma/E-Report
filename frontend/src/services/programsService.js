@@ -7,4 +7,6 @@ export const programsService = {
     api.put(`/programs/class/${classId}/subject/${subjectId}`, data),
   listForClass: (classId, academicYear) =>
     api.get(`/programs/class/${classId}`, { params: { academicYear } }),
+  getMyRoadmap: (academicYear) =>
+    api.get('/programs/my-roadmap', { params: { academicYear } }),
 };

@@ -5,7 +5,7 @@
 
 .teacher-dash__stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
@@ -222,6 +222,82 @@
   color: var(--color-text-muted, #9ca3af);
 }
 
+/* ── Schedule widget ── */
+.teacher-dash__schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.teacher-dash__schedule-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: 6px;
+  background: var(--color-surface-alt, #f9fafb);
+}
+.teacher-dash__schedule-time {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #7c3aed;
+  white-space: nowrap;
+  padding-top: 2px;
+  min-width: 80px;
+}
+.teacher-dash__schedule-subject { font-size: 0.83rem; font-weight: 600; color: var(--color-text, #1f2937); }
+.teacher-dash__schedule-class   { font-size: 0.75rem; color: var(--color-text-muted, #6b7280); }
+
+/* ── Roadmap widget ── */
+.teacher-dash__roadmap-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.teacher-dash__roadmap-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.teacher-dash__roadmap-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+.teacher-dash__roadmap-subject {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text, #1f2937);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.teacher-dash__roadmap-class {
+  font-size: 0.72rem;
+  color: var(--color-text-muted, #9ca3af);
+}
+.teacher-dash__roadmap-bar {
+  width: 70px;
+  height: 5px;
+  background: var(--color-border, #e5e7eb);
+  border-radius: 99px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.teacher-dash__roadmap-fill {
+  height: 100%;
+  background: #7c3aed;
+  border-radius: 99px;
+  transition: width 0.3s;
+}
+.teacher-dash__roadmap-pct {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #7c3aed;
+  min-width: 30px;
+  text-align: right;
+}
+
 @media (max-width: 500px) {
   .teacher-dash__stats {
     grid-template-columns: 1fr;
@@ -232,6 +308,9 @@
   }
 }
 
+@media (max-width: 900px) {
+  .teacher-dash__stats { grid-template-columns: repeat(3, 1fr); }
+}
 @media (max-width: 640px) {
   .teacher-dash__stats { grid-template-columns: 1fr 1fr; gap: 0.625rem; }
 }

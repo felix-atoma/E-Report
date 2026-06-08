@@ -3,14 +3,14 @@
   --bp: #1e3a8a;
   --bs: #f59e0b;
   --bulletin-font-family: Arial, Helvetica, sans-serif;
-  --bulletin-font-size: 10px;
+  --bulletin-font-size: 11.5px;
   /* heading overrides */
-  --bulletin-h1-size:   1.3em;
+  --bulletin-h1-size:   1.35em;
   --bulletin-h1-weight: 900;
-  --bulletin-h2-size:   1.1em;
+  --bulletin-h2-size:   1.15em;
   --bulletin-h2-weight: 900;
-  --bulletin-h3-size:   0.8em;
-  --bulletin-h3-weight: 800;
+  --bulletin-h3-size:   0.85em;
+  --bulletin-h3-weight: 900;
 }
 
 /* ── Screen wrapper ── */
@@ -52,8 +52,8 @@
   background: #fff;
   box-shadow: 0 4px 24px rgba(0,0,0,0.20);
   font-family: var(--bulletin-font-family, Arial, Helvetica, sans-serif);
-  font-size: var(--bulletin-font-size, 10px);
-  font-weight: 600;
+  font-size: var(--bulletin-font-size, 11.5px);
+  font-weight: 700;
   color: #111;
   position: relative;
   overflow: hidden;
@@ -173,10 +173,10 @@
 .pr-student-band__field--name { flex: 2; }
 .pr-student-band__field:last-child { border-right: none; }
 .pr-student-band__field label {
-  display: block; font-size: 0.7em; font-weight: 800;
+  display: block; font-size: 0.72em; font-weight: 900;
   color: var(--bulletin-primary, var(--bp)); text-transform: uppercase; margin-bottom: 1px;
 }
-.pr-student-band__field span { font-size: 1em; font-weight: 800; }
+.pr-student-band__field span { font-size: 1.05em; font-weight: 900; }
 
 /* ════════════════════════════════════════════════════════════════════
    GRADES TABLE — flex:1 so it fills remaining vertical space
@@ -192,15 +192,15 @@
   width: 100%;
   height: 100%;
   border-collapse: collapse;
-  font-size: 0.9em;
-  font-weight: 700;
+  font-size: 1em;
+  font-weight: 800;
 }
 .pr-grades th, .pr-grades td {
   border: 1px solid #d1d5db;
   padding: 0 2px;
   text-align: center;
   vertical-align: middle;
-  font-weight: 700;
+  font-weight: 800;
 }
 .pr-grades tbody { height: 100%; }
 .pr-grades tbody tr { height: 1px; }
@@ -208,30 +208,30 @@
 
 .pr-grades__head-top th {
   background: var(--bulletin-primary, var(--bp));
-  color: #fff; font-size: 0.8em; font-weight: 800; padding: 3px 2px;
+  color: #fff; font-size: 0.85em; font-weight: 900; padding: 3px 2px;
 }
 .pr-grades__head-sub th {
-  background: #dbeafe; color: #1e40af; font-size: 0.75em; font-weight: 800; padding: 2px;
+  background: #dbeafe; color: #1e40af; font-size: 0.8em; font-weight: 900; padding: 2px;
 }
 .pr-grades__col-matiere {
-  text-align: left !important; min-width: 84px; font-weight: 800;
+  text-align: left !important; min-width: 84px; font-weight: 900;
   padding-left: 4px !important;
 }
 .pr-grades__col-num  { min-width: 24px; }
 .pr-grades__col-dev  { background: rgba(254,252,193,0.5); }
 .pr-grades__col-cmp  { background: rgba(243,232,255,0.5); }
-.pr-grades__col-moy  { background: #dcfce7; font-weight: 700; min-width: 28px; }
-.pr-grades__col-pts  { background: #f0fdf4; font-weight: 600; }
-.pr-grades__col-rang { color: #0f766e; font-weight: 700; min-width: 22px; }
-.pr-grades__col-appr { text-align: left !important; min-width: 56px; font-size: 0.75em; font-weight: 700; padding-left: 3px !important; }
-.pr-grades__col-prof { text-align: left !important; min-width: 56px; font-size: 0.75em; font-weight: 700; padding-left: 3px !important; }
+.pr-grades__col-moy  { background: #dcfce7; font-weight: 900; min-width: 28px; }
+.pr-grades__col-pts  { background: #f0fdf4; font-weight: 800; }
+.pr-grades__col-rang { color: #0f766e; font-weight: 900; min-width: 22px; }
+.pr-grades__col-appr { text-align: left !important; min-width: 56px; font-size: 0.8em; font-weight: 800; padding-left: 3px !important; }
+.pr-grades__col-prof { text-align: left !important; min-width: 56px; font-size: 0.8em; font-weight: 800; padding-left: 3px !important; }
 .pr-grades__col-sig  { min-width: 48px; width: 52px; padding: 1px 2px !important; }
 .pr-grades__fail { color: #dc2626 !important; font-weight: 700; }
 .pr-grades__pass { color: #15803d; }
 .pr-grades tbody tr:nth-child(even) { background: #f9fafb; }
 .pr-grades__foot td {
   background: var(--bulletin-primary, var(--bp));
-  color: #fff; font-weight: 900; font-size: 0.9em; padding: 2px;
+  color: #fff; font-weight: 900; font-size: 1em; padding: 2px;
 }
 .pr-grades__foot-label { text-align: right !important; padding-right: 5px !important; }
 .pr-sig-img   { max-height: 22px; max-width: 58px; object-fit: contain; display: block; margin: 0 auto; }
@@ -268,8 +268,8 @@
   display: block; font-size: 0.7em; color: #555; font-weight: 800;
   text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 1px;
 }
-.pr-results__cell strong  { font-size: 1.2em; font-weight: 900; display: block; }
-.pr-results__cell--big strong { font-size: 1.5em; font-weight: 900; }
+.pr-results__cell strong  { font-size: 1.35em; font-weight: 900; display: block; }
+.pr-results__cell--big strong { font-size: 1.65em; font-weight: 900; }
 .pr-results__cell--high strong { color: #15803d; }
 .pr-results__cell--low  strong { color: #dc2626; }
 .pr-results__cell--honor {
@@ -320,7 +320,7 @@
   padding: 2px 5px; letter-spacing: 0.3px;
 }
 .pr-comment-box__text {
-  padding: 2px 5px; font-size: 0.85em; font-weight: 600; font-style: italic;
+  padding: 2px 5px; font-size: 0.88em; font-weight: 700; font-style: italic;
   color: #374151; min-height: 16px; line-height: 1.4;
 }
 .pr-comment-box__empty { display: block; height: 12px; }

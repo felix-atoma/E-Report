@@ -44,6 +44,8 @@
     "help":             "User Guide",
     "palmares":         "Rankings",
     "timetable":        "Timetable",
+    "mySchedule":       "My Schedule",
+    "roadmap":          "Year Roadmap",
     "absences":         "Absences"
   },
 

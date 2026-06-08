@@ -44,6 +44,8 @@
     "help":             "Guide d'utilisation",
     "palmares":         "Palmarès",
     "timetable":        "Emploi du temps",
+    "mySchedule":       "Tableau de service",
+    "roadmap":          "Feuille de route",
     "absences":         "Absences"
   },
 

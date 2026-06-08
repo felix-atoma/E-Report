@@ -20,6 +20,17 @@ export class TimetablesService {
     });
   }
 
+  async findMySchedule(teacherId: string, institutionId: string, academicYear: string) {
+    return this.prisma.timetableSlot.findMany({
+      where: { teacherId, institutionId, academicYear },
+      include: {
+        subject: { select: { id: true, nameFr: true, code: true, category: true } },
+        class:   { select: { id: true, name: true } },
+      },
+      orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }],
+    });
+  }
+
   async save(classId: string, dto: SaveTimetableDto, institutionId: string) {
     const cls = await this.prisma.class.findFirst({ where: { id: classId, institutionId } });
     if (!cls) throw new NotFoundException('Class not found');

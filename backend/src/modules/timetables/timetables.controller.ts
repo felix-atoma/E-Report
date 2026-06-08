@@ -12,6 +12,17 @@ import { Role } from '../../common/enums/role.enum';
 export class TimetablesController {
   constructor(private readonly service: TimetablesService) {}
 
+  @Get('my-schedule')
+  @Roles(Role.TEACHER, Role.ADMIN)
+  @ApiOperation({ summary: 'Get my personal teaching schedule (all slots assigned to me)' })
+  @ApiQuery({ name: 'academicYear', required: true })
+  getMySchedule(
+    @Query('academicYear') academicYear: string,
+    @CurrentUser() user: any,
+  ) {
+    return this.service.findMySchedule(user.id, user.institutionId, academicYear);
+  }
+
   @Get('class/:classId')
   @Roles(Role.ADMIN, Role.TEACHER)
   @ApiOperation({ summary: 'Get timetable for a class' })

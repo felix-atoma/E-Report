@@ -1,0 +1,140 @@
+.teacher-sched__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+.teacher-sched__year-label { font-size: 0.825rem; font-weight: 600; color: var(--color-text, #1f2937); }
+.teacher-sched__year-input {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  width: 110px;
+}
+.teacher-sched__meta { font-size: 0.8rem; color: var(--color-text-muted, #6b7280); }
+
+.teacher-sched__today-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background: #f5f3ff;
+  border: 1px solid #ddd6fe;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.85rem;
+}
+.teacher-sched__today-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+.teacher-sched__today-banner strong { font-weight: 700; color: #7c3aed; display: block; margin-bottom: 0.2rem; }
+.teacher-sched__today-list { color: #4b5563; line-height: 1.5; }
+
+.teacher-sched__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.teacher-sched__day {
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--color-surface, #fff);
+}
+.teacher-sched__day--today {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.1);
+}
+
+.teacher-sched__day-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.875rem;
+  background: var(--color-surface-alt, #f9fafb);
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
+}
+.teacher-sched__day--today .teacher-sched__day-header { background: #f5f3ff; }
+
+.teacher-sched__day-name {
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--color-text, #1f2937);
+  flex: 1;
+}
+.teacher-sched__today-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: #7c3aed;
+  color: #fff;
+  padding: 0.1rem 0.5rem;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.teacher-sched__day-count {
+  font-size: 0.72rem;
+  color: var(--color-text-muted, #9ca3af);
+}
+
+.teacher-sched__slots { display: flex; flex-direction: column; }
+
+.teacher-sched__slot {
+  padding: 0.625rem 0.875rem;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  border-left: 3px solid #7c3aed;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.teacher-sched__slot:last-child { border-bottom: none; }
+
+.teacher-sched__slot-time {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #7c3aed;
+  letter-spacing: 0.02em;
+}
+.teacher-sched__slot-subject {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text, #1f2937);
+}
+.teacher-sched__slot-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+}
+.teacher-sched__slot-class {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--color-text-muted, #6b7280);
+}
+.teacher-sched__slot-room { font-size: 0.73rem; color: var(--color-text-muted, #9ca3af); }
+.teacher-sched__slot-link {
+  font-size: 0.72rem;
+  color: #7c3aed;
+  text-decoration: none;
+  font-weight: 500;
+  margin-top: 0.1rem;
+  align-self: flex-start;
+}
+.teacher-sched__slot-link:hover { text-decoration: underline; }
+
+.teacher-sched__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2.5rem 1rem;
+  text-align: center;
+}
+.teacher-sched__empty-icon { font-size: 2.5rem; }
+.teacher-sched__empty p { margin: 0; font-size: 0.9rem; font-weight: 500; color: var(--color-text, #1f2937); }
+.teacher-sched__empty-sub { font-size: 0.8rem !important; font-weight: 400 !important; color: var(--color-text-muted, #9ca3af) !important; }
+
+@media (max-width: 640px) {
+  .teacher-sched__grid { grid-template-columns: 1fr; }
+}

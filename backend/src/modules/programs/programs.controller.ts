@@ -12,6 +12,17 @@ import { Role } from '../../common/enums/role.enum';
 export class ProgramsController {
   constructor(private readonly service: ProgramsService) {}
 
+  @Get('my-roadmap')
+  @Roles(Role.TEACHER, Role.ADMIN)
+  @ApiOperation({ summary: 'Get my annual roadmap — all assigned subjects with their programs' })
+  @ApiQuery({ name: 'academicYear', required: true })
+  getMyRoadmap(
+    @Query('academicYear') academicYear: string,
+    @CurrentUser() user: any,
+  ) {
+    return this.service.findMyRoadmap(user.id, user.institutionId, academicYear);
+  }
+
   @Get('class/:classId')
   @Roles(Role.ADMIN, Role.TEACHER)
   @ApiOperation({ summary: 'List all subject programs for a class' })

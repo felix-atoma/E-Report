@@ -68,6 +68,34 @@ export class ProgramsService {
     return this.findOne(classId, subjectId, dto.academicYear, institutionId);
   }
 
+  async findMyRoadmap(teacherId: string, institutionId: string, academicYear: string) {
+    const classSubjects = await this.prisma.classSubject.findMany({
+      where: { teacherId, class: { institutionId } },
+      include: {
+        class:   { select: { id: true, name: true } },
+        subject: { select: { id: true, nameFr: true, code: true } },
+      },
+      orderBy: [{ class: { name: 'asc' } }, { subject: { nameFr: 'asc' } }],
+    });
+
+    return Promise.all(
+      classSubjects.map(async (cs) => {
+        const program = await this.prisma.subjectProgram.findUnique({
+          where: { classId_subjectId_academicYear: { classId: cs.classId, subjectId: cs.subjectId, academicYear } },
+          include: { chapters: { orderBy: { order: 'asc' } } },
+        });
+        return {
+          classId:     cs.classId,
+          className:   cs.class.name,
+          subjectId:   cs.subjectId,
+          subjectName: cs.subject.nameFr,
+          subjectCode: cs.subject.code,
+          program:     program ?? null,
+        };
+      }),
+    );
+  }
+
   async listForClass(classId: string, academicYear: string, institutionId: string) {
     const cls = await this.prisma.class.findFirst({ where: { id: classId, institutionId } });
     if (!cls) throw new NotFoundException('Class not found');

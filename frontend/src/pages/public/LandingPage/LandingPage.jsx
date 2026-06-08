@@ -462,6 +462,10 @@ const COMPARISON = [
   { feature: 'Résultats examens nationaux', excel: '❌ Fichier séparé', autres: '❌ Non', nova: '✅ CEPD, BEPC, BAC, BTS' },
   { feature: 'LMS (cours, devoirs, quiz)', excel: '❌ Non', autres: '⚠️ Option payante', nova: '✅ Inclus' },
   { feature: 'Analytics tableau de bord', excel: '⚠️ Tableaux manuels', autres: '✅ Oui', nova: '✅ Temps réel' },
+  { feature: 'Appréciations IA (bulletins)', excel: '❌ Non', autres: '❌ Non', nova: '✅ 1 clic avec Claude AI' },
+  { feature: 'Mode hors ligne (PWA)', excel: '❌ Non', autres: '❌ Non', nova: '✅ Cache + synchronisation auto' },
+  { feature: 'Rappels paiement WhatsApp', excel: '❌ Appels manuels', autres: '❌ Non', nova: '✅ 1 clic par parent' },
+  { feature: 'Exports CSV officiels', excel: '❌ Mise en forme manuelle', autres: '⚠️ Coût supplémentaire', nova: '✅ Auto, prêt pour l\'inspection' },
   { feature: 'Adapté Afrique francophone', excel: '❌ Non', autres: '❌ Non', nova: '✅ Conçu pour Togo+' },
   { feature: 'Prix', excel: '~0 (heures perdues)', autres: '50k–200k FCFA/mois', nova: '✅ Payez si satisfait' },
 ];
@@ -539,6 +543,19 @@ const FAQS_EN = [
   { q: 'Is our students\' data secure?', a: 'Yes. All data is encrypted and hosted on Supabase (bank-level cloud infrastructure). Each school only has access to its own data. GDPR compliance ensured.' },
   { q: 'Does it work on all devices?', a: 'Yes. NovaBulletin is a web application that works on computers, tablets and smartphones (Android and iOS). No installation required — just open your browser.' },
 ];
+const FEATURES_ROW3 = [
+  { icon: '✨', color: '#fdf4ff', iconColor: '#7c3aed', title: 'Appréciations IA', desc: 'Générez en 1 clic des appréciations de bulletin personnalisées. L\'IA analyse la moyenne, la mention et les notes par matière pour rédiger un commentaire professionnel adapté à chaque élève.' },
+  { icon: '📡', color: '#f0fdf4', iconColor: '#16a34a', title: 'Mode hors ligne', desc: 'NovaBulletin fonctionne même sans internet. Les données sont mises en cache, la consultation reste possible et tout se synchronise automatiquement dès la reconnexion.' },
+  { icon: '💸', color: '#fff0f6', iconColor: '#be185d', title: 'Rappels paiement WhatsApp', desc: 'D\'un clic, envoyez au parent le montant exact dû par WhatsApp. Relance ciblée avec le solde impayé — plus efficace qu\'un appel téléphonique.' },
+  { icon: '📊', color: '#fff7ed', iconColor: '#ea580c', title: 'Exports gouvernementaux', desc: 'Téléchargez en 1 clic les fichiers CSV prêts pour l\'inspection : effectifs élèves, résultats de classe, rapport des frais scolaires. Format Excel compatible.' },
+];
+const FEATURES_ROW3_EN = [
+  { icon: '✨', color: '#fdf4ff', iconColor: '#7c3aed', title: 'AI-generated Comments', desc: 'Generate personalised report card comments in 1 click. AI analyses the average, grade and subject scores to write a professional, student-specific appreciation.' },
+  { icon: '📡', color: '#f0fdf4', iconColor: '#16a34a', title: 'Offline Mode', desc: 'NovaBulletin works even without internet. Data is cached, browsing stays available and everything syncs automatically once reconnected.' },
+  { icon: '💸', color: '#fff0f6', iconColor: '#be185d', title: 'WhatsApp Payment Reminders', desc: 'One click sends the parent the exact outstanding balance via WhatsApp. Targeted follow-up — more effective than a phone call.' },
+  { icon: '📊', color: '#fff7ed', iconColor: '#ea580c', title: 'Government Exports', desc: 'Download in 1 click inspection-ready CSV files: student census, class results, fee report. Excel-compatible format.' },
+];
+
 const COMPARISON_EN = [
   { feature: 'Digital grade sheets (mobile)', excel: '❌ Paper + double entry', autres: '⚠️ PC only', nova: '✅ Mobile + e-signature' },
   { feature: 'Automatic average calculation', excel: '❌ Manual formulas', autres: '⚠️ Partial', nova: '✅ 100% automatic' },
@@ -551,6 +568,10 @@ const COMPARISON_EN = [
   { feature: 'National exam results', excel: '❌ Separate file', autres: '❌ No', nova: '✅ CEPD, BEPC, BAC, BTS' },
   { feature: 'LMS (courses, homework, quizzes)', excel: '❌ No', autres: '⚠️ Paid option', nova: '✅ Included' },
   { feature: 'Dashboard analytics', excel: '⚠️ Manual charts', autres: '✅ Yes', nova: '✅ Real-time' },
+  { feature: 'AI report card comments', excel: '❌ No', autres: '❌ No', nova: '✅ 1 click with Claude AI' },
+  { feature: 'Offline mode', excel: '❌ No', autres: '❌ No', nova: '✅ PWA with data cache' },
+  { feature: 'WhatsApp payment reminders', excel: '❌ Manual calls', autres: '❌ No', nova: '✅ 1 click per parent' },
+  { feature: 'Government CSV exports', excel: '❌ Manual formatting', autres: '⚠️ Extra cost', nova: '✅ Auto, inspection-ready' },
   { feature: 'Built for Francophone Africa', excel: '❌ No', autres: '❌ No', nova: '✅ Designed for Togo+' },
   { feature: 'Price', excel: '~0 (hours lost)', autres: '50k–200k FCFA/month', nova: '✅ Pay if satisfied' },
 ];
@@ -666,6 +687,7 @@ export default function LandingPage() {
   // Language-aware data
   const features1   = isFr ? FEATURES_ROW1        : FEATURES_ROW1_EN;
   const features2   = isFr ? FEATURES_ROW2        : FEATURES_ROW2_EN;
+  const features3   = isFr ? FEATURES_ROW3        : FEATURES_ROW3_EN;
   const lmsFeats    = isFr ? LMS_FEATURES          : LMS_FEATURES_EN;
   const steps       = isFr ? STEPS                 : STEPS_EN;
   const roles       = isFr ? ROLES                 : ROLES_EN;
@@ -1156,16 +1178,45 @@ export default function LandingPage() {
           <div className="lp-section-head">
             <span className="lp-tag">{t('⚡ Fonctionnalités','⚡ Features')}</span>
             <h2>{t('Tout ce dont votre école a besoin','Everything your school needs')}</h2>
-            <p>{t('Une plateforme complète qui remplace Excel, les imprimantes et les appels aux parents.','A complete platform that replaces Excel, printers and parent phone calls.')}</p>
+            <p>{t('Une plateforme complète qui remplace Excel, les imprimantes et les appels aux parents — avec IA, mode hors ligne et exports officiels.','A complete platform that replaces Excel, printers and parent phone calls — with AI, offline mode and official exports.')}</p>
           </div>
           <div className={`lp-feat-grid${featInView ? ' animated' : ''}`}>
-            {[...features1, ...features2].map((f, i) => (
+            {[...features1, ...features2, ...features3].map((f, i) => (
               <div className="lp-feat-card" key={f.title} style={{'--delay': `${i * 80}ms`, '--accent': f.iconColor, '--accent-bg': f.color}}>
                 <div className="lp-feat-icon" style={{background: f.color, color: f.iconColor}}>{f.icon}</div>
                 <h3>{f.title}</h3>
                 <p>{f.desc}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── NEW FEATURES CALLOUT ────────────────────────────────────── */}
+      <section className="lp-fiche" style={{background:'linear-gradient(135deg,#fdf4ff 0%,#ede9fe 50%,#f0fdf4 100%)'}}>
+        <div className="lp-container lp-fiche__inner">
+          <div className="lp-fiche__badge">✨</div>
+          <div className="lp-fiche__body">
+            <h3>{t('Nouvelles fonctionnalités — IA, hors ligne & exports','New features — AI, offline & exports')}</h3>
+            <p>{t(
+              <>NovaBulletin s'améliore en continu. Les dernières nouveautés apportent <strong>l'intelligence artificielle dans les bulletins</strong>, la continuité hors connexion, des rappels WhatsApp ciblés et des exports officiels prêts à remettre à l'inspection.</>,
+              <>NovaBulletin keeps improving. The latest updates bring <strong>AI-powered report comments</strong>, offline continuity, targeted WhatsApp payment reminders and official exports ready for the inspectorate.</>
+            )}</p>
+            <div className="lp-fiche__points">
+              {(isFr ? [
+                ['✨','IA génère l\'appréciation du bulletin en analysant les notes — 1 clic pour chaque élève'],
+                ['📡','Mode hors ligne : données en cache, synchronisation automatique à la reconnexion'],
+                ['💸','Rappel paiement WhatsApp : envoyez le solde impayé exact en 1 clic'],
+                ['📊','Exports CSV officiels : effectifs, résultats, frais — compatibles Excel & inspection'],
+              ] : [
+                ['✨','AI generates report card comments by analysing grades — 1 click per student'],
+                ['📡','Offline mode: data cached, auto-sync on reconnection'],
+                ['💸','WhatsApp payment reminder: send exact outstanding balance in 1 click'],
+                ['📊','Official CSV exports: census, results, fees — Excel & inspectorate ready'],
+              ]).map(([icon, text]) => (
+                <span key={text} className="lp-fiche__point"><span>{icon}</span>{text}</span>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -1358,12 +1409,14 @@ export default function LandingPage() {
                 ['📎','Lien vers le PDF du bulletin'],
                 ['💬','Message personnalisé avec les infos clés'],
                 ['🔒','Bloqué automatiquement si frais impayés'],
+                ['💸','Rappel de solde impayé en 1 clic depuis l\'admin'],
                 ['✉️','Email de secours si pas de WhatsApp'],
               ] : [
                 ['📤','Automatic delivery on publication'],
                 ['📎','Link to the PDF report card'],
                 ['💬','Personalised message with key info'],
                 ['🔒','Automatically blocked if fees unpaid'],
+                ['💸','Outstanding balance reminder in 1 click from admin'],
                 ['✉️','Email fallback if no WhatsApp'],
               ]).map(([icon, text]) => (
                 <div className="lp-wa-point" key={text}>

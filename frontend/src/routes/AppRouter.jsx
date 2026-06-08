@@ -71,6 +71,8 @@ const EditReportCardPage     = lazy(() => import('../pages/teacher/EditReportCar
 const TeacherBulletinsPage   = lazy(() => import('../pages/teacher/BulletinsPage/BulletinsPage'));
 const StudentProfilePage     = lazy(() => import('../pages/teacher/StudentProfilePage/StudentProfilePage'));
 const ProgramPage            = lazy(() => import('../pages/teacher/ProgramPage/ProgramPage'));
+const TeacherSchedulePage    = lazy(() => import('../pages/teacher/TeacherSchedulePage/TeacherSchedulePage'));
+const TeacherRoadmapPage     = lazy(() => import('../pages/teacher/TeacherRoadmapPage/TeacherRoadmapPage'));
 const ClassStatsPage         = lazy(() => import('../pages/teacher/ClassStatsPage/ClassStatsPage'));
 const TitulaireEntryPage     = lazy(() => import('../pages/teacher/TitulaireEntryPage/TitulaireEntryPage'));
 const MockExamsPage          = lazy(() => import('../pages/teacher/MockExamsPage/MockExamsPage'));
@@ -199,6 +201,8 @@ function AppRouter() {
         <Route path="/teacher/mock-exams/:id/grades" element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamGradePage /></ProtectedRoute>} />
         <Route path="/teacher/mock-exam-fiches"      element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamFichesListPage /></ProtectedRoute>} />
         <Route path="/teacher/mock-exam-results"     element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamResultsPage /></ProtectedRoute>} />
+        <Route path="/teacher/schedule"      element={<ProtectedRoute roles={['TEACHER']}><TeacherSchedulePage /></ProtectedRoute>} />
+        <Route path="/teacher/roadmap"       element={<ProtectedRoute roles={['TEACHER']}><TeacherRoadmapPage /></ProtectedRoute>} />
         <Route path="/teacher/calendar"    element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><CalendarPage /></ProtectedRoute>} />
 
         {/* Parent */}
