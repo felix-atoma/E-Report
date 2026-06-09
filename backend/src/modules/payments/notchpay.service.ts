@@ -66,15 +66,33 @@ export class NotchpayService {
       },
     };
 
-    const response = await axios.post(`${NOTCHPAY_API}/payments/initialize`, payload, {
-      headers: {
-        Authorization: this.publicKey,
-        'Content-Type': 'application/json',
-      },
-    });
+    let response: any;
+    try {
+      response = await axios.post(`${NOTCHPAY_API}/payments/initialize`, payload, {
+        headers: {
+          Authorization: this.publicKey,
+          'Content-Type': 'application/json',
+        },
+      });
+    } catch (err: any) {
+      const apiMsg = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? 'Unknown error';
+      this.logger.error(`Notchpay API error: ${JSON.stringify(err?.response?.data ?? err?.message)}`);
+      throw new BadRequestException(`Notchpay: ${apiMsg}`);
+    }
 
-    const authUrl: string = response.data?.transaction?.authorization_url;
-    if (!authUrl) throw new BadRequestException('Notchpay did not return a payment URL');
+    this.logger.debug(`Notchpay response: ${JSON.stringify(response.data)}`);
+
+    // authorization_url can sit at transaction.authorization_url or directly at authorization_url
+    const authUrl: string =
+      response.data?.transaction?.authorization_url ??
+      response.data?.authorization_url ??
+      response.data?.data?.authorization_url;
+
+    if (!authUrl) {
+      this.logger.error(`Notchpay unexpected response: ${JSON.stringify(response.data)}`);
+      const apiMsg = response.data?.message ?? response.data?.error ?? 'No authorization_url in response';
+      throw new BadRequestException(`Notchpay: ${apiMsg}`);
+    }
 
     this.logger.log(`Notchpay transaction created: ${reference} for student ${dto.studentId}`);
     return { url: authUrl, reference };
