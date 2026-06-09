@@ -146,6 +146,10 @@ export class NotificationsService {
     this.dispatching = true;
     try {
       await this._dispatch();
+    } catch (err: any) {
+      // Log and swallow — the next cron tick will retry. Don't let a transient
+      // DB error (pool timeout, connection drop) crash the scheduler process.
+      this.logger.error(`[Scheduler] dispatch failed: ${err?.message ?? err}`);
     } finally {
       this.dispatching = false;
     }
