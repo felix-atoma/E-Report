@@ -174,7 +174,7 @@ function AppRouter() {
         <Route path="/admin/mock-exam-fiches"        element={<ProtectedRoute roles={['ADMIN']}><MockExamFichesListPage /></ProtectedRoute>} />
         <Route path="/admin/mock-exam-results"       element={<ProtectedRoute roles={['ADMIN']}><MockExamResultsPage /></ProtectedRoute>} />
         <Route path="/admin/subscription"            element={<ProtectedRoute roles={['ADMIN']}><SubscriptionPage /></ProtectedRoute>} />
-        <Route path="/subscription-return"           element={<ProtectedRoute roles={['ADMIN']}><SubscriptionReturnPage /></ProtectedRoute>} />
+        <Route path="/subscription-return"           element={<SubscriptionReturnPage />} />
 
         {/* Bursar */}
         <Route path="/bursar"              element={<ProtectedRoute roles={['BURSAR']}><BursarDashboardPage /></ProtectedRoute>} />
