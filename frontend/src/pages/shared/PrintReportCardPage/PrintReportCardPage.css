@@ -234,7 +234,7 @@
 .pr-grades__col-moy  { background: #dcfce7; font-weight: 900; min-width: 28px; }
 .pr-grades__col-pts  { background: #f0fdf4; font-weight: 800; }
 .pr-grades__col-rang { color: #0f766e; font-weight: 900; min-width: 22px; }
-.pr-grades__col-appr { text-align: left !important; min-width: 56px; font-size: 0.8em; font-weight: 800; padding-left: 3px !important; }
+.pr-grades__col-appr { text-align: left !important; min-width: 100px; width: 110px; font-size: 0.8em; font-weight: 800; padding-left: 3px !important; white-space: normal; word-break: break-word; }
 .pr-grades__col-prof { text-align: left !important; min-width: 56px; font-size: 0.8em; font-weight: 800; padding-left: 3px !important; }
 .pr-grades__col-sig  { min-width: 48px; width: 52px; padding: 1px 2px !important; }
 .pr-grades__fail { color: #dc2626 !important; font-weight: 700; }
