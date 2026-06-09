@@ -167,6 +167,16 @@
   box-shadow: 0 0 0 3px rgba(249,115,22,0.12);
 }
 .sub-method-btn--disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(0.3); }
+
+/* ── Card logos ────────────────────────────────────────────────────────────── */
+.sub-card-logos { display: flex; gap: 8px; margin-bottom: 0.75rem; }
+.sub-card-logo {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 48px; height: 30px; border-radius: 5px;
+  font-size: 0.6rem; font-weight: 900; letter-spacing: 0.03em;
+}
+.sub-card-logo--visa { background: #1a1f71; color: #fff; }
+.sub-card-logo--mc   { background: linear-gradient(90deg,#eb001b 40%,#f79e1b); color: #fff; }
 .sub-method-icon  { font-size: 1.5rem; flex-shrink: 0; }
 .sub-method-label {
   font-size: 0.875rem;

@@ -13,6 +13,8 @@ export interface InitiateMomoDto {
   parentName: string;
   parentEmail: string;
   description?: string;
+  /** Override the callback path (default: /payment-return) */
+  callbackPath?: string;
 }
 
 const NOTCHPAY_API = 'https://api.notchpay.co';
@@ -54,7 +56,7 @@ export class NotchpayService {
       amount: Math.round(dto.amount),
       currency: 'XOF',
       description: dto.description ?? `Frais scolaires — ${dto.academicYear}${dto.term ? ' / ' + dto.term : ''}`,
-      callback: `${this.frontendUrl}/payment-return`,
+      callback: `${this.frontendUrl}${dto.callbackPath ?? '/payment-return'}`,
       reference,
       metadata: {
         studentId: dto.studentId,

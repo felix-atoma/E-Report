@@ -69,7 +69,7 @@ export default function SubscriptionPage() {
   const locale = navigator.language || 'fr-FR';
 
   const [billing, setBilling]       = useState('MONTHLY'); // 'MONTHLY' | 'ANNUAL'
-  const [payMethod, setPayMethod]   = useState(null);      // 'MOMO' | 'NOTCHPAY'
+  const [payMethod, setPayMethod]   = useState(null);      // 'MOMO' | 'NOTCHPAY' | 'CARD'
   const [momoForm, setMomoForm]     = useState({ momoPhone: '', momoReference: '', momoOperator: 'TMONEY' });
   const [momoErrors, setMomoErrors] = useState({});
 
@@ -299,14 +299,14 @@ export default function SubscriptionPage() {
               </div>
             </button>
 
-            {/* Mastercard — future */}
-            <button className="sub-method-btn sub-method-btn--disabled" disabled>
+            {/* Mastercard / Visa via Notchpay */}
+            <button
+              className={`sub-method-btn${payMethod === 'CARD' ? ' sub-method-btn--active' : ''}`}
+              onClick={() => setPayMethod(payMethod === 'CARD' ? null : 'CARD')}
+            >
               <span className="sub-method-icon">💳</span>
               <div>
-                <div className="sub-method-label">
-                  Mastercard / Visa
-                  <span className="sub-method-soon">Bientôt</span>
-                </div>
+                <div className="sub-method-label">Mastercard / Visa</div>
                 <div className="sub-method-desc">Carte bancaire internationale</div>
               </div>
             </button>
@@ -383,6 +383,36 @@ export default function SubscriptionPage() {
               </Button>
             </div>
           )}
+
+          {/* Card flow (Visa / Mastercard via Notchpay) */}
+          {payMethod === 'CARD' && (
+            <div className="sub-payment-panel">
+              <div className="sub-card-logos">
+                <span className="sub-card-logo sub-card-logo--visa">VISA</span>
+                <span className="sub-card-logo sub-card-logo--mc">MC</span>
+              </div>
+              <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
+                Vous serez redirigé vers la page de paiement sécurisée Notchpay où vous pourrez
+                saisir les informations de votre carte Visa ou Mastercard.
+                L'abonnement sera activé <strong>automatiquement</strong> dès que le paiement sera confirmé.
+              </p>
+              <ul style={{ margin: '0.75rem 0 0', paddingLeft: '1.25rem', fontSize: '0.8rem', color: 'var(--color-text-muted)', lineHeight: 1.8 }}>
+                <li>Paiement crypté SSL — vos données bancaires ne transitent pas par nos serveurs</li>
+                <li>Reçu envoyé automatiquement par email</li>
+              </ul>
+              <Button
+                onClick={() => notchpayMutation.mutate()}
+                disabled={notchpayMutation.isPending}
+                style={{ alignSelf: 'flex-start', marginTop: '1rem' }}
+              >
+                {notchpayMutation.isPending
+                  ? 'Redirection…'
+                  : currentPrice > 0
+                    ? `Payer ${currentPrice.toLocaleString(locale)} FCFA par carte`
+                    : 'Payer par carte bancaire'}
+              </Button>
+            </div>
+          )}
         </Card>
 
         {/* ── Payment history ────────────────────────────────────────────────── */}
@@ -417,7 +447,7 @@ export default function SubscriptionPage() {
                         </td>
                         <td>{p.plan === 'ANNUAL' ? 'Annuel' : 'Mensuel'}</td>
                         <td>{Number(p.amount).toLocaleString(locale)} FCFA</td>
-                        <td>{p.method === 'MOMO_MANUAL' ? 'Mobile Money' : 'Notchpay'}</td>
+                        <td>{p.method === 'MOMO_MANUAL' ? 'Mobile Money' : 'Notchpay (en ligne)'}</td>
                         <td style={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>
                           {p.momoReference ?? p.notchpayRef ?? '—'}
                         </td>

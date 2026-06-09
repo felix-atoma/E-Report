@@ -149,6 +149,7 @@ export class SubscriptionService {
       parentName:   adminName,
       parentEmail:  adminEmail,
       description:  `Abonnement NovaBulletin — ${tier} (${dto.plan === 'ANNUAL' ? 'Annuel' : 'Mensuel'})`,
+      callbackPath: '/subscription-return',
     });
 
     await db(this.prisma).subscriptionPayment.create({
