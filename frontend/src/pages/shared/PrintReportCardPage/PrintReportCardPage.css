@@ -5,11 +5,11 @@
   --bulletin-font-family: Arial, Helvetica, sans-serif;
   --bulletin-font-size: 11.5px;
   /* heading overrides */
-  --bulletin-h1-size:   1.35em;
+  --bulletin-h1-size:   1.55em;
   --bulletin-h1-weight: 900;
-  --bulletin-h2-size:   1.15em;
+  --bulletin-h2-size:   1.2em;
   --bulletin-h2-weight: 900;
-  --bulletin-h3-size:   0.85em;
+  --bulletin-h3-size:   0.88em;
   --bulletin-h3-weight: 900;
 }
 
@@ -86,30 +86,30 @@
 /* ── Header ── */
 .pr-header {
   display: flex; align-items: center;
-  border-bottom: 2px solid var(--bulletin-primary, var(--bp));
-  padding-bottom: 4px; margin-bottom: 4px;
+  border-bottom: 2.5px solid var(--bulletin-primary, var(--bp));
+  padding-bottom: 8px; margin-bottom: 7px;
   flex-shrink: 0;
 }
 .pr-header__logo, .pr-header__crest {
-  width: 60px; height: 60px; object-fit: contain; flex-shrink: 0;
+  width: 78px; height: 78px; object-fit: contain; flex-shrink: 0;
 }
-.pr-header__logo-placeholder { width: 60px; flex-shrink: 0; }
-.pr-header__logo  { margin-right: 8px; }
-.pr-header__crest { margin-left:  8px; }
+.pr-header__logo-placeholder { width: 78px; flex-shrink: 0; }
+.pr-header__logo  { margin-right: 10px; }
+.pr-header__crest { margin-left:  10px; }
 .pr-header__center { flex: 1; text-align: center; }
 .pr-header__country {
-  font-size: 0.75em; color: #6b7280; margin-bottom: 1px;
+  font-size: 0.8em; color: #6b7280; margin-bottom: 2px;
   text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;
 }
 .pr-header__school {
-  font-size: var(--bulletin-h1-size, 1.3em);
+  font-size: var(--bulletin-h1-size, 1.55em);
   font-weight: var(--bulletin-h1-weight, 900);
   color: var(--bulletin-primary, var(--bp));
-  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1px;
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;
 }
-.pr-header__circ  { font-size: 0.75em; color: #374151; font-weight: 700; font-style: italic; margin-bottom: 1px; }
-.pr-header__sub   { font-size: 0.85em; color: #555; font-weight: 600; }
-.pr-header__motto { font-size: 0.85em; font-style: italic; color: #374151; margin-top: 1px; font-weight: 600; }
+.pr-header__circ  { font-size: 0.82em; color: #374151; font-weight: 700; font-style: italic; margin-bottom: 2px; }
+.pr-header__sub   { font-size: 0.9em; color: #555; font-weight: 600; }
+.pr-header__motto { font-size: 0.9em; font-style: italic; color: #374151; margin-top: 2px; font-weight: 600; }
 
 /* ── Title bar ── */
 .pr-title {
@@ -148,20 +148,20 @@
 .pr-student-photo {
   display: flex; flex-direction: column; align-items: center;
   border: 1.5px solid var(--bulletin-primary, var(--bp));
-  padding: 3px 4px; gap: 2px; flex-shrink: 0;
+  padding: 3px 5px; gap: 2px; flex-shrink: 0;
 }
 .pr-student-photo__label {
-  font-size: 0.7em; font-weight: 800;
+  font-size: 0.72em; font-weight: 800;
   color: var(--bulletin-primary, var(--bp));
   text-transform: uppercase;
 }
 .pr-student-photo__img {
-  width: 52px; height: 66px; object-fit: cover;
+  width: 68px; height: 88px; object-fit: cover;
   border-radius: 2px; border: 1.5px solid var(--bulletin-primary, var(--bp));
   display: block;
 }
 .pr-student-photo__placeholder {
-  width: 52px; height: 66px;
+  width: 68px; height: 88px;
   border: 1.5px dashed var(--bulletin-primary, var(--bp));
   border-radius: 2px; overflow: hidden; background: #f8fafc;
 }
@@ -195,9 +195,20 @@
   font-size: 1em;
   font-weight: 800;
 }
-.pr-grades th, .pr-grades td {
-  border: 1px solid #d1d5db;
+.pr-grades th {
+  border: 1px solid #9ca3af;
   padding: 0 2px;
+  text-align: center;
+  vertical-align: middle;
+  font-weight: 800;
+}
+.pr-grades td {
+  /* lignes horizontales visibles, bordures verticales discrètes */
+  border-top: 1px solid #6b7280;
+  border-bottom: 1px solid #6b7280;
+  border-left: 1px solid #d1d5db;
+  border-right: 1px solid #d1d5db;
+  padding: 1px 2px;
   text-align: center;
   vertical-align: middle;
   font-weight: 800;
@@ -351,8 +362,8 @@
 
 /* ── Footer ── */
 .pr-footer {
-  font-size: 0.65em; color: #9ca3af;
-  border-top: 1px solid #e5e7eb; padding-top: 2px;
+  font-size: 0.8em; color: #9ca3af;
+  border-top: 1.5px solid #e5e7eb; padding-top: 4px;
   flex-shrink: 0;
   display: flex; justify-content: space-between; align-items: center; gap: 8px;
 }
