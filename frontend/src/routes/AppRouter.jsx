@@ -98,6 +98,9 @@ const ProgressPage           = lazy(() => import('../pages/student/ProgressPage/
 const StudentBulletinsPage   = lazy(() => import('../pages/student/BulletinsPage/BulletinsPage'));
 const StudentLMSPage         = lazy(() => import('../pages/student/StudentLMSPage/StudentLMSPage'));
 
+const ReportIncidentPage     = lazy(() => import('../pages/shared/ReportIncidentPage/ReportIncidentPage'));
+const IncidentsPage          = lazy(() => import('../pages/admin/IncidentsPage/IncidentsPage'));
+
 // ── Shared (protected) ────────────────────────────────────────────────────────
 const ProfilePage            = lazy(() => import('../pages/shared/ProfilePage/ProfilePage'));
 const HelpPage               = lazy(() => import('../pages/shared/HelpPage/HelpPage'));
@@ -223,11 +226,18 @@ function AppRouter() {
         <Route path="/parent/calendar"     element={<ProtectedRoute roles={['PARENT']}><CalendarPage /></ProtectedRoute>} />
 
         {/* Student */}
-        <Route path="/student"             element={<ProtectedRoute roles={['STUDENT']}><StudentDashboardPage /></ProtectedRoute>} />
-        <Route path="/student/reports"     element={<ProtectedRoute roles={['STUDENT']}><MyReportCardsPage /></ProtectedRoute>} />
-        <Route path="/student/progress"    element={<ProtectedRoute roles={['STUDENT']}><ProgressPage /></ProtectedRoute>} />
-        <Route path="/student/bulletins"   element={<ProtectedRoute roles={['STUDENT']}><StudentBulletinsPage /></ProtectedRoute>} />
-        <Route path="/student/lms"         element={<ProtectedRoute roles={['STUDENT']}><StudentLMSPage /></ProtectedRoute>} />
+        <Route path="/student"                  element={<ProtectedRoute roles={['STUDENT']}><StudentDashboardPage /></ProtectedRoute>} />
+        <Route path="/student/reports"          element={<ProtectedRoute roles={['STUDENT']}><MyReportCardsPage /></ProtectedRoute>} />
+        <Route path="/student/progress"         element={<ProtectedRoute roles={['STUDENT']}><ProgressPage /></ProtectedRoute>} />
+        <Route path="/student/bulletins"        element={<ProtectedRoute roles={['STUDENT']}><StudentBulletinsPage /></ProtectedRoute>} />
+        <Route path="/student/lms"              element={<ProtectedRoute roles={['STUDENT']}><StudentLMSPage /></ProtectedRoute>} />
+        <Route path="/student/report-incident"  element={<ProtectedRoute roles={['STUDENT']}><ReportIncidentPage /></ProtectedRoute>} />
+
+        {/* Teacher — incident reporting */}
+        <Route path="/teacher/report-incident"  element={<ProtectedRoute roles={['TEACHER']}><ReportIncidentPage /></ProtectedRoute>} />
+
+        {/* Admin — incident management */}
+        <Route path="/admin/incidents"          element={<ProtectedRoute roles={['ADMIN']}><IncidentsPage /></ProtectedRoute>} />
 
         {/* Shared */}
         <Route path="/help"     element={<ProtectedRoute><HelpPage /></ProtectedRoute>} />

@@ -13,6 +13,8 @@
     "fees":           "Fees",
     "payments":       "Payments",
     "paymentPlans":   "Payment Plans",
+    "incidents":       "Incident Reports",
+    "reportIncident":  "Report an Incident",
     "notifications":  "Notifications",
     "analytics":      "Analytics",
     "subscription":   "Subscription",
@@ -56,7 +58,8 @@
     "finance":  "FINANCE",
     "records":  "RECORDS",
     "system":   "SYSTEM",
-    "classes":  "CLASSES"
+    "classes":  "CLASSES",
+    "other":    "OTHER"
   },
 
   "role": {

@@ -1,0 +1,60 @@
+.ri-form-card { margin-bottom: 1.5rem; padding: 1.5rem; }
+.ri-form-card__head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.ri-form-card__title { font-size: 1rem; font-weight: 600; color: #1E2A78; margin: 0; }
+.ri-form-card__close { background: none; border: none; font-size: 1.1rem; cursor: pointer; color: #6b7280; padding: 4px 8px; border-radius: 6px; }
+.ri-form-card__close:hover { background: #f3f4f6; }
+
+.ri-confidential-banner {
+  display: flex; align-items: center; gap: 10px;
+  background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px;
+  padding: 10px 14px; margin-bottom: 1.25rem;
+  font-size: 0.82rem; color: #1E2A78;
+}
+.ri-confidential-banner__icon { font-size: 1rem; }
+
+.ri-form { display: flex; flex-direction: column; gap: 1rem; }
+.ri-form__row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media (max-width: 600px) { .ri-form__row { grid-template-columns: 1fr; } }
+
+.ri-form__field { display: flex; flex-direction: column; gap: 4px; }
+.ri-form__label { font-size: 0.82rem; font-weight: 500; color: #374151; }
+.ri-form__hint { color: #9ca3af; font-weight: 400; }
+.ri-form__textarea {
+  width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px;
+  font-size: 0.9rem; font-family: inherit; resize: vertical; min-height: 120px;
+  color: #111827; background: #fff; transition: border-color .15s;
+  box-sizing: border-box;
+}
+.ri-form__textarea:focus { outline: none; border-color: #1E2A78; box-shadow: 0 0 0 3px rgba(30,42,120,.08); }
+
+.ri-form__checkbox { display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; color: #374151; cursor: pointer; }
+.ri-form__checkbox input[type="checkbox"] { margin-top: 2px; accent-color: #1E2A78; }
+.ri-form__actions { display: flex; justify-content: flex-end; gap: 8px; padding-top: 8px; border-top: 1px solid #f3f4f6; }
+
+/* List */
+.ri-list { display: flex; flex-direction: column; gap: 1rem; }
+.ri-empty { color: #9ca3af; text-align: center; padding: 2rem; }
+.ri-empty-state { text-align: center; padding: 3rem 1rem; }
+.ri-empty-state__icon { font-size: 3rem; margin-bottom: 1rem; }
+.ri-empty-state__text { font-size: 1rem; font-weight: 500; color: #374151; margin: 0 0 6px; }
+.ri-empty-state__sub { font-size: 0.85rem; color: #9ca3af; max-width: 420px; margin: 0 auto; }
+
+/* Card */
+.ri-card { padding: 1rem 1.25rem; }
+.ri-card__header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.ri-card__meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.ri-card__cat { font-size: 0.75rem; font-weight: 600; color: #1E2A78; background: #eff6ff; padding: 2px 8px; border-radius: 12px; }
+.ri-card__anon { font-size: 0.72rem; color: #6b7280; background: #f3f4f6; padding: 2px 7px; border-radius: 12px; }
+.ri-card__date { font-size: 0.75rem; color: #9ca3af; white-space: nowrap; }
+.ri-card__title { font-size: 0.95rem; font-weight: 600; color: #111827; margin: 0 0 4px; }
+.ri-card__accused { font-size: 0.82rem; color: #6b7280; margin: 0 0 6px; }
+.ri-card__desc { font-size: 0.85rem; color: #374151; margin: 0; line-height: 1.5; white-space: pre-wrap; }
+.ri-card__admin-note { margin-top: 10px; background: #fff8e1; border-left: 3px solid #FFB547; padding: 8px 12px; border-radius: 0 6px 6px 0; font-size: 0.82rem; }
+.ri-card__admin-note__label { font-weight: 600; color: #92400e; display: block; margin-bottom: 2px; }
+
+/* Status badges */
+.ri-status { font-size: 0.72rem; font-weight: 600; padding: 2px 8px; border-radius: 12px; }
+.ri-status--pending   { background: #fff8e1; color: #92400e; }
+.ri-status--review    { background: #eff6ff; color: #1E2A78; }
+.ri-status--resolved  { background: #f0fdf4; color: #166534; }
+.ri-status--dismissed { background: #f3f4f6; color: #6b7280; }

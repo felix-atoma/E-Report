@@ -226,6 +226,7 @@ model Institution {
   libraryLoans        LibraryLoan[]
   healthRecords       HealthRecord[]
   paymentPlans        PaymentPlan[]
+  incidentReports     IncidentReport[]
 }
 
 model User {
@@ -271,6 +272,7 @@ model User {
   mockExamFichesSigned  MockExamSubjectFiche[] @relation("MockExamFicheSigner")
   staffProfile          StaffProfile?
   paymentPlansCreated   PaymentPlan[]          @relation("PaymentPlanCreator")
+  incidentsFiled        IncidentReport[]       @relation("IncidentReporter")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1275,6 +1277,50 @@ enum DisciplinaryType {
   NOTE
   COMMENDATION
   OTHER
+}
+
+// ─── Incident Reports ────────────────────────────────────────────────────────
+
+enum IncidentCategory {
+  BULLYING
+  HARASSMENT
+  DISCRIMINATION
+  TEACHER_MISCONDUCT
+  STUDENT_MISCONDUCT
+  CHEATING
+  THEFT
+  OTHER
+}
+
+enum IncidentStatus {
+  PENDING
+  UNDER_REVIEW
+  RESOLVED
+  DISMISSED
+}
+
+model IncidentReport {
+  id           String           @id @default(uuid())
+
+  reportedById String
+  reportedBy   User             @relation("IncidentReporter", fields: [reportedById], references: [id])
+
+  accusedName  String
+  accusedRole  String           // "Élève" | "Enseignant"
+
+  category     IncidentCategory
+  title        String
+  description  String           @db.Text
+  anonymous    Boolean          @default(false)
+
+  status       IncidentStatus   @default(PENDING)
+  adminNotes   String?          @db.Text
+
+  institutionId String
+  institution   Institution      @relation(fields: [institutionId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ─── Alumni, Transfers, Inventory ─────────────────────────────────────────

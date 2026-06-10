@@ -44,6 +44,7 @@ const NAV = {
     { to: '/admin/health',           icon: 'health',      labelKey: 'nav.health' },
     { to: '/admin/school-documents', icon: 'folder',      labelKey: 'nav.schoolDocuments' },
     { divider: true,              sectionKey: 'section.system' },
+    { to: '/admin/incidents',     icon: 'flag',      labelKey: 'nav.incidents' },
     { to: '/admin/notifications', icon: 'bell',      labelKey: 'nav.notifications' },
     { to: '/admin/analytics',     icon: 'chart',     labelKey: 'nav.analytics' },
     { to: '/admin/subscription',  icon: 'subscription', labelKey: 'nav.subscription' },
@@ -67,6 +68,8 @@ const NAV = {
     { to: '/teacher/mock-exam-fiches',   icon: 'fichexam',  labelKey: 'nav.mockExamFiches' },
     { to: '/teacher/mock-exam-results',  icon: 'trophy',    labelKey: 'nav.mockExamResults' },
     { to: '/teacher/lms',                icon: 'lms',       labelKey: 'nav.lms' },
+    { divider: true,              sectionKey: 'section.other' },
+    { to: '/teacher/report-incident',    icon: 'flag',      labelKey: 'nav.reportIncident' },
   ],
   BURSAR: [
     { to: '/bursar',               icon: 'grid',      labelKey: 'nav.dashboard' },
@@ -92,7 +95,8 @@ const NAV = {
     { to: '/student/reports',   icon: 'clipboard', labelKey: 'nav.myReports' },
     { to: '/student/progress',  icon: 'chart',     labelKey: 'nav.myProgress' },
     { to: '/student/bulletins', icon: 'megaphone', labelKey: 'nav.bulletins' },
-    { to: '/student/lms',       icon: 'lms',       labelKey: 'nav.lms' },
+    { to: '/student/lms',            icon: 'lms',  labelKey: 'nav.lms' },
+    { to: '/student/report-incident', icon: 'flag', labelKey: 'nav.reportIncident' },
   ],
 };
 
@@ -268,6 +272,12 @@ const ICONS = {
       <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
       <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
       <line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="12" y2="18"/>
+    </svg>
+  ),
+  flag: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+      <line x1="4" y1="22" x2="4" y2="15"/>
     </svg>
   ),
   shield: (
