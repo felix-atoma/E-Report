@@ -158,7 +158,7 @@ function PlanCard({ plan, onPayInstalment, onDelete, locale }) {
 const EMPTY_FORM = { studentId: '', academicYear: '', totalAmount: '', notes: '', instalments: [{ ...EMPTY_INSTALMENT }] };
 
 function PaymentPlansPage() {
-  const locale = navigator.language || 'fr-FR';
+  const locale = 'fr-FR';
   const qc = useQueryClient();
   const { institution } = useInstitution();
   const [search, setSearch] = useState('');

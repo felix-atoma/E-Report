@@ -79,7 +79,7 @@ function PaymentForm({ form, errors, onChange, students, methods, t }) {
 
 function PaymentsPage() {
   const { t } = useTranslation();
-  const locale = navigator.language || 'fr-FR';
+  const locale = 'fr-FR';
   const qc = useQueryClient();
   const { institution } = useInstitution();
   const [search, setSearch]       = useState('');

@@ -18,7 +18,7 @@ const STATUS_I18N_KEY = { PAID: 'upToDate', PARTIAL: 'partial', UNPAID: 'unpaid'
 function BursarDashboardPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const locale = navigator.language || 'fr-FR';
+  const locale = 'fr-FR';
 
   const { data: payments = [], isLoading: l1 } = useQuery({
     queryKey: ['payments'],

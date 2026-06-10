@@ -13,7 +13,7 @@ const STATUS_KEY = { PAID: 'upToDate', PARTIAL: 'partial', UNPAID: 'unpaid' };
 
 function PaymentHistoryPage() {
   const { t } = useTranslation();
-  const locale = navigator.language || 'fr-FR';
+  const locale = 'fr-FR';
 
   const { data: payments = [], isLoading } = useQuery({
     queryKey: ['parent-payments'],

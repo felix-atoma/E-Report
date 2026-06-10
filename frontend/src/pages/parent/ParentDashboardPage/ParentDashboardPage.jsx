@@ -103,7 +103,7 @@ function ParentDashboardPage() {
                 const cls      = child.classes?.[0]?.class;
                 const lastRep  = child.reportCards?.[0];
                 const balance  = child.feeBalance;
-                const locale   = navigator.language || 'fr-FR';
+                const locale   = 'fr-FR';
                 return (
                   <Link key={child.id} to={`/parent/children/${child.id}/reports`} className="parent-dash__child-row">
                     <Avatar name={child.user?.name ?? child.admissionNumber ?? '?'} size="sm" />

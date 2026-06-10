@@ -30,7 +30,7 @@ function StatCard({ label, value, cls, sub }) {
   );
 }
 
-const locale = navigator.language || 'fr-FR';
+const locale = 'fr-FR';
 
 function fmtDate(iso) {
   if (!iso) return '—';

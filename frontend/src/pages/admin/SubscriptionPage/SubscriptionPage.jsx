@@ -66,7 +66,7 @@ const OPERATORS = [
 
 export default function SubscriptionPage() {
   const qc     = useQueryClient();
-  const locale = navigator.language || 'fr-FR';
+  const locale = 'fr-FR';
 
   const [billing, setBilling]       = useState('MONTHLY'); // 'MONTHLY' | 'ANNUAL'
   const [payMethod, setPayMethod]   = useState(null);      // 'MOMO' | 'NOTCHPAY' | 'CARD'

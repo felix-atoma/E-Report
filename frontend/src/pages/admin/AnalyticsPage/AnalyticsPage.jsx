@@ -55,7 +55,7 @@ function yearOptions() {
 
 function AnalyticsPage() {
   const { t } = useTranslation();
-  const locale = navigator.language || 'fr-FR';
+  const locale = 'fr-FR';
   const [selectedYear, setSelectedYear] = useState(currentAcademicYear);
   const [exportTerm, setExportTerm] = useState('Trimestre 1');
   const [exportYear, setExportYear] = useState(currentAcademicYear);
