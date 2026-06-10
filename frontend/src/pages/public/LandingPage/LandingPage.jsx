@@ -380,14 +380,14 @@ const IllustrationMobileApp = () => (
 
 /* ── Data ───────────────────────────────────────────────────────────────── */
 const FEATURES_ROW1 = [
-  { icon: '🧮', color: '#dbeafe', iconColor: '#1d4ed8', title: 'Calcul automatique', desc: 'Moyennes, coefficients, rangs calculés instantanément. Zéro formule Excel, zéro erreur.' },
-  { icon: '📄', color: '#dcfce7', iconColor: '#16a34a', title: 'Bulletins PDF en 1 clic', desc: 'Bulletin professionnel avec logo, couleurs et cachet de votre école. Prêt à imprimer ou partager.' },
-  { icon: '📱', color: '#fce7f3', iconColor: '#be185d', title: 'WhatsApp & Email', desc: 'Parents informés instantanément par WhatsApp. Distribution automatique dès la publication.' },
+  { icon: '🧮', color: '#eff6ff', iconColor: '#1E2A78', title: 'Calcul automatique', desc: 'Moyennes, coefficients, rangs calculés instantanément. Zéro formule Excel, zéro erreur.' },
+  { icon: '📄', color: '#fff3f0', iconColor: '#FF7A59', title: 'Bulletins PDF en 1 clic', desc: 'Bulletin professionnel avec logo, couleurs et cachet de votre école. Prêt à imprimer ou partager.' },
+  { icon: '📱', color: '#fff8e1', iconColor: '#FFB547', title: 'WhatsApp & Email', desc: 'Parents informés instantanément par WhatsApp. Distribution automatique dès la publication.' },
 ];
 const FEATURES_ROW2 = [
-  { icon: '📝', color: '#fff7ed', iconColor: '#ea580c', title: 'Fiches de notes numériques', desc: 'Chaque enseignant dispose d\'une fiche numérique sur son téléphone. Saisie mobile, calcul auto et signature électronique. Zéro papier, zéro perte.' },
-  { icon: '💰', color: '#fef3c7', iconColor: '#d97706', title: 'Frais scolaires', desc: 'Gestion intégrée des cotisations. Blocage automatique des bulletins si frais impayés.' },
-  { icon: '📊', color: '#ede9fe', iconColor: '#7c3aed', title: 'Analytics temps réel', desc: 'Taux de recouvrement, progression par classe, bulletins publiés vs en attente — en direct.' },
+  { icon: '📝', color: '#fff8e1', iconColor: '#FFB547', title: 'Fiches de notes numériques', desc: 'Chaque enseignant dispose d\'une fiche numérique sur son téléphone. Saisie mobile, calcul auto et signature électronique. Zéro papier, zéro perte.' },
+  { icon: '💰', color: '#eff6ff', iconColor: '#1E2A78', title: 'Frais scolaires', desc: 'Gestion intégrée des cotisations. Blocage automatique des bulletins si frais impayés.' },
+  { icon: '📊', color: '#fff3f0', iconColor: '#FF7A59', title: 'Analytics temps réel', desc: 'Taux de recouvrement, progression par classe, bulletins publiés vs en attente — en direct.' },
 ];
 
 const LMS_FEATURES = [
@@ -408,37 +408,37 @@ const STEPS = [
 
 const ROLES = [
   { icon: '🏫', title: 'Administrateur', color: '#1E2A78', desc: 'Vision complète de votre établissement.', features: ['Tableau de bord analytique complet','Gestion classes, matières, enseignants','Bulletins PDF + publication en 1 clic','Paramétrage des frais scolaires','Registre présences, santé, bibliothèque','Inventaire, alumni, examens nationaux','Documents officiels & profils du personnel','Exportation CSV de toutes les données'] },
-  { icon: '👨‍🏫', title: 'Enseignant', color: '#0369a1', desc: 'Votre fiche de notes numérique toujours dans votre poche.', features: ['📝 Fiche numérique sur mobile','Saisie des notes en temps réel','Calcul automatique des moyennes','Appréciations par élève','Signature électronique de la fiche','Dépôt de cours et documents','Publication de devoirs et quiz','Correction examens blancs'] },
-  { icon: '💼', title: 'Économe', color: '#d97706', desc: 'Gérez les frais sans paperasse.', features: ['Enregistrement paiements (TMoney, Flooz, cash)','Vue impayés en temps réel','Génération de reçus PDF','Suivi par cotisation et période','Rapport financier exportable','Statistiques de recouvrement','Bulletins retenus automatiquement','Accès multi-établissement'] },
-  { icon: '👨‍👩‍👧', title: 'Parent', color: '#15803d', desc: 'Suivez la scolarité de vos enfants.', features: ['Bulletins sur WhatsApp & Email','Portail parent 24h/24','Progression trimestre par trimestre','Historique complet des bulletins','Paiement frais en ligne','Consulter cours et devoirs LMS','Annonces de l\'école','Notifications instantanées'] },
+  { icon: '👨‍🏫', title: 'Enseignant', color: '#1E2A78', desc: 'Votre fiche de notes numérique toujours dans votre poche.', features: ['📝 Fiche numérique sur mobile','Saisie des notes en temps réel','Calcul automatique des moyennes','Appréciations par élève','Signature électronique de la fiche','Dépôt de cours et documents','Publication de devoirs et quiz','Correction examens blancs'] },
+  { icon: '💼', title: 'Économe', color: '#FFB547', desc: 'Gérez les frais sans paperasse.', features: ['Enregistrement paiements (TMoney, Flooz, cash)','Vue impayés en temps réel','Génération de reçus PDF','Suivi par cotisation et période','Rapport financier exportable','Statistiques de recouvrement','Bulletins retenus automatiquement','Accès multi-établissement'] },
+  { icon: '👨‍👩‍👧', title: 'Parent', color: '#FF7A59', desc: 'Suivez la scolarité de vos enfants.', features: ['Bulletins sur WhatsApp & Email','Portail parent 24h/24','Progression trimestre par trimestre','Historique complet des bulletins','Paiement frais en ligne','Consulter cours et devoirs LMS','Annonces de l\'école','Notifications instantanées'] },
 ];
 
 const TESTIMONIALS = [
   { name: 'Kodjo Agbenyéga', role: 'Directeur', school: 'Collège Sainte-Marie, Lomé', text: 'Avant NovaBulletin, nous passions 5 jours à préparer les bulletins chaque trimestre. Maintenant c\'est 30 minutes. Les parents adorent recevoir les bulletins sur WhatsApp. C\'est une révolution pour notre école.', initials: 'KA', color: '#1E2A78', photo: 'https://i.pravatar.cc/100?img=68' },
-  { name: 'Mme Afi Dossou', role: 'Directrice', school: 'École Primaire Les Colibris, Lomé', text: 'Le système de blocage automatique pour frais impayés a transformé notre recouvrement. Nous avons récupéré 40% de créances supplémentaires en un seul trimestre. Je recommande à toutes les écoles.', initials: 'AD', color: '#16a34a', photo: 'https://i.pravatar.cc/100?img=47' },
-  { name: 'Prof. Edem Kodjo', role: 'Enseignant de Mathématiques', school: 'Lycée Technique de Kara', text: 'Je saisie mes notes depuis mon téléphone entre deux cours. C\'est rapide, intuitif. La signature numérique des fiches est une fonctionnalité que j\'adore. Je ne reviendrai jamais à Excel.', initials: 'EK', color: '#7c3aed', photo: 'https://i.pravatar.cc/100?img=12' },
-  { name: 'Sena Fiatowo', role: 'Parent d\'élève', school: 'Lomé, Togo', text: 'Recevoir le bulletin de ma fille sur WhatsApp le jour même, c\'est fantastique ! Je peux suivre sa progression en temps réel depuis mon téléphone. Merci NovaBulletin.', initials: 'SF', color: '#d97706', photo: 'https://i.pravatar.cc/100?img=44' },
-  { name: 'M. Kwame Asante', role: 'Proviseur', school: 'Lycée International de Cotonou', text: 'La gestion des frais scolaires intégrée aux bulletins est exactement ce dont nous avions besoin. Tout est centralisé, l\'économe et l\'admin voient les mêmes informations en temps réel.', initials: 'KW', color: '#be185d', photo: 'https://i.pravatar.cc/100?img=52' },
+  { name: 'Mme Afi Dossou', role: 'Directrice', school: 'École Primaire Les Colibris, Lomé', text: 'Le système de blocage automatique pour frais impayés a transformé notre recouvrement. Nous avons récupéré 40% de créances supplémentaires en un seul trimestre. Je recommande à toutes les écoles.', initials: 'AD', color: '#FF7A59', photo: 'https://i.pravatar.cc/100?img=47' },
+  { name: 'Prof. Edem Kodjo', role: 'Enseignant de Mathématiques', school: 'Lycée Technique de Kara', text: 'Je saisie mes notes depuis mon téléphone entre deux cours. C\'est rapide, intuitif. La signature numérique des fiches est une fonctionnalité que j\'adore. Je ne reviendrai jamais à Excel.', initials: 'EK', color: '#FFB547', photo: 'https://i.pravatar.cc/100?img=12' },
+  { name: 'Sena Fiatowo', role: 'Parent d\'élève', school: 'Lomé, Togo', text: 'Recevoir le bulletin de ma fille sur WhatsApp le jour même, c\'est fantastique ! Je peux suivre sa progression en temps réel depuis mon téléphone. Merci NovaBulletin.', initials: 'SF', color: '#FFB547', photo: 'https://i.pravatar.cc/100?img=44' },
+  { name: 'M. Kwame Asante', role: 'Proviseur', school: 'Lycée International de Cotonou', text: 'La gestion des frais scolaires intégrée aux bulletins est exactement ce dont nous avions besoin. Tout est centralisé, l\'économe et l\'admin voient les mêmes informations en temps réel.', initials: 'KW', color: '#FF7A59', photo: 'https://i.pravatar.cc/100?img=52' },
 ];
 
 const DATABASE_MODULES = [
-  { icon: '📋', color: '#dbeafe', iconColor: '#1d4ed8', title: 'Présences quotidiennes', desc: 'Appel journalier par classe et matière. Suivi des absences, retards et exclusions par élève.' },
-  { icon: '🚨', color: '#fee2e2', iconColor: '#dc2626', title: 'Dossiers disciplinaires', desc: 'Avertissements, suspensions, exclusions. Historique complet avec suivi des sanctions.' },
-  { icon: '🏥', color: '#f0fdf4', iconColor: '#16a34a', title: 'Infirmerie & Santé', desc: 'Registre des visites, accidents, vaccinations et évacuations — avec compte rendu médical.' },
-  { icon: '📖', color: '#fef9c3', iconColor: '#d97706', title: 'Bibliothèque', desc: 'Prêts de livres et matériels. Relances automatiques pour les retours en retard.' },
-  { icon: '🏷️', color: '#ede9fe', iconColor: '#7c3aed', title: 'Inventaire scolaire', desc: 'Mobiliers, équipements, matériel informatique et sportif. État, valeur, emplacement.' },
-  { icon: '🎓', color: '#ecfdf5', iconColor: '#059669', title: 'Examens nationaux', desc: 'Résultats CEPD, BEPC, BAC, BTS, CAP. Taux de réussite par session, série, année.' },
-  { icon: '🏫', color: '#e0f2fe', iconColor: '#0369a1', title: 'Anciens élèves (Alumni)', desc: 'Base des diplômés avec filière choisie, employeur, contacts et numéro de diplôme.' },
-  { icon: '🔄', color: '#fce7f3', iconColor: '#be185d', title: 'Transferts d\'élèves', desc: 'Entrées et sorties. Direction, motif, école d\'origine ou de destination, justificatif.' },
-  { icon: '📅', color: '#fff7ed', iconColor: '#ea580c', title: 'Calendrier scolaire', desc: 'Vacances, examens, réunions, événements sportifs et culturels. Vue partagée.' },
-  { icon: '📁', color: '#f1f5f9', iconColor: '#475569', title: 'Documents officiels', desc: 'Circulaires, contrats, rapports, emplois du temps. Archivage numérique sécurisé.' },
-  { icon: '👤', color: '#f5f3ff', iconColor: '#6d28d9', title: 'Profils du personnel', desc: 'Dossiers RH complets : diplômes, contrat, expérience, contacts d\'urgence.' },
+  { icon: '📋', color: '#eff6ff', iconColor: '#1E2A78', title: 'Présences quotidiennes', desc: 'Appel journalier par classe et matière. Suivi des absences, retards et exclusions par élève.' },
+  { icon: '🚨', color: '#fff3f0', iconColor: '#FF7A59', title: 'Dossiers disciplinaires', desc: 'Avertissements, suspensions, exclusions. Historique complet avec suivi des sanctions.' },
+  { icon: '🏥', color: '#fff8e1', iconColor: '#FFB547', title: 'Infirmerie & Santé', desc: 'Registre des visites, accidents, vaccinations et évacuations — avec compte rendu médical.' },
+  { icon: '📖', color: '#eff6ff', iconColor: '#1E2A78', title: 'Bibliothèque', desc: 'Prêts de livres et matériels. Relances automatiques pour les retours en retard.' },
+  { icon: '🏷️', color: '#fff3f0', iconColor: '#FF7A59', title: 'Inventaire scolaire', desc: 'Mobiliers, équipements, matériel informatique et sportif. État, valeur, emplacement.' },
+  { icon: '🎓', color: '#fff8e1', iconColor: '#FFB547', title: 'Examens nationaux', desc: 'Résultats CEPD, BEPC, BAC, BTS, CAP. Taux de réussite par session, série, année.' },
+  { icon: '🏫', color: '#eff6ff', iconColor: '#1E2A78', title: 'Anciens élèves (Alumni)', desc: 'Base des diplômés avec filière choisie, employeur, contacts et numéro de diplôme.' },
+  { icon: '🔄', color: '#fff3f0', iconColor: '#FF7A59', title: 'Transferts d\'élèves', desc: 'Entrées et sorties. Direction, motif, école d\'origine ou de destination, justificatif.' },
+  { icon: '📅', color: '#fff8e1', iconColor: '#FFB547', title: 'Calendrier scolaire', desc: 'Vacances, examens, réunions, événements sportifs et culturels. Vue partagée.' },
+  { icon: '📁', color: '#eff6ff', iconColor: '#1E2A78', title: 'Documents officiels', desc: 'Circulaires, contrats, rapports, emplois du temps. Archivage numérique sécurisé.' },
+  { icon: '👤', color: '#fff3f0', iconColor: '#FF7A59', title: 'Profils du personnel', desc: 'Dossiers RH complets : diplômes, contrat, expérience, contacts d\'urgence.' },
 ];
 
 const TEAM = [
   { name: 'Felix Atoma', role: 'Lead Developer', tags: ['Software Developer', "Professeur d'Anglais"], initials: 'FA', color: '#1E2A78', colorEnd: '#3b82f6', photo: '/team/felix.jpg', email: 'felixatoma2@gmail.com' },
-  { name: 'Manzaman Abalossosso', role: 'Project Manager', tags: ['Professeur de Science', 'Data Scientist'], initials: 'AA', color: '#7c3aed', colorEnd: '#a855f7', photo: '/team/manzaman.jpg', email: 'abalossossomanzaman@gmail.com' },
-  { name: 'Benjamin Ngbabou', role: 'Software Developer', tags: ['Marketing', 'Professeur de Mathématiques'], initials: 'BN', color: '#16a34a', colorEnd: '#22c55e', photo: '/team/benjamin.jpg', email: 'bawiloussimngbabou1@gmail.com' },
+  { name: 'Manzaman Abalossosso', role: 'Project Manager', tags: ['Professeur de Science', 'Data Scientist'], initials: 'AA', color: '#1E2A78', colorEnd: '#FF7A59', photo: '/team/manzaman.jpg', email: 'abalossossomanzaman@gmail.com' },
+  { name: 'Benjamin Ngbabou', role: 'Software Developer', tags: ['Marketing', 'Professeur de Mathématiques'], initials: 'BN', color: '#FF7A59', colorEnd: '#FFB547', photo: '/team/benjamin.jpg', email: 'bawiloussimngbabou1@gmail.com' },
 ];
 
 const FAQS = [
@@ -493,14 +493,14 @@ const FLAG_GB = (
 
 /* ── EN data ─────────────────────────────────────────────────────────────── */
 const FEATURES_ROW1_EN = [
-  { icon: '🧮', color: '#dbeafe', iconColor: '#1d4ed8', title: 'Automatic Calculation', desc: 'Averages, coefficients, rankings calculated instantly. Zero Excel formulas, zero errors.' },
-  { icon: '📄', color: '#dcfce7', iconColor: '#16a34a', title: 'PDF Reports in 1 click', desc: 'Professional report card with your school logo, colors and stamp. Ready to print or share.' },
-  { icon: '📱', color: '#fce7f3', iconColor: '#be185d', title: 'WhatsApp & Email', desc: 'Parents notified instantly via WhatsApp. Automatic distribution as soon as published.' },
+  { icon: '🧮', color: '#eff6ff', iconColor: '#1E2A78', title: 'Automatic Calculation', desc: 'Averages, coefficients, rankings calculated instantly. Zero Excel formulas, zero errors.' },
+  { icon: '📄', color: '#fff3f0', iconColor: '#FF7A59', title: 'PDF Reports in 1 click', desc: 'Professional report card with your school logo, colors and stamp. Ready to print or share.' },
+  { icon: '📱', color: '#fff8e1', iconColor: '#FFB547', title: 'WhatsApp & Email', desc: 'Parents notified instantly via WhatsApp. Automatic distribution as soon as published.' },
 ];
 const FEATURES_ROW2_EN = [
-  { icon: '📝', color: '#fff7ed', iconColor: '#ea580c', title: 'Digital Grade Sheets', desc: 'Every teacher has a digital grade sheet on their phone. Mobile entry, auto-calculation and electronic signature. Zero paper, zero loss.' },
-  { icon: '💰', color: '#fef3c7', iconColor: '#d97706', title: 'School Fees', desc: 'Integrated fee management. Automatic blocking of report cards if fees are unpaid.' },
-  { icon: '📊', color: '#ede9fe', iconColor: '#7c3aed', title: 'Real-time Analytics', desc: 'Collection rates, class progress, published vs pending reports — live.' },
+  { icon: '📝', color: '#fff8e1', iconColor: '#FFB547', title: 'Digital Grade Sheets', desc: 'Every teacher has a digital grade sheet on their phone. Mobile entry, auto-calculation and electronic signature. Zero paper, zero loss.' },
+  { icon: '💰', color: '#eff6ff', iconColor: '#1E2A78', title: 'School Fees', desc: 'Integrated fee management. Automatic blocking of report cards if fees are unpaid.' },
+  { icon: '📊', color: '#fff3f0', iconColor: '#FF7A59', title: 'Real-time Analytics', desc: 'Collection rates, class progress, published vs pending reports — live.' },
 ];
 const LMS_FEATURES_EN = [
   { icon: '📚', title: 'Courses & Documents', desc: 'Teachers upload their courses, PDFs and learning resources. Students access them from their portal, at any time.' },
@@ -518,22 +518,22 @@ const STEPS_EN = [
 ];
 const ROLES_EN = [
   { icon: '🏫', title: 'Administrator', color: '#1E2A78', desc: 'Complete view of your institution.', features: ['Full analytics dashboard','Manage classes, subjects, teachers','PDF reports + publish in 1 click','School fee configuration','Attendance, health, library registers','Inventory, alumni, national exams','Official documents & staff profiles','CSV export of all data'] },
-  { icon: '👨‍🏫', title: 'Teacher', color: '#0369a1', desc: 'Your digital grade sheet always in your pocket.', features: ['📝 Digital grade sheet on mobile','Real-time grade entry','Automatic average calculation','Comments per student','Electronic signature of the sheet','Upload courses and documents','Publish homework and quizzes','Mark mock exams'] },
-  { icon: '💼', title: 'Bursar', color: '#d97706', desc: 'Manage fees without paperwork.', features: ['Record payments (TMoney, Flooz, cash)','Real-time unpaid view','Generate PDF receipts','Track by fee type and period','Exportable financial report','Collection statistics','Reports held automatically','Multi-school access'] },
-  { icon: '👨‍👩‍👧', title: 'Parent', color: '#15803d', desc: 'Track your children\'s schooling.', features: ['Report cards on WhatsApp & Email','Parent portal 24/7','Term-by-term progress','Full report history','Pay fees online','View LMS courses and homework','School announcements','Instant notifications'] },
+  { icon: '👨‍🏫', title: 'Teacher', color: '#1E2A78', desc: 'Your digital grade sheet always in your pocket.', features: ['📝 Digital grade sheet on mobile','Real-time grade entry','Automatic average calculation','Comments per student','Electronic signature of the sheet','Upload courses and documents','Publish homework and quizzes','Mark mock exams'] },
+  { icon: '💼', title: 'Bursar', color: '#FFB547', desc: 'Manage fees without paperwork.', features: ['Record payments (TMoney, Flooz, cash)','Real-time unpaid view','Generate PDF receipts','Track by fee type and period','Exportable financial report','Collection statistics','Reports held automatically','Multi-school access'] },
+  { icon: '👨‍👩‍👧', title: 'Parent', color: '#FF7A59', desc: 'Track your children\'s schooling.', features: ['Report cards on WhatsApp & Email','Parent portal 24/7','Term-by-term progress','Full report history','Pay fees online','View LMS courses and homework','School announcements','Instant notifications'] },
 ];
 const DATABASE_MODULES_EN = [
-  { icon: '📋', color: '#dbeafe', iconColor: '#1d4ed8', title: 'Daily Attendance', desc: 'Daily roll call by class and subject. Track absences, late arrivals and exclusions per student.' },
-  { icon: '🚨', color: '#fee2e2', iconColor: '#dc2626', title: 'Disciplinary Records', desc: 'Warnings, suspensions, exclusions. Full history with sanction tracking.' },
-  { icon: '🏥', color: '#f0fdf4', iconColor: '#16a34a', title: 'Health & Infirmary', desc: 'Register of visits, accidents, vaccinations and evacuations — with medical reports.' },
-  { icon: '📖', color: '#fef9c3', iconColor: '#d97706', title: 'Library', desc: 'Book and equipment loans. Automatic reminders for late returns.' },
-  { icon: '🏷️', color: '#ede9fe', iconColor: '#7c3aed', title: 'School Inventory', desc: 'Furniture, equipment, IT and sports material. Condition, value, location.' },
-  { icon: '🎓', color: '#ecfdf5', iconColor: '#059669', title: 'National Exams', desc: 'CEPD, BEPC, BAC, BTS, CAP results. Pass rates by session, stream, year.' },
-  { icon: '🏫', color: '#e0f2fe', iconColor: '#0369a1', title: 'Alumni', desc: 'Graduate database with chosen field, employer, contacts and diploma number.' },
-  { icon: '🔄', color: '#fce7f3', iconColor: '#be185d', title: 'Student Transfers', desc: 'Arrivals and departures. Direction, reason, origin or destination school, document.' },
-  { icon: '📅', color: '#fff7ed', iconColor: '#ea580c', title: 'School Calendar', desc: 'Holidays, exams, meetings, sports and cultural events. Shared view.' },
-  { icon: '📁', color: '#f1f5f9', iconColor: '#475569', title: 'Official Documents', desc: 'Circulars, contracts, reports, timetables. Secure digital archiving.' },
-  { icon: '👤', color: '#f5f3ff', iconColor: '#6d28d9', title: 'Staff Profiles', desc: 'Complete HR files: qualifications, contract, experience, emergency contacts.' },
+  { icon: '📋', color: '#eff6ff', iconColor: '#1E2A78', title: 'Daily Attendance', desc: 'Daily roll call by class and subject. Track absences, late arrivals and exclusions per student.' },
+  { icon: '🚨', color: '#fff3f0', iconColor: '#FF7A59', title: 'Disciplinary Records', desc: 'Warnings, suspensions, exclusions. Full history with sanction tracking.' },
+  { icon: '🏥', color: '#fff8e1', iconColor: '#FFB547', title: 'Health & Infirmary', desc: 'Register of visits, accidents, vaccinations and evacuations — with medical reports.' },
+  { icon: '📖', color: '#eff6ff', iconColor: '#1E2A78', title: 'Library', desc: 'Book and equipment loans. Automatic reminders for late returns.' },
+  { icon: '🏷️', color: '#fff3f0', iconColor: '#FF7A59', title: 'School Inventory', desc: 'Furniture, equipment, IT and sports material. Condition, value, location.' },
+  { icon: '🎓', color: '#fff8e1', iconColor: '#FFB547', title: 'National Exams', desc: 'CEPD, BEPC, BAC, BTS, CAP results. Pass rates by session, stream, year.' },
+  { icon: '🏫', color: '#eff6ff', iconColor: '#1E2A78', title: 'Alumni', desc: 'Graduate database with chosen field, employer, contacts and diploma number.' },
+  { icon: '🔄', color: '#fff3f0', iconColor: '#FF7A59', title: 'Student Transfers', desc: 'Arrivals and departures. Direction, reason, origin or destination school, document.' },
+  { icon: '📅', color: '#fff8e1', iconColor: '#FFB547', title: 'School Calendar', desc: 'Holidays, exams, meetings, sports and cultural events. Shared view.' },
+  { icon: '📁', color: '#eff6ff', iconColor: '#1E2A78', title: 'Official Documents', desc: 'Circulars, contracts, reports, timetables. Secure digital archiving.' },
+  { icon: '👤', color: '#fff3f0', iconColor: '#FF7A59', title: 'Staff Profiles', desc: 'Complete HR files: qualifications, contract, experience, emergency contacts.' },
 ];
 const FAQS_EN = [
   { q: 'Do I have to pay to try it?', a: 'No. Use NovaBulletin for an entire term. If you are satisfied at the end of the term, you pay. If not, you go back to your old system. No commitment, no credit card required upfront.' },
@@ -546,16 +546,16 @@ const FAQS_EN = [
   { q: 'Does it work on all devices?', a: 'Yes. NovaBulletin is a web application that works on computers, tablets and smartphones (Android and iOS). No installation required — just open your browser.' },
 ];
 const FEATURES_ROW3 = [
-  { icon: '✨', color: '#fdf4ff', iconColor: '#7c3aed', title: 'Appréciations IA', desc: 'Générez en 1 clic des appréciations de bulletin personnalisées. L\'IA analyse la moyenne, la mention et les notes par matière pour rédiger un commentaire professionnel adapté à chaque élève.' },
-  { icon: '📡', color: '#f0fdf4', iconColor: '#16a34a', title: 'Mode hors ligne', desc: 'NovaBulletin fonctionne même sans internet. Les données sont mises en cache, la consultation reste possible et tout se synchronise automatiquement dès la reconnexion.' },
-  { icon: '💸', color: '#fff0f6', iconColor: '#be185d', title: 'Rappels paiement WhatsApp', desc: 'D\'un clic, envoyez au parent le montant exact dû par WhatsApp. Relance ciblée avec le solde impayé — plus efficace qu\'un appel téléphonique.' },
-  { icon: '📊', color: '#fff7ed', iconColor: '#ea580c', title: 'Exports gouvernementaux', desc: 'Téléchargez en 1 clic les fichiers CSV prêts pour l\'inspection : effectifs élèves, résultats de classe, rapport des frais scolaires. Format Excel compatible.' },
+  { icon: '✨', color: '#eff6ff', iconColor: '#1E2A78', title: 'Appréciations IA', desc: 'Générez en 1 clic des appréciations de bulletin personnalisées. L\'IA analyse la moyenne, la mention et les notes par matière pour rédiger un commentaire professionnel adapté à chaque élève.' },
+  { icon: '📡', color: '#fff3f0', iconColor: '#FF7A59', title: 'Mode hors ligne', desc: 'NovaBulletin fonctionne même sans internet. Les données sont mises en cache, la consultation reste possible et tout se synchronise automatiquement dès la reconnexion.' },
+  { icon: '💸', color: '#fff8e1', iconColor: '#FFB547', title: 'Rappels paiement WhatsApp', desc: 'D\'un clic, envoyez au parent le montant exact dû par WhatsApp. Relance ciblée avec le solde impayé — plus efficace qu\'un appel téléphonique.' },
+  { icon: '📊', color: '#fff3f0', iconColor: '#FF7A59', title: 'Exports gouvernementaux', desc: 'Téléchargez en 1 clic les fichiers CSV prêts pour l\'inspection : effectifs élèves, résultats de classe, rapport des frais scolaires. Format Excel compatible.' },
 ];
 const FEATURES_ROW3_EN = [
-  { icon: '✨', color: '#fdf4ff', iconColor: '#7c3aed', title: 'AI-generated Comments', desc: 'Generate personalised report card comments in 1 click. AI analyses the average, grade and subject scores to write a professional, student-specific appreciation.' },
-  { icon: '📡', color: '#f0fdf4', iconColor: '#16a34a', title: 'Offline Mode', desc: 'NovaBulletin works even without internet. Data is cached, browsing stays available and everything syncs automatically once reconnected.' },
-  { icon: '💸', color: '#fff0f6', iconColor: '#be185d', title: 'WhatsApp Payment Reminders', desc: 'One click sends the parent the exact outstanding balance via WhatsApp. Targeted follow-up — more effective than a phone call.' },
-  { icon: '📊', color: '#fff7ed', iconColor: '#ea580c', title: 'Government Exports', desc: 'Download in 1 click inspection-ready CSV files: student census, class results, fee report. Excel-compatible format.' },
+  { icon: '✨', color: '#eff6ff', iconColor: '#1E2A78', title: 'AI-generated Comments', desc: 'Generate personalised report card comments in 1 click. AI analyses the average, grade and subject scores to write a professional, student-specific appreciation.' },
+  { icon: '📡', color: '#fff3f0', iconColor: '#FF7A59', title: 'Offline Mode', desc: 'NovaBulletin works even without internet. Data is cached, browsing stays available and everything syncs automatically once reconnected.' },
+  { icon: '💸', color: '#fff8e1', iconColor: '#FFB547', title: 'WhatsApp Payment Reminders', desc: 'One click sends the parent the exact outstanding balance via WhatsApp. Targeted follow-up — more effective than a phone call.' },
+  { icon: '📊', color: '#fff3f0', iconColor: '#FF7A59', title: 'Government Exports', desc: 'Download in 1 click inspection-ready CSV files: student census, class results, fee report. Excel-compatible format.' },
 ];
 
 const COMPARISON_EN = [
