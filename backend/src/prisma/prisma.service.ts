@@ -47,7 +47,14 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   }
 
   async onModuleInit() {
-    await this.$connect();
+    // Attempt connection but never crash the server on startup if DB is unreachable.
+    // Prisma connects lazily on the first query anyway; this is just an early warm-up.
+    try {
+      await this.$connect();
+      this.logger.log('DB connected');
+    } catch (err: any) {
+      this.logger.warn(`DB not reachable at startup (${err?.errorCode ?? err?.code ?? 'unknown'}) — will retry on first query`);
+    }
   }
 
   async onModuleDestroy() {
