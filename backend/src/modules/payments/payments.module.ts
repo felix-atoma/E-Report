@@ -4,9 +4,10 @@ import { PaymentsController } from './payments.controller';
 import { PaymentsService } from './payments.service';
 import { NotchpayService } from './notchpay.service';
 import { CinetpayService } from './cinetpay.service';
+import { PdfModule } from '../pdf/pdf.module';
 
 @Module({
-  imports: [ConfigModule],
+  imports: [ConfigModule, PdfModule],
   controllers: [PaymentsController],
   providers: [PaymentsService, NotchpayService, CinetpayService],
   exports: [PaymentsService],

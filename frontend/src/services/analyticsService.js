@@ -7,4 +7,6 @@ export const analyticsService = {
   classStats: (classId, academicYear, termNumber) =>
     api.get('/analytics/class-stats', { params: { classId, academicYear, termNumber } }),
   recordsSummary: () => api.get('/analytics/records-summary'),
+  remindUnpaid: (academicYear) => api.post('/analytics/remind-unpaid', null, { params: { academicYear } }),
+  atRisk: (academicYear) => api.get('/analytics/at-risk', { params: { academicYear } }),
 };

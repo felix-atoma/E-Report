@@ -21,6 +21,7 @@ import { GradesModule } from './modules/grades/grades.module';
 import { BulletinsModule } from './modules/bulletins/bulletins.module';
 import { FeesModule } from './modules/fees/fees.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { PaymentPlansModule } from './modules/payment-plans/payment-plans.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { UploadModule } from './modules/upload/upload.module';
@@ -82,6 +83,7 @@ import { ExportModule } from './modules/export/export.module';
     BulletinsModule,
     FeesModule,
     PaymentsModule,
+    PaymentPlansModule,
     NotificationsModule,
     AnalyticsModule,
     UploadModule,

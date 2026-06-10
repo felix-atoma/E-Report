@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { IsArray, IsNotEmpty, IsObject, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -71,6 +72,23 @@ export class StudentsController {
   @ApiOperation({ summary: 'Get student details with classes and report history' })
   findOne(@Param('id') id: string, @CurrentUser() user: any) {
     return this.service.findOne(id, user.institutionId);
+  }
+
+  @Get(':id/certificate/:type')
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Generate enrollment or good conduct certificate as PDF' })
+  async getCertificate(
+    @Param('id') id: string,
+    @Param('type') type: string,
+    @CurrentUser() user: any,
+    @Res() res: Response,
+  ) {
+    const certType = type === 'conduct' ? 'conduct' : 'enrollment';
+    const buf = await this.service.generateCertificate(id, user.institutionId, certType);
+    const filename = certType === 'conduct' ? 'certificat-bonne-conduite.pdf' : 'attestation-inscription.pdf';
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(buf);
   }
 
   @Patch(':id')

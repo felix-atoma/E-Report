@@ -47,25 +47,34 @@ function currentAcademicYear() {
   return `${y}-${y + 1}`;
 }
 
+function yearOptions() {
+  const cur = new Date();
+  const y = cur.getMonth() >= 8 ? cur.getFullYear() : cur.getFullYear() - 1;
+  return [0, 1, 2, 3].map((i) => `${y - i}-${y - i + 1}`);
+}
+
 function AnalyticsPage() {
   const { t } = useTranslation();
   const locale = navigator.language || 'fr-FR';
+  const [selectedYear, setSelectedYear] = useState(currentAcademicYear);
   const [exportTerm, setExportTerm] = useState('Trimestre 1');
   const [exportYear, setExportYear] = useState(currentAcademicYear);
   const [exporting, setExporting]   = useState('');
+  const [reminding, setReminding]   = useState(false);
+
   const { data: overview, isLoading: l1 } = useQuery({
     queryKey: ['analytics', 'overview'],
     queryFn: () => analyticsService.overview().then((r) => r.data),
   });
 
   const { data: payments, isLoading: l2 } = useQuery({
-    queryKey: ['analytics', 'payment-summary'],
-    queryFn: () => analyticsService.paymentSummary().then((r) => r.data),
+    queryKey: ['analytics', 'payment-summary', selectedYear],
+    queryFn: () => analyticsService.paymentSummary({ academicYear: selectedYear }).then((r) => r.data),
   });
 
   const { data: reports, isLoading: l3 } = useQuery({
-    queryKey: ['analytics', 'report-stats'],
-    queryFn: () => analyticsService.reportStats().then((r) => r.data),
+    queryKey: ['analytics', 'report-stats', selectedYear],
+    queryFn: () => analyticsService.reportStats({ academicYear: selectedYear }).then((r) => r.data),
   });
 
   const isLoading = l1 || l2 || l3;
@@ -95,8 +104,8 @@ function AnalyticsPage() {
       ]
     : [];
 
-  const collectionRate = payments?.collectionRate != null
-    ? `${Math.round(payments.collectionRate)}%`
+  const collectionRate = payments?.collectionRate != null && Number.isFinite(payments.collectionRate)
+    ? `${payments.collectionRate}%`
     : '—';
 
   const totalDue  = payments?.totalDue  != null ? payments.totalDue.toLocaleString(locale)  : null;
@@ -104,7 +113,16 @@ function AnalyticsPage() {
 
   return (
     <AppShell title={t('nav.analytics')}>
-      <PageHeader title={t('analytics.title')} subtitle={t('dash.currentYear')} />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1.25rem' }}>
+        <PageHeader title={t('analytics.title')} subtitle={selectedYear} style={{ margin: 0 }} />
+        <select
+          value={selectedYear}
+          onChange={(e) => setSelectedYear(e.target.value)}
+          style={{ padding: '0.45rem 0.75rem', border: '1px solid var(--color-border)', borderRadius: 8, fontSize: '0.875rem', fontWeight: 600, background: 'var(--color-surface, #fff)', cursor: 'pointer' }}
+        >
+          {yearOptions().map((y) => <option key={y} value={y}>{y}</option>)}
+        </select>
+      </div>
 
       {/* KPIs */}
       <div className="analytics-kpis">
@@ -174,12 +192,34 @@ function AnalyticsPage() {
         {/* Collection summary */}
         {payments && (
           <Card className="analytics-chart-card analytics-chart-card--wide">
-            <h3 className="analytics-chart-card__title">{t('dash.feeRecovery')}</h3>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <h3 className="analytics-chart-card__title">{t('dash.feeRecovery')}</h3>
+              <Button
+                variant="secondary"
+                disabled={reminding}
+                onClick={async () => {
+                  setReminding(true);
+                  try {
+                    const res = await analyticsService.remindUnpaid(selectedYear);
+                    const { sent, skipped, failed } = res.data;
+                    if (sent > 0) toast.success(`${sent} rappel(s) envoyé(s)${skipped > 0 ? ` — ${skipped} sans numéro` : ''}`);
+                    else toast(`Aucun message envoyé${skipped > 0 ? ` (${skipped} élèves sans numéro WhatsApp)` : ''}`);
+                    if (failed > 0) toast.error(`${failed} envoi(s) échoué(s)`);
+                  } catch {
+                    toast.error('Erreur lors de l\'envoi des rappels');
+                  } finally {
+                    setReminding(false);
+                  }
+                }}
+              >
+                {reminding ? '⏳ Envoi…' : '📲 Rappeler les impayés'}
+              </Button>
+            </div>
             <div className="analytics-collection">
               <div className="analytics-collection__bar-wrap">
                 <div
                   className="analytics-collection__bar"
-                  style={{ width: `${Math.min(payments.collectionRate ?? 0, 100)}%` }}
+                  style={{ width: `${Math.min(Number.isFinite(payments.collectionRate) ? payments.collectionRate : 0, 100)}%` }}
                 />
               </div>
               <div className="analytics-collection__meta">

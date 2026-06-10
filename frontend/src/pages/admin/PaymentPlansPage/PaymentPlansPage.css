@@ -1,0 +1,45 @@
+.pp-toolbar { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
+.pp-toolbar__search { flex: 1; max-width: 340px; }
+.pp-list { display: flex; flex-direction: column; gap: 1rem; }
+.pp-empty { text-align: center; color: var(--color-text-muted); padding: 3rem; }
+
+.pp-card { overflow: hidden; }
+.pp-card__header {
+  display: flex; align-items: center; gap: 1rem; cursor: pointer;
+  padding: 1rem; flex-wrap: wrap;
+}
+.pp-card__info { display: flex; flex-direction: column; min-width: 140px; }
+.pp-card__name { font-weight: 700; font-size: 0.9rem; }
+.pp-card__year { font-size: 0.75rem; color: var(--color-text-muted); }
+.pp-card__progress-wrap { display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 120px; }
+.pp-card__progress-bar { flex: 1; height: 8px; background: var(--color-border); border-radius: 4px; overflow: hidden; }
+.pp-card__progress-fill { height: 100%; background: var(--color-primary); border-radius: 4px; transition: width 0.3s; }
+.pp-card__pct { font-size: 0.8rem; font-weight: 700; color: var(--color-primary); min-width: 36px; }
+.pp-card__amounts { display: flex; flex-direction: column; align-items: flex-end; font-size: 0.78rem; }
+.pp-card__paid { color: var(--color-success, #16a34a); font-weight: 600; }
+.pp-card__remaining { color: var(--color-text-muted); }
+.pp-card__toggle { background: none; border: none; cursor: pointer; font-size: 0.8rem; color: var(--color-text-muted); padding: 4px; }
+
+.pp-card__body { padding: 0 1rem 1rem; border-top: 1px solid var(--color-border); }
+.pp-card__notes { font-size: 0.82rem; color: var(--color-text-muted); margin: 0.75rem 0; }
+.pp-inst-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin-top: 0.75rem; }
+.pp-inst-table th { text-align: left; padding: 6px 8px; background: var(--color-bg-alt, #f9fafb); font-weight: 600; font-size: 0.75rem; color: var(--color-text-muted); border-bottom: 1px solid var(--color-border); }
+.pp-inst-table td { padding: 6px 8px; border-bottom: 1px solid var(--color-border); }
+.pp-inst-table__row--paid td { opacity: 0.7; }
+
+.pp-status { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.72rem; font-weight: 700; }
+.pp-status--paid { background: #dcfce7; color: #16a34a; }
+.pp-status--overdue { background: #fee2e2; color: #dc2626; }
+.pp-status--pending { background: #fef9c3; color: #92400e; }
+
+.pp-card__footer { display: flex; justify-content: flex-end; padding-top: 0.75rem; }
+
+/* Form */
+.pp-form { display: flex; flex-direction: column; gap: 1rem; }
+.pp-form__row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.pp-form__inst-header { display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem; }
+.pp-form__inst-title { font-weight: 700; font-size: 0.88rem; }
+
+.pp-inst-row { display: grid; grid-template-columns: 24px 1fr 1fr auto; gap: 0.5rem; align-items: end; }
+.pp-inst-row__num { font-size: 0.75rem; color: var(--color-text-muted); padding-bottom: 0.5rem; }
+.pp-inst-row__remove { background: none; border: none; cursor: pointer; color: #dc2626; font-size: 0.9rem; padding: 4px 8px; align-self: end; margin-bottom: 0.25rem; }

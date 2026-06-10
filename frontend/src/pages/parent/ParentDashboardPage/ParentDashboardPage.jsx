@@ -99,20 +99,38 @@ function ParentDashboardPage() {
             <p className="parent-dash__empty">{t('dash.noChildren')}</p>
           ) : (
             <div className="parent-dash__children-list">
-              {children.map((child) => (
-                <Link key={child.id} to={`/parent/children/${child.id}/reports`} className="parent-dash__child-row">
-                  <Avatar name={child.user?.name ?? child.admissionNumber ?? '?'} size="sm" />
-                  <div className="parent-dash__child-info">
-                    <span className="parent-dash__child-name">{child.user?.name ?? child.admissionNumber ?? '—'}</span>
-                    <span className="parent-dash__child-class">{child.class?.name ?? '—'}</span>
-                  </div>
-                  {child.paymentStatus && (
-                    <Badge variant={PAYMENT_VARIANT[child.paymentStatus] ?? 'default'}>
-                      {PAYMENT_LABEL[child.paymentStatus] ?? child.paymentStatus}
-                    </Badge>
-                  )}
-                </Link>
-              ))}
+              {children.map((child) => {
+                const cls      = child.classes?.[0]?.class;
+                const lastRep  = child.reportCards?.[0];
+                const balance  = child.feeBalance;
+                const locale   = navigator.language || 'fr-FR';
+                return (
+                  <Link key={child.id} to={`/parent/children/${child.id}/reports`} className="parent-dash__child-row">
+                    <Avatar name={child.user?.name ?? child.admissionNumber ?? '?'} size="sm" />
+                    <div className="parent-dash__child-info">
+                      <span className="parent-dash__child-name">{child.user?.name ?? child.admissionNumber ?? '—'}</span>
+                      <span className="parent-dash__child-class">
+                        {cls?.name ?? '—'}
+                        {lastRep?.overallAverage != null && (
+                          <span style={{ marginLeft: 6, color: Number(lastRep.overallAverage) >= 10 ? '#15803d' : '#dc2626', fontWeight: 700 }}>
+                            · Moy. {Number(lastRep.overallAverage).toFixed(2)}/20
+                          </span>
+                        )}
+                      </span>
+                      {balance && balance.remaining > 0 && (
+                        <span style={{ fontSize: '0.72rem', color: '#d97706', fontWeight: 600, marginTop: 2 }}>
+                          Reste : {balance.remaining.toLocaleString(locale)} FCFA
+                        </span>
+                      )}
+                    </div>
+                    {child.paymentStatus && (
+                      <Badge variant={PAYMENT_VARIANT[child.paymentStatus] ?? 'default'}>
+                        {PAYMENT_LABEL[child.paymentStatus] ?? child.paymentStatus}
+                      </Badge>
+                    )}
+                  </Link>
+                );
+              })}
             </div>
           )}
         </Card>

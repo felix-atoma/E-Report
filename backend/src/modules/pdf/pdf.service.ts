@@ -69,6 +69,19 @@ export class PdfService {
     this.template = Handlebars.compile(templateSrc);
   }
 
+  async generateFromHtml(html: string): Promise<Buffer> {
+    const browser = await getBrowser();
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'domcontentloaded' });
+    const buf = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: { top: '12mm', bottom: '12mm', left: '15mm', right: '15mm' },
+    });
+    await page.close();
+    return Buffer.from(buf);
+  }
+
   async generateReportCardPdfBuffer(reportData: ReportCardData): Promise<Buffer> {
     const html = this.buildHtml(reportData);
     try {

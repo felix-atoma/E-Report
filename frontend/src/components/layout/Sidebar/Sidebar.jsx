@@ -28,8 +28,9 @@ const NAV = {
     { to: '/teacher/lms',              icon: 'lms',       labelKey: 'nav.lms' },
     { divider: true,              sectionKey: 'section.finance' },
     { to: '/admin/fees',          icon: 'coins',     labelKey: 'nav.fees' },
-    { to: '/admin/payments',      icon: 'card',      labelKey: 'nav.payments' },
-    { divider: true,              sectionKey: 'section.records' },
+    { to: '/admin/payments',       icon: 'card',      labelKey: 'nav.payments' },
+    { to: '/admin/payment-plans',  icon: 'plan',      labelKey: 'nav.paymentPlans' },
+    { divider: true,               sectionKey: 'section.records' },
     { to: '/admin/attendance',       icon: 'attendance',  labelKey: 'nav.attendance' },
     { to: '/admin/staff',            icon: 'briefcase',   labelKey: 'nav.staff' },
     { to: '/admin/calendar',         icon: 'calendar',    labelKey: 'nav.calendar' },
@@ -71,8 +72,9 @@ const NAV = {
     { to: '/bursar',               icon: 'grid',      labelKey: 'nav.dashboard' },
     { to: '/help',                 icon: 'helpCircle',labelKey: 'nav.help' },
     { to: '/bursar/fees',          icon: 'coins',     labelKey: 'nav.fees' },
-    { to: '/bursar/payments',      icon: 'card',      labelKey: 'nav.payments' },
-    { to: '/bursar/notifications', icon: 'bell',      labelKey: 'nav.heldBulletins' },
+    { to: '/bursar/payments',       icon: 'card',      labelKey: 'nav.payments' },
+    { to: '/bursar/payment-plans',  icon: 'plan',      labelKey: 'nav.paymentPlans' },
+    { to: '/bursar/notifications',  icon: 'bell',      labelKey: 'nav.heldBulletins' },
   ],
   PARENT: [
     { to: '/parent',                 icon: 'grid',      labelKey: 'nav.dashboard' },
@@ -259,6 +261,13 @@ const ICONS = {
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
       <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
+  ),
+  plan: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+      <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+      <line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="12" y2="18"/>
     </svg>
   ),
   shield: (

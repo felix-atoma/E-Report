@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { WhatsAppService } from '../whatsapp/whatsapp.service';
 
 @Injectable()
 export class AnalyticsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly whatsapp: WhatsAppService,
+  ) {}
 
   async getOverview(institutionId: string) {
     const [students, classes, teachers, subjects, publishedReports, heldNotifications, latestClass] =
@@ -23,26 +27,88 @@ export class AnalyticsService {
         }),
       ]);
 
-    return { students, classes, teachers, subjects, publishedReports, heldNotifications, academicYear: latestClass?.academicYear ?? null };
+    return {
+      totalStudents: students,
+      totalTeachers: teachers,
+      totalClasses: classes,
+      subjects,
+      publishedReports,
+      pendingPayments: heldNotifications,
+      academicYear: latestClass?.academicYear ?? null,
+    };
   }
 
-  async getPaymentSummary(institutionId: string, academicYear: string) {
-    const fees = await this.prisma.studentFee.findMany({
-      where: { student: { institutionId }, academicYear },
-      select: { amountDue: true, isExempt: true },
-    });
+  private currentAcademicYear(): string {
+    const now = new Date();
+    const y = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
+    return `${y}-${y + 1}`;
+  }
 
-    const payments = await this.prisma.payment.findMany({
-      where: { institutionId, academicYear },
-      select: { amount: true },
-    });
+  async getPaymentSummary(institutionId: string, academicYear?: string) {
+    const year = academicYear || this.currentAcademicYear();
 
-    const totalDue = fees.filter((f) => !f.isExempt).reduce((s, f) => s + Number(f.amountDue), 0);
-    const totalCollected = payments.reduce((s, p) => s + Number(p.amount), 0);
-    const totalPending = Math.max(0, totalDue - totalCollected);
-    const exemptCount = fees.filter((f) => f.isExempt).length;
+    const [fees, payments] = await Promise.all([
+      this.prisma.studentFee.findMany({
+        where: { student: { institutionId }, academicYear: year },
+        select: { studentId: true, amountDue: true, isExempt: true },
+      }),
+      this.prisma.payment.findMany({
+        where: { institutionId, academicYear: year },
+        select: { studentId: true, amount: true },
+      }),
+    ]);
 
-    return { academicYear, totalDue, totalCollected, totalPending, exemptCount };
+    // Aggregate per student: due amount and paid amount
+    type StudentEntry = { due: number; paid: number; allExempt: boolean; hasNonExempt: boolean };
+    const byStudent = new Map<string, StudentEntry>();
+
+    for (const fee of fees) {
+      const e = byStudent.get(fee.studentId) ?? { due: 0, paid: 0, allExempt: true, hasNonExempt: false };
+      if (fee.isExempt) {
+        // exempt fee — don't add to due
+      } else {
+        e.hasNonExempt = true;
+        e.allExempt = false;
+        e.due += Number(fee.amountDue);
+      }
+      byStudent.set(fee.studentId, e);
+    }
+
+    for (const payment of payments) {
+      const e = byStudent.get(payment.studentId) ?? { due: 0, paid: 0, allExempt: false, hasNonExempt: false };
+      e.paid += Number(payment.amount);
+      byStudent.set(payment.studentId, e);
+    }
+
+    let paidCount = 0, partialCount = 0, unpaidCount = 0, exemptCount = 0;
+    let totalDue = 0, totalCollected = 0;
+
+    for (const s of byStudent.values()) {
+      if (!s.hasNonExempt) {
+        exemptCount++;
+        continue;
+      }
+      totalDue += s.due;
+      const contributed = Math.min(s.paid, s.due);
+      totalCollected += contributed;
+      if (s.paid >= s.due) paidCount++;
+      else if (s.paid > 0) partialCount++;
+      else unpaidCount++;
+    }
+
+    const collectionRate = totalDue > 0 ? Math.min(100, Math.round((totalCollected / totalDue) * 100)) || 0 : 0;
+
+    return {
+      academicYear: year,
+      paidCount,
+      partialCount,
+      unpaidCount,
+      exemptCount,
+      collectionRate,
+      totalDue,
+      totalPaid: totalCollected,
+      totalPending: Math.max(0, totalDue - totalCollected),
+    };
   }
 
   async getReportStats(institutionId: string, academicYear?: string) {
@@ -55,7 +121,188 @@ export class AnalyticsService {
       this.prisma.reportCard.count({ where: { ...where, status: 'PUBLISHED' } }),
     ]);
 
-    return { draft, review, published, total: draft + review + published };
+    return { draftCount: draft, reviewCount: review, publishedCount: published, total: draft + review + published };
+  }
+
+  async remindUnpaid(institutionId: string, academicYear?: string) {
+    const year = academicYear || this.currentAcademicYear();
+
+    const institution = await this.prisma.institution.findUnique({
+      where: { id: institutionId },
+      select: { name: true },
+    });
+    const schoolName = institution?.name ?? 'l\'établissement';
+
+    const [fees, payments] = await Promise.all([
+      this.prisma.studentFee.findMany({
+        where: { student: { institutionId }, academicYear: year, isExempt: false },
+        select: {
+          studentId: true,
+          amountDue: true,
+          student: {
+            select: {
+              admissionNumber: true,
+              fatherPhone: true,
+              motherPhone: true,
+              user:   { select: { name: true } },
+              parent: { select: { whatsappNumber: true } },
+            },
+          },
+        },
+      }),
+      this.prisma.payment.findMany({
+        where: { institutionId, academicYear: year },
+        select: { studentId: true, amount: true },
+      }),
+    ]);
+
+    // Aggregate paid amount per student
+    const paidMap = new Map<string, number>();
+    for (const p of payments) {
+      paidMap.set(p.studentId, (paidMap.get(p.studentId) ?? 0) + Number(p.amount));
+    }
+
+    // Sum due per student
+    type FeeEntry = { due: number; student: (typeof fees)[0]['student'] };
+    const dueMap = new Map<string, FeeEntry>();
+    for (const f of fees) {
+      const entry = dueMap.get(f.studentId) ?? { due: 0, student: f.student };
+      entry.due += Number(f.amountDue);
+      dueMap.set(f.studentId, entry);
+    }
+
+    let sent = 0, skipped = 0, failed = 0;
+
+    for (const [studentId, { due, student }] of dueMap) {
+      const paid = paidMap.get(studentId) ?? 0;
+      if (paid >= due) continue; // fully paid — skip
+
+      const remaining = Math.max(0, due - paid);
+      const phone = student.parent?.whatsappNumber || student.fatherPhone || student.motherPhone;
+      if (!phone) { skipped++; continue; }
+
+      const studentName = student.user?.name ?? student.admissionNumber;
+      const fmt = (n: number) => n.toLocaleString('fr-FR');
+      const message = this.buildReminderMessage(schoolName, studentName, year, due, paid, remaining, fmt);
+
+      const ok = await this.whatsapp.sendText(phone, message);
+      if (ok) sent++; else failed++;
+    }
+
+    return { sent, skipped, failed, academicYear: year };
+  }
+
+  async getAtRiskStudents(institutionId: string, academicYear?: string) {
+    const year = academicYear || this.currentAcademicYear();
+
+    // Get all published report cards for both terms in the year
+    const reports = await this.prisma.reportCard.findMany({
+      where: { class: { institutionId }, academicYear: year, status: 'PUBLISHED' },
+      select: {
+        studentId: true,
+        termNumber: true,
+        overallAverage: true,
+        classRank: true,
+        student: {
+          select: {
+            admissionNumber: true,
+            user: { select: { name: true } },
+            classes: {
+              include: { class: { select: { id: true, name: true } } },
+              orderBy: { academicYear: 'desc' },
+              take: 1,
+            },
+          },
+        },
+      },
+      orderBy: { termNumber: 'asc' },
+    });
+
+    // Group by student → termNumber → average
+    type TermEntry = { avg: number; rank: number | null; termNumber: number };
+    const byStudent = new Map<string, { student: (typeof reports)[0]['student']; terms: TermEntry[] }>();
+
+    for (const r of reports) {
+      if (r.overallAverage == null) continue;
+      const entry = byStudent.get(r.studentId) ?? { student: r.student, terms: [] };
+      entry.terms.push({ avg: Number(r.overallAverage), rank: r.classRank, termNumber: r.termNumber });
+      byStudent.set(r.studentId, entry);
+    }
+
+    const atRisk: {
+      studentId: string;
+      studentName: string;
+      admissionNumber: string;
+      className: string;
+      currentAvg: number;
+      previousAvg: number;
+      drop: number;
+      currentTerm: number;
+      isFailingNow: boolean;
+    }[] = [];
+
+    for (const [studentId, { student, terms }] of byStudent) {
+      if (terms.length < 2) continue;
+      const sorted = terms.sort((a, b) => a.termNumber - b.termNumber);
+      const prev    = sorted[sorted.length - 2];
+      const current = sorted[sorted.length - 1];
+      const drop    = Math.round((prev.avg - current.avg) * 100) / 100;
+
+      // Flag if dropped more than 1.5 points OR now failing (< 10)
+      if (drop > 1.5 || current.avg < 10) {
+        atRisk.push({
+          studentId,
+          studentName:    student.user?.name ?? student.admissionNumber,
+          admissionNumber: student.admissionNumber,
+          className:      student.classes?.[0]?.class?.name ?? '—',
+          currentAvg:     current.avg,
+          previousAvg:    prev.avg,
+          drop,
+          currentTerm:    current.termNumber,
+          isFailingNow:   current.avg < 10,
+        });
+      }
+    }
+
+    atRisk.sort((a, b) => b.drop - a.drop);
+    return { academicYear: year, count: atRisk.length, students: atRisk };
+  }
+
+  private buildReminderMessage(
+    schoolName: string,
+    studentName: string,
+    academicYear: string,
+    due: number,
+    paid: number,
+    remaining: number,
+    fmt: (n: number) => string,
+  ): string {
+    if (paid > 0) {
+      // Partial payer — thank them, show progress, ask to finish
+      const pct = Math.round((paid / due) * 100);
+      return (
+        `Madame / Monsieur,\n\n` +
+        `Nous vous contactons au sujet des frais scolaires de *${studentName}* pour l'année *${academicYear}* — *${schoolName}*.\n\n` +
+        `✅ *Paiement reçu :* ${fmt(paid)} XOF (${pct} % du total)\n` +
+        `🔄 *Reste à payer :* ${fmt(remaining)} XOF sur ${fmt(due)} XOF\n\n` +
+        `Nous tenons à vous remercier sincèrement pour vos efforts et votre sérieux. Votre paiement a bien été enregistré et nous vous en sommes reconnaissants.\n\n` +
+        `Afin de finaliser la situation de votre enfant et de lever toute retenue éventuelle du bulletin, nous vous invitons à régler le solde restant de *${fmt(remaining)} XOF* dès que cela vous sera possible.\n\n` +
+        `Nous restons disponibles pour tout renseignement.\n` +
+        `🏫 *${schoolName}*`
+      );
+    } else {
+      // No payment at all — polite but firm reminder
+      return (
+        `Madame / Monsieur,\n\n` +
+        `Nous vous contactons au sujet des frais scolaires de *${studentName}* pour l'année *${academicYear}* — *${schoolName}*.\n\n` +
+        `💰 *Montant dû :* ${fmt(due)} XOF\n` +
+        `⚠️ *Aucun paiement enregistré à ce jour.*\n\n` +
+        `Nous vous invitons à régulariser cette situation dans les meilleurs délais afin d'éviter toute retenue du bulletin scolaire de votre enfant.\n\n` +
+        `Si vous rencontrez des difficultés, n'hésitez pas à nous contacter directement pour trouver une solution adaptée.\n\n` +
+        `Merci pour votre compréhension et votre collaboration.\n` +
+        `🏫 *${schoolName}*`
+      );
+    }
   }
 
   async getRecordsSummary(institutionId: string) {

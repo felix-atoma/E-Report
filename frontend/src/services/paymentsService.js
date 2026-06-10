@@ -8,4 +8,5 @@ export const paymentsService = {
     api.get(`/payments/student/${studentId}/status`, { params }),
   myHistory: () => api.get('/payments/my-history'),
   initiateMomo: (data) => api.post('/payments/initiate-momo', data),
+  receipt: (id) => api.get(`/payments/${id}/receipt`, { responseType: 'arraybuffer' }),
 };

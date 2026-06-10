@@ -1,4 +1,4 @@
-import { Controller, Get, Query, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Query, BadRequestException } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AnalyticsService } from './analytics.service';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -20,9 +20,9 @@ export class AnalyticsController {
 
   @Get('payment-summary')
   @Roles(Role.ADMIN, Role.BURSAR)
-  @ApiOperation({ summary: 'Payment summary for an academic year' })
-  @ApiQuery({ name: 'academicYear', required: true })
-  getPaymentSummary(@CurrentUser() user: any, @Query('academicYear') academicYear: string) {
+  @ApiOperation({ summary: 'Payment summary for an academic year (defaults to current year)' })
+  @ApiQuery({ name: 'academicYear', required: false })
+  getPaymentSummary(@CurrentUser() user: any, @Query('academicYear') academicYear?: string) {
     return this.service.getPaymentSummary(user.institutionId, academicYear);
   }
 
@@ -32,6 +32,22 @@ export class AnalyticsController {
   @ApiQuery({ name: 'academicYear', required: false })
   getReportStats(@CurrentUser() user: any, @Query('academicYear') academicYear?: string) {
     return this.service.getReportStats(user.institutionId, academicYear);
+  }
+
+  @Get('at-risk')
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Students whose average dropped >1.5 points or are now failing' })
+  @ApiQuery({ name: 'academicYear', required: false })
+  getAtRisk(@CurrentUser() user: any, @Query('academicYear') academicYear?: string) {
+    return this.service.getAtRiskStudents(user.institutionId, academicYear);
+  }
+
+  @Post('remind-unpaid')
+  @Roles(Role.ADMIN, Role.BURSAR)
+  @ApiOperation({ summary: 'Send WhatsApp payment reminders to parents with unpaid/partial fees' })
+  @ApiQuery({ name: 'academicYear', required: false })
+  remindUnpaid(@CurrentUser() user: any, @Query('academicYear') academicYear?: string) {
+    return this.service.remindUnpaid(user.institutionId, academicYear);
   }
 
   @Get('records-summary')

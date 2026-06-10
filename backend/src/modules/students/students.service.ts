@@ -6,6 +6,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service';
+import { PdfService } from '../pdf/pdf.service';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 
@@ -19,6 +20,7 @@ export class StudentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
+    private readonly pdf: PdfService,
   ) {}
 
   /** STUDENT: fetch their own profile via linked userId */
@@ -48,7 +50,7 @@ export class StudentsService {
 
   /** PARENT: fetch all children linked to this parent user */
   async findMyChildren(parentUserId: string, institutionId: string) {
-    return this.prisma.student.findMany({
+    const students = await this.prisma.student.findMany({
       where: { parentId: parentUserId, institutionId },
       include: {
         user: { select: { id: true, name: true, email: true, profileImage: true } },
@@ -60,13 +62,63 @@ export class StudentsService {
         reportCards: {
           select: {
             id: true, academicYear: true, termNumber: true, termName: true,
-            status: true, overallAverage: true, mention: true,
+            status: true, overallAverage: true, mention: true, deliveryStatus: true,
           },
           orderBy: [{ academicYear: 'desc' }, { termNumber: 'desc' }],
           take: 3,
         },
       },
       orderBy: { user: { name: 'asc' } },
+    });
+
+    if (!students.length) return [];
+
+    // Determine current academic year from the most recent class enrollment
+    const academicYear =
+      students.flatMap((s) => s.classes).sort((a, b) =>
+        b.academicYear > a.academicYear ? 1 : -1,
+      )[0]?.academicYear ?? `${new Date().getFullYear() - 1}-${new Date().getFullYear()}`;
+
+    const ids = students.map((s) => s.id);
+    const [fees, payments] = await Promise.all([
+      this.prisma.studentFee.findMany({
+        where: { studentId: { in: ids }, academicYear },
+        select: { studentId: true, amountDue: true, isExempt: true },
+      }),
+      this.prisma.payment.findMany({
+        where: { studentId: { in: ids }, academicYear },
+        select: { studentId: true, amount: true },
+      }),
+    ]);
+
+    const dueMap  = new Map<string, number>();
+    const paidMap = new Map<string, number>();
+    const exemptMap = new Map<string, boolean>();
+
+    for (const f of fees) {
+      if (f.isExempt) { exemptMap.set(f.studentId, true); continue; }
+      dueMap.set(f.studentId, (dueMap.get(f.studentId) ?? 0) + Number(f.amountDue));
+    }
+    for (const p of payments) {
+      paidMap.set(p.studentId, (paidMap.get(p.studentId) ?? 0) + Number(p.amount));
+    }
+
+    return students.map((s) => {
+      const due  = dueMap.get(s.id) ?? 0;
+      const paid = paidMap.get(s.id) ?? 0;
+      let paymentStatus: 'PAID' | 'PARTIAL' | 'UNPAID' | 'EXEMPT' | null = null;
+      if (exemptMap.get(s.id)) paymentStatus = 'EXEMPT';
+      else if (due === 0) paymentStatus = null;
+      else if (paid >= due) paymentStatus = 'PAID';
+      else if (paid > 0) paymentStatus = 'PARTIAL';
+      else paymentStatus = 'UNPAID';
+
+      return {
+        ...s,
+        academicYear,
+        feeBalance: { due, paid, remaining: Math.max(0, due - paid) },
+        paymentStatus,
+      };
     });
   }
 
@@ -400,6 +452,113 @@ export class StudentsService {
       enrolled: result.count,
       message: `${result.count} inscriptions créées pour l'année ${toYear}`,
     };
+  }
+
+  async generateCertificate(
+    id: string,
+    institutionId: string,
+    type: 'enrollment' | 'conduct',
+  ): Promise<Buffer> {
+    const student = await this.prisma.student.findFirst({
+      where: { id, institutionId },
+      include: {
+        user:        { select: { name: true } },
+        institution: { select: { name: true, address: true, phone: true, logo: true, motto: true } },
+        classes: {
+          include: { class: { select: { name: true, academicYear: true } } },
+          orderBy: { academicYear: 'desc' },
+          take: 1,
+        },
+      },
+    });
+    if (!student) throw new NotFoundException('Élève introuvable');
+
+    const name         = student.user?.name ?? student.admissionNumber;
+    const schoolName   = student.institution.name;
+    const schoolAddr   = student.institution.address ?? '';
+    const cls          = student.classes?.[0]?.class;
+    const className    = cls?.name ?? '—';
+    const academicYear = cls?.academicYear ?? `${new Date().getFullYear() - 1}-${new Date().getFullYear()}`;
+    const dob          = student.dateOfBirth
+      ? new Date(student.dateOfBirth).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
+      : null;
+    const today        = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+    const logoTag      = student.institution.logo
+      ? `<img src="${student.institution.logo}" style="width:64px;height:64px;object-fit:contain;margin-bottom:8px"/>`
+      : '';
+
+    const baseStyles = `
+      *{box-sizing:border-box;margin:0;padding:0}
+      body{font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#111;padding:32px}
+      .cert{max-width:640px;margin:0 auto;border:3px double #1e3a8a;padding:36px}
+      .cert__header{text-align:center;margin-bottom:24px;border-bottom:2px solid #1e3a8a;padding-bottom:18px}
+      .cert__school{font-size:19px;font-weight:900;color:#1e3a8a;text-transform:uppercase;letter-spacing:1px;margin-top:6px}
+      .cert__address{font-size:11px;color:#6b7280;margin-top:4px}
+      .cert__motto{font-size:11px;font-style:italic;color:#374151;margin-top:3px}
+      .cert__title{font-size:15px;font-weight:900;text-align:center;text-transform:uppercase;letter-spacing:2px;margin:22px 0;color:#1e3a8a;border:2px solid #1e3a8a;display:inline-block;padding:6px 24px}
+      .cert__title-wrap{text-align:center;margin:18px 0}
+      .cert__body{line-height:2.4;font-size:13.5px}
+      .cert__underline{font-weight:800;font-size:15px;text-decoration:underline}
+      .cert__footer{margin-top:40px;display:flex;justify-content:space-between;align-items:flex-end;gap:16px}
+      .cert__stamp{width:110px;height:80px;border:1px dashed #9ca3af;text-align:center;padding:8px;font-size:10px;color:#9ca3af;display:flex;align-items:center;justify-content:center;line-height:1.4}
+      .cert__sig{text-align:right;font-size:12px;line-height:2}
+    `;
+
+    let bodyHtml = '';
+    if (type === 'enrollment') {
+      bodyHtml = `
+        <p>Je soussigné(e), le Directeur / la Directrice de <strong>${schoolName}</strong>,</p>
+        <p>certifie que l'élève :</p>
+        <p class="cert__underline">${name}</p>
+        ${dob ? `<p>né(e) le <strong>${dob}</strong>,</p>` : ''}
+        <p>portant le numéro matricule <strong>${student.admissionNumber}</strong>,</p>
+        <p>est régulièrement inscrit(e) dans notre établissement en classe de :</p>
+        <p style="font-size:16px;font-weight:700;text-align:center;padding:10px 0">${className}</p>
+        <p>pour l'année scolaire <strong>${academicYear}</strong>.</p>
+        <br/>
+        <p>En foi de quoi, la présente attestation lui est délivrée pour servir et valoir ce que de droit.</p>`;
+    } else {
+      bodyHtml = `
+        <p>Je soussigné(e), le Directeur / la Directrice de <strong>${schoolName}</strong>,</p>
+        <p>certifie que l'élève :</p>
+        <p class="cert__underline">${name}</p>
+        ${dob ? `<p>né(e) le <strong>${dob}</strong>,</p>` : ''}
+        <p>portant le numéro matricule <strong>${student.admissionNumber}</strong>, en classe de <strong>${className}</strong>,</p>
+        <p>a fait preuve, tout au long de l'année scolaire <strong>${academicYear}</strong>, d'une <strong>bonne conduite</strong> au sein de notre établissement.</p>
+        <br/>
+        <p>Aucun incident disciplinaire majeur n'a été relevé à son encontre durant cette période.</p>
+        <br/>
+        <p>En foi de quoi, le présent certificat lui est délivré pour servir et valoir ce que de droit.</p>`;
+    }
+
+    const title = type === 'enrollment' ? "Attestation d'Inscription" : 'Certificat de Bonne Conduite';
+
+    const html = `<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8"/>
+<style>${baseStyles}</style>
+</head><body>
+<div class="cert">
+  <div class="cert__header">
+    ${logoTag}
+    <div class="cert__school">${schoolName}</div>
+    ${schoolAddr ? `<div class="cert__address">${schoolAddr}</div>` : ''}
+    ${student.institution.motto ? `<div class="cert__motto">${student.institution.motto}</div>` : ''}
+  </div>
+  <div class="cert__title-wrap"><span class="cert__title">${title}</span></div>
+  <div class="cert__body">${bodyHtml}</div>
+  <div class="cert__footer">
+    <div class="cert__stamp">Cachet de l'établissement</div>
+    <div class="cert__sig">
+      <p>Fait à ${schoolAddr || 'Lomé'}, le ${today}</p>
+      <p><strong>Le Directeur / La Directrice</strong></p>
+      <br/><br/>
+      <p style="border-top:1px solid #374151;padding-top:4px;min-width:180px">Signature &amp; Cachet</p>
+    </div>
+  </div>
+</div>
+</body></html>`;
+
+    return this.pdf.generateFromHtml(html);
   }
 
   private async ensureExists(id: string, institutionId: string) {

@@ -1,4 +1,5 @@
-import { Body, Controller, Get, HttpCode, Param, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Post, Query, Req, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { PaymentsService } from './payments.service';
 import { CinetpayService } from './cinetpay.service';
@@ -54,6 +55,16 @@ export class PaymentsController {
   @ApiOperation({ summary: 'Get payment details' })
   findOne(@Param('id') id: string, @CurrentUser() user: any) {
     return this.service.findOne(id, user.institutionId);
+  }
+
+  @Get(':id/receipt')
+  @Roles(Role.ADMIN, Role.BURSAR, Role.PARENT, Role.STUDENT)
+  @ApiOperation({ summary: 'Download payment receipt as PDF' })
+  async getReceipt(@Param('id') id: string, @CurrentUser() user: any, @Res() res: Response) {
+    const buf = await this.service.generateReceipt(id, user.institutionId);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="recu-${id}.pdf"`);
+    res.send(buf);
   }
 
   @Get('student/:studentId/status')

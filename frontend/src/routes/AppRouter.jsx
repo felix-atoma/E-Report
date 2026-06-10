@@ -36,6 +36,7 @@ const SubjectsPage           = lazy(() => import('../pages/admin/SubjectsPage/Su
 const AdminSubjectProfilePage = lazy(() => import('../pages/admin/SubjectProfilePage/SubjectProfilePage'));
 const FeesPage               = lazy(() => import('../pages/admin/FeesPage/FeesPage'));
 const PaymentsPage           = lazy(() => import('../pages/admin/PaymentsPage/PaymentsPage'));
+const PaymentPlansPage       = lazy(() => import('../pages/admin/PaymentPlansPage/PaymentPlansPage'));
 const AnalyticsPage          = lazy(() => import('../pages/admin/AnalyticsPage/AnalyticsPage'));
 const NotificationLogsPage   = lazy(() => import('../pages/admin/NotificationLogsPage/NotificationLogsPage'));
 const BrandingPage           = lazy(() => import('../pages/admin/BrandingPage/BrandingPage'));
@@ -146,7 +147,8 @@ function AppRouter() {
         <Route path="/admin/subjects"      element={<ProtectedRoute roles={['ADMIN']}><SubjectsPage /></ProtectedRoute>} />
         <Route path="/admin/subjects/:id"  element={<ProtectedRoute roles={['ADMIN']}><AdminSubjectProfilePage /></ProtectedRoute>} />
         <Route path="/admin/fees"          element={<ProtectedRoute roles={['ADMIN']}><FeesPage /></ProtectedRoute>} />
-        <Route path="/admin/payments"      element={<ProtectedRoute roles={['ADMIN', 'BURSAR']}><PaymentsPage /></ProtectedRoute>} />
+        <Route path="/admin/payments"       element={<ProtectedRoute roles={['ADMIN', 'BURSAR']}><PaymentsPage /></ProtectedRoute>} />
+        <Route path="/admin/payment-plans" element={<ProtectedRoute roles={['ADMIN', 'BURSAR']}><PaymentPlansPage /></ProtectedRoute>} />
         <Route path="/admin/notifications" element={<ProtectedRoute roles={['ADMIN', 'BURSAR']}><NotificationLogsPage /></ProtectedRoute>} />
         <Route path="/admin/analytics"     element={<ProtectedRoute roles={['ADMIN']}><AnalyticsPage /></ProtectedRoute>} />
         <Route path="/admin/branding"      element={<ProtectedRoute roles={['ADMIN']}><BrandingPage /></ProtectedRoute>} />
@@ -179,7 +181,8 @@ function AppRouter() {
         {/* Bursar */}
         <Route path="/bursar"              element={<ProtectedRoute roles={['BURSAR']}><BursarDashboardPage /></ProtectedRoute>} />
         <Route path="/bursar/fees"         element={<ProtectedRoute roles={['BURSAR']}><FeesPage /></ProtectedRoute>} />
-        <Route path="/bursar/payments"     element={<ProtectedRoute roles={['BURSAR']}><PaymentsPage /></ProtectedRoute>} />
+        <Route path="/bursar/payments"       element={<ProtectedRoute roles={['BURSAR']}><PaymentsPage /></ProtectedRoute>} />
+        <Route path="/bursar/payment-plans" element={<ProtectedRoute roles={['BURSAR']}><PaymentPlansPage /></ProtectedRoute>} />
         <Route path="/bursar/notifications" element={<ProtectedRoute roles={['BURSAR']}><NotificationLogsPage /></ProtectedRoute>} />
 
         {/* Teacher */}

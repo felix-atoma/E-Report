@@ -225,6 +225,7 @@ model Institution {
   nationalExamResults NationalExamResult[]
   libraryLoans        LibraryLoan[]
   healthRecords       HealthRecord[]
+  paymentPlans        PaymentPlan[]
 }
 
 model User {
@@ -269,6 +270,7 @@ model User {
   mockExamsCreated      MockExam[]             @relation("MockExamCreator")
   mockExamFichesSigned  MockExamSubjectFiche[] @relation("MockExamFicheSigner")
   staffProfile          StaffProfile?
+  paymentPlansCreated   PaymentPlan[]          @relation("PaymentPlanCreator")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -414,6 +416,7 @@ model Student {
   studentFees           StudentFee[]
   payments              Payment[]
   paymentIntents        PaymentIntent[]
+  paymentPlans          PaymentPlan[]
   notificationLogs      NotificationLog[]
   assignmentSubmissions AssignmentSubmission[]
   quizAttempts          QuizAttempt[]
@@ -681,6 +684,39 @@ model Payment {
 
   institutionId String
   institution   Institution @relation(fields: [institutionId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PaymentPlan {
+  id           String   @id @default(uuid())
+  studentId    String
+  institutionId String
+  academicYear String
+  totalAmount  Decimal  @db.Decimal(12, 2)
+  notes        String?
+  createdById  String
+
+  student      Student     @relation(fields: [studentId], references: [id])
+  institution  Institution @relation(fields: [institutionId], references: [id])
+  createdBy    User        @relation("PaymentPlanCreator", fields: [createdById], references: [id])
+  instalments  PaymentPlanInstalment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PaymentPlanInstalment {
+  id            String   @id @default(uuid())
+  planId        String
+  dueDate       DateTime
+  amount        Decimal  @db.Decimal(12, 2)
+  paidAt        DateTime?
+  paidAmount    Decimal? @db.Decimal(12, 2)
+  notes         String?
+
+  plan PaymentPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -1,6 +1,7 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useInstitution } from '../../../context/InstitutionContext';
 import { useQuery } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import { studentsService } from '../../../services/studentsService';
 import { feesService } from '../../../services/feesService';
 import { disciplinaryService } from '../../../services/disciplinaryService';
@@ -158,66 +159,17 @@ function AdminStudentProfilePage() {
 
   const payStatus = feeSummary?.status ?? 'UNPAID';
 
-  function printCertificate() {
-    const schoolName    = institution?.name ?? 'Établissement Scolaire';
-    const schoolAddress = institution?.address ?? '';
-    const academicYear  = institution?.academicSettings?.currentYear
-      ?? institution?.academicYear
-      ?? new Date().getFullYear() + '-' + (new Date().getFullYear() + 1);
-    const className     = currentClass?.name ?? '—';
-    const today         = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
-
-    const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
-<title>Attestation d'inscription</title>
-<style>
-  body{font-family:Arial,sans-serif;margin:0;padding:32px;color:#111;font-size:13px}
-  .cert{max-width:600px;margin:0 auto;border:3px double #1e2a78;padding:32px}
-  .cert__header{text-align:center;margin-bottom:28px}
-  .cert__school{font-size:20px;font-weight:800;color:#1e2a78;text-transform:uppercase;letter-spacing:1px}
-  .cert__address{font-size:12px;color:#6b7280;margin-top:4px}
-  .cert__divider{border:none;border-top:2px solid #1e2a78;margin:16px 0}
-  .cert__title{font-size:16px;font-weight:700;text-align:center;text-transform:uppercase;letter-spacing:2px;margin:20px 0;color:#1e2a78}
-  .cert__body{line-height:2.2;font-size:14px}
-  .cert__name{font-weight:800;font-size:16px;text-decoration:underline}
-  .cert__footer{margin-top:36px;display:flex;justify-content:space-between;align-items:flex-end}
-  .cert__stamp-area{width:120px;height:80px;border:1px dashed #9ca3af;text-align:center;padding:8px;font-size:10px;color:#9ca3af;display:flex;align-items:center;justify-content:center}
-  .cert__signature{text-align:right;font-size:12px;line-height:2}
-  @media print{body{padding:0}}
-</style></head><body>
-<div class="cert">
-  <div class="cert__header">
-    <div class="cert__school">${schoolName}</div>
-    ${schoolAddress ? `<div class="cert__address">${schoolAddress}</div>` : ''}
-  </div>
-  <hr class="cert__divider"/>
-  <div class="cert__title">Attestation d'Inscription</div>
-  <div class="cert__body">
-    <p>Je soussigné(e), le Directeur/la Directrice de <strong>${schoolName}</strong>, certifie que :</p>
-    <p>L'élève <span class="cert__name">${name}</span>,</p>
-    <p>Matricule : <strong>${student?.admissionNumber ?? '—'}</strong></p>
-    ${dob !== '—' ? `<p>Né(e) le : <strong>${dob}</strong></p>` : ''}
-    <p>Est régulièrement inscrit(e) dans notre établissement en classe de :</p>
-    <p style="font-size:16px;font-weight:700;text-align:center;margin:12px 0">${className}</p>
-    <p>Pour l'année scolaire : <strong>${academicYear}</strong></p>
-    <p>Cette attestation est délivrée pour servir et valoir ce que de droit.</p>
-  </div>
-  <div class="cert__footer">
-    <div class="cert__stamp-area">Cachet de l'établissement</div>
-    <div class="cert__signature">
-      <p>Fait à ${schoolAddress || 'Lomé'}, le ${today}</p>
-      <p><strong>Le Directeur / La Directrice</strong></p>
-      <br/><br/>
-      <p>_______________________</p>
-      <p style="font-size:11px;color:#9ca3af">Signature &amp; Cachet</p>
-    </div>
-  </div>
-</div>
-<script>window.onload=function(){window.print();window.close();}<\/script>
-</body></html>`;
-
-    const w = window.open('', '_blank', 'width=700,height=800');
-    w.document.write(html);
-    w.document.close();
+  async function downloadCertificate(type) {
+    const labels = { enrollment: 'attestation-inscription', conduct: 'certificat-bonne-conduite' };
+    try {
+      const res = await studentsService.certificate(id, type);
+      const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      const a = document.createElement('a');
+      a.href = url; a.download = `${labels[type]}-${student?.admissionNumber ?? id}.pdf`; a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error('Erreur lors de la génération du certificat');
+    }
   }
 
   return (
@@ -229,11 +181,19 @@ function AdminStudentProfilePage() {
           <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap' }}>
             <button
               className="asp-back-btn"
-              onClick={printCertificate}
-              title="Générer une attestation d'inscription"
+              onClick={() => downloadCertificate('enrollment')}
+              title="Attestation d'inscription"
               style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '.4rem .875rem', fontWeight: 600, cursor: 'pointer', fontSize: '.82rem' }}
             >
               📄 Attestation
+            </button>
+            <button
+              className="asp-back-btn"
+              onClick={() => downloadCertificate('conduct')}
+              title="Certificat de bonne conduite"
+              style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '.4rem .875rem', fontWeight: 600, cursor: 'pointer', fontSize: '.82rem' }}
+            >
+              ✅ Bonne conduite
             </button>
             <button className="asp-back-btn" onClick={() => navigate('/admin/students')}>
               ← Retour aux élèves

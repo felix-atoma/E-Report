@@ -100,11 +100,19 @@ function AdminDashboardPage() {
     refetchOnMount: 'always',
   });
 
+  const { data: atRisk } = useQuery({
+    queryKey: ['analytics', 'at-risk', academicYear],
+    queryFn: () => analyticsService.atRisk(academicYear).then((r) => r.data),
+    enabled: !!academicYear,
+    staleTime: 0,
+    refetchOnMount: 'always',
+  });
+
   if (loadingOverview) return <AppShell title={t('dash.title')}><Loading /></AppShell>;
 
   const collectionRate =
-    payments?.totalDue > 0
-      ? `${Math.round((payments.totalCollected / payments.totalDue) * 100)}%`
+    payments?.collectionRate != null && Number.isFinite(payments.collectionRate)
+      ? `${payments.collectionRate}%`
       : '—';
 
   const fmt = (n) => (n != null ? Number(n).toLocaleString('fr-FR') : '—');
@@ -118,16 +126,16 @@ function AdminDashboardPage() {
 
       <OnboardingWizard stats={overview} />
       <div className="dashboard-stats stagger">
-        <StatCard label={t('dash.students')}         value={overview?.students}         icon="students"    color="blue" />
-        <StatCard label={t('dash.teachers')}         value={overview?.teachers}         icon="teachers"    color="teal" />
-        <StatCard label={t('dash.classes')}          value={overview?.classes}          icon="classes"     color="orange" />
+        <StatCard label={t('dash.students')}         value={overview?.totalStudents}    icon="students"    color="blue" />
+        <StatCard label={t('dash.teachers')}         value={overview?.totalTeachers}    icon="teachers"    color="teal" />
+        <StatCard label={t('dash.classes')}          value={overview?.totalClasses}     icon="classes"     color="orange" />
         <StatCard label={t('dash.publishedReports')} value={overview?.publishedReports} icon="reports"     color="green" />
         <StatCard
           label={t('dash.collectionRate')}
           value={collectionRate}
           icon="collection"
           color="teal"
-          sub={payments ? `${fmt(payments.totalCollected)} / ${fmt(payments.totalDue)} FCFA` : null}
+          sub={payments ? `${fmt(payments.totalPaid)} / ${fmt(payments.totalDue)} FCFA` : null}
         />
         <StatCard
           label={t('dash.remaining')}
@@ -143,10 +151,10 @@ function AdminDashboardPage() {
             <h3 className="dashboard-card__title">{t('dash.feeRecovery')}</h3>
             <div className="dashboard-breakdown">
               {[
-                { labelKey: 'dash.totalDue',         value: `${fmt(payments.totalDue)} FCFA`,       status: 'PAID' },
-                { labelKey: 'dash.collected',         value: `${fmt(payments.totalCollected)} FCFA`, status: 'PARTIAL' },
-                { labelKey: 'dash.toPay',             value: `${fmt(payments.totalPending)} FCFA`,   status: 'UNPAID' },
-                { labelKey: 'dash.exemptedStudents',  value: `${payments.exemptCount ?? 0}`,         status: 'EXEMPT' },
+                { labelKey: 'dash.totalDue',         value: `${fmt(payments.totalDue)} FCFA`,    status: 'PAID' },
+                { labelKey: 'dash.collected',         value: `${fmt(payments.totalPaid)} FCFA`,   status: 'PARTIAL' },
+                { labelKey: 'dash.toPay',             value: `${fmt(payments.totalPending)} FCFA`, status: 'UNPAID' },
+                { labelKey: 'dash.exemptedStudents',  value: `${payments.exemptCount ?? 0}`,       status: 'EXEMPT' },
               ].map(({ labelKey, value, status }) => (
                 <div key={status} className="dashboard-breakdown__row">
                   <StatusPill status={status} />
@@ -163,9 +171,9 @@ function AdminDashboardPage() {
             <h3 className="dashboard-card__title">{t('dash.reports')}</h3>
             <div className="dashboard-breakdown">
               {[
-                { labelKey: 'dash.drafts',   count: reports.draft,     status: 'DRAFT' },
-                { labelKey: 'dash.inReview', count: reports.review,    status: 'REVIEW' },
-                { labelKey: 'dash.published',count: reports.published, status: 'PUBLISHED' },
+                { labelKey: 'dash.drafts',   count: reports.draftCount,     status: 'DRAFT' },
+                { labelKey: 'dash.inReview', count: reports.reviewCount,    status: 'REVIEW' },
+                { labelKey: 'dash.published',count: reports.publishedCount, status: 'PUBLISHED' },
               ].map(({ labelKey, count, status }) => (
                 <div key={status} className="dashboard-breakdown__row">
                   <StatusPill status={status} />
@@ -214,6 +222,42 @@ function AdminDashboardPage() {
             )}
           </div>
         </div>
+      )}
+      {/* ── At-risk students alert ── */}
+      {atRisk?.count > 0 && (
+        <Card style={{ marginTop: '1.5rem', borderLeft: '4px solid #f59e0b' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+            <span style={{ fontSize: '1.4rem' }}>⚠️</span>
+            <div>
+              <h3 style={{ fontWeight: 700, fontSize: '0.95rem', margin: 0 }}>
+                {atRisk.count} élève{atRisk.count > 1 ? 's' : ''} en difficulté — {atRisk.academicYear}
+              </h3>
+              <p style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', margin: 0 }}>
+                Moyenne en baisse de plus de 1,5 point ou en dessous de 10
+              </p>
+            </div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+            {atRisk.students.slice(0, 8).map((s) => (
+              <div key={s.studentId} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.82rem', padding: '0.3rem 0', borderBottom: '1px solid var(--color-border)' }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: s.isFailingNow ? '#dc2626' : '#f59e0b', flexShrink: 0 }} />
+                <span style={{ flex: 1, fontWeight: 600 }}>{s.studentName}</span>
+                <span style={{ color: '#6b7280' }}>{s.className}</span>
+                <span style={{ color: '#dc2626', fontWeight: 700, fontFamily: 'monospace' }}>
+                  {s.previousAvg.toFixed(2)} → {s.currentAvg.toFixed(2)}
+                </span>
+                <span style={{ background: s.isFailingNow ? '#fef2f2' : '#fefce8', color: s.isFailingNow ? '#dc2626' : '#92400e', fontWeight: 700, fontSize: '0.72rem', padding: '1px 6px', borderRadius: 4 }}>
+                  {s.isFailingNow ? 'Échec' : `−${s.drop.toFixed(2)}`}
+                </span>
+              </div>
+            ))}
+            {atRisk.count > 8 && (
+              <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>
+                + {atRisk.count - 8} autre{atRisk.count - 8 > 1 ? 's' : ''} élèves
+              </p>
+            )}
+          </div>
+        </Card>
       )}
     </AppShell>
   );
