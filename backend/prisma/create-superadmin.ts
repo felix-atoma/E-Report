@@ -2,7 +2,7 @@
  * One-time script to create the SUPERADMIN user.
  * Usage:
  *   cd backend
- *   SUPERADMIN_EMAIL=atomafelix2@gmail.com SUPERADMIN_PASSWORD=YourPass npx ts-node prisma/create-superadmin.ts
+ *   SUPERADMIN_EMAIL=felixatoma2@gmail.com SUPERADMIN_PASSWORD=YourPass npx ts-node prisma/create-superadmin.ts
  *
  * Or just run with defaults (edit below):
  *   npx ts-node prisma/create-superadmin.ts
@@ -13,7 +13,7 @@ import * as bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
-  const email = process.env.SUPERADMIN_EMAIL ?? 'atomafelix2@gmail.com';
+  const email = process.env.SUPERADMIN_EMAIL ?? 'felixatoma2@gmail.com';
   const name = process.env.SUPERADMIN_NAME ?? 'Felix Atoma';
   const password = process.env.SUPERADMIN_PASSWORD;
 

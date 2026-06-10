@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, Res } from '@nestjs/common';
 import { Response } from 'express';
-import { IsArray, IsNotEmpty, IsObject, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsNotEmpty, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class BulkDeleteDto {
@@ -12,10 +12,10 @@ class BulkDeleteDto {
 class BulkImportStudentRowDto {
   @IsString() @IsNotEmpty() name: string;
   @IsString() @IsNotEmpty() dateOfBirth: string;
-  @IsString() sex?: string;
-  @IsString() admissionNumber?: string;
-  @IsString() email?: string;
-  @IsString() className?: string;
+  @IsOptional() @IsString() sex?: string;
+  @IsOptional() @IsString() admissionNumber?: string;
+  @IsOptional() @IsString() email?: string;
+  @IsOptional() @IsString() className?: string;
 }
 
 class BulkImportStudentsDto {

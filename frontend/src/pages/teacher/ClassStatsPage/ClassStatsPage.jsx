@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { analyticsService } from '../../../services/analyticsService';
 import { classesService } from '../../../services/classesService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
@@ -8,15 +9,6 @@ import Card from '../../../components/common/Card/Card';
 import Loading from '../../../components/common/Loading/Loading';
 import './ClassStatsPage.css';
 
-const TERM_LABELS = { 1: '1er trimestre', 2: '2e trimestre', 3: '3e trimestre' };
-
-const DIST_CONFIG = [
-  { key: 'TB',    label: 'Très Bien',    range: '≥ 16',      color: '#16a34a', bg: '#dcfce7' },
-  { key: 'B',     label: 'Bien',         range: '14 – 15,99', color: '#2563eb', bg: '#dbeafe' },
-  { key: 'AB',    label: 'Assez Bien',   range: '12 – 13,99', color: '#7c3aed', bg: '#ede9fe' },
-  { key: 'P',     label: 'Passable',     range: '10 – 11,99', color: '#d97706', bg: '#fef9c3' },
-  { key: 'Insuf', label: 'Insuffisant',  range: '< 10',       color: '#dc2626', bg: '#fee2e2' },
-];
 
 function StatBadge({ label, count, pct, color }) {
   return (
@@ -66,9 +58,24 @@ function StatMeasure({ label, value, unit, color, sub }) {
 }
 
 function ClassStatsPage() {
+  const { t } = useTranslation();
   const [classId, setClassId] = useState('');
   const [termNumber, setTermNumber] = useState('');
   const [academicYear, setAcademicYear] = useState('');
+
+  const TERM_LABELS = {
+    1: t('fees.terms.TRIMESTRE_1'),
+    2: t('fees.terms.TRIMESTRE_2'),
+    3: t('fees.terms.TRIMESTRE_3'),
+  };
+
+  const DIST_CONFIG = [
+    { key: 'TB',    label: t('mention.tresBien'),    range: '≥ 16',       color: '#16a34a', bg: '#dcfce7' },
+    { key: 'B',     label: t('mention.bien'),         range: '14 – 15,99', color: '#2563eb', bg: '#dbeafe' },
+    { key: 'AB',    label: t('mention.assezBien'),    range: '12 – 13,99', color: '#7c3aed', bg: '#ede9fe' },
+    { key: 'P',     label: t('mention.passable'),     range: '10 – 11,99', color: '#d97706', bg: '#fef9c3' },
+    { key: 'Insuf', label: t('mention.insuffisant'),  range: '< 10',       color: '#dc2626', bg: '#fee2e2' },
+  ];
 
   const { data: classes, isLoading: loadingClasses } = useQuery({
     queryKey: ['classes'],

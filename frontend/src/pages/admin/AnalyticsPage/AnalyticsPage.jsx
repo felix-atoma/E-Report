@@ -134,7 +134,7 @@ function AnalyticsPage() {
           label={t('dash.collectionRate')}
           value={collectionRate}
           icon="💰"
-          sub={totalPaid && totalDue ? `${totalPaid} / ${totalDue} FCFA` : null}
+          sub={totalPaid && totalDue ? `${totalPaid} / ${totalDue} ${t('common.currency')}` : null}
         />
         <StatCard label={t('dash.pendingPayment')} value={overview?.pendingPayments} icon="⏳" />
       </div>

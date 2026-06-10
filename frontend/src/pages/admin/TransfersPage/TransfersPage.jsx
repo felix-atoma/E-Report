@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { transfersService } from '../../../services/transfersService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
@@ -9,21 +10,6 @@ import Input from '../../../components/common/Input/Input';
 import Button from '../../../components/common/Button/Button';
 import Card from '../../../components/common/Card/Card';
 import './TransfersPage.css';
-
-const DIRECTIONS = [
-  { value: 'IN',  label: '↓ Entrée', desc: "Vient d'une autre école",  color: '#15803d', bg: '#dcfce7' },
-  { value: 'OUT', label: '↑ Sortie', desc: 'Part vers une autre école', color: '#dc2626', bg: '#fee2e2' },
-];
-
-const TRANSFER_REASONS = [
-  'Déménagement familial',
-  'Problèmes financiers',
-  'Orientation pédagogique',
-  'Rapprochement scolaire',
-  'Exclusion définitive',
-  'Demande des parents',
-  'Autre',
-];
 
 const EMPTY_FORM = {
   studentId:    '',
@@ -36,20 +22,31 @@ const EMPTY_FORM = {
   notes:        '',
 };
 
-function DirectionBadge({ direction }) {
-  const d = DIRECTIONS.find((x) => x.value === direction);
+const DIRECTION_COLORS = {
+  IN:  { color: '#15803d', bg: '#dcfce7' },
+  OUT: { color: '#dc2626', bg: '#fee2e2' },
+};
+
+function DirectionBadge({ direction, t }) {
+  const style = DIRECTION_COLORS[direction] ?? {};
   return (
-    <span
-      className="transfer-badge"
-      style={{ color: d?.color, background: d?.bg }}
-    >
-      {direction === 'IN' ? '↓ Entrée' : '↑ Sortie'}
+    <span className="transfer-badge" style={{ color: style.color, background: style.bg }}>
+      {direction === 'IN' ? t('transfers.directionIn') : t('transfers.directionOut')}
     </span>
   );
 }
 
 export default function TransfersPage() {
   const qc = useQueryClient();
+  const { t } = useTranslation();
+
+  const DIRECTIONS = [
+    { value: 'IN',  label: t('transfers.directionIn'),  desc: t('transfers.directionInDesc'),  color: '#15803d', bg: '#dcfce7' },
+    { value: 'OUT', label: t('transfers.directionOut'), desc: t('transfers.directionOutDesc'), color: '#dc2626', bg: '#fee2e2' },
+  ];
+
+  const TRANSFER_REASONS = t('transfers.reasons', { returnObjects: true });
+
   const [dirFilter, setDirFilter] = useState('');
   const [search, setSearch]       = useState('');
   const [panelOpen, setPanelOpen] = useState(false);
@@ -192,37 +189,37 @@ export default function TransfersPage() {
         </Card>
       ) : (
         <div className="transfers-page__list">
-          {transfers.map((t) => (
-            <div key={t.id} className={`transfer-card transfer-card--${t.direction.toLowerCase()}`}>
+          {transfers.map((transfer) => (
+            <div key={transfer.id} className={`transfer-card transfer-card--${transfer.direction.toLowerCase()}`}>
               <div className="transfer-card__left">
-                <DirectionBadge direction={t.direction} />
-                <div className="transfer-card__school">{t.otherSchool}</div>
+                <DirectionBadge direction={transfer.direction} t={t} />
+                <div className="transfer-card__school">{transfer.otherSchool}</div>
                 <div className="transfer-card__date">
-                  {new Date(t.transferDate).toLocaleDateString('fr-FR', {
+                  {new Date(transfer.transferDate).toLocaleDateString('fr-FR', {
                     day: '2-digit', month: 'long', year: 'numeric',
                   })}
-                  {t.academicYear && (
-                    <span className="transfer-card__year"> · {t.academicYear}</span>
+                  {transfer.academicYear && (
+                    <span className="transfer-card__year"> · {transfer.academicYear}</span>
                   )}
                 </div>
               </div>
               <div className="transfer-card__student">
                 <div className="transfer-card__student-name">
-                  {t.student?.user?.name ?? t.student?.admissionNumber ?? '—'}
+                  {transfer.student?.user?.name ?? transfer.student?.admissionNumber ?? '—'}
                 </div>
-                <div className="transfer-card__student-num">{t.student?.admissionNumber}</div>
-                {t.reason && (
-                  <div className="transfer-card__reason">{t.reason}</div>
+                <div className="transfer-card__student-num">{transfer.student?.admissionNumber}</div>
+                {transfer.reason && (
+                  <div className="transfer-card__reason">{transfer.reason}</div>
                 )}
               </div>
               <div className="transfer-card__actions">
-                <button className="transfer-card__btn-edit" onClick={() => openPanel(t)}>
+                <button className="transfer-card__btn-edit" onClick={() => openPanel(transfer)}>
                   Modifier
                 </button>
                 <button
                   className="transfer-card__btn-del"
                   onClick={() => {
-                    if (window.confirm('Supprimer ce transfert ?')) deleteMutation.mutate(t.id);
+                    if (window.confirm('Supprimer ce transfert ?')) deleteMutation.mutate(transfer.id);
                   }}
                 >
                   ✕

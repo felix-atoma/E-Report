@@ -69,14 +69,14 @@ export class AnalyticsService {
       } else {
         e.hasNonExempt = true;
         e.allExempt = false;
-        e.due += Number(fee.amountDue);
+        e.due += (fee.amountDue as any).toNumber();
       }
       byStudent.set(fee.studentId, e);
     }
 
     for (const payment of payments) {
       const e = byStudent.get(payment.studentId) ?? { due: 0, paid: 0, allExempt: false, hasNonExempt: false };
-      e.paid += Number(payment.amount);
+      e.paid += (payment.amount as any).toNumber();
       byStudent.set(payment.studentId, e);
     }
 
@@ -159,7 +159,7 @@ export class AnalyticsService {
     // Aggregate paid amount per student
     const paidMap = new Map<string, number>();
     for (const p of payments) {
-      paidMap.set(p.studentId, (paidMap.get(p.studentId) ?? 0) + Number(p.amount));
+      paidMap.set(p.studentId, (paidMap.get(p.studentId) ?? 0) + (p.amount as any).toNumber());
     }
 
     // Sum due per student
@@ -167,7 +167,7 @@ export class AnalyticsService {
     const dueMap = new Map<string, FeeEntry>();
     for (const f of fees) {
       const entry = dueMap.get(f.studentId) ?? { due: 0, student: f.student };
-      entry.due += Number(f.amountDue);
+      entry.due += (f.amountDue as any).toNumber();
       dueMap.set(f.studentId, entry);
     }
 

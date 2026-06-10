@@ -325,7 +325,8 @@
     "errorGeneric": "Une erreur est survenue. Veuillez réessayer.",
     "successSaved": "Modifications enregistrées.",
     "successCreated": "Créé avec succès.",
-    "successDeleted": "Supprimé avec succès."
+    "successDeleted": "Supprimé avec succès.",
+    "currency": "FCFA"
   },
 
   "classes": {
@@ -567,5 +568,86 @@
       "heading":    "Créer un nouveau mot de passe",
       "subheading": "Saisissez votre nouveau mot de passe ci-dessous."
     }
+  },
+
+  "conduct": {
+    "TRES_BIEN": "Très Bien",
+    "BIEN":      "Bien",
+    "PASSABLE":  "Passable",
+    "MEDIOCRE":  "Médiocre"
+  },
+
+  "attendance": {
+    "PRESENT": "Présent",
+    "ABSENT":  "Absent",
+    "LATE":    "Retard",
+    "EXCUSED": "Excusé"
+  },
+
+  "password": {
+    "strength": {
+      "weak":   "Faible",
+      "fair":   "Moyen",
+      "good":   "Bien",
+      "strong": "Fort"
+    },
+    "tooShort": "Le mot de passe doit contenir au moins 8 caractères.",
+    "noMatch":  "Les mots de passe ne correspondent pas."
+  },
+
+  "subscription": {
+    "status": {
+      "TRIAL":     "Période d'essai",
+      "ACTIVE":    "Actif",
+      "EXPIRED":   "Expiré",
+      "SUSPENDED": "Suspendu"
+    },
+    "tierRange": {
+      "STARTER":    "Moins de 50 élèves",
+      "BASIC":      "De 50 à 99 élèves",
+      "PRO":        "De 100 à 199 élèves",
+      "ENTERPRISE": "200 élèves et plus"
+    }
+  },
+
+  "transfers": {
+    "directionIn":    "↓ Entrée",
+    "directionInDesc":"Vient d'une autre école",
+    "directionOut":   "↑ Sortie",
+    "directionOutDesc":"Part vers une autre école",
+    "reasons": [
+      "Déménagement familial",
+      "Problèmes financiers",
+      "Orientation pédagogique",
+      "Rapprochement scolaire",
+      "Exclusion définitive",
+      "Demande des parents",
+      "Autre"
+    ]
+  },
+
+  "gradeTable": {
+    "subject": "Matière",
+    "coef":    "Coef.",
+    "score":   "Note /20",
+    "points":  "Points"
+  },
+
+  "mention": {
+    "excellent":   "Excellent",
+    "tresBien":    "Très Bien",
+    "bien":        "Bien",
+    "assezBien":   "Assez Bien",
+    "passable":    "Passable",
+    "insuffisant": "Insuffisant"
+  },
+
+  "days": {
+    "LUNDI":    "Lundi",
+    "MARDI":    "Mardi",
+    "MERCREDI": "Mercredi",
+    "JEUDI":    "Jeudi",
+    "VENDREDI": "Vendredi",
+    "SAMEDI":   "Samedi"
   }
 }

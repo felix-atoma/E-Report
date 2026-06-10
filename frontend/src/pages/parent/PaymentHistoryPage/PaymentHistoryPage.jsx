@@ -46,7 +46,7 @@ function PaymentHistoryPage() {
       label: t('payments.amount'),
       render: (p) => (
         <span className="payments-hist__amount">
-          {Number(p.amount).toLocaleString(locale)} FCFA
+          {Number(p.amount).toLocaleString(locale)} {t('common.currency')}
         </span>
       ),
     },

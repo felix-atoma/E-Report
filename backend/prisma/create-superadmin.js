@@ -37,7 +37,7 @@ const client_1 = require("@prisma/client");
 const bcrypt = __importStar(require("bcrypt"));
 const prisma = new client_1.PrismaClient();
 async function main() {
-    const email = process.env.SUPERADMIN_EMAIL ?? 'atomafelix2@gmail.com';
+    const email = process.env.SUPERADMIN_EMAIL ?? 'felixatoma2@gmail.com';
     const name = process.env.SUPERADMIN_NAME ?? 'Felix Atoma';
     const password = process.env.SUPERADMIN_PASSWORD;
     if (!password) {

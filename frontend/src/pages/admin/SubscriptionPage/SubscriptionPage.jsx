@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { subscriptionService } from '../../../services/subscriptionService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
@@ -51,13 +52,6 @@ const TIERS = [
   },
 ];
 
-const STATUS_META = {
-  TRIAL:     { icon: '🕐', label: "Période d'essai",  cls: 'trial' },
-  ACTIVE:    { icon: '✅', label: 'Actif',             cls: 'active' },
-  EXPIRED:   { icon: '🔴', label: 'Expiré',            cls: 'expired' },
-  SUSPENDED: { icon: '⛔', label: 'Suspendu',          cls: 'suspended' },
-};
-
 const OPERATORS = [
   { value: 'TMONEY', label: 'TMoney (Togocel)' },
   { value: 'FLOOZ',  label: 'Flooz (Moov)' },
@@ -66,7 +60,15 @@ const OPERATORS = [
 
 export default function SubscriptionPage() {
   const qc     = useQueryClient();
+  const { t }  = useTranslation();
   const locale = 'fr-FR';
+
+  const STATUS_META = {
+    TRIAL:     { icon: '🕐', label: t('subscription.status.TRIAL'),     cls: 'trial' },
+    ACTIVE:    { icon: '✅', label: t('subscription.status.ACTIVE'),    cls: 'active' },
+    EXPIRED:   { icon: '🔴', label: t('subscription.status.EXPIRED'),   cls: 'expired' },
+    SUSPENDED: { icon: '⛔', label: t('subscription.status.SUSPENDED'), cls: 'suspended' },
+  };
 
   const [billing, setBilling]       = useState('MONTHLY'); // 'MONTHLY' | 'ANNUAL'
   const [payMethod, setPayMethod]   = useState(null);      // 'MOMO' | 'NOTCHPAY' | 'CARD'
@@ -219,7 +221,7 @@ export default function SubscriptionPage() {
                   )}
                   <div className="sub-tier-card__top">
                     <span className="sub-tier-card__name">{tier.label}</span>
-                    <span className="sub-tier-card__range">{tier.range}</span>
+                    <span className="sub-tier-card__range">{t(`subscription.tierRange.${tier.key}`)}</span>
                   </div>
                   <div className="sub-tier-card__price">
                     <span className="sub-tier-card__amount">{price.toLocaleString(locale)}</span>
@@ -266,7 +268,7 @@ export default function SubscriptionPage() {
               Vous serez facturé{' '}
               <strong>{currentPrice.toLocaleString(locale)} FCFA</strong>
               {billing === 'ANNUAL' ? ' / an' : ' / mois'} (tier{' '}
-              <strong>{activeTierDef?.label}</strong> — {activeTierDef?.range}).
+              <strong>{activeTierDef?.label}</strong> — {activeTierDef ? t(`subscription.tierRange.${activeTierDef.key}`) : ''}).
             </p>
           ) : (
             <p className="sub-section-sub">

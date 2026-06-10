@@ -194,7 +194,7 @@ function PaymentsPage() {
       label: t('payments.amount'),
       render: (p) => (
         <span className="payments-table__amount">
-          {Number(p.amount).toLocaleString(locale)} FCFA
+          {Number(p.amount).toLocaleString(locale)} {t('common.currency')}
         </span>
       ),
     },

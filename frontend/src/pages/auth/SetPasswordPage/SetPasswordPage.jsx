@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../context/AuthContext';
 import api from '../../../services/api';
 import logoIcon from '../../../assets/images/novaBulletin-icon.svg';
@@ -10,9 +11,12 @@ const ROLE_HOME = {
   BURSAR: '/bursar', PARENT: '/parent', STUDENT: '/student',
 };
 
+const STRENGTH_KEYS = ['', 'weak', 'fair', 'good', 'strong'];
+
 function SetPasswordPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { t } = useTranslation();
   const [form, setForm] = useState({ password: '', confirm: '' });
   const [show, setShow] = useState(false);
   const [error, setError] = useState('');
@@ -36,18 +40,17 @@ function SetPasswordPage() {
     return s;
   };
   const s = strength(form.password);
-  const strengthLabel = ['', 'Faible', 'Moyen', 'Bien', 'Fort'][s];
+  const strengthLabel = s > 0 ? t(`password.strength.${STRENGTH_KEYS[s]}`) : '';
   const strengthColor = ['', '#ef4444', '#f59e0b', '#3b82f6', '#22c55e'][s];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (form.password.length < 8) { setError('Le mot de passe doit contenir au moins 8 caractères.'); return; }
-    if (form.password !== form.confirm) { setError('Les mots de passe ne correspondent pas.'); return; }
+    if (form.password.length < 8) { setError(t('password.tooShort')); return; }
+    if (form.password !== form.confirm) { setError(t('password.noMatch')); return; }
 
     setLoading(true);
     try {
-      // Use setup token for this request
       const res = await api.post('/auth/set-password', { password: form.password }, {
         headers: { Authorization: `Bearer ${setupToken}` },
       });
@@ -57,12 +60,11 @@ function SetPasswordPage() {
       sessionStorage.removeItem('setupToken');
       sessionStorage.removeItem('setupName');
 
-      // Get user info and redirect
       const me = await api.get('/auth/me');
       const role = me.data?.role ?? 'STUDENT';
       navigate(ROLE_HOME[role] ?? '/');
     } catch (err) {
-      setError(err.response?.data?.message ?? 'Erreur lors de la définition du mot de passe.');
+      setError(err.response?.data?.message ?? t('common.errorGeneric'));
     } finally {
       setLoading(false);
     }

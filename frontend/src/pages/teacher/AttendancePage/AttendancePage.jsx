@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { classesService } from '../../../services/classesService';
 import { attendanceService } from '../../../services/attendanceService';
@@ -11,22 +12,23 @@ import EmptyState from '../../../components/common/EmptyState/EmptyState';
 import Button from '../../../components/common/Button/Button';
 import './AttendancePage.css';
 
-const STATUS_OPTIONS = [
-  { value: 'PRESENT',  label: 'Présent',  color: '#16a34a' },
-  { value: 'ABSENT',   label: 'Absent',   color: '#dc2626' },
-  { value: 'LATE',     label: 'Retard',   color: '#d97706' },
-  { value: 'EXCUSED',  label: 'Excusé',   color: '#6b7280' },
-];
-
 function today() {
   return new Date().toISOString().split('T')[0];
 }
 
 export default function AttendancePage() {
   const qc = useQueryClient();
+  const { t } = useTranslation();
   const [selectedClassId, setSelectedClassId] = useState('');
   const [date, setDate] = useState(today());
   const [entries, setEntries] = useState({});
+
+  const STATUS_OPTIONS = [
+    { value: 'PRESENT',  label: t('attendance.PRESENT'),  color: '#16a34a' },
+    { value: 'ABSENT',   label: t('attendance.ABSENT'),   color: '#dc2626' },
+    { value: 'LATE',     label: t('attendance.LATE'),     color: '#d97706' },
+    { value: 'EXCUSED',  label: t('attendance.EXCUSED'),  color: '#6b7280' },
+  ];
 
   const { data: pending = [] } = useQuery({
     queryKey: ['att-pending-justifications'],
@@ -37,9 +39,9 @@ export default function AttendancePage() {
     mutationFn: (id) => attendanceService.approveJustification(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['att-pending-justifications'] });
-      toast.success('Justification approuvée');
+      toast.success(t('common.successSaved'));
     },
-    onError: () => toast.error('Impossible d\'approuver'),
+    onError: () => toast.error(t('common.errorGeneric')),
   });
 
   const { data: classes = [], isLoading: loadingClasses } = useQuery({

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { reportsService } from '../../../services/reportsService';
 import { gradesService } from '../../../services/gradesService';
@@ -112,24 +113,24 @@ function calculateAverage(gradeRows) {
 
 function getMention(avg) {
   if (avg === null) return '';
-  if (avg >= 18) return 'Excellent';
-  if (avg >= 16) return 'Très Bien';
-  if (avg >= 14) return 'Bien';
-  if (avg >= 12) return 'Assez Bien';
-  if (avg >= 10) return 'Passable';
-  return 'Insuffisant';
+  if (avg >= 18) return 'mention.excellent';
+  if (avg >= 16) return 'mention.tresBien';
+  if (avg >= 14) return 'mention.bien';
+  if (avg >= 12) return 'mention.assezBien';
+  if (avg >= 10) return 'mention.passable';
+  return 'mention.insuffisant';
 }
 
-function GradeTable({ rows, onChange, locked }) {
+function GradeTable({ rows, onChange, locked, t }) {
   return (
     <div className="grade-table-wrap">
       <table className="grade-table">
         <thead>
           <tr>
-            <th className="grade-table__th grade-table__th--subject">Matière</th>
-            <th className="grade-table__th">Coef.</th>
-            <th className="grade-table__th">Note /20</th>
-            <th className="grade-table__th">Points</th>
+            <th className="grade-table__th grade-table__th--subject">{t('gradeTable.subject')}</th>
+            <th className="grade-table__th">{t('gradeTable.coef')}</th>
+            <th className="grade-table__th">{t('gradeTable.score')}</th>
+            <th className="grade-table__th">{t('gradeTable.points')}</th>
           </tr>
         </thead>
         <tbody>
@@ -184,6 +185,7 @@ function EditReportCardPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const { t } = useTranslation();
 
   const [gradeRows, setGradeRows]         = useState([]);
   const [teacherComment, setComment]      = useState('');
@@ -386,7 +388,7 @@ function EditReportCardPage() {
                 </span>
                 <span className="edit-report__avg-label">/20</span>
                 <span className={`edit-report__mention edit-report__mention--${avg >= 10 ? 'pass' : 'fail'}`}>
-                  {mention}
+                  {mention ? t(mention) : ''}
                 </span>
               </div>
             )}
@@ -397,7 +399,7 @@ function EditReportCardPage() {
               Aucune matière assignée à cette classe. Ajoutez des matières depuis la page Classes.
             </p>
           ) : (
-            <GradeTable rows={gradeRows} onChange={handleGradeChange} locked={locked} />
+            <GradeTable rows={gradeRows} onChange={handleGradeChange} locked={locked} t={t} />
           )}
         </Card>
 
@@ -468,7 +470,7 @@ function EditReportCardPage() {
               </div>
               <div className="edit-report__summary-row">
                 <span>Mention</span>
-                <strong>{mention}</strong>
+                <strong>{mention ? t(mention) : '—'}</strong>
               </div>
               <div className="edit-report__summary-row">
                 <span>Matières saisies</span>

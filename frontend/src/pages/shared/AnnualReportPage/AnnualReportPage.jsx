@@ -1,10 +1,9 @@
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { reportsService } from '../../../services/reportsService';
 import Loading from '../../../components/common/Loading/Loading';
 import './AnnualReportPage.css';
-
-const CONDUCT_LABELS = { TRES_BIEN: 'Très Bien', BIEN: 'Bien', PASSABLE: 'Passable', MEDIOCRE: 'Médiocre' };
 
 function fmt(v) {
   if (v == null) return '—';
@@ -13,6 +12,8 @@ function fmt(v) {
 
 export default function AnnualReportPage() {
   const { studentId, academicYear } = useParams();
+
+  const { t: translate } = useTranslation();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['annual-report', studentId, academicYear],
@@ -115,7 +116,7 @@ export default function AnnualReportPage() {
                 </td>
                 <td>{t.classRank ?? '—'}/{t.classSize ?? '—'}</td>
                 <td>{t.mention ?? '—'}</td>
-                <td>{t.conductRating ? CONDUCT_LABELS[t.conductRating] : '—'}</td>
+                <td>{t.conductRating ? translate(`conduct.${t.conductRating}`) : '—'}</td>
                 <td>{t.attendanceAbsentHours != null ? `${t.attendanceAbsentHours}h` : '—'}</td>
                 <td>{t.attendanceLate ?? '—'}</td>
                 <td>{t.commendations ?? '—'}</td>

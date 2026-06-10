@@ -298,7 +298,7 @@
     "deleteWarning":"This action cannot be undone.",
     "errorGeneric":"An error occurred. Please try again.",
     "successSaved":"Changes saved.","successCreated":"Created successfully.",
-    "successDeleted":"Deleted successfully."
+    "successDeleted":"Deleted successfully.","currency":"FCFA"
   },
 
   "classes": {
@@ -465,5 +465,86 @@
       "heading":    "Create a new password",
       "subheading": "Enter your new password below."
     }
+  },
+
+  "conduct": {
+    "TRES_BIEN": "Very Good",
+    "BIEN":      "Good",
+    "PASSABLE":  "Fair",
+    "MEDIOCRE":  "Poor"
+  },
+
+  "attendance": {
+    "PRESENT": "Present",
+    "ABSENT":  "Absent",
+    "LATE":    "Late",
+    "EXCUSED": "Excused"
+  },
+
+  "password": {
+    "strength": {
+      "weak":   "Weak",
+      "fair":   "Fair",
+      "good":   "Good",
+      "strong": "Strong"
+    },
+    "tooShort": "Password must be at least 8 characters.",
+    "noMatch":  "Passwords do not match."
+  },
+
+  "subscription": {
+    "status": {
+      "TRIAL":     "Trial period",
+      "ACTIVE":    "Active",
+      "EXPIRED":   "Expired",
+      "SUSPENDED": "Suspended"
+    },
+    "tierRange": {
+      "STARTER":    "< 50 students",
+      "BASIC":      "50 – 99 students",
+      "PRO":        "100 – 199 students",
+      "ENTERPRISE": "200+ students"
+    }
+  },
+
+  "transfers": {
+    "directionIn":     "↓ Incoming",
+    "directionInDesc": "Coming from another school",
+    "directionOut":    "↑ Outgoing",
+    "directionOutDesc":"Leaving to another school",
+    "reasons": [
+      "Family relocation",
+      "Financial issues",
+      "Academic guidance",
+      "School proximity",
+      "Permanent exclusion",
+      "Parent request",
+      "Other"
+    ]
+  },
+
+  "gradeTable": {
+    "subject": "Subject",
+    "coef":    "Coef.",
+    "score":   "Score /20",
+    "points":  "Points"
+  },
+
+  "mention": {
+    "excellent":   "Excellent",
+    "tresBien":    "Very Good",
+    "bien":        "Good",
+    "assezBien":   "Fairly Good",
+    "passable":    "Fair",
+    "insuffisant": "Insufficient"
+  },
+
+  "days": {
+    "LUNDI":    "Monday",
+    "MARDI":    "Tuesday",
+    "MERCREDI": "Wednesday",
+    "JEUDI":    "Thursday",
+    "VENDREDI": "Friday",
+    "SAMEDI":   "Saturday"
   }
 }

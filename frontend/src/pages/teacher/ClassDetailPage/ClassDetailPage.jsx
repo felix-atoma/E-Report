@@ -1,6 +1,7 @@
 import { useState, useContext } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { classesService } from '../../../services/classesService';
 import { gradesService } from '../../../services/gradesService';
 import { timetablesService } from '../../../services/timetablesService';
@@ -13,18 +14,11 @@ import Avatar from '../../../components/common/Avatar/Avatar';
 import Loading from '../../../components/common/Loading/Loading';
 import './ClassDetailPage.css';
 
-const TERM_OPTIONS = [
-  { value: 1, label: '1er Trimestre' },
-  { value: 2, label: '2ème Trimestre' },
-  { value: 3, label: '3ème Trimestre' },
-];
-
 const DAYS = ['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI'];
-const DAY_LABELS = { LUNDI: 'Lundi', MARDI: 'Mardi', MERCREDI: 'Mercredi', JEUDI: 'Jeudi', VENDREDI: 'Vendredi', SAMEDI: 'Samedi' };
 
-function TimetableView({ slots }) {
+function TimetableView({ slots, t }) {
   if (!slots.length) {
-    return <p className="class-detail__empty" style={{ padding: '1.5rem 0' }}>Aucun emploi du temps défini pour cette classe.</p>;
+    return <p className="class-detail__empty" style={{ padding: '1.5rem 0' }}>{t('common.noResults')}</p>;
   }
 
   const byDay = {};
@@ -38,7 +32,7 @@ function TimetableView({ slots }) {
     <div className="class-detail__tt-grid">
       {activeDays.map((day) => (
         <div key={day} className="class-detail__tt-day">
-          <div className="class-detail__tt-day-header">{DAY_LABELS[day]}</div>
+          <div className="class-detail__tt-day-header">{t(`days.${day}`)}</div>
           {byDay[day].map((slot) => (
             <div key={slot.id} className="class-detail__tt-slot">
               <div className="class-detail__tt-time">{slot.startTime} – {slot.endTime}</div>
@@ -56,7 +50,14 @@ function TimetableView({ slots }) {
 function ClassDetailPage() {
   const { id } = useParams();
   const { user } = useContext(AuthContext);
+  const { t } = useTranslation();
   const [selectedTerm, setSelectedTerm] = useState(1);
+
+  const TERM_OPTIONS = [
+    { value: 1, label: t('fees.terms.TRIMESTRE_1') },
+    { value: 2, label: t('fees.terms.TRIMESTRE_2') },
+    { value: 3, label: t('fees.terms.TRIMESTRE_3') },
+  ];
 
   const { data: cls, isLoading } = useQuery({
     queryKey: ['class', id],
@@ -65,7 +66,7 @@ function ClassDetailPage() {
   });
 
   const academicYear = cls?.academicYear ?? '';
-  const termName = TERM_OPTIONS.find((t) => t.value === selectedTerm)?.label ?? `${selectedTerm}er Trimestre`;
+  const termName = TERM_OPTIONS.find((opt) => opt.value === selectedTerm)?.label ?? `${selectedTerm}`;
 
   const { data: fichesStatus = [] } = useQuery({
     queryKey: ['fiches-status', id, academicYear, selectedTerm],
@@ -255,7 +256,7 @@ function ClassDetailPage() {
     {
       key: 'timetable',
       label: `Emploi du temps`,
-      content: <TimetableView slots={timetableSlots} />,
+      content: <TimetableView slots={timetableSlots} t={t} />,
     },
   ];
 

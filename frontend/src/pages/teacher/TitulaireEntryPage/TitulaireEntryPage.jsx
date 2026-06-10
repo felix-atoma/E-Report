@@ -1,6 +1,7 @@
 import { useState, useContext, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { classesService } from '../../../services/classesService';
 import { reportsService } from '../../../services/reportsService';
@@ -9,20 +10,6 @@ import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Loading from '../../../components/common/Loading/Loading';
 import './TitulaireEntryPage.css';
-
-const TERMS = [
-  { value: 1, label: 'Trimestre 1' },
-  { value: 2, label: 'Trimestre 2' },
-  { value: 3, label: 'Trimestre 3' },
-];
-
-const CONDUCT_OPTIONS = [
-  { value: '',          label: '—' },
-  { value: 'TRES_BIEN', label: 'Très Bien' },
-  { value: 'BIEN',      label: 'Bien' },
-  { value: 'PASSABLE',  label: 'Passable' },
-  { value: 'MEDIOCRE',  label: 'Médiocre' },
-];
 
 const CONDUCT_COLOR = {
   TRES_BIEN: '#16a34a', BIEN: '#0284c7',
@@ -48,6 +35,20 @@ export default function TitulaireEntryPage() {
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
   const qc = useQueryClient();
+  const { t } = useTranslation();
+
+  const TERMS = [
+    { value: 1, label: t('fees.terms.TRIMESTRE_1') },
+    { value: 2, label: t('fees.terms.TRIMESTRE_2') },
+    { value: 3, label: t('fees.terms.TRIMESTRE_3') },
+  ];
+  const CONDUCT_OPTIONS = [
+    { value: '',          label: '—' },
+    { value: 'TRES_BIEN', label: t('conduct.TRES_BIEN') },
+    { value: 'BIEN',      label: t('conduct.BIEN') },
+    { value: 'PASSABLE',  label: t('conduct.PASSABLE') },
+    { value: 'MEDIOCRE',  label: t('conduct.MEDIOCRE') },
+  ];
 
   const [term, setTerm]     = useState(1);
   const [entries, setEntries] = useState({});    // { studentId: { ...fields } }
