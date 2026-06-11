@@ -7,6 +7,7 @@ import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import Select from '../../../components/common/Select/Select';
+import Textarea from '../../../components/common/Textarea/Textarea';
 import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
 import Loading from '../../../components/common/Loading/Loading';
 import './IncidentsPage.css';
@@ -212,17 +213,14 @@ export default function IncidentsPage() {
               onChange={(e) => setNewStatus(e.target.value)}
             />
 
-            <div className="inc-detail__section">
-              <label htmlFor="inc-admin-notes" className="inc-detail__label">Notes internes (admin uniquement)</label>
-              <textarea
-                id="inc-admin-notes"
-                className="inc-detail__textarea"
-                rows={4}
-                value={adminNotes}
-                onChange={(e) => setAdminNotes(e.target.value)}
-                placeholder="Observations, actions prises, décision finale…"
-              />
-            </div>
+            <Textarea
+              id="inc-admin-notes"
+              label="Notes internes (admin uniquement)"
+              rows={4}
+              value={adminNotes}
+              onChange={(e) => setAdminNotes(e.target.value)}
+              placeholder="Observations, actions prises, décision finale…"
+            />
           </div>
         </OffCanvas>
       )}
