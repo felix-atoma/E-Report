@@ -7,6 +7,9 @@ import { useAuth } from '../../../context/AuthContext';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
+import Input from '../../../components/common/Input/Input';
+import Select from '../../../components/common/Select/Select';
+import Button from '../../../components/common/Button/Button';
 import { fmtSessionDates } from '../../../utils/fmtSessionDates';
 import './MockExamsPage.css';
 
@@ -65,6 +68,8 @@ function CreateForm({ examType, classes, onClose, onCreate }) {
   const CURRENT_YEAR = new Date().getFullYear();
   const DEFAULT_YEAR = `${CURRENT_YEAR - 1}-${CURRENT_YEAR}`;
 
+  const classOptions = classes.map((c) => ({ value: c.id, label: `${c.name} (${c.academicYear})` }));
+
   const [form, setForm] = useState({
     classId: '', academicYear: DEFAULT_YEAR,
     examType, label: '', examDate: '', examEndDate: '',
@@ -72,15 +77,14 @@ function CreateForm({ examType, classes, onClose, onCreate }) {
   const [error, setError] = useState('');
   const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     if (!form.classId || !form.label.trim()) { setError('Classe et libellé sont obligatoires.'); return; }
     setError('');
     onCreate(form);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mex-form">
+    <div className="mex-form">
       {type && (
         <div className="mex-form__type-badge" style={{ background: type.bg, color: type.color, borderColor: type.border }}>
           {type.icon} {type.full}
@@ -89,62 +93,50 @@ function CreateForm({ examType, classes, onClose, onCreate }) {
 
       {error && <div className="mex-alert">{error}</div>}
 
-      <div className="mex-field">
-        <label>Classe *</label>
-        <select value={form.classId} onChange={(e) => set('classId', e.target.value)} required>
-          <option value="">— Choisir une classe —</option>
-          {classes.map((c) => (
-            <option key={c.id} value={c.id}>{c.name} ({c.academicYear})</option>
-          ))}
-        </select>
-      </div>
+      <Select
+        label="Classe"
+        required
+        placeholder="— Choisir une classe —"
+        value={form.classId}
+        options={classOptions}
+        onChange={(e) => set('classId', e.target.value)}
+      />
 
-      <div className="mex-field">
-        <label>Libellé *</label>
-        <input
-          type="text"
-          placeholder={`ex: 1er ${type?.label} — Janvier 2025`}
-          value={form.label}
-          onChange={(e) => set('label', e.target.value)}
+      <Input
+        label="Libellé"
+        required
+        placeholder={`ex: 1er ${type?.label} — Janvier 2025`}
+        value={form.label}
+        onChange={(e) => set('label', e.target.value)}
+      />
+
+      <div className="mex-row">
+        <Input
+          label="Année scolaire"
           required
+          placeholder="2024-2025"
+          value={form.academicYear}
+          onChange={(e) => set('academicYear', e.target.value)}
+        />
+        <Input
+          label="Date de début"
+          type="date"
+          value={form.examDate}
+          onChange={(e) => set('examDate', e.target.value)}
+        />
+        <Input
+          label="Date de fin"
+          type="date"
+          value={form.examEndDate}
+          onChange={(e) => set('examEndDate', e.target.value)}
         />
       </div>
 
-      <div className="mex-row">
-        <div className="mex-field">
-          <label>Année scolaire *</label>
-          <input
-            type="text"
-            placeholder="2024-2025"
-            value={form.academicYear}
-            onChange={(e) => set('academicYear', e.target.value)}
-            required
-          />
-        </div>
-        <div className="mex-field">
-          <label>Date de début</label>
-          <input
-            type="date"
-            value={form.examDate}
-            onChange={(e) => set('examDate', e.target.value)}
-          />
-        </div>
-        <div className="mex-field">
-          <label>Date de fin</label>
-          <input
-            type="date"
-            value={form.examEndDate}
-            min={form.examDate || undefined}
-            onChange={(e) => set('examEndDate', e.target.value)}
-          />
-        </div>
-      </div>
-
       <div className="mex-form__actions">
-        <button type="button" className="mex-btn mex-btn--ghost" onClick={onClose}>Annuler</button>
-        <button type="submit" className="mex-btn mex-btn--primary">Créer la session</button>
+        <Button variant="ghost" onClick={onClose}>Annuler</Button>
+        <Button onClick={handleSubmit}>Créer la session</Button>
       </div>
-    </form>
+    </div>
   );
 }
 

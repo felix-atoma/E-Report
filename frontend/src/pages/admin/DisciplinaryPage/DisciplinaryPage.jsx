@@ -9,6 +9,7 @@ import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
 import ConfirmDialog from '../../../components/common/ConfirmDialog/ConfirmDialog';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
+import Textarea from '../../../components/common/Textarea/Textarea';
 import Select from '../../../components/common/Select/Select';
 import Loading from '../../../components/common/Loading/Loading';
 import EmptyState from '../../../components/common/EmptyState/EmptyState';
@@ -336,20 +337,16 @@ function DisciplinaryPage() {
             />
           </div>
 
-          <div>
-            <label className="disc-form__label" htmlFor="description">
-              Description <span className="disc-form__required">*</span>
-            </label>
-            <textarea
-              id="description"
-              className={`disc-form__textarea ${errors.description ? 'disc-form__textarea--error' : ''}`}
-              value={form.description}
-              rows={3}
-              placeholder="Décrire l'incident…"
-              onChange={(e) => handleChange('description', e.target.value)}
-            />
-            {errors.description && <p className="disc-form__error">{errors.description}</p>}
-          </div>
+          <Textarea
+            id="description"
+            label="Description"
+            required
+            rows={3}
+            placeholder="Décrire l'incident…"
+            value={form.description}
+            error={errors.description}
+            onChange={(e) => handleChange('description', e.target.value)}
+          />
 
           <Input
             id="sanction"
@@ -376,7 +373,7 @@ function DisciplinaryPage() {
             />
           </div>
 
-          <label className="disc-form__check">
+          <label className="form-field__checkbox">
             <input
               type="checkbox"
               checked={form.resolved}

@@ -7,6 +7,9 @@ import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
+import Input from '../../../components/common/Input/Input';
+import Textarea from '../../../components/common/Textarea/Textarea';
+import Select from '../../../components/common/Select/Select';
 import Loading from '../../../components/common/Loading/Loading';
 import EmptyState from '../../../components/common/EmptyState/EmptyState';
 import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
@@ -151,59 +154,66 @@ export default function SchoolDocumentsPage() {
       )}
 
       {/* Add Document OffCanvas */}
-      <OffCanvas open={open} onClose={() => { setOpen(false); setForm(EMPTY_FORM); setFile(null); }} title="Ajouter un document">
+      <OffCanvas
+        open={open}
+        onClose={() => { setOpen(false); setForm(EMPTY_FORM); setFile(null); }}
+        title="Ajouter un document"
+        subtitle="Importez un document officiel et rendez-le accessible à votre équipe."
+        size="md"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => { setOpen(false); setForm(EMPTY_FORM); setFile(null); }} disabled={saving || uploading}>
+              Annuler
+            </Button>
+            <Button onClick={() => save()} disabled={saving || uploading || !form.title}>
+              {uploading ? 'Téléchargement…' : saving ? 'Enregistrement…' : 'Ajouter le document'}
+            </Button>
+          </>
+        }
+      >
         <div className="sdoc-form">
-          <div className="sdoc-form__field">
-            <label>Titre *</label>
-            <input
-              type="text"
-              placeholder="Ex : Circulaire de rentrée 2025"
-              value={form.title}
-              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-            />
-          </div>
-          <div className="sdoc-form__field">
-            <label>Catégorie</label>
-            <select value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}>
-              {CATEGORIES.filter((c) => c.value).map((c) => (
-                <option key={c.value} value={c.value}>{c.label}</option>
-              ))}
-            </select>
-          </div>
-          <div className="sdoc-form__field">
-            <label>Description</label>
-            <textarea
-              rows={3}
-              placeholder="Description optionnelle…"
-              value={form.description}
-              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-            />
-          </div>
-          <div className="sdoc-form__field">
-            <label>Fichier *</label>
+          <Input
+            id="sdoc-title"
+            label="Titre"
+            required
+            placeholder="Ex : Circulaire de rentrée 2025"
+            value={form.title}
+            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+          />
+          <Select
+            id="sdoc-category"
+            label="Catégorie"
+            value={form.category}
+            options={CATEGORIES.filter((c) => c.value)}
+            onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+          />
+          <Textarea
+            id="sdoc-description"
+            label="Description"
+            rows={3}
+            placeholder="Description optionnelle…"
+            value={form.description}
+            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+          />
+          <div className="form-field">
+            <label className="form-field__label">Fichier <span className="form-field__required"> *</span></label>
             <input
               type="file"
+              className="sdoc-file-input"
               accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png"
               onChange={(e) => setFile(e.target.files[0] ?? null)}
             />
             {file && <span className="sdoc-file-name">{file.name}</span>}
           </div>
-          <div className="sdoc-form__check">
+          <label className="form-field__checkbox">
             <input
               id="sdoc-public"
               type="checkbox"
               checked={form.isPublic}
               onChange={(e) => setForm((f) => ({ ...f, isPublic: e.target.checked }))}
             />
-            <label htmlFor="sdoc-public">Visible par les parents et élèves</label>
-          </div>
-          <Button
-            onClick={() => save()}
-            disabled={saving || uploading || !form.title}
-            style={{ width: '100%', justifyContent: 'center', marginTop: '1rem' }}
-          >
-            {uploading ? 'Téléchargement…' : saving ? 'Enregistrement…' : 'Ajouter le document'}
-          </Button>
+            Visible par les parents et élèves
+          </label>
         </div>
       </OffCanvas>
     </AppShell>

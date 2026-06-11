@@ -124,19 +124,17 @@ function UserForm({ form, errors, onChange, isCreate, subjects, classes, roles }
               </svg>
               Désigne cet enseignant comme professeur principal de la classe.
             </div>
-            <select
-              className="user-form__class-select"
+            <Select
+              id="mainClassId"
               value={form.mainClassId}
+              placeholder="— Aucune —"
+              isClearable
+              options={classes.map((c) => ({
+                value: c.id,
+                label: c.name + (c.teacher ? ` (${c.teacher.name ?? c.teacher.email})` : ''),
+              }))}
               onChange={(e) => onChange('mainClassId', e.target.value)}
-            >
-              <option value="">— Aucune —</option>
-              {classes.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                  {c.teacher ? ` (${c.teacher.name ?? c.teacher.email})` : ''}
-                </option>
-              ))}
-            </select>
+            />
           </div>
         </>
       )}

@@ -9,6 +9,7 @@ import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
 import ConfirmDialog from '../../../components/common/ConfirmDialog/ConfirmDialog';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
+import Textarea from '../../../components/common/Textarea/Textarea';
 import Select from '../../../components/common/Select/Select';
 import Loading from '../../../components/common/Loading/Loading';
 import EmptyState from '../../../components/common/EmptyState/EmptyState';
@@ -303,7 +304,7 @@ function CalendarPage() {
             />
           </div>
           <div className="cal-form__checks">
-            <label className="cal-form__check">
+            <label className="form-field__checkbox">
               <input
                 type="checkbox"
                 checked={form.allDay}
@@ -311,7 +312,7 @@ function CalendarPage() {
               />
               Journée entière
             </label>
-            <label className="cal-form__check">
+            <label className="form-field__checkbox">
               <input
                 type="checkbox"
                 checked={form.isPublic}
@@ -324,17 +325,14 @@ function CalendarPage() {
             <label className="cal-form__label">Couleur (optionnel)</label>
             <ColorPicker value={form.color} onChange={(c) => handleChange('color', c)} />
           </div>
-          <div>
-            <label className="cal-form__label" htmlFor="description">Description</label>
-            <textarea
-              id="description"
-              className="cal-form__textarea"
-              value={form.description}
-              rows={3}
-              placeholder="Description optionnelle…"
-              onChange={(e) => handleChange('description', e.target.value)}
-            />
-          </div>
+          <Textarea
+            id="description"
+            label="Description"
+            rows={3}
+            placeholder="Description optionnelle…"
+            value={form.description}
+            onChange={(e) => handleChange('description', e.target.value)}
+          />
         </div>
       </OffCanvas>
 

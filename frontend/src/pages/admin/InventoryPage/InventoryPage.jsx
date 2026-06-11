@@ -7,6 +7,8 @@ import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
 import Input from '../../../components/common/Input/Input';
+import Textarea from '../../../components/common/Textarea/Textarea';
+import Select from '../../../components/common/Select/Select';
 import Button from '../../../components/common/Button/Button';
 import Card from '../../../components/common/Card/Card';
 import './InventoryPage.css';
@@ -352,18 +354,12 @@ export default function InventoryPage() {
               onChange={(e) => set('quantity', e.target.value)}
               error={errors.quantity}
             />
-            <div className="form-field">
-              <label className="form-field__label">État</label>
-              <select
-                className="inv-form__select"
-                value={form.condition}
-                onChange={(e) => set('condition', e.target.value)}
-              >
-                {CONDITIONS.map((c) => (
-                  <option key={c.value} value={c.value}>{c.label}</option>
-                ))}
-              </select>
-            </div>
+            <Select
+              label="État"
+              value={form.condition}
+              options={CONDITIONS}
+              onChange={(e) => set('condition', e.target.value)}
+            />
           </div>
 
           {/* Emplacement */}
@@ -409,19 +405,16 @@ export default function InventoryPage() {
           </div>
 
           {/* Notes */}
-          <div className="form-field">
-            <label className="form-field__label">Notes</label>
-            <textarea
-              className="inv-form__textarea"
-              value={form.notes}
-              onChange={(e) => set('notes', e.target.value)}
-              rows={3}
-              placeholder="Observations, réparations effectuées…"
-            />
-          </div>
+          <Textarea
+            label="Notes"
+            rows={3}
+            placeholder="Observations, réparations effectuées…"
+            value={form.notes}
+            onChange={(e) => set('notes', e.target.value)}
+          />
 
           {/* Actif */}
-          <label className="inv-form__checkbox-label">
+          <label className="form-field__checkbox">
             <input
               type="checkbox"
               checked={form.isActive}

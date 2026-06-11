@@ -8,7 +8,32 @@
   font-weight: var(--font-weight-medium);
   color: var(--color-text);
 }
+.form-field__required {
+  color: var(--color-danger, #ef4444);
+  margin-left: 1px;
+}
+.form-field__hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
 .form-field__error {
   font-size: var(--font-size-xs);
   color: var(--color-danger);
+}
+.form-field__checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  cursor: pointer;
+
+  input[type='checkbox'] {
+    margin-top: 3px;
+    flex-shrink: 0;
+    width: 15px;
+    height: 15px;
+    accent-color: var(--color-primary);
+  }
 }

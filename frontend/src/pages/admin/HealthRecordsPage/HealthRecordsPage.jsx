@@ -6,6 +6,7 @@ import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
 import Input from '../../../components/common/Input/Input';
+import Textarea from '../../../components/common/Textarea/Textarea';
 import Button from '../../../components/common/Button/Button';
 import './HealthRecordsPage.css';
 
@@ -295,7 +296,7 @@ export default function HealthRecordsPage() {
           />
 
           {/* Referred to hospital */}
-          <label className="hr-form__checkbox-label">
+          <label className="form-field__checkbox">
             <input
               type="checkbox"
               checked={form.referredToHospital}
@@ -320,16 +321,13 @@ export default function HealthRecordsPage() {
             onChange={(e) => set('attendedByName', e.target.value)}
           />
 
-          <div className="form-field">
-            <label className="form-field__label">Notes</label>
-            <textarea
-              className="hr-form__textarea"
-              value={form.notes}
-              onChange={(e) => set('notes', e.target.value)}
-              rows={3}
-              placeholder="Observations supplémentaires…"
-            />
-          </div>
+          <Textarea
+            label="Notes"
+            value={form.notes}
+            onChange={(e) => set('notes', e.target.value)}
+            rows={3}
+            placeholder="Observations supplémentaires…"
+          />
         </div>
       </OffCanvas>
     </AppShell>

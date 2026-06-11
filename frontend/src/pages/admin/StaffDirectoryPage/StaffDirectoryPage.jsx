@@ -8,6 +8,7 @@ import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
+import Textarea from '../../../components/common/Textarea/Textarea';
 import Select from '../../../components/common/Select/Select';
 import Loading from '../../../components/common/Loading/Loading';
 import EmptyState from '../../../components/common/EmptyState/EmptyState';
@@ -344,12 +345,11 @@ function StaffDirectoryPage() {
             />
           </div>
 
-          <div className="staff-profile-form__section-title">Notes</div>
-          <textarea
-            className="staff-profile-form__notes"
-            value={form.notes}
-            placeholder="Notes internes…"
+          <Textarea
+            label="Notes"
             rows={4}
+            placeholder="Notes internes…"
+            value={form.notes}
             onChange={(e) => handleChange('notes', e.target.value)}
           />
         </div>

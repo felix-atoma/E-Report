@@ -6,6 +6,7 @@ import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
 import Input from '../../../components/common/Input/Input';
+import Textarea from '../../../components/common/Textarea/Textarea';
 import Button from '../../../components/common/Button/Button';
 import Card from '../../../components/common/Card/Card';
 import './LibraryPage.css';
@@ -327,16 +328,13 @@ export default function LibraryPage() {
             onChange={(e) => set('conditionOut', e.target.value)}
           />
 
-          <div className="form-field">
-            <label className="form-field__label">Notes</label>
-            <textarea
-              className="lib-form__textarea"
-              value={form.notes}
-              onChange={(e) => set('notes', e.target.value)}
-              rows={3}
-              placeholder="Observations…"
-            />
-          </div>
+          <Textarea
+            label="Notes"
+            rows={3}
+            placeholder="Observations…"
+            value={form.notes}
+            onChange={(e) => set('notes', e.target.value)}
+          />
         </div>
       </OffCanvas>
     </AppShell>

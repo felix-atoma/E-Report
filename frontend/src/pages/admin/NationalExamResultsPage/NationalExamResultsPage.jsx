@@ -7,6 +7,8 @@ import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
 import Input from '../../../components/common/Input/Input';
+import Textarea from '../../../components/common/Textarea/Textarea';
+import Select from '../../../components/common/Select/Select';
 import Button from '../../../components/common/Button/Button';
 import Card from '../../../components/common/Card/Card';
 import './NationalExamResultsPage.css';
@@ -277,18 +279,18 @@ export default function NationalExamResultsPage() {
 
           {/* Exam type + result */}
           <div className="ner-form__row2">
-            <div className="form-field">
-              <label className="form-field__label">Type d'examen</label>
-              <select className="ner-form__select" value={form.examType} onChange={(e) => set('examType', e.target.value)}>
-                {EXAM_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-              </select>
-            </div>
-            <div className="form-field">
-              <label className="form-field__label">Résultat</label>
-              <select className="ner-form__select" value={form.result} onChange={(e) => set('result', e.target.value)}>
-                {RESULT_STATUS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-              </select>
-            </div>
+            <Select
+              label="Type d'examen"
+              value={form.examType}
+              options={EXAM_TYPES}
+              onChange={(e) => set('examType', e.target.value)}
+            />
+            <Select
+              label="Résultat"
+              value={form.result}
+              options={RESULT_STATUS}
+              onChange={(e) => set('result', e.target.value)}
+            />
           </div>
 
           {/* Session + academic year */}
@@ -351,16 +353,13 @@ export default function NationalExamResultsPage() {
             onChange={(e) => set('registrationNumber', e.target.value)}
           />
 
-          <div className="form-field">
-            <label className="form-field__label">Notes</label>
-            <textarea
-              className="ner-form__textarea"
-              value={form.notes}
-              onChange={(e) => set('notes', e.target.value)}
-              rows={3}
-              placeholder="Observations…"
-            />
-          </div>
+          <Textarea
+            label="Notes"
+            rows={3}
+            placeholder="Observations…"
+            value={form.notes}
+            onChange={(e) => set('notes', e.target.value)}
+          />
         </div>
       </OffCanvas>
     </AppShell>
