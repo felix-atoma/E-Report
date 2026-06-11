@@ -8,6 +8,7 @@ import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
+import Textarea from '../../../components/common/Textarea/Textarea';
 import Select from '../../../components/common/Select/Select';
 import './ReportIncidentPage.css';
 
@@ -150,18 +151,16 @@ export default function ReportIncidentPage() {
               required
             />
 
-            <div className="ri-form__field">
-              <label htmlFor="ri-description" className="ri-form__label">Description détaillée * <span className="ri-form__hint">(min. 20 caractères)</span></label>
-              <textarea
-                id="ri-description"
-                className="ri-form__textarea"
-                rows={5}
-                value={form.description}
-                onChange={(e) => handleChange('description', e.target.value)}
-                placeholder="Décrivez les faits avec précision : quand, où, comment…"
-                required
-              />
-            </div>
+            <Textarea
+              id="ri-description"
+              label="Description détaillée"
+              hint="Minimum 20 caractères — quand, où, comment…"
+              rows={5}
+              value={form.description}
+              onChange={(e) => handleChange('description', e.target.value)}
+              placeholder="Décrivez les faits avec précision : quand, où, comment…"
+              required
+            />
 
             <label className="ri-form__checkbox">
               <input
@@ -169,7 +168,7 @@ export default function ReportIncidentPage() {
                 checked={form.anonymous}
                 onChange={(e) => handleChange('anonymous', e.target.checked)}
               />
-              <span>Soumettre de manière anonyme <span className="ri-form__hint">(votre nom ne sera pas visible par l'administration)</span></span>
+              <span>Soumettre de manière anonyme <span className="form-field__hint">(votre nom ne sera pas visible par l'administration)</span></span>
             </label>
 
             <div className="ri-form__actions">
