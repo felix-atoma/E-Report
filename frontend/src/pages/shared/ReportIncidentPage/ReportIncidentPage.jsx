@@ -10,6 +10,7 @@ import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
 import Textarea from '../../../components/common/Textarea/Textarea';
 import Select from '../../../components/common/Select/Select';
+import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
 import './ReportIncidentPage.css';
 
 const CATEGORIES = [
@@ -43,7 +44,7 @@ const EMPTY = { category: '', title: '', description: '', accusedName: '', accus
 export default function ReportIncidentPage() {
   const { user } = useAuth();
   const qc = useQueryClient();
-  const [showForm, setShowForm] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(false);
   const [form, setForm] = useState(EMPTY);
 
   const { data: reports = [], isLoading } = useQuery({
@@ -56,18 +57,21 @@ export default function ReportIncidentPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['incidents', 'mine'] });
       toast.success('Signalement envoyé à l\'administration');
-      setShowForm(false);
-      setForm(EMPTY);
+      closePanel();
     },
     onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur lors de l\'envoi'),
   });
+
+  function closePanel() {
+    setPanelOpen(false);
+    setForm(EMPTY);
+  }
 
   function handleChange(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
   }
 
-  function handleSubmit(e) {
-    e.preventDefault();
+  function handleSubmit() {
     if (!form.category || !form.title || !form.description || !form.accusedName || !form.accusedRole) {
       toast.error('Veuillez remplir tous les champs obligatoires');
       return;
@@ -94,95 +98,11 @@ export default function ReportIncidentPage() {
         title="Signaler un incident"
         subtitle="Signalez tout comportement inapproprié à l'administration de manière confidentielle."
         actions={
-          !showForm && (
-            <Button icon="+" onClick={() => setShowForm(true)}>Nouveau signalement</Button>
-          )
+          <Button icon="+" onClick={() => setPanelOpen(true)}>Nouveau signalement</Button>
         }
       />
 
-      {showForm && (
-        <Card className="ri-form-card">
-          <div className="ri-form-card__head">
-            <h3 className="ri-form-card__title">Nouveau signalement</h3>
-            <button className="ri-form-card__close" onClick={() => { setShowForm(false); setForm(EMPTY); }}>✕</button>
-          </div>
-
-          <div className="ri-confidential-banner">
-            <span className="ri-confidential-banner__icon">🔒</span>
-            <span>Ce signalement sera transmis uniquement à l'administration. Votre identité sera protégée.</span>
-          </div>
-
-          <form className="ri-form" onSubmit={handleSubmit}>
-            <Select
-              id="ri-category"
-              label="Catégorie *"
-              required
-              value={form.category}
-              options={CATEGORIES}
-              placeholder="Sélectionner une catégorie"
-              onChange={(e) => handleChange('category', e.target.value)}
-            />
-
-            <div className="ri-form__row">
-              <Input
-                id="ri-accused-name"
-                label="Nom de la personne concernée *"
-                value={form.accusedName}
-                onChange={(e) => handleChange('accusedName', e.target.value)}
-                placeholder="Prénom et nom"
-                required
-              />
-              <Select
-                id="ri-accused-role"
-                label="Rôle *"
-                required
-                value={form.accusedRole}
-                options={ACCUSED_ROLES}
-                onChange={(e) => handleChange('accusedRole', e.target.value)}
-              />
-            </div>
-
-            <Input
-              id="ri-title"
-              label="Objet du signalement *"
-              value={form.title}
-              onChange={(e) => handleChange('title', e.target.value)}
-              placeholder="Résumé en une phrase"
-              required
-            />
-
-            <Textarea
-              id="ri-description"
-              label="Description détaillée"
-              hint="Minimum 20 caractères — quand, où, comment…"
-              rows={5}
-              value={form.description}
-              onChange={(e) => handleChange('description', e.target.value)}
-              placeholder="Décrivez les faits avec précision : quand, où, comment…"
-              required
-            />
-
-            <label className="ri-form__checkbox">
-              <input
-                type="checkbox"
-                checked={form.anonymous}
-                onChange={(e) => handleChange('anonymous', e.target.checked)}
-              />
-              <span>Soumettre de manière anonyme <span className="form-field__hint">(votre nom ne sera pas visible par l'administration)</span></span>
-            </label>
-
-            <div className="ri-form__actions">
-              <Button type="button" variant="ghost" onClick={() => { setShowForm(false); setForm(EMPTY); }}>
-                Annuler
-              </Button>
-              <Button type="submit" disabled={mutation.isPending}>
-                {mutation.isPending ? 'Envoi…' : 'Envoyer le signalement'}
-              </Button>
-            </div>
-          </form>
-        </Card>
-      )}
-
+      {/* List */}
       <div className="ri-list">
         {isLoading ? (
           <p className="ri-empty">Chargement…</p>
@@ -223,6 +143,88 @@ export default function ReportIncidentPage() {
           })
         )}
       </div>
+
+      {/* OffCanvas form */}
+      <OffCanvas
+        open={panelOpen}
+        onClose={closePanel}
+        title="Nouveau signalement"
+        subtitle="Votre signalement sera transmis uniquement à l'administration. Votre identité sera protégée."
+        size="md"
+        footer={
+          <>
+            <Button variant="ghost" onClick={closePanel} disabled={mutation.isPending}>
+              Annuler
+            </Button>
+            <Button onClick={handleSubmit} disabled={mutation.isPending}>
+              {mutation.isPending ? 'Envoi…' : 'Envoyer le signalement'}
+            </Button>
+          </>
+        }
+      >
+        <div className="ri-form">
+          <Select
+            id="ri-category"
+            label="Catégorie"
+            required
+            value={form.category}
+            options={CATEGORIES}
+            placeholder="Sélectionner une catégorie"
+            onChange={(e) => handleChange('category', e.target.value)}
+          />
+
+          <div className="ri-form__row">
+            <Input
+              id="ri-accused-name"
+              label="Nom de la personne concernée"
+              value={form.accusedName}
+              onChange={(e) => handleChange('accusedName', e.target.value)}
+              placeholder="Prénom et nom"
+              required
+            />
+            <Select
+              id="ri-accused-role"
+              label="Rôle"
+              required
+              value={form.accusedRole}
+              options={ACCUSED_ROLES}
+              onChange={(e) => handleChange('accusedRole', e.target.value)}
+            />
+          </div>
+
+          <Input
+            id="ri-title"
+            label="Objet du signalement"
+            value={form.title}
+            onChange={(e) => handleChange('title', e.target.value)}
+            placeholder="Résumé en une phrase"
+            required
+          />
+
+          <Textarea
+            id="ri-description"
+            label="Description détaillée"
+            hint="Minimum 20 caractères — quand, où, comment…"
+            rows={5}
+            value={form.description}
+            onChange={(e) => handleChange('description', e.target.value)}
+            placeholder="Décrivez les faits avec précision : quand, où, comment…"
+            required
+          />
+
+          <label className="ri-form__checkbox">
+            <input
+              type="checkbox"
+              checked={form.anonymous}
+              onChange={(e) => handleChange('anonymous', e.target.checked)}
+            />
+            <span>
+              Soumettre de manière anonyme
+              <span className="form-field__hint"> (votre nom ne sera pas visible par l'administration)</span>
+            </span>
+          </label>
+        </div>
+      </OffCanvas>
     </AppShell>
   );
 }
