@@ -1,15 +1,25 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import api from '../../../services/api';
 import { reportsService } from '../../../services/reportsService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Card from '../../../components/common/Card/Card';
 import Badge from '../../../components/common/Badge/Badge';
-import PdfViewer from '../../../components/common/PdfViewer/PdfViewer';
 import Loading from '../../../components/common/Loading/Loading';
 import EmptyState from '../../../components/common/EmptyState/EmptyState';
 import './MyReportCardsPage.css';
+
+async function downloadPdf(reportId, termNumber) {
+  const res = await api.get(`/reports/${reportId}/pdf-download`, { responseType: 'blob' });
+  const url = URL.createObjectURL(res.data);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `bulletin-T${termNumber}.pdf`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 const MENTION_VARIANT = (avg) => {
   if (avg >= 16) return 'success';
@@ -20,6 +30,7 @@ const MENTION_VARIANT = (avg) => {
 
 function ReportItem({ report }) {
   const [expanded, setExpanded] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const termLabel = report.termName ?? `Trimestre ${report.termNumber}`;
   const avg       = report.overallAverage;
 
@@ -91,15 +102,20 @@ function ReportItem({ report }) {
             >
               🖨️ Imprimer / PDF
             </Link>
-            {report.pdfUrl && (
-              <a
-                href={report.pdfUrl}
-                download
-                className="student-report-item__btn student-report-item__btn--print"
-              >
-                ↓ Télécharger
-              </a>
-            )}
+            <button
+              className="student-report-item__btn student-report-item__btn--print"
+              disabled={downloading}
+              onClick={async () => {
+                setDownloading(true);
+                try {
+                  await downloadPdf(report.id, report.termNumber);
+                } finally {
+                  setDownloading(false);
+                }
+              }}
+            >
+              {downloading ? '⏳ …' : '↓ Télécharger'}
+            </button>
           </div>
 
           {report.teacherComment && (
@@ -107,10 +123,6 @@ function ReportItem({ report }) {
               <span className="student-report-item__comment-label">Appréciation :</span>
               <p>"{report.teacherComment}"</p>
             </div>
-          )}
-
-          {report.pdfUrl && (
-            <PdfViewer url={report.pdfUrl} title={`Bulletin ${termLabel}`} />
           )}
         </div>
       )}

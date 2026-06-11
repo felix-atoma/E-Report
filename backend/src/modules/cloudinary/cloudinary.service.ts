@@ -31,6 +31,7 @@ export class CloudinaryService {
       resource_type: resourceType,
       use_filename: false,
       unique_filename: true,
+      access_mode: 'public',
     });
     return result.secure_url;
   }
@@ -43,7 +44,7 @@ export class CloudinaryService {
   ): Promise<string> {
     return new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
-        { folder, public_id: publicId, resource_type: resourceType, use_filename: false },
+        { folder, public_id: publicId, resource_type: resourceType, use_filename: false, access_mode: 'public' },
         (err: UploadApiErrorResponse | undefined, result: UploadApiResponse | undefined) => {
           if (err || !result) return reject(err ?? new Error('Cloudinary upload failed'));
           resolve(result.secure_url);

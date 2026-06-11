@@ -2,7 +2,18 @@ import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import api from '../../../services/api';
 import { reportsService } from '../../../services/reportsService';
+
+async function downloadReportPdf(reportId) {
+  const res = await api.get(`/reports/${reportId}/pdf-download`, { responseType: 'blob' });
+  const url = URL.createObjectURL(res.data);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `bulletin-${reportId}.pdf`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 import { classesService } from '../../../services/classesService';
 import { useAuth } from '../../../context/AuthContext';
 import AppShell from '../../../components/layout/AppShell/AppShell';
@@ -253,15 +264,9 @@ function ReportCardsPage() {
             </Button>
           )}
           {r.status === 'PUBLISHED' && (
-            r.pdfUrl ? (
-              <a href={r.pdfUrl} download target="_blank" rel="noreferrer">
-                <Button size="sm" variant="ghost">📥 PDF</Button>
-              </a>
-            ) : isAdmin ? (
-              <Button size="sm" variant="ghost" onClick={() => pdfMut.mutate(r.id)} disabled={pdfMut.isPending}>
-                {pdfMut.isPending ? '⏳…' : '🔄 Générer PDF'}
-              </Button>
-            ) : null
+            <Button size="sm" variant="ghost" onClick={() => downloadReportPdf(r.id)}>
+              📥 PDF
+            </Button>
           )}
           {r.status === 'PUBLISHED' && r.academicYear && (
             <Link to={`/reports/annual/${r.studentId}/${r.academicYear}`} target="_blank" rel="noreferrer">
