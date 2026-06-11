@@ -34,14 +34,17 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   // Only retry on actual Supabase idle-connection drops.
   // Pool exhaustion (P2024 / "Timed out fetching a new connection") must NOT
   // trigger reconnect — doing so makes the pool problem worse.
+  //
+  // PrismaClientInitializationError uses .errorCode (not .code), so we check both.
   private isIdleDropError(err: any): boolean {
-    const code: string = err?.code ?? '';
+    const code: string = err?.code ?? err?.errorCode ?? '';
     const msg: string  = err?.message ?? '';
     return (
       code === 'P1017' ||
       code === 'P1001' ||
       code === 'P1002' ||
       msg.includes('Server has closed the connection') ||
+      msg.includes("Can't reach database server") ||
       msg.includes('ECONNRESET')
     );
   }
