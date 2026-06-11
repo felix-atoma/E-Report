@@ -86,8 +86,8 @@ export class FeesService {
       select: { amount: true, academicYear: true, term: true, paymentDate: true },
     });
 
-    const totalDue = studentFees.reduce((sum, sf) => sum + Number(sf.amountDue), 0);
-    const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+    const totalDue = studentFees.reduce((sum, sf) => sum + sf.amountDue.toNumber(), 0);
+    const totalPaid = payments.reduce((sum, p) => sum + p.amount.toNumber(), 0);
     const balance = totalDue - totalPaid;
 
     const hasExemption = studentFees.some((sf) => sf.isExempt);

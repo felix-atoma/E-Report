@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import api from '../../../services/api';
 import { reportsService } from '../../../services/reportsService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
@@ -109,6 +110,8 @@ function ReportItem({ report }) {
                 setDownloading(true);
                 try {
                   await downloadPdf(report.id, report.termNumber);
+                } catch {
+                  toast.error('Échec du téléchargement du PDF');
                 } finally {
                   setDownloading(false);
                 }

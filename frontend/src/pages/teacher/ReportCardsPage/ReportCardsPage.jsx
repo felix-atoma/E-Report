@@ -4,16 +4,6 @@ import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../../../services/api';
 import { reportsService } from '../../../services/reportsService';
-
-async function downloadReportPdf(reportId) {
-  const res = await api.get(`/reports/${reportId}/pdf-download`, { responseType: 'blob' });
-  const url = URL.createObjectURL(res.data);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `bulletin-${reportId}.pdf`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
 import { classesService } from '../../../services/classesService';
 import { useAuth } from '../../../context/AuthContext';
 import AppShell from '../../../components/layout/AppShell/AppShell';
@@ -58,6 +48,16 @@ const STATUS_OPTIONS = [
   { value: 'PUBLISHED', label: 'Publié' },
 ];
 
+async function downloadReportPdf(reportId) {
+  const res = await api.get(`/reports/${reportId}/pdf-download`, { responseType: 'blob' });
+  const url = URL.createObjectURL(res.data);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `bulletin-${reportId}.pdf`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 function ReportCardsPage() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
@@ -70,6 +70,7 @@ function ReportCardsPage() {
   const [zipping, setZipping] = useState(false);
   const [bulkPublishing, setBulkPublishing] = useState(false);
   const [confirmBulkPublish, setConfirmBulkPublish] = useState(false);
+  const [downloadingId, setDownloadingId] = useState(null);
 
   // ── Create bulletin OffCanvas ──────────────────────────────────────────
   const [createOpen, setCreateOpen]   = useState(false);
@@ -264,8 +265,22 @@ function ReportCardsPage() {
             </Button>
           )}
           {r.status === 'PUBLISHED' && (
-            <Button size="sm" variant="ghost" onClick={() => downloadReportPdf(r.id)}>
-              📥 PDF
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={downloadingId === r.id}
+              onClick={async () => {
+                setDownloadingId(r.id);
+                try {
+                  await downloadReportPdf(r.id);
+                } catch {
+                  toast.error('Échec du téléchargement du PDF');
+                } finally {
+                  setDownloadingId(null);
+                }
+              }}
+            >
+              {downloadingId === r.id ? '⏳…' : '📥 PDF'}
             </Button>
           )}
           {r.status === 'PUBLISHED' && r.academicYear && (

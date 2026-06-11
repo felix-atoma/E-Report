@@ -1,4 +1,4 @@
-import { useState, useContext, useMemo } from 'react';
+import { useState, useContext, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -53,6 +53,12 @@ export default function TitulaireEntryPage() {
   const [term, setTerm]     = useState(1);
   const [entries, setEntries] = useState({});    // { studentId: { ...fields } }
   const [initialized, setInitialized] = useState(new Set());
+
+  // Reset form when term changes so previous term's values don't bleed in
+  useEffect(() => {
+    setEntries({});
+    setInitialized(new Set());
+  }, [term]);
 
   const { data: cls, isLoading: clsLoading } = useQuery({
     queryKey: ['class', classId],
