@@ -21,9 +21,14 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
             this.reconnecting = this.$disconnect()
               .catch(() => {})
               .then(() => this.$connect())
+              // Swallow $connect failures — Prisma connects lazily anyway.
+              // Without this catch, reconnecting rejects and the retry never runs.
+              .catch((e: any) => this.logger.warn(`Reconnect $connect error: ${e?.message ?? e}`))
               .finally(() => { this.reconnecting = null; });
           }
           await this.reconnecting;
+          // Give the pooler 600 ms to be ready before retrying the query.
+          await new Promise<void>((r) => setTimeout(r, 600));
           return await next(params);
         }
         throw err;

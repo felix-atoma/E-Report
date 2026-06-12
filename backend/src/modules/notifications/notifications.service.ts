@@ -149,7 +149,13 @@ export class NotificationsService {
     } catch (err: any) {
       // Log and swallow — the next cron tick will retry. Don't let a transient
       // DB error (pool timeout, connection drop) crash the scheduler process.
-      this.logger.error(`[Scheduler] dispatch failed: ${err?.message ?? err}`);
+      const msg = err?.message ?? String(err);
+      const isDbErr = msg.includes("Can't reach database") || msg.includes('pool') || msg.includes('ECONNRESET');
+      if (isDbErr) {
+        this.logger.warn(`[Scheduler] skipped — DB unavailable: ${msg.split('\n')[0]}`);
+      } else {
+        this.logger.error(`[Scheduler] dispatch failed: ${msg}`);
+      }
     } finally {
       this.dispatching = false;
     }
