@@ -6,6 +6,9 @@ import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
 import ConfirmDialog from '../../../components/common/ConfirmDialog/ConfirmDialog';
 import Button from '../../../components/common/Button/Button';
+import Input from '../../../components/common/Input/Input';
+import Textarea from '../../../components/common/Textarea/Textarea';
+import Select from '../../../components/common/Select/Select';
 import { lmsService, uploadLmsFile } from '../../../services/lmsService';
 import { classesService } from '../../../services/classesService';
 import { subjectsService } from '../../../services/subjectsService';
@@ -33,6 +36,12 @@ const MATERIAL_TYPES = [
   { value: 'IMAGE',    label: 'Image' },
 ];
 
+const QUESTION_TYPES = [
+  { value: 'MCQ',          label: 'QCM' },
+  { value: 'TRUE_FALSE',   label: 'Vrai / Faux' },
+  { value: 'SHORT_ANSWER', label: 'Réponse courte' },
+];
+
 function Badge({ variant, children }) {
   return <span className={`lms__badge lms__badge--${variant?.toLowerCase()}`}>{children}</span>;
 }
@@ -42,7 +51,7 @@ function fmt(d) {
   return new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-// ── File picker field ────────────────────────────────────────────────────────
+// ── File picker field ─────────────────────────────────────────────────────────
 
 function FilePickerField({ label = 'Pièce jointe', value, onChange }) {
   const inputRef = useRef(null);
@@ -68,7 +77,7 @@ function FilePickerField({ label = 'Pièce jointe', value, onChange }) {
 
   return (
     <div className="lms__file-field">
-      <span className="lms__label" style={{ marginBottom: '0.35rem', display: 'block' }}>{label}</span>
+      <span className="form-field__label" style={{ marginBottom: '0.35rem', display: 'block' }}>{label}</span>
       {name ? (
         <div className="lms__file-chip">
           <span className="lms__file-chip-name" title={name}>📎 {name}</span>
@@ -88,9 +97,11 @@ function FilePickerField({ label = 'Pièce jointe', value, onChange }) {
 
 function AnnouncementsTab({ classes }) {
   const qc = useQueryClient();
-  const [panel, setPanel]   = useState(null);
+  const [panel, setPanel]     = useState(null);
   const [confirm, setConfirm] = useState(null);
-  const [form, setForm]     = useState({ title: '', body: '', audience: 'ALL', classId: '', isPinned: false });
+  const [form, setForm]       = useState({ title: '', body: '', audience: 'ALL', classId: '', isPinned: false });
+
+  const classOptions = classes.map((c) => ({ value: c.id, label: c.name }));
 
   const { data: items = [] } = useQuery({
     queryKey: ['lms-announcements'],
@@ -135,7 +146,7 @@ function AnnouncementsTab({ classes }) {
                 <div className="lms__card-title">{a.title}</div>
                 <div style={{ display: 'flex', gap: '0.3rem', flexShrink: 0 }}>
                   {a.isPinned && <Badge variant="pinned">📌 Épinglé</Badge>}
-                  <Badge variant={a.audience}>{AUDIENCE_OPTS.find(o => o.value === a.audience)?.label ?? a.audience}</Badge>
+                  <Badge variant={a.audience}>{AUDIENCE_OPTS.find((o) => o.value === a.audience)?.label ?? a.audience}</Badge>
                 </div>
               </div>
               <div className="lms__card-body">{a.body}</div>
@@ -153,44 +164,66 @@ function AnnouncementsTab({ classes }) {
         </div>
       )}
 
-      <OffCanvas open={!!panel} onClose={() => setPanel(null)} title={panel?.id ? 'Modifier l\'annonce' : 'Nouvelle annonce'}
+      <OffCanvas
+        open={!!panel}
+        onClose={() => setPanel(null)}
+        title={panel?.id ? 'Modifier l\'annonce' : 'Nouvelle annonce'}
         size="md"
-        footer={<><Button variant="ghost" onClick={() => setPanel(null)}>Annuler</Button>
-          <Button onClick={() => upsert.mutate(form)} disabled={upsert.isPending}>
-            {upsert.isPending ? 'Enregistrement…' : 'Enregistrer'}
-          </Button></>}
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setPanel(null)}>Annuler</Button>
+            <Button onClick={() => upsert.mutate(form)} disabled={upsert.isPending}>
+              {upsert.isPending ? 'Enregistrement…' : 'Enregistrer'}
+            </Button>
+          </>
+        }
       >
         <div className="lms__form">
-          <label className="lms__label">Titre *
-            <input className="lms__input" value={form.title} onChange={(e) => setForm(f => ({ ...f, title: e.target.value }))} />
-          </label>
-          <label className="lms__label">Message *
-            <textarea className="lms__textarea" rows={5} value={form.body} onChange={(e) => setForm(f => ({ ...f, body: e.target.value }))} />
-          </label>
-          <label className="lms__label">Audience
-            <select className="lms__select" value={form.audience} onChange={(e) => setForm(f => ({ ...f, audience: e.target.value }))}>
-              {AUDIENCE_OPTS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
-          </label>
+          <Input
+            label="Titre"
+            required
+            value={form.title}
+            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+          />
+          <Textarea
+            label="Message"
+            required
+            rows={5}
+            value={form.body}
+            onChange={(e) => setForm((f) => ({ ...f, body: e.target.value }))}
+          />
+          <Select
+            label="Audience"
+            value={form.audience}
+            options={AUDIENCE_OPTS}
+            onChange={(e) => setForm((f) => ({ ...f, audience: e.target.value }))}
+          />
           {form.audience === 'CLASS' && (
-            <label className="lms__label">Classe
-              <select className="lms__select" value={form.classId} onChange={(e) => setForm(f => ({ ...f, classId: e.target.value }))}>
-                <option value="">— Choisir —</option>
-                {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-            </label>
+            <Select
+              label="Classe"
+              value={form.classId}
+              placeholder="— Choisir —"
+              options={classOptions}
+              onChange={(e) => setForm((f) => ({ ...f, classId: e.target.value }))}
+            />
           )}
-          <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.875rem', cursor: 'pointer' }}>
-            <input type="checkbox" checked={form.isPinned} onChange={(e) => setForm(f => ({ ...f, isPinned: e.target.checked }))} />
+          <label className="form-field__checkbox">
+            <input
+              type="checkbox"
+              checked={form.isPinned}
+              onChange={(e) => setForm((f) => ({ ...f, isPinned: e.target.checked }))}
+            />
             Épingler en haut
           </label>
         </div>
       </OffCanvas>
 
-      <ConfirmDialog open={!!confirm} onClose={() => setConfirm(null)}
+      <ConfirmDialog
+        open={!!confirm} onClose={() => setConfirm(null)}
         onConfirm={() => del.mutate(confirm.id)} loading={del.isPending}
         title="Supprimer l'annonce" message={`Supprimer "${confirm?.title}" ?`}
-        confirmLabel="Supprimer" variant="danger" />
+        confirmLabel="Supprimer" variant="danger"
+      />
     </>
   );
 }
@@ -199,11 +232,17 @@ function AnnouncementsTab({ classes }) {
 
 function MaterialsTab({ classes, subjects }) {
   const qc = useQueryClient();
-  const [panel, setPanel]   = useState(false);
-  const [confirm, setConfirm] = useState(null);
-  const [classId, setClassId]   = useState('');
+  const [panel, setPanel]         = useState(false);
+  const [confirm, setConfirm]     = useState(null);
+  const [classId, setClassId]     = useState('');
   const [subjectId, setSubjectId] = useState('');
-  const [form, setForm] = useState({ title: '', description: '', type: 'DOCUMENT', url: '', classId: '', subjectId: '', academicYear: String(new Date().getFullYear()), termNumber: '' });
+  const [form, setForm] = useState({
+    title: '', description: '', type: 'DOCUMENT', url: '',
+    classId: '', subjectId: '', academicYear: String(new Date().getFullYear()), termNumber: '',
+  });
+
+  const classOptions   = classes.map((c) => ({ value: c.id, label: c.name }));
+  const subjectOptions = subjects.map((s) => ({ value: s.id, label: s.nameFr }));
 
   const { data: items = [] } = useQuery({
     queryKey: ['lms-materials', classId, subjectId],
@@ -226,11 +265,11 @@ function MaterialsTab({ classes, subjects }) {
       <div className="lms__filters">
         <select className="lms__filter-select" value={classId} onChange={(e) => setClassId(e.target.value)}>
           <option value="">Toutes les classes</option>
-          {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
         <select className="lms__filter-select" value={subjectId} onChange={(e) => setSubjectId(e.target.value)}>
           <option value="">Toutes les matières</option>
-          {subjects.map(s => <option key={s.id} value={s.id}>{s.nameFr}</option>)}
+          {subjects.map((s) => <option key={s.id} value={s.id}>{s.nameFr}</option>)}
         </select>
         <Button icon="+" onClick={() => setPanel(true)}>Ajouter une ressource</Button>
       </div>
@@ -260,51 +299,88 @@ function MaterialsTab({ classes, subjects }) {
         </div>
       )}
 
-      <OffCanvas open={panel} onClose={() => setPanel(false)} title="Ajouter une ressource" size="md"
-        footer={<><Button variant="ghost" onClick={() => setPanel(false)}>Annuler</Button>
-          <Button onClick={() => create.mutate({ ...form, termNumber: form.termNumber ? Number(form.termNumber) : undefined })} disabled={create.isPending}>
-            {create.isPending ? '…' : 'Enregistrer'}
-          </Button></>}
+      <OffCanvas
+        open={panel}
+        onClose={() => setPanel(false)}
+        title="Ajouter une ressource"
+        size="md"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setPanel(false)}>Annuler</Button>
+            <Button
+              onClick={() => create.mutate({ ...form, termNumber: form.termNumber ? Number(form.termNumber) : undefined })}
+              disabled={create.isPending}
+            >
+              {create.isPending ? '…' : 'Enregistrer'}
+            </Button>
+          </>
+        }
       >
         <div className="lms__form">
-          <label className="lms__label">Titre *<input className="lms__input" value={form.title} onChange={(e) => setForm(f => ({ ...f, title: e.target.value }))} /></label>
-          <label className="lms__label">Description<textarea className="lms__textarea" rows={2} value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} /></label>
+          <Input
+            label="Titre"
+            required
+            value={form.title}
+            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+          />
+          <Textarea
+            label="Description"
+            rows={2}
+            value={form.description}
+            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+          />
           <div className="lms__form-row">
-            <label className="lms__label">Type
-              <select className="lms__select" value={form.type} onChange={(e) => setForm(f => ({ ...f, type: e.target.value }))}>
-                {MATERIAL_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-              </select>
-            </label>
-            <label className="lms__label">Année scolaire<input className="lms__input" value={form.academicYear} onChange={(e) => setForm(f => ({ ...f, academicYear: e.target.value }))} /></label>
+            <Select
+              label="Type"
+              value={form.type}
+              options={MATERIAL_TYPES}
+              onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))}
+            />
+            <Input
+              label="Année scolaire"
+              value={form.academicYear}
+              onChange={(e) => setForm((f) => ({ ...f, academicYear: e.target.value }))}
+            />
           </div>
-          <label className="lms__label">URL / Lien<input className="lms__input" placeholder="https://…" value={form.url} onChange={(e) => setForm(f => ({ ...f, url: e.target.value }))} /></label>
+          <Input
+            label="URL / Lien"
+            placeholder="https://…"
+            value={form.url}
+            onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))}
+          />
           <div className="lms__url-or">ou</div>
           <FilePickerField
             label="Téléverser un fichier"
             value={form.url?.startsWith('http://localhost') || form.url?.includes('/uploads/lms') ? form.url : ''}
-            onChange={(url) => setForm(f => ({ ...f, url }))}
+            onChange={(url) => setForm((f) => ({ ...f, url }))}
           />
           <div className="lms__form-row">
-            <label className="lms__label">Classe *
-              <select className="lms__select" value={form.classId} onChange={(e) => setForm(f => ({ ...f, classId: e.target.value }))}>
-                <option value="">—</option>
-                {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-            </label>
-            <label className="lms__label">Matière *
-              <select className="lms__select" value={form.subjectId} onChange={(e) => setForm(f => ({ ...f, subjectId: e.target.value }))}>
-                <option value="">—</option>
-                {subjects.map(s => <option key={s.id} value={s.id}>{s.nameFr}</option>)}
-              </select>
-            </label>
+            <Select
+              label="Classe"
+              required
+              value={form.classId}
+              placeholder="—"
+              options={classOptions}
+              onChange={(e) => setForm((f) => ({ ...f, classId: e.target.value }))}
+            />
+            <Select
+              label="Matière"
+              required
+              value={form.subjectId}
+              placeholder="—"
+              options={subjectOptions}
+              onChange={(e) => setForm((f) => ({ ...f, subjectId: e.target.value }))}
+            />
           </div>
         </div>
       </OffCanvas>
 
-      <ConfirmDialog open={!!confirm} onClose={() => setConfirm(null)}
+      <ConfirmDialog
+        open={!!confirm} onClose={() => setConfirm(null)}
         onConfirm={() => del.mutate(confirm.id)} loading={del.isPending}
         title="Supprimer la ressource" message={`Supprimer "${confirm?.title}" ?`}
-        confirmLabel="Supprimer" variant="danger" />
+        confirmLabel="Supprimer" variant="danger"
+      />
     </>
   );
 }
@@ -313,14 +389,22 @@ function MaterialsTab({ classes, subjects }) {
 
 function AssignmentsTab({ classes, subjects }) {
   const qc = useQueryClient();
-  const [panel, setPanel]     = useState(null);
-  const [confirm, setConfirm] = useState(null);
-  const [subPanel, setSubPanel] = useState(null); // submissions panel
-  const [classId, setClassId] = useState('');
-  const [grades, setGrades]   = useState({}); // submissionId -> score
+  const [panel, setPanel]       = useState(null);
+  const [confirm, setConfirm]   = useState(null);
+  const [subPanel, setSubPanel] = useState(null);
+  const [classId, setClassId]   = useState('');
+  const [grades, setGrades]     = useState({});
   const [feedback, setFeedback] = useState({});
-  const EMPTY = { title: '', instructions: '', dueDate: '', maxScore: 20, classId: '', subjectId: '', academicYear: String(new Date().getFullYear()), termNumber: '', attachmentUrl: '', attachmentName: '' };
-  const [form, setForm]       = useState(EMPTY);
+
+  const EMPTY = {
+    title: '', instructions: '', dueDate: '', maxScore: 20,
+    classId: '', subjectId: '', academicYear: String(new Date().getFullYear()),
+    termNumber: '', attachmentUrl: '', attachmentName: '',
+  };
+  const [form, setForm] = useState(EMPTY);
+
+  const classOptions   = classes.map((c) => ({ value: c.id, label: c.name }));
+  const subjectOptions = subjects.map((s) => ({ value: s.id, label: s.nameFr }));
 
   const { data: items = [] } = useQuery({
     queryKey: ['lms-assignments', classId],
@@ -334,7 +418,9 @@ function AssignmentsTab({ classes, subjects }) {
   });
 
   const upsert = useMutation({
-    mutationFn: (data) => panel?.id ? lmsService.assignments.update(panel.id, data) : lmsService.assignments.create(data),
+    mutationFn: (data) => panel?.id
+      ? lmsService.assignments.update(panel.id, data)
+      : lmsService.assignments.create(data),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['lms-assignments'] }); toast.success('Sauvegardé'); setPanel(null); },
     onError: (e) => toast.error(e?.response?.data?.message ?? 'Erreur'),
   });
@@ -350,7 +436,8 @@ function AssignmentsTab({ classes, subjects }) {
   });
 
   const gradeMut = useMutation({
-    mutationFn: ({ assignmentId, subId, score, fb }) => lmsService.assignments.grade(assignmentId, subId, { score: Number(score), feedback: fb }),
+    mutationFn: ({ assignmentId, subId, score, fb }) =>
+      lmsService.assignments.grade(assignmentId, subId, { score: Number(score), feedback: fb }),
     onSuccess: () => { refetchSubs(); toast.success('Note enregistrée'); },
   });
 
@@ -359,7 +446,7 @@ function AssignmentsTab({ classes, subjects }) {
       <div className="lms__filters">
         <select className="lms__filter-select" value={classId} onChange={(e) => setClassId(e.target.value)}>
           <option value="">Toutes les classes</option>
-          {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
         <Button icon="+" onClick={() => { setForm(EMPTY); setPanel({}); }}>Nouveau devoir</Button>
       </div>
@@ -379,7 +466,11 @@ function AssignmentsTab({ classes, subjects }) {
                 {a.dueDate && <span>· à rendre le {fmt(a.dueDate)}</span>}
                 <span>· {a._count?.submissions ?? 0} soumission{a._count?.submissions !== 1 ? 's' : ''}</span>
               </div>
-              {a.instructions && <div className="lms__card-body" style={{ WebkitLineClamp: 2, overflow: 'hidden', display: '-webkit-box', WebkitBoxOrient: 'vertical' }}>{a.instructions}</div>}
+              {a.instructions && (
+                <div className="lms__card-body" style={{ WebkitLineClamp: 2, overflow: 'hidden', display: '-webkit-box', WebkitBoxOrient: 'vertical' }}>
+                  {a.instructions}
+                </div>
+              )}
               {a.attachmentUrl && (
                 <a href={a.attachmentUrl} target="_blank" rel="noreferrer" className="lms__attach-link">
                   📎 {decodeURIComponent(a.attachmentUrl.split('/').pop())}
@@ -387,7 +478,7 @@ function AssignmentsTab({ classes, subjects }) {
               )}
               <div className="lms__card-actions">
                 <Button size="sm" variant="ghost" onClick={() => {
-                  setForm({ title: a.title, instructions: a.instructions ?? '', dueDate: a.dueDate ? a.dueDate.slice(0,10) : '', maxScore: a.maxScore, classId: a.classId, subjectId: a.subjectId, academicYear: a.academicYear, termNumber: a.termNumber ?? '', attachmentUrl: a.attachmentUrl ?? '', attachmentName: '' });
+                  setForm({ title: a.title, instructions: a.instructions ?? '', dueDate: a.dueDate ? a.dueDate.slice(0, 10) : '', maxScore: a.maxScore, classId: a.classId, subjectId: a.subjectId, academicYear: a.academicYear, termNumber: a.termNumber ?? '', attachmentUrl: a.attachmentUrl ?? '', attachmentName: '' });
                   setPanel(a);
                 }}>Modifier</Button>
                 <Button size="sm" variant="ghost" onClick={() => publishMut.mutate(a.id)}>
@@ -401,51 +492,96 @@ function AssignmentsTab({ classes, subjects }) {
         </div>
       )}
 
-      {/* Create/edit panel */}
-      <OffCanvas open={!!panel} onClose={() => setPanel(null)} title={panel?.id ? 'Modifier le devoir' : 'Nouveau devoir'} size="md"
-        footer={<><Button variant="ghost" onClick={() => setPanel(null)}>Annuler</Button>
-          <Button onClick={() => upsert.mutate({ ...form, termNumber: form.termNumber ? Number(form.termNumber) : undefined, maxScore: Number(form.maxScore), attachmentUrl: form.attachmentUrl || undefined })} disabled={upsert.isPending}>
-            {upsert.isPending ? '…' : 'Enregistrer'}
-          </Button></>}
+      <OffCanvas
+        open={!!panel}
+        onClose={() => setPanel(null)}
+        title={panel?.id ? 'Modifier le devoir' : 'Nouveau devoir'}
+        size="md"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setPanel(null)}>Annuler</Button>
+            <Button
+              onClick={() => upsert.mutate({ ...form, termNumber: form.termNumber ? Number(form.termNumber) : undefined, maxScore: Number(form.maxScore), attachmentUrl: form.attachmentUrl || undefined })}
+              disabled={upsert.isPending}
+            >
+              {upsert.isPending ? '…' : 'Enregistrer'}
+            </Button>
+          </>
+        }
       >
         <div className="lms__form">
-          <label className="lms__label">Titre *<input className="lms__input" value={form.title} onChange={(e) => setForm(f => ({ ...f, title: e.target.value }))} /></label>
-          <label className="lms__label">Consignes<textarea className="lms__textarea" rows={4} value={form.instructions} onChange={(e) => setForm(f => ({ ...f, instructions: e.target.value }))} /></label>
+          <Input
+            label="Titre"
+            required
+            value={form.title}
+            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+          />
+          <Textarea
+            label="Consignes"
+            rows={4}
+            value={form.instructions}
+            onChange={(e) => setForm((f) => ({ ...f, instructions: e.target.value }))}
+          />
           <FilePickerField
             label="Document joint (optionnel)"
             value={form.attachmentUrl}
-            onChange={(url, name) => setForm(f => ({ ...f, attachmentUrl: url, attachmentName: name }))}
+            onChange={(url, name) => setForm((f) => ({ ...f, attachmentUrl: url, attachmentName: name }))}
           />
           <div className="lms__form-row">
-            <label className="lms__label">Date limite<input type="date" className="lms__input" value={form.dueDate} onChange={(e) => setForm(f => ({ ...f, dueDate: e.target.value }))} /></label>
-            <label className="lms__label">Note max<input type="number" className="lms__input" value={form.maxScore} onChange={(e) => setForm(f => ({ ...f, maxScore: e.target.value }))} /></label>
+            <Input
+              label="Date limite"
+              type="date"
+              value={form.dueDate}
+              onChange={(e) => setForm((f) => ({ ...f, dueDate: e.target.value }))}
+            />
+            <Input
+              label="Note max"
+              type="number"
+              value={form.maxScore}
+              onChange={(e) => setForm((f) => ({ ...f, maxScore: e.target.value }))}
+            />
           </div>
           <div className="lms__form-row">
-            <label className="lms__label">Classe *
-              <select className="lms__select" value={form.classId} onChange={(e) => setForm(f => ({ ...f, classId: e.target.value }))}>
-                <option value="">—</option>
-                {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-            </label>
-            <label className="lms__label">Matière *
-              <select className="lms__select" value={form.subjectId} onChange={(e) => setForm(f => ({ ...f, subjectId: e.target.value }))}>
-                <option value="">—</option>
-                {subjects.map(s => <option key={s.id} value={s.id}>{s.nameFr}</option>)}
-              </select>
-            </label>
+            <Select
+              label="Classe"
+              required
+              value={form.classId}
+              placeholder="—"
+              options={classOptions}
+              onChange={(e) => setForm((f) => ({ ...f, classId: e.target.value }))}
+            />
+            <Select
+              label="Matière"
+              required
+              value={form.subjectId}
+              placeholder="—"
+              options={subjectOptions}
+              onChange={(e) => setForm((f) => ({ ...f, subjectId: e.target.value }))}
+            />
           </div>
-          <label className="lms__label">Année scolaire<input className="lms__input" value={form.academicYear} onChange={(e) => setForm(f => ({ ...f, academicYear: e.target.value }))} /></label>
+          <Input
+            label="Année scolaire"
+            value={form.academicYear}
+            onChange={(e) => setForm((f) => ({ ...f, academicYear: e.target.value }))}
+          />
         </div>
       </OffCanvas>
 
       {/* Submissions panel */}
-      <OffCanvas open={!!subPanel} onClose={() => setSubPanel(null)} title={`Soumissions — ${subPanel?.title ?? ''}`} size="lg">
+      <OffCanvas
+        open={!!subPanel}
+        onClose={() => setSubPanel(null)}
+        title={`Soumissions — ${subPanel?.title ?? ''}`}
+        size="lg"
+      >
         <div style={{ overflowX: 'auto' }}>
           {submissions.length === 0 ? (
             <div className="lms__empty">Aucune soumission encore.</div>
           ) : (
             <table className="lms__sub-table">
-              <thead><tr><th>Élève</th><th>Statut</th><th>Soumis le</th><th>Travail</th><th>Note /{subPanel?.maxScore ?? 20}</th><th></th></tr></thead>
+              <thead>
+                <tr><th>Élève</th><th>Statut</th><th>Soumis le</th><th>Travail</th><th>Note /{subPanel?.maxScore ?? 20}</th><th /></tr>
+              </thead>
               <tbody>
                 {submissions.map((s) => (
                   <tr key={s.id}>
@@ -458,9 +594,11 @@ function AssignmentsTab({ classes, subjects }) {
                     </td>
                     <td>
                       <div className="lms__sub-score">
-                        <input type="number" min={0} max={subPanel?.maxScore ?? 20} step={0.5}
+                        <input
+                          type="number" min={0} max={subPanel?.maxScore ?? 20} step={0.5}
                           value={grades[s.id] ?? s.score ?? ''}
-                          onChange={(e) => setGrades(g => ({ ...g, [s.id]: e.target.value }))} />
+                          onChange={(e) => setGrades((g) => ({ ...g, [s.id]: e.target.value }))}
+                        />
                         <span style={{ color: '#6b7280', fontSize: '0.78rem' }}>/{subPanel?.maxScore ?? 20}</span>
                       </div>
                     </td>
@@ -477,10 +615,12 @@ function AssignmentsTab({ classes, subjects }) {
         </div>
       </OffCanvas>
 
-      <ConfirmDialog open={!!confirm} onClose={() => setConfirm(null)}
+      <ConfirmDialog
+        open={!!confirm} onClose={() => setConfirm(null)}
         onConfirm={() => del.mutate(confirm.id)} loading={del.isPending}
         title="Supprimer le devoir" message={`Supprimer "${confirm?.title}" ?`}
-        confirmLabel="Supprimer" variant="danger" />
+        confirmLabel="Supprimer" variant="danger"
+      />
     </>
   );
 }
@@ -489,14 +629,25 @@ function AssignmentsTab({ classes, subjects }) {
 
 function QuizzesTab({ classes, subjects }) {
   const qc = useQueryClient();
-  const [panel, setPanel]       = useState(null);
-  const [confirm, setConfirm]   = useState(null);
+  const [panel, setPanel]             = useState(null);
+  const [confirm, setConfirm]         = useState(null);
   const [builderQuiz, setBuilderQuiz] = useState(null);
   const [resultsQuiz, setResultsQuiz] = useState(null);
-  const [classId, setClassId]   = useState('');
-  const EMPTY = { title: '', description: '', durationMinutes: '', maxAttempts: 1, classId: '', subjectId: '', academicYear: String(new Date().getFullYear()), termNumber: '', showResults: true, attachmentUrl: '' };
-  const [form, setForm]         = useState(EMPTY);
-  const [qForm, setQForm]       = useState({ text: '', type: 'MCQ', points: 1, options: [{ text: '', isCorrect: false }, { text: '', isCorrect: false }] });
+  const [classId, setClassId]         = useState('');
+
+  const EMPTY = {
+    title: '', description: '', durationMinutes: '', maxAttempts: 1,
+    classId: '', subjectId: '', academicYear: String(new Date().getFullYear()),
+    termNumber: '', showResults: true, attachmentUrl: '',
+  };
+  const [form, setForm] = useState(EMPTY);
+  const [qForm, setQForm] = useState({
+    text: '', type: 'MCQ', points: 1,
+    options: [{ text: '', isCorrect: false }, { text: '', isCorrect: false }],
+  });
+
+  const classOptions   = classes.map((c) => ({ value: c.id, label: c.name }));
+  const subjectOptions = subjects.map((s) => ({ value: s.id, label: s.nameFr }));
 
   const { data: items = [] } = useQuery({
     queryKey: ['lms-quizzes', classId],
@@ -516,7 +667,9 @@ function QuizzesTab({ classes, subjects }) {
   });
 
   const upsert = useMutation({
-    mutationFn: (data) => panel?.id ? lmsService.quizzes.update(panel.id, data) : lmsService.quizzes.create(data),
+    mutationFn: (data) => panel?.id
+      ? lmsService.quizzes.update(panel.id, data)
+      : lmsService.quizzes.create(data),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['lms-quizzes'] }); toast.success('Sauvegardé'); setPanel(null); },
     onError: (e) => toast.error(e?.response?.data?.message ?? 'Erreur'),
   });
@@ -533,7 +686,11 @@ function QuizzesTab({ classes, subjects }) {
 
   const addQ = useMutation({
     mutationFn: (data) => lmsService.quizzes.addQuestion(builderQuiz.id, data),
-    onSuccess: () => { refetchBuilder(); toast.success('Question ajoutée'); setQForm({ text: '', type: 'MCQ', points: 1, options: [{ text: '', isCorrect: false }, { text: '', isCorrect: false }] }); },
+    onSuccess: () => {
+      refetchBuilder();
+      toast.success('Question ajoutée');
+      setQForm({ text: '', type: 'MCQ', points: 1, options: [{ text: '', isCorrect: false }, { text: '', isCorrect: false }] });
+    },
   });
 
   const delQ = useMutation({
@@ -541,7 +698,7 @@ function QuizzesTab({ classes, subjects }) {
     onSuccess: () => refetchBuilder(),
   });
 
-  const questions = builderData?.questions ?? [];
+  const questions      = builderData?.questions ?? [];
   const hasShortAnswer = qForm.type === 'SHORT_ANSWER';
 
   return (
@@ -549,7 +706,7 @@ function QuizzesTab({ classes, subjects }) {
       <div className="lms__filters">
         <select className="lms__filter-select" value={classId} onChange={(e) => setClassId(e.target.value)}>
           <option value="">Toutes les classes</option>
-          {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
         <Button icon="+" onClick={() => { setForm(EMPTY); setPanel({}); }}>Nouveau quiz</Button>
       </div>
@@ -592,49 +749,99 @@ function QuizzesTab({ classes, subjects }) {
         </div>
       )}
 
-      {/* Create/edit quiz */}
-      <OffCanvas open={!!panel} onClose={() => setPanel(null)} title={panel?.id ? 'Modifier le quiz' : 'Nouveau quiz'} size="md"
-        footer={<><Button variant="ghost" onClick={() => setPanel(null)}>Annuler</Button>
-          <Button onClick={() => upsert.mutate({ ...form, durationMinutes: form.durationMinutes ? Number(form.durationMinutes) : undefined, maxAttempts: Number(form.maxAttempts), termNumber: form.termNumber ? Number(form.termNumber) : undefined, attachmentUrl: form.attachmentUrl || undefined })} disabled={upsert.isPending}>
-            {upsert.isPending ? '…' : 'Enregistrer'}
-          </Button></>}
+      {/* Create / edit quiz */}
+      <OffCanvas
+        open={!!panel}
+        onClose={() => setPanel(null)}
+        title={panel?.id ? 'Modifier le quiz' : 'Nouveau quiz'}
+        size="md"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setPanel(null)}>Annuler</Button>
+            <Button
+              onClick={() => upsert.mutate({ ...form, durationMinutes: form.durationMinutes ? Number(form.durationMinutes) : undefined, maxAttempts: Number(form.maxAttempts), termNumber: form.termNumber ? Number(form.termNumber) : undefined, attachmentUrl: form.attachmentUrl || undefined })}
+              disabled={upsert.isPending}
+            >
+              {upsert.isPending ? '…' : 'Enregistrer'}
+            </Button>
+          </>
+        }
       >
         <div className="lms__form">
-          <label className="lms__label">Titre *<input className="lms__input" value={form.title} onChange={(e) => setForm(f => ({ ...f, title: e.target.value }))} /></label>
-          <label className="lms__label">Description<textarea className="lms__textarea" rows={2} value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} /></label>
+          <Input
+            label="Titre"
+            required
+            value={form.title}
+            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+          />
+          <Textarea
+            label="Description"
+            rows={2}
+            value={form.description}
+            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+          />
           <FilePickerField
             label="Document joint (optionnel)"
             value={form.attachmentUrl}
-            onChange={(url) => setForm(f => ({ ...f, attachmentUrl: url }))}
+            onChange={(url) => setForm((f) => ({ ...f, attachmentUrl: url }))}
           />
           <div className="lms__form-row">
-            <label className="lms__label">Durée (min)<input type="number" className="lms__input" placeholder="Illimitée" value={form.durationMinutes} onChange={(e) => setForm(f => ({ ...f, durationMinutes: e.target.value }))} /></label>
-            <label className="lms__label">Nb tentatives<input type="number" min={1} className="lms__input" value={form.maxAttempts} onChange={(e) => setForm(f => ({ ...f, maxAttempts: e.target.value }))} /></label>
+            <Input
+              label="Durée (min)"
+              type="number"
+              placeholder="Illimitée"
+              value={form.durationMinutes}
+              onChange={(e) => setForm((f) => ({ ...f, durationMinutes: e.target.value }))}
+            />
+            <Input
+              label="Nb tentatives"
+              type="number"
+              min="1"
+              value={form.maxAttempts}
+              onChange={(e) => setForm((f) => ({ ...f, maxAttempts: e.target.value }))}
+            />
           </div>
           <div className="lms__form-row">
-            <label className="lms__label">Classe *
-              <select className="lms__select" value={form.classId} onChange={(e) => setForm(f => ({ ...f, classId: e.target.value }))}>
-                <option value="">—</option>
-                {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-            </label>
-            <label className="lms__label">Matière *
-              <select className="lms__select" value={form.subjectId} onChange={(e) => setForm(f => ({ ...f, subjectId: e.target.value }))}>
-                <option value="">—</option>
-                {subjects.map(s => <option key={s.id} value={s.id}>{s.nameFr}</option>)}
-              </select>
-            </label>
+            <Select
+              label="Classe"
+              required
+              value={form.classId}
+              placeholder="—"
+              options={classOptions}
+              onChange={(e) => setForm((f) => ({ ...f, classId: e.target.value }))}
+            />
+            <Select
+              label="Matière"
+              required
+              value={form.subjectId}
+              placeholder="—"
+              options={subjectOptions}
+              onChange={(e) => setForm((f) => ({ ...f, subjectId: e.target.value }))}
+            />
           </div>
-          <label className="lms__label">Année scolaire<input className="lms__input" value={form.academicYear} onChange={(e) => setForm(f => ({ ...f, academicYear: e.target.value }))} /></label>
-          <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.875rem', cursor: 'pointer' }}>
-            <input type="checkbox" checked={form.showResults} onChange={(e) => setForm(f => ({ ...f, showResults: e.target.checked }))} />
+          <Input
+            label="Année scolaire"
+            value={form.academicYear}
+            onChange={(e) => setForm((f) => ({ ...f, academicYear: e.target.value }))}
+          />
+          <label className="form-field__checkbox">
+            <input
+              type="checkbox"
+              checked={form.showResults}
+              onChange={(e) => setForm((f) => ({ ...f, showResults: e.target.checked }))}
+            />
             Afficher le score à l'élève après soumission
           </label>
         </div>
       </OffCanvas>
 
       {/* Question builder */}
-      <OffCanvas open={!!builderQuiz} onClose={() => setBuilderQuiz(null)} title={`Questions — ${builderQuiz?.title ?? ''}`} size="lg">
+      <OffCanvas
+        open={!!builderQuiz}
+        onClose={() => setBuilderQuiz(null)}
+        title={`Questions — ${builderQuiz?.title ?? ''}`}
+        size="lg"
+      >
         <div className="lms__qbuilder">
           {questions.length === 0 && <div className="lms__empty">Aucune question. Ajoutez-en ci-dessous.</div>}
           {questions.map((q, i) => (
@@ -655,35 +862,74 @@ function QuizzesTab({ classes, subjects }) {
           <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: '1rem' }}>
             <strong style={{ fontSize: '0.875rem', display: 'block', marginBottom: '0.75rem' }}>Nouvelle question</strong>
             <div className="lms__form" style={{ gap: '0.75rem' }}>
-              <label className="lms__label">Question *<textarea className="lms__textarea" rows={2} value={qForm.text} onChange={(e) => setQForm(f => ({ ...f, text: e.target.value }))} /></label>
+              <Textarea
+                label="Question"
+                required
+                rows={2}
+                value={qForm.text}
+                onChange={(e) => setQForm((f) => ({ ...f, text: e.target.value }))}
+              />
               <div className="lms__form-row">
-                <label className="lms__label">Type
-                  <select className="lms__select" value={qForm.type} onChange={(e) => setQForm(f => ({ ...f, type: e.target.value, options: e.target.value === 'TRUE_FALSE' ? [{ text: 'Vrai', isCorrect: false }, { text: 'Faux', isCorrect: false }] : f.options }))}>
-                    <option value="MCQ">QCM</option>
-                    <option value="TRUE_FALSE">Vrai / Faux</option>
-                    <option value="SHORT_ANSWER">Réponse courte</option>
-                  </select>
-                </label>
-                <label className="lms__label">Points<input type="number" min={0.5} step={0.5} className="lms__input" value={qForm.points} onChange={(e) => setQForm(f => ({ ...f, points: Number(e.target.value) }))} /></label>
+                <Select
+                  label="Type"
+                  value={qForm.type}
+                  options={QUESTION_TYPES}
+                  onChange={(e) => setQForm((f) => ({
+                    ...f,
+                    type: e.target.value,
+                    options: e.target.value === 'TRUE_FALSE'
+                      ? [{ text: 'Vrai', isCorrect: false }, { text: 'Faux', isCorrect: false }]
+                      : f.options,
+                  }))}
+                />
+                <Input
+                  label="Points"
+                  type="number"
+                  min="0.5"
+                  step="0.5"
+                  value={qForm.points}
+                  onChange={(e) => setQForm((f) => ({ ...f, points: Number(e.target.value) }))}
+                />
               </div>
               {!hasShortAnswer && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                   <strong style={{ fontSize: '0.8rem', color: '#374151' }}>Réponses (cocher la/les correcte(s))</strong>
                   {qForm.options.map((o, i) => (
                     <div key={i} className="lms__option-row">
-                      <input type="checkbox" className="lms__correct-check" checked={o.isCorrect} onChange={(e) => setQForm(f => { const opts = [...f.options]; opts[i] = { ...opts[i], isCorrect: e.target.checked }; return { ...f, options: opts }; })} />
-                      <input type="text" placeholder={`Option ${i + 1}`} value={o.text} onChange={(e) => setQForm(f => { const opts = [...f.options]; opts[i] = { ...opts[i], text: e.target.value }; return { ...f, options: opts }; })} />
+                      <input
+                        type="checkbox"
+                        className="lms__correct-check"
+                        checked={o.isCorrect}
+                        onChange={(e) => setQForm((f) => {
+                          const opts = [...f.options];
+                          opts[i] = { ...opts[i], isCorrect: e.target.checked };
+                          return { ...f, options: opts };
+                        })}
+                      />
+                      <input
+                        type="text"
+                        placeholder={`Option ${i + 1}`}
+                        value={o.text}
+                        onChange={(e) => setQForm((f) => {
+                          const opts = [...f.options];
+                          opts[i] = { ...opts[i], text: e.target.value };
+                          return { ...f, options: opts };
+                        })}
+                      />
                       {qForm.type === 'MCQ' && qForm.options.length > 2 && (
-                        <Button size="sm" variant="ghost" onClick={() => setQForm(f => ({ ...f, options: f.options.filter((_, j) => j !== i) }))}>✕</Button>
+                        <Button size="sm" variant="ghost" onClick={() => setQForm((f) => ({ ...f, options: f.options.filter((_, j) => j !== i) }))}>✕</Button>
                       )}
                     </div>
                   ))}
                   {qForm.type === 'MCQ' && qForm.options.length < 6 && (
-                    <Button size="sm" variant="ghost" onClick={() => setQForm(f => ({ ...f, options: [...f.options, { text: '', isCorrect: false }] }))}>+ Option</Button>
+                    <Button size="sm" variant="ghost" onClick={() => setQForm((f) => ({ ...f, options: [...f.options, { text: '', isCorrect: false }] }))}>+ Option</Button>
                   )}
                 </div>
               )}
-              <Button onClick={() => addQ.mutate({ text: qForm.text, type: qForm.type, points: qForm.points, options: hasShortAnswer ? undefined : qForm.options })} disabled={addQ.isPending || !qForm.text}>
+              <Button
+                onClick={() => addQ.mutate({ text: qForm.text, type: qForm.type, points: qForm.points, options: hasShortAnswer ? undefined : qForm.options })}
+                disabled={addQ.isPending || !qForm.text}
+              >
                 {addQ.isPending ? '…' : 'Ajouter la question'}
               </Button>
             </div>
@@ -692,12 +938,19 @@ function QuizzesTab({ classes, subjects }) {
       </OffCanvas>
 
       {/* Results panel */}
-      <OffCanvas open={!!resultsQuiz} onClose={() => setResultsQuiz(null)} title={`Résultats — ${resultsQuiz?.title ?? ''}`} size="lg">
+      <OffCanvas
+        open={!!resultsQuiz}
+        onClose={() => setResultsQuiz(null)}
+        title={`Résultats — ${resultsQuiz?.title ?? ''}`}
+        size="lg"
+      >
         {results.length === 0 ? (
           <div className="lms__empty">Aucune tentative encore.</div>
         ) : (
           <table className="lms__sub-table">
-            <thead><tr><th>Élève</th><th>Score</th><th>/ Max</th><th>%</th><th>Soumis le</th></tr></thead>
+            <thead>
+              <tr><th>Élève</th><th>Score</th><th>/ Max</th><th>%</th><th>Soumis le</th></tr>
+            </thead>
             <tbody>
               {results.map((a) => (
                 <tr key={a.id}>
@@ -713,10 +966,12 @@ function QuizzesTab({ classes, subjects }) {
         )}
       </OffCanvas>
 
-      <ConfirmDialog open={!!confirm} onClose={() => setConfirm(null)}
+      <ConfirmDialog
+        open={!!confirm} onClose={() => setConfirm(null)}
         onConfirm={() => del.mutate(confirm.id)} loading={del.isPending}
         title="Supprimer le quiz" message={`Supprimer "${confirm?.title}" ?`}
-        confirmLabel="Supprimer" variant="danger" />
+        confirmLabel="Supprimer" variant="danger"
+      />
     </>
   );
 }
