@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { bulletinsService } from '../../../services/bulletinsService';
@@ -17,49 +18,46 @@ import './BulletinsPage.css';
 
 const EMPTY_FORM = { title: '', content: '', classId: '', audience: 'CLASS' };
 
-const AUDIENCE_OPTIONS = [
-  { value: 'CLASS',       label: 'Classe spécifique' },
-  { value: 'ALL_PARENTS', label: 'Tous les parents' },
-  { value: 'ALL',         label: 'Tout l\'établissement' },
-];
+const AUDIENCE_KEYS = ['CLASS', 'ALL_PARENTS', 'ALL'];
 
-function validate(form) {
+function validate(form, t) {
   const errors = {};
-  if (!form.title.trim())   errors.title   = 'Titre requis';
-  if (!form.content.trim()) errors.content = 'Contenu requis';
+  if (!form.title.trim())   errors.title   = t('bulletins.errors.titleRequired');
+  if (!form.content.trim()) errors.content = t('bulletins.errors.contentRequired');
   return errors;
 }
 
-function BulletinForm({ form, errors, onChange, classes }) {
+function BulletinForm({ form, errors, onChange, classes, t }) {
   const classOptions = classes.map((c) => ({ value: c.id, label: c.name }));
+  const audienceOptions = AUDIENCE_KEYS.map((k) => ({ value: k, label: t(`bulletins.audienceOptions.${k}`) }));
 
   return (
     <div className="bulletin-form">
       <Input
-        id="bulletin-title" label="Titre" required
+        id="bulletin-title" label={t('bulletins.titleField')} required
         value={form.title} error={errors.title}
-        placeholder="ex: Réunion des parents d'élèves"
+        placeholder={t('bulletins.titlePlaceholder')}
         onChange={(e) => onChange('title', e.target.value)}
       />
       <Select
-        id="audience" label="Destinataires"
+        id="audience" label={t('bulletins.audience')}
         value={form.audience}
-        options={AUDIENCE_OPTIONS}
+        options={audienceOptions}
         onChange={(e) => onChange('audience', e.target.value)}
       />
       {form.audience === 'CLASS' && (
         <Select
-          id="classId" label="Classe"
+          id="classId" label={t('classes.title')}
           value={form.classId}
-          placeholder="Sélectionner une classe"
+          placeholder={t('fees.selectClass')}
           options={classOptions}
           onChange={(e) => onChange('classId', e.target.value)}
         />
       )}
       <Textarea
-        id="bulletin-content" label="Contenu" required rows={6}
+        id="bulletin-content" label={t('bulletins.content')} required rows={6}
         value={form.content} error={errors.content}
-        placeholder="Message à diffuser…"
+        placeholder={t('bulletins.contentPlaceholder')}
         onChange={(e) => onChange('content', e.target.value)}
       />
     </div>
@@ -67,6 +65,7 @@ function BulletinForm({ form, errors, onChange, classes }) {
 }
 
 function BulletinsPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const [modal, setModal]       = useState(null);
   const [selected, setSelected] = useState(null);
@@ -86,26 +85,26 @@ function BulletinsPage() {
 
   const createMutation = useMutation({
     mutationFn: (data) => bulletinsService.create(data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['bulletins'] }); toast.success('Annonce créée'); closeModal(); },
-    onError:   (err) => toast.error(err?.response?.data?.message ?? 'Erreur'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['bulletins'] }); toast.success(t('bulletins.toast.created')); closeModal(); },
+    onError:   (err) => toast.error(err?.response?.data?.message ?? t('common.errorGeneric')),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => bulletinsService.update(id, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['bulletins'] }); toast.success('Annonce mise à jour'); closeModal(); },
-    onError:   (err) => toast.error(err?.response?.data?.message ?? 'Erreur'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['bulletins'] }); toast.success(t('bulletins.toast.updated')); closeModal(); },
+    onError:   (err) => toast.error(err?.response?.data?.message ?? t('common.errorGeneric')),
   });
 
   const publishMutation = useMutation({
     mutationFn: (id) => bulletinsService.publish(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['bulletins'] }); toast.success('Annonce publiée'); setConfirm(null); },
-    onError:   (err) => toast.error(err?.response?.data?.message ?? 'Erreur de publication'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['bulletins'] }); toast.success(t('bulletins.toast.published')); setConfirm(null); },
+    onError:   (err) => toast.error(err?.response?.data?.message ?? t('common.errorGeneric')),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => bulletinsService.remove(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['bulletins'] }); toast.success('Annonce supprimée'); setConfirm(null); },
-    onError:   (err) => toast.error(err?.response?.data?.message ?? 'Erreur de suppression'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['bulletins'] }); toast.success(t('bulletins.toast.deleted')); setConfirm(null); },
+    onError:   (err) => toast.error(err?.response?.data?.message ?? t('common.errorGeneric')),
   });
 
   function openCreate() {
@@ -139,7 +138,7 @@ function BulletinsPage() {
   }
 
   function handleSubmit() {
-    const errs = validate(form);
+    const errs = validate(form, t);
     if (Object.keys(errs).length) { setErrors(errs); return; }
     const payload = {
       title:    form.title,
@@ -156,7 +155,7 @@ function BulletinsPage() {
   const columns = [
     {
       key: 'title',
-      label: 'Titre',
+      label: t('bulletins.columns.title'),
       render: (b) => (
         <div>
           <div className="bulletins-table__title">{b.title}</div>
@@ -168,25 +167,24 @@ function BulletinsPage() {
     },
     {
       key: 'audience',
-      label: 'Destinataires',
+      label: t('bulletins.columns.audience'),
       render: (b) => {
-        if (b.audience === 'CLASS') return b.class?.name ?? 'Classe';
-        if (b.audience === 'ALL_PARENTS') return 'Tous les parents';
-        return 'Tout l\'établissement';
+        if (b.audience === 'CLASS') return b.class?.name ?? t('classes.title');
+        return t(`bulletins.audienceOptions.${b.audience}`, b.audience);
       },
     },
     {
       key: 'status',
-      label: 'Statut',
+      label: t('bulletins.columns.status'),
       render: (b) => (
         <Badge variant={b.publishedAt ? 'success' : 'default'}>
-          {b.publishedAt ? 'Publié' : 'Brouillon'}
+          {b.publishedAt ? t('bulletins.status.PUBLISHED') : t('bulletins.status.DRAFT')}
         </Badge>
       ),
     },
     {
       key: 'createdAt',
-      label: 'Créé le',
+      label: t('bulletins.columns.publishedAt'),
       render: (b) =>
         b.createdAt
           ? new Date(b.createdAt).toLocaleDateString('fr-FR')
@@ -200,14 +198,14 @@ function BulletinsPage() {
         <div className="bulletins-table__actions">
           {!b.publishedAt && (
             <Button size="sm" variant="ghost" onClick={() => setConfirm({ type: 'publish', item: b })}>
-              Publier
+              {t('action.publish')}
             </Button>
           )}
           {!b.publishedAt && (
-            <Button size="sm" variant="ghost" onClick={() => openEdit(b)}>Modifier</Button>
+            <Button size="sm" variant="ghost" onClick={() => openEdit(b)}>{t('action.edit')}</Button>
           )}
           <Button size="sm" variant="ghost" onClick={() => setConfirm({ type: 'delete', item: b })}>
-            Supprimer
+            {t('action.delete')}
           </Button>
         </div>
       ),
@@ -215,36 +213,35 @@ function BulletinsPage() {
   ];
 
   return (
-    <AppShell title="Annonces">
+    <AppShell title={t('bulletins.title')}>
       <PageHeader
-        title="Annonces"
-        subtitle={`${bulletins.length} annonce${bulletins.length !== 1 ? 's' : ''}`}
-        actions={<Button icon="+" onClick={openCreate}>Nouvelle annonce</Button>}
+        title={t('bulletins.title')}
+        subtitle={t('bulletins.subtitle', { count: bulletins.length })}
+        actions={<Button icon="+" onClick={openCreate}>{t('bulletins.newBulletin')}</Button>}
       />
 
       <Table
         columns={columns}
         rows={bulletins}
         loading={isLoading}
-        emptyMessage="Aucune annonce créée"
+        emptyMessage={t('bulletins.noAnnouncements')}
       />
 
       <OffCanvas
         open={!!modal}
         onClose={closeModal}
-        title={modal === 'create' ? 'Nouvelle annonce' : 'Modifier l\'annonce'}
-        subtitle={modal === 'create' ? 'Rédigez et diffusez un message à votre public cible' : 'Mettez à jour le contenu de cette annonce'}
+        title={modal === 'create' ? t('bulletins.newBulletin') : t('bulletins.editBulletin')}
         size="md"
         footer={
           <>
-            <Button variant="ghost" onClick={closeModal} disabled={isSaving}>Annuler</Button>
+            <Button variant="ghost" onClick={closeModal} disabled={isSaving}>{t('action.cancel')}</Button>
             <Button onClick={handleSubmit} disabled={isSaving}>
-              {isSaving ? 'Enregistrement…' : 'Enregistrer'}
+              {isSaving ? t('action.saving') : t('action.save')}
             </Button>
           </>
         }
       >
-        <BulletinForm form={form} errors={errors} onChange={handleChange} classes={classes} />
+        <BulletinForm form={form} errors={errors} onChange={handleChange} classes={classes} t={t} />
       </OffCanvas>
 
       <ConfirmDialog
@@ -256,13 +253,13 @@ function BulletinsPage() {
             : deleteMutation.mutate(confirm.item.id)
         }
         loading={publishMutation.isPending || deleteMutation.isPending}
-        title={confirm?.type === 'publish' ? 'Publier l\'annonce' : 'Supprimer l\'annonce'}
+        title={confirm?.type === 'publish' ? t('action.publish') : t('bulletins.deleteBulletin')}
         message={
           confirm?.type === 'publish'
-            ? `Publier "${confirm?.item.title}" ? Elle sera visible par les destinataires.`
-            : `Supprimer "${confirm?.item.title}" ? Cette action est irréversible.`
+            ? `${t('action.publish')} "${confirm?.item.title}" ?`
+            : `${t('common.confirmDelete')} "${confirm?.item.title}" ? ${t('common.deleteWarning')}`
         }
-        confirmLabel={confirm?.type === 'publish' ? 'Publier' : 'Supprimer'}
+        confirmLabel={confirm?.type === 'publish' ? t('action.publish') : t('action.delete')}
         variant={confirm?.type === 'publish' ? 'primary' : 'danger'}
       />
     </AppShell>

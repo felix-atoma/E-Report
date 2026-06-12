@@ -1,4 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { studentsService } from '../../../services/studentsService';
 import { reportsService } from '../../../services/reportsService';
@@ -12,11 +13,10 @@ import Loading from '../../../components/common/Loading/Loading';
 import './StudentProfilePage.css';
 
 const STATUS_VARIANT = { PAID: 'success', PARTIAL: 'warning', UNPAID: 'danger', EXEMPT: 'info' };
-const STATUS_LABEL   = { PAID: 'Payé', PARTIAL: 'Partiel', UNPAID: 'Impayé', EXEMPT: 'Exempté' };
 const REPORT_VARIANT = { DRAFT: 'default', REVIEW: 'warning', PUBLISHED: 'success' };
-const REPORT_LABEL   = { DRAFT: 'Brouillon', REVIEW: 'En révision', PUBLISHED: 'Publié' };
 
 function StudentProfilePage() {
+  const { t } = useTranslation();
   const { id } = useParams();
 
   const { data: student, isLoading } = useQuery({
@@ -37,7 +37,7 @@ function StudentProfilePage() {
     enabled: !!id,
   });
 
-  if (isLoading) return <AppShell title="Profil élève"><Loading /></AppShell>;
+  if (isLoading) return <AppShell title={t('studentProfile.title')}><Loading /></AppShell>;
 
   const fullName = student
     ? (student.user?.name ?? student.admissionNumber ?? '—')
@@ -55,16 +55,16 @@ function StudentProfilePage() {
     : null;
 
   return (
-    <AppShell title="Profil élève">
+    <AppShell title={t('studentProfile.title')}>
       <PageHeader
         title={fullName}
-        subtitle={`Matricule : ${student?.admissionNumber ?? '—'}`}
+        subtitle={`${t('studentProfile.matricule')} ${student?.admissionNumber ?? '—'}`}
         actions={
           <Link
             to={`/teacher/reports/new?studentId=${id}`}
             className="sp-btn-primary"
           >
-            + Nouveau bulletin
+            {t('studentProfile.newReport')}
           </Link>
         }
       />
@@ -77,32 +77,32 @@ function StudentProfilePage() {
             <h2 className="sp-identity__name">{fullName}</h2>
             <p className="sp-identity__sub">{student?.admissionNumber ?? '—'}</p>
             <Badge variant={STATUS_VARIANT[payStatus] ?? 'default'}>
-              Frais : {STATUS_LABEL[payStatus] ?? payStatus}
+              {t('studentProfile.fee.' + payStatus)}
             </Badge>
           </div>
         </Card>
 
         {/* Details */}
         <Card className="sp-section">
-          <h3 className="sp-section__title">Informations</h3>
+          <h3 className="sp-section__title">{t('studentProfile.sections.info')}</h3>
           <dl className="sp-details">
             <div className="sp-details__row">
-              <dt>Date de naissance</dt><dd>{dob}</dd>
+              <dt>{t('studentProfile.identity.dob')}</dt><dd>{dob}</dd>
             </div>
             <div className="sp-details__row">
-              <dt>Genre</dt>
-              <dd>{student?.gender === 'M' ? 'Masculin' : student?.gender === 'F' ? 'Féminin' : '—'}</dd>
+              <dt>{t('studentProfile.identity.gender')}</dt>
+              <dd>{student?.gender === 'M' ? t('studentProfile.sex.M') : student?.gender === 'F' ? t('studentProfile.sex.F') : '—'}</dd>
             </div>
             <div className="sp-details__row">
-              <dt>Classe actuelle</dt>
+              <dt>{t('studentProfile.identity.currentClass')}</dt>
               <dd>{student?.currentClass?.name ?? '—'}</dd>
             </div>
             <div className="sp-details__row">
-              <dt>Parent / Tuteur</dt>
+              <dt>{t('studentProfile.identity.parent')}</dt>
               <dd>{student?.parent?.name ?? '—'}</dd>
             </div>
             <div className="sp-details__row">
-              <dt>Contact parent</dt>
+              <dt>{t('studentProfile.identity.contact')}</dt>
               <dd>{student?.parent?.whatsappNumber ?? student?.parent?.email ?? '—'}</dd>
             </div>
           </dl>
@@ -111,22 +111,22 @@ function StudentProfilePage() {
         {/* Fee summary */}
         {feeSummary && (
           <Card className="sp-section">
-            <h3 className="sp-section__title">Situation financière</h3>
+            <h3 className="sp-section__title">{t('studentProfile.sections.finance')}</h3>
             <dl className="sp-details">
               <div className="sp-details__row">
-                <dt>Statut</dt>
-                <dd><Badge variant={STATUS_VARIANT[payStatus]}>{STATUS_LABEL[payStatus]}</Badge></dd>
+                <dt>{t('studentProfile.finance.status')}</dt>
+                <dd><Badge variant={STATUS_VARIANT[payStatus]}>{t(`studentProfile.fee.${payStatus}`)}</Badge></dd>
               </div>
               <div className="sp-details__row">
-                <dt>Total dû</dt>
+                <dt>{t('studentProfile.finance.totalDue')}</dt>
                 <dd>{(feeSummary.totalDue ?? 0).toLocaleString('fr-FR')} XOF</dd>
               </div>
               <div className="sp-details__row">
-                <dt>Total payé</dt>
+                <dt>{t('studentProfile.finance.totalPaid')}</dt>
                 <dd>{(feeSummary.totalPaid ?? 0).toLocaleString('fr-FR')} XOF</dd>
               </div>
               <div className="sp-details__row">
-                <dt>Solde restant</dt>
+                <dt>{t('studentProfile.finance.balance')}</dt>
                 <dd className={feeSummary.balance > 0 ? 'sp-text--danger' : ''}>
                   {(feeSummary.balance ?? 0).toLocaleString('fr-FR')} XOF
                 </dd>
@@ -137,22 +137,22 @@ function StudentProfilePage() {
 
         {/* Performance summary */}
         <Card className="sp-section">
-          <h3 className="sp-section__title">Résultats</h3>
+          <h3 className="sp-section__title">{t('studentProfile.sections.results')}</h3>
           {published.length === 0 ? (
-            <p className="sp-empty">Aucun bulletin publié.</p>
+            <p className="sp-empty">{t('studentProfile.academic.noPublished')}</p>
           ) : (
             <>
               <div className="sp-avg-hero">
                 <span className="sp-avg-hero__value">{avgAll}</span>
-                <span className="sp-avg-hero__label">moyenne générale / 20</span>
+                <span className="sp-avg-hero__label">{t('studentProfile.academic.overallLabel')}</span>
               </div>
               <table className="sp-table">
                 <thead>
                   <tr>
-                    <th>Période</th>
-                    <th>Année</th>
-                    <th>Moyenne</th>
-                    <th>Statut</th>
+                    <th>{t('studentProfile.academic.columns.term')}</th>
+                    <th>{t('studentProfile.academic.columns.year')}</th>
+                    <th>{t('studentProfile.academic.columns.avg')}</th>
+                    <th>{t('studentProfile.academic.columns.status')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -163,7 +163,7 @@ function StudentProfilePage() {
                       <td><strong>{r.average != null ? Number(r.average).toFixed(2) : '—'}</strong></td>
                       <td>
                         <Badge variant={REPORT_VARIANT[r.status] ?? 'default'}>
-                          {REPORT_LABEL[r.status] ?? r.status}
+                          {t(`studentProfile.academic.reportStatus.${r.status}`, r.status)}
                         </Badge>
                       </td>
                     </tr>
@@ -176,17 +176,17 @@ function StudentProfilePage() {
 
         {/* All reports */}
         <Card className="sp-section sp-section--full">
-          <h3 className="sp-section__title">Tous les bulletins</h3>
+          <h3 className="sp-section__title">{t('studentProfile.sections.allReports')}</h3>
           {reports.length === 0 ? (
-            <p className="sp-empty">Aucun bulletin créé pour cet élève.</p>
+            <p className="sp-empty">{t('studentProfile.academic.noReports')}</p>
           ) : (
             <table className="sp-table">
               <thead>
                 <tr>
-                  <th>Période</th>
-                  <th>Année</th>
-                  <th>Moyenne</th>
-                  <th>Statut</th>
+                  <th>{t('studentProfile.academic.columns.term')}</th>
+                  <th>{t('studentProfile.academic.columns.year')}</th>
+                  <th>{t('studentProfile.academic.columns.avg')}</th>
+                  <th>{t('studentProfile.academic.columns.status')}</th>
                   <th></th>
                 </tr>
               </thead>
@@ -198,12 +198,12 @@ function StudentProfilePage() {
                     <td>{r.average != null ? Number(r.average).toFixed(2) : '—'}</td>
                     <td>
                       <Badge variant={REPORT_VARIANT[r.status] ?? 'default'}>
-                        {REPORT_LABEL[r.status] ?? r.status}
+                        {t(`studentProfile.academic.reportStatus.${r.status}`, r.status)}
                       </Badge>
                     </td>
                     <td>
                       <Link to={`/teacher/reports/${r.id}`} className="sp-link">
-                        Ouvrir →
+                        {t('studentProfile.open')}
                       </Link>
                     </td>
                   </tr>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import api from '../../../services/api';
 import { studentsService } from '../../../services/studentsService';
 import { reportsService } from '../../../services/reportsService';
@@ -32,6 +33,7 @@ async function downloadPdf(reportId, studentName, termNumber) {
 }
 
 function ReportCard({ report, feeSummary }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const [downloading, setDownloading] = useState(false);
 
@@ -62,9 +64,9 @@ function ReportCard({ report, feeSummary }) {
             </Badge>
           )}
           {showPaywall ? (
-            <Badge variant="warning">Frais requis</Badge>
+            <Badge variant="warning">{t('reportCards.feesRequired')}</Badge>
           ) : (
-            <Badge variant="success">Disponible</Badge>
+            <Badge variant="success">{t('reportCards.available')}</Badge>
           )}
           <span className="report-card-item__chevron">{expanded ? '▲' : '▼'}</span>
         </div>
@@ -81,7 +83,6 @@ function ReportCard({ report, feeSummary }) {
             />
           ) : (
             <>
-              {/* PDF actions */}
               <div className="report-card-item__pdf-actions">
                 <Link
                   to={`/reports/${report.id}/print`}
@@ -89,7 +90,7 @@ function ReportCard({ report, feeSummary }) {
                   rel="noreferrer"
                   className="report-card-item__btn report-card-item__btn--download"
                 >
-                  🖨️ Imprimer / PDF
+                  {t('childReports.printBtn')}
                 </Link>
                 <button
                   className="report-card-item__btn report-card-item__btn--print"
@@ -107,19 +108,18 @@ function ReportCard({ report, feeSummary }) {
                     }
                   }}
                 >
-                  {downloading ? '⏳ …' : '↓ Télécharger'}
+                  {downloading ? t('childReports.downloading') : t('childReports.downloadBtn')}
                 </button>
               </div>
 
-              {/* Grade summary */}
               {report.grades && report.grades.length > 0 && (
                 <div className="report-card-item__grades">
                   <table className="report-grades-table">
                     <thead>
                       <tr>
-                        <th>Matière</th>
-                        <th>Coef.</th>
-                        <th>Note</th>
+                        <th>{t('gradeTable.subject')}</th>
+                        <th>{t('gradeTable.coef')}</th>
+                        <th>{t('gradeTable.score')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -136,7 +136,7 @@ function ReportCard({ report, feeSummary }) {
                     {avg != null && (
                       <tfoot>
                         <tr className="report-grades-table__avg-row">
-                          <td colSpan={2}>Moyenne générale</td>
+                          <td colSpan={2}>{t('childReports.overallAvg')}</td>
                           <td className="report-grades-table__score">
                             <strong>{String(avg).replace('.', ',')} / 20</strong>
                           </td>
@@ -147,14 +147,12 @@ function ReportCard({ report, feeSummary }) {
                 </div>
               )}
 
-              {/* Teacher comment */}
               {report.teacherComment && (
                 <div className="report-card-item__comment">
-                  <span className="report-card-item__comment-label">Appréciation :</span>
+                  <span className="report-card-item__comment-label">{t('childReports.appreciation')}</span>
                   <p className="report-card-item__comment-text">{report.teacherComment}</p>
                 </div>
               )}
-
             </>
           )}
         </div>
@@ -164,6 +162,7 @@ function ReportCard({ report, feeSummary }) {
 }
 
 function ChildReportCardsPage() {
+  const { t } = useTranslation();
   const { id } = useParams();
 
   const { data: child, isLoading: l1 } = useQuery({
@@ -184,19 +183,18 @@ function ChildReportCardsPage() {
     enabled: !!id,
   });
 
-  if (l1 || l2) return <AppShell title="Bulletins"><Loading /></AppShell>;
+  if (l1 || l2) return <AppShell title={t('bulletins.title')}><Loading /></AppShell>;
 
   const published = reports.filter((r) => r.status === 'PUBLISHED');
   const childName = child ? (child.user?.name ?? child.admissionNumber ?? '—') : '—';
 
   return (
-    <AppShell title={`Bulletins — ${childName}`}>
+    <AppShell title={`${t('bulletins.title')} — ${childName}`}>
       <PageHeader
         title={childName}
         subtitle={child?.class?.name ?? ''}
       />
 
-      {/* Fee status banner */}
       {feeSummary && feeSummary.status !== 'PAID' && feeSummary.status !== 'EXEMPT' && (
         <div className={`fee-banner fee-banner--${feeSummary.status === 'PARTIAL' ? 'partial' : 'unpaid'}`}>
           <span className="fee-banner__icon">
@@ -204,11 +202,11 @@ function ChildReportCardsPage() {
           </span>
           <div>
             <div className="fee-banner__title">
-              {feeSummary.status === 'PARTIAL' ? 'Paiement partiel' : 'Frais impayés'}
+              {feeSummary.status === 'PARTIAL' ? t('childReports.feesPartial') : t('childReports.feesUnpaid')}
             </div>
             <div className="fee-banner__desc">
-              Solde restant : <strong>{(feeSummary.balance ?? 0).toLocaleString('fr-FR')} FCFA</strong>.
-              Les bulletins sont disponibles en application mais le PDF sera envoyé après règlement.
+              {t('childReports.feeBalance')} <strong>{(feeSummary.balance ?? 0).toLocaleString('fr-FR')} FCFA</strong>.{' '}
+              {t('childReports.feePdfDesc')}
             </div>
           </div>
         </div>
@@ -217,8 +215,8 @@ function ChildReportCardsPage() {
       {published.length === 0 ? (
         <EmptyState
           icon="📋"
-          message="Aucun bulletin disponible"
-          description="Les bulletins apparaîtront ici une fois publiés par l'enseignant."
+          message={t('childReports.noReports')}
+          description={t('childReports.noReportsDesc')}
         />
       ) : (
         <div className="child-reports__list">

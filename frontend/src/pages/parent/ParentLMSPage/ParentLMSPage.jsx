@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import { lmsService } from '../../../services/lmsService';
@@ -20,7 +21,10 @@ const css = {
   empty: { textAlign: 'center', color: '#9ca3af', fontSize: '0.9rem', padding: '2.5rem' },
 };
 
+const PARENT_TAB_KEYS = ['announcements', 'assignments'];
+
 export default function ParentLMSPage() {
+  const { t } = useTranslation();
   const [tab, setTab] = useState('announcements');
 
   const { data: announcements = [] } = useQuery({
@@ -34,25 +38,27 @@ export default function ParentLMSPage() {
   });
 
   return (
-    <AppShell title="Espace d'apprentissage">
-      <PageHeader title="Espace d'apprentissage" subtitle="Suivez les activités scolaires de votre enfant" />
+    <AppShell title={t('lms.pageTitle')}>
+      <PageHeader title={t('lms.pageTitle')} subtitle={t('lms.parentSubtitle')} />
 
       <div style={css.tabs}>
-        {[{ key: 'announcements', label: 'Annonces' }, { key: 'assignments', label: 'Devoirs' }].map((t) => (
-          <button key={t.key} style={css.tab(tab === t.key)} onClick={() => setTab(t.key)}>{t.label}</button>
+        {PARENT_TAB_KEYS.map((key) => (
+          <button key={key} style={css.tab(tab === key)} onClick={() => setTab(key)}>
+            {t(`lms.tabs.${key}`)}
+          </button>
         ))}
       </div>
 
       {tab === 'announcements' && (
         announcements.length === 0 ? (
-          <div style={css.empty}>Aucune annonce pour le moment.</div>
+          <div style={css.empty}>{t('lms.empty.announcements')}</div>
         ) : (
           <div style={css.grid}>
             {announcements.map((a) => (
               <div key={a.id} style={css.card}>
                 <div style={css.title}>{a.isPinned ? '📌 ' : ''}{a.title}</div>
                 <div style={css.body}>{a.body}</div>
-                <div style={css.meta}>Par {a.author?.name}{a.publishedAt ? ` · ${fmt(a.publishedAt)}` : ''}</div>
+                <div style={css.meta}>{t('lms.by')} {a.author?.name}{a.publishedAt ? ` · ${fmt(a.publishedAt)}` : ''}</div>
               </div>
             ))}
           </div>
@@ -61,7 +67,7 @@ export default function ParentLMSPage() {
 
       {tab === 'assignments' && (
         assignments.length === 0 ? (
-          <div style={css.empty}>Aucun devoir publié pour le moment.</div>
+          <div style={css.empty}>{t('lms.empty.assignments')}</div>
         ) : (
           <div style={css.grid}>
             {assignments.map((a) => (
@@ -69,7 +75,7 @@ export default function ParentLMSPage() {
                 <div style={css.title}>{a.title}</div>
                 <div style={css.meta}>
                   {a.class?.name} · {a.subject?.nameFr}
-                  {a.dueDate ? ` · à rendre le ${fmt(a.dueDate)}` : ''}
+                  {a.dueDate ? ` · ${t('lms.assignments.dueDate')} ${fmt(a.dueDate)}` : ''}
                 </div>
                 {a.instructions && <div style={css.body}>{a.instructions}</div>}
               </div>

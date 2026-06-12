@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../../../services/api';
 import logoIcon from '../../../assets/images/novaBulletin-icon.svg';
 import '../asl-auth.css';
 
 function OtpLoginPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', otp: '' });
   const [error, setError] = useState('');
@@ -16,19 +18,18 @@ function OtpLoginPage() {
     e.preventDefault();
     setError('');
     if (!form.email.trim() || !form.otp.trim()) {
-      setError('Veuillez renseigner votre email et le code OTP.');
+      setError(t('otp.error.emptyFields'));
       return;
     }
     setLoading(true);
     try {
       const res = await api.post('/auth/login-otp', { email: form.email.trim(), otp: form.otp.trim() });
       const { setupToken, name } = res.data;
-      // Store setup token temporarily for the set-password step
       sessionStorage.setItem('setupToken', setupToken);
       sessionStorage.setItem('setupName', name ?? '');
       navigate('/set-password');
     } catch (err) {
-      setError(err.response?.data?.message ?? 'Code OTP invalide ou expiré.');
+      setError(err.response?.data?.message ?? t('otp.error.invalid'));
     } finally {
       setLoading(false);
     }
@@ -43,8 +44,8 @@ function OtpLoginPage() {
             <span className="asl-brand__name">NovaBulletin</span>
           </div>
           <div className="asl-heading">
-            <h1 className="asl-heading__title">Première connexion</h1>
-            <p className="asl-heading__sub">Entrez votre email et le code OTP reçu par email.</p>
+            <h1 className="asl-heading__title">{t('otp.title')}</h1>
+            <p className="asl-heading__sub">{t('otp.subtitle')}</p>
           </div>
 
           <form className="login-form" onSubmit={handleSubmit} noValidate>
@@ -60,7 +61,7 @@ function OtpLoginPage() {
 
             <div className="login-form__field">
               <label htmlFor="otp-email" className="login-form__label">
-                Adresse email <span className="login-form__required">*</span>
+                {t('login.email')} <span className="login-form__required">*</span>
               </label>
               <div className="login-form__input-group">
                 <span className="login-form__input-prefix">
@@ -80,7 +81,7 @@ function OtpLoginPage() {
 
             <div className="login-form__field">
               <label htmlFor="otp-code" className="login-form__label">
-                Code OTP (reçu par email) <span className="login-form__required">*</span>
+                {t('otp.otpLabel')} <span className="login-form__required">*</span>
               </label>
               <div className="login-form__input-group">
                 <span className="login-form__input-prefix">
@@ -90,7 +91,7 @@ function OtpLoginPage() {
                 </span>
                 <input
                   id="otp-code" type="text" className="login-form__input"
-                  placeholder="ex: A1B2C3D4E5F6..."
+                  placeholder={t('otp.otpPlaceholder')}
                   value={form.otp} onChange={set('otp')}
                   style={{ fontFamily: 'monospace', fontSize: '0.95em', letterSpacing: '0.1em' }}
                   autoComplete="off" required
@@ -100,17 +101,17 @@ function OtpLoginPage() {
 
             <button type="submit" className="login-form__btn" disabled={loading}>
               {loading ? (
-                <><span className="login-form__spinner" /><span>Vérification…</span></>
+                <><span className="login-form__spinner" /><span>{t('otp.verifying')}</span></>
               ) : (
                 <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="20 6 9 17 4 12"/>
-                </svg><span>Valider le code</span></>
+                </svg><span>{t('otp.validate')}</span></>
               )}
             </button>
 
             <p className="login-form__forgot" style={{ marginTop: '12px' }}>
-              Vous avez déjà un mot de passe ?{' '}
-              <Link to="/login">Se connecter normalement</Link>
+              {t('otp.hasPassword')}{' '}
+              <Link to="/login">{t('otp.loginNormal')}</Link>
             </p>
           </form>
         </div>

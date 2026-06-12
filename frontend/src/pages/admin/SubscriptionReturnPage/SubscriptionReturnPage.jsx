@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function SubscriptionReturnPage() {
+  const { t } = useTranslation();
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const [countdown, setCountdown] = useState(6);
@@ -22,16 +24,9 @@ export default function SubscriptionReturnPage() {
 
   const icon    = isSuccess ? '✅' : isCancelled ? '↩️' : '❌';
   const color   = isSuccess ? '#16a34a' : isCancelled ? '#6b7280' : '#dc2626';
-  const heading = isSuccess
-    ? 'Paiement reçu !'
-    : isCancelled
-    ? 'Paiement annulé'
-    : 'Paiement non abouti';
-  const body = isSuccess
-    ? "Votre paiement a bien été reçu. L'abonnement sera activé automatiquement dans quelques instants. Vous recevrez une confirmation par email."
-    : isCancelled
-    ? "Vous avez annulé le paiement. Vous pouvez réessayer à tout moment depuis la page Abonnement."
-    : "Le paiement n'a pas abouti. Veuillez réessayer ou utiliser le paiement Mobile Money si le problème persiste.";
+  const state   = isSuccess ? 'success' : isCancelled ? 'cancelled' : 'error';
+  const heading = t(`subscriptionReturn.${state}.heading`);
+  const body    = t(`subscriptionReturn.${state}.body`);
 
   return (
     <div style={{
@@ -63,12 +58,12 @@ export default function SubscriptionReturnPage() {
 
         {isSuccess && (
           <p style={{ color: '#6b7280', fontSize: '0.85rem', margin: 0 }}>
-            Si l'abonnement n'est pas encore actif dans 5 minutes, contactez le support.
+            {t('subscriptionReturn.success.hint')}
           </p>
         )}
 
         <p style={{ color: '#9ca3af', fontSize: '0.85rem', margin: 0 }}>
-          Redirection dans {countdown} seconde{countdown !== 1 ? 's' : ''}…
+          {t('subscriptionReturn.redirect', { count: countdown })}
         </p>
 
         <button
@@ -84,7 +79,7 @@ export default function SubscriptionReturnPage() {
             fontSize: '0.95rem',
           }}
         >
-          Retour à l'abonnement
+          {t('subscriptionReturn.backBtn')}
         </button>
       </div>
     </div>

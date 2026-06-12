@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { useInstitution } from '../../../context/InstitutionContext';
 import { timetablesService } from '../../../services/timetablesService';
@@ -13,14 +14,7 @@ import Select from '../../../components/common/Select/Select';
 import Button from '../../../components/common/Button/Button';
 import './TimetableBuilderPage.css';
 
-const DAYS = [
-  { key: 'MONDAY',    label: 'Lundi'    },
-  { key: 'TUESDAY',   label: 'Mardi'    },
-  { key: 'WEDNESDAY', label: 'Mercredi' },
-  { key: 'THURSDAY',  label: 'Jeudi'    },
-  { key: 'FRIDAY',    label: 'Vendredi' },
-  { key: 'SATURDAY',  label: 'Samedi'   },
-];
+const DAY_KEYS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
 
 const TIME_SLOTS = [
   '07:00', '07:30', '08:00', '08:30', '09:00', '09:30',
@@ -41,13 +35,14 @@ function slotColor(subjectId, subjects) {
 }
 
 export default function TimetableBuilderPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const { institution } = useInstitution();
   const currentYear = institution?.academicSettings?.currentYear ?? '';
 
   const [classId, setClassId]     = useState('');
   const [year, setYear]           = useState(currentYear);
-  const [editingSlot, setEditing] = useState(null); // { dayOfWeek, startTime } | null
+  const [editingSlot, setEditing] = useState(null);
 
   const { data: classes = [] }   = useQuery({ queryKey: ['classes'], queryFn: () => classesService.list().then((r) => r.data) });
   const { data: subjects = [] }  = useQuery({ queryKey: ['subjects'], queryFn: () => subjectsService.list().then((r) => r.data) });
@@ -63,18 +58,18 @@ export default function TimetableBuilderPage() {
     mutationFn: (newSlots) => timetablesService.save(classId, { academicYear: year, slots: newSlots }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['timetable', classId, year] });
-      toast.success('Emploi du temps enregistré');
+      toast.success(t('timetable.toast.saved'));
       setEditing(null);
     },
-    onError: () => toast.error('Impossible d\'enregistrer'),
+    onError: () => toast.error(t('timetable.toast.error')),
   });
 
-  // Local state for in-progress edits
   const [localSlots, setLocalSlots] = useState(null);
   const displaySlots = localSlots ?? slots;
 
-  // Slot form state
   const [slotForm, setSlotForm] = useState({ subjectId: '', teacherId: '', startTime: '08:00', duration: 60, room: '' });
+
+  const days = useMemo(() => DAY_KEYS.map((k) => ({ key: k, label: t(`timetable.days.${k}`) })), [t]);
 
   function openEdit(day, time) {
     const existing = displaySlots.find((s) => s.dayOfWeek === day && s.startTime === time);
@@ -105,7 +100,7 @@ export default function TimetableBuilderPage() {
   }
 
   function applySlot() {
-    if (!slotForm.subjectId) { toast.error('Choisissez une matière'); return; }
+    if (!slotForm.subjectId) { toast.error(t('timetable.errors.subjectRequired')); return; }
     const endTime = addMinutes(slotForm.startTime, slotForm.duration);
     const updated = (localSlots ?? slots).filter(
       (s) => !(s.dayOfWeek === editingSlot.dayOfWeek && s.startTime === editingSlot.startTime)
@@ -118,7 +113,7 @@ export default function TimetableBuilderPage() {
       teacherId:  slotForm.teacherId || undefined,
       room:       slotForm.room || undefined,
       subject:    subjects.find((s) => s.id === slotForm.subjectId),
-      teacher:    teachers.find((t) => t.id === slotForm.teacherId),
+      teacher:    teachers.find((tc) => tc.id === slotForm.teacherId),
     });
     setLocalSlots(updated);
     setEditing(null);
@@ -145,53 +140,62 @@ export default function TimetableBuilderPage() {
 
   const classOptions   = classes.map((c) => ({ value: c.id, label: c.name }));
   const subjectOptions = subjects.map((s) => ({ value: s.id, label: s.nameFr }));
-  const teacherOptions = [{ value: '', label: '— Aucun —' }, ...teachers.map((t) => ({ value: t.id, label: t.name }))];
+  const teacherOptions = [{ value: '', label: t('timetable.noTeacher') }, ...teachers.map((tc) => ({ value: tc.id, label: tc.name }))];
   const hasChanges     = localSlots !== null;
+
+  const editingDayLabel = editingSlot
+    ? (days.find((d) => d.key === editingSlot.dayOfWeek)?.label ?? editingSlot.dayOfWeek)
+    : '';
 
   return (
     <AppShell>
       <PageHeader
-        title="Emploi du temps"
-        subtitle="Créez et modifiez les emplois du temps par classe"
+        title={t('timetable.title')}
+        subtitle={t('timetable.subtitle')}
         actions={
           hasChanges && (
             <Button size="sm" onClick={saveAll} disabled={saveMutation.isPending}>
-              {saveMutation.isPending ? 'Enregistrement…' : 'Enregistrer'}
+              {saveMutation.isPending ? t('action.saving') : t('action.save')}
             </Button>
           )
         }
       />
 
-      {/* Filters */}
       <Card className="ttb-filters">
         <div className="ttb-filters__row">
-          <Select id="ttb-class" label="Classe" value={classId} placeholder="Sélectionner une classe"
-            options={classOptions} onChange={(e) => { setClassId(e.target.value); setLocalSlots(null); }} />
+          <Select
+            id="ttb-class"
+            label={t('timetable.classLabel')}
+            value={classId}
+            placeholder={t('timetable.classPlaceholder')}
+            options={classOptions}
+            onChange={(e) => { setClassId(e.target.value); setLocalSlots(null); }}
+          />
           <div className="form-field">
-            <label className="form-field__label">Année scolaire</label>
+            <label className="form-field__label">{t('timetable.yearLabel')}</label>
             <input className="ttb-year-input" value={year} onChange={(e) => setYear(e.target.value)} placeholder="2024-2025" />
           </div>
         </div>
       </Card>
 
       {!classId ? (
-        <Card><div className="ttb-empty"><span>📅</span><p>Sélectionnez une classe pour afficher ou créer son emploi du temps.</p></div></Card>
+        <Card><div className="ttb-empty"><span>📅</span><p>{t('timetable.empty')}</p></div></Card>
       ) : isLoading ? (
-        <Card><div className="ttb-empty"><p>Chargement…</p></div></Card>
+        <Card><div className="ttb-empty"><p>{t('timetable.loading')}</p></div></Card>
       ) : (
         <Card style={{ padding: 0, overflow: 'auto' }}>
           <table className="ttb-grid">
             <thead>
               <tr>
-                <th className="ttb-grid__time-col">Heure</th>
-                {DAYS.map((d) => <th key={d.key}>{d.label}</th>)}
+                <th className="ttb-grid__time-col">{t('timetable.timeCol')}</th>
+                {days.map((d) => <th key={d.key}>{d.label}</th>)}
               </tr>
             </thead>
             <tbody>
               {TIME_SLOTS.slice(0, -1).map((time) => (
                 <tr key={time}>
                   <td className="ttb-grid__time">{time}</td>
-                  {DAYS.map((d) => {
+                  {days.map((d) => {
                     const slot = displaySlots.find((s) => s.dayOfWeek === d.key && s.startTime === time);
                     return (
                       <td
@@ -205,7 +209,7 @@ export default function TimetableBuilderPage() {
                             <span className="ttb-slot__subject">{slot.subject?.nameFr ?? '—'}</span>
                             {slot.teacher && <span className="ttb-slot__teacher">{slot.teacher.name}</span>}
                             {slot.room && <span className="ttb-slot__room">{slot.room}</span>}
-                            <button className="ttb-slot__del" onClick={(e) => { e.stopPropagation(); removeSlot(d.key, time); }} title="Supprimer">×</button>
+                            <button className="ttb-slot__del" onClick={(e) => { e.stopPropagation(); removeSlot(d.key, time); }} title="×">×</button>
                           </div>
                         ) : (
                           <span className="ttb-add-icon">+</span>
@@ -220,37 +224,46 @@ export default function TimetableBuilderPage() {
         </Card>
       )}
 
-      {/* Edit modal */}
       {editingSlot && (
         <div className="ttb-overlay" onClick={() => setEditing(null)}>
           <div className="ttb-modal" onClick={(e) => e.stopPropagation()}>
-            <h3 className="ttb-modal__title">
-              {DAYS.find((d) => d.key === editingSlot.dayOfWeek)?.label} — {editingSlot.startTime}
-            </h3>
+            <h3 className="ttb-modal__title">{editingDayLabel} — {editingSlot.startTime}</h3>
             <div className="ttb-modal__fields">
-              <Select id="ttb-subject" label="Matière *" value={slotForm.subjectId}
-                placeholder="Choisir une matière" options={subjectOptions}
-                onChange={(e) => setSlotForm((f) => ({ ...f, subjectId: e.target.value }))} />
-              <Select id="ttb-teacher" label="Enseignant" value={slotForm.teacherId}
+              <Select
+                id="ttb-subject"
+                label={t('timetable.subjectLabel')}
+                value={slotForm.subjectId}
+                placeholder={t('timetable.subjectPlaceholder')}
+                options={subjectOptions}
+                onChange={(e) => setSlotForm((f) => ({ ...f, subjectId: e.target.value }))}
+              />
+              <Select
+                id="ttb-teacher"
+                label={t('timetable.teacherLabel')}
+                value={slotForm.teacherId}
                 options={teacherOptions}
-                onChange={(e) => setSlotForm((f) => ({ ...f, teacherId: e.target.value }))} />
+                onChange={(e) => setSlotForm((f) => ({ ...f, teacherId: e.target.value }))}
+              />
               <div className="form-field">
-                <label className="form-field__label">Durée</label>
+                <label className="form-field__label">{t('timetable.duration')}</label>
                 <select className="ttb-select" value={slotForm.duration}
                   onChange={(e) => setSlotForm((f) => ({ ...f, duration: Number(e.target.value) }))}>
                   {DURATIONS.map((d) => <option key={d} value={d}>{d} min</option>)}
                 </select>
               </div>
               <div className="form-field">
-                <label className="form-field__label">Salle (optionnel)</label>
-                <input className="ttb-input" value={slotForm.room}
+                <label className="form-field__label">{t('timetable.room')}</label>
+                <input
+                  className="ttb-input"
+                  value={slotForm.room}
                   onChange={(e) => setSlotForm((f) => ({ ...f, room: e.target.value }))}
-                  placeholder="ex: Salle A1" />
+                  placeholder={t('timetable.roomPlaceholder')}
+                />
               </div>
             </div>
             <div className="ttb-modal__actions">
-              <Button variant="ghost" size="sm" onClick={() => setEditing(null)}>Annuler</Button>
-              <Button size="sm" onClick={applySlot}>Ajouter / Modifier</Button>
+              <Button variant="ghost" size="sm" onClick={() => setEditing(null)}>{t('action.cancel')}</Button>
+              <Button size="sm" onClick={applySlot}>{t('timetable.addEdit')}</Button>
             </div>
           </div>
         </div>

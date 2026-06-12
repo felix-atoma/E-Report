@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import AppShell from '../../../components/layout/AppShell/AppShell';
@@ -8,13 +9,11 @@ import { classesService } from '../../../services/classesService';
 import { gradesService } from '../../../services/gradesService';
 import './FichesPage.css';
 
-const TERMS = [
-  { value: 1, label: '1er Trimestre' },
-  { value: 2, label: '2ème Trimestre' },
-  { value: 3, label: '3ème Trimestre' },
-];
+const TERM_VALUES = [1, 2, 3];
 
 function ClassFicheCard({ cls, term, termLabel }) {
+  const { t } = useTranslation();
+
   const { data: fiches = [], isLoading } = useQuery({
     queryKey: ['fiches', cls.id, cls.academicYear, term],
     queryFn: () => gradesService.listFiches(cls.id, cls.academicYear, term).then((r) => r.data),
@@ -33,15 +32,15 @@ function ClassFicheCard({ cls, term, termLabel }) {
         </div>
         {!isLoading && fiches.length > 0 && (
           <span className={`fp__progress${allSigned ? ' fp__progress--done' : ''}`}>
-            {signedCount}/{fiches.length} signées
+            {t('fiches.signed', { count: signedCount, total: fiches.length })}
           </span>
         )}
       </div>
 
       {isLoading ? (
-        <div className="fp__row-placeholder">Chargement…</div>
+        <div className="fp__row-placeholder">{t('action.loading')}</div>
       ) : fiches.length === 0 ? (
-        <div className="fp__row-placeholder">Aucune matière assignée</div>
+        <div className="fp__row-placeholder">{t('fiches.noSubjects')}</div>
       ) : (
         fiches.map((f) => (
           <Link
@@ -60,7 +59,7 @@ function ClassFicheCard({ cls, term, termLabel }) {
                 </span>
               )}
               <span className={`fp__badge${f.isSigned ? ' fp__badge--signed' : ' fp__badge--pending'}`}>
-                {f.isSigned ? '✅ Signée' : 'Saisir →'}
+                {f.isSigned ? `✅ ${t('grades.signed')}` : t('fiches.enter')}
               </span>
             </div>
           </Link>
@@ -71,6 +70,7 @@ function ClassFicheCard({ cls, term, termLabel }) {
 }
 
 export default function FichesPage() {
+  const { t } = useTranslation();
   const [term, setTerm] = useState(1);
 
   const { data: classes = [], isLoading } = useQuery({
@@ -78,31 +78,31 @@ export default function FichesPage() {
     queryFn: () => classesService.list().then((r) => r.data),
   });
 
-  if (isLoading) return <AppShell title="Fiches de notes"><Loading /></AppShell>;
+  if (isLoading) return <AppShell title={t('fiches.title')}><Loading /></AppShell>;
 
-  const termLabel = TERMS.find((t) => t.value === term).label;
+  const termLabel = t(`fees.terms.TRIMESTRE_${term}`);
 
   return (
-    <AppShell title="Fiches de notes">
+    <AppShell title={t('fiches.title')}>
       <PageHeader
-        title="Fiches de notes"
-        subtitle="Saisissez les notes par matière et par classe. Cliquez sur une matière pour commencer la saisie."
+        title={t('fiches.title')}
+        subtitle={t('fiches.subtitle')}
       />
 
       <div className="fp__term-bar">
-        {TERMS.map((t) => (
+        {TERM_VALUES.map((v) => (
           <button
-            key={t.value}
-            className={`fp__term-btn${term === t.value ? ' fp__term-btn--active' : ''}`}
-            onClick={() => setTerm(t.value)}
+            key={v}
+            className={`fp__term-btn${term === v ? ' fp__term-btn--active' : ''}`}
+            onClick={() => setTerm(v)}
           >
-            {t.label}
+            {t(`fees.terms.TRIMESTRE_${v}`)}
           </button>
         ))}
       </div>
 
       {classes.length === 0 ? (
-        <p className="fp__empty-state">Aucune classe ne vous est assignée.</p>
+        <p className="fp__empty-state">{t('myClasses.empty')}</p>
       ) : (
         <div className="fp__grid">
           {classes.map((cls) => (

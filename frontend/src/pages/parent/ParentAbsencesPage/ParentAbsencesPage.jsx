@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { attendanceService } from '../../../services/attendanceService';
@@ -10,15 +11,14 @@ import Button from '../../../components/common/Button/Button';
 import './ParentAbsencesPage.css';
 
 export default function ParentAbsencesPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
 
-  // Load parent's children to get their studentIds
   const { data: children = [], isLoading: loadingChildren } = useQuery({
     queryKey: ['parent-children'],
     queryFn: () => studentsService.myChildren().then((r) => r.data),
   });
 
-  // Load absences for each child
   const [justifyId, setJustifyId]     = useState(null);
   const [reason, setReason]           = useState('');
   const [selectedChild, setChild]     = useState('');
@@ -39,28 +39,28 @@ export default function ParentAbsencesPage() {
     mutationFn: ({ id, reason }) => attendanceService.justifyAbsence(id, reason),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['absences-parent'] });
-      toast.success('Justification envoyée à l\'administration');
+      toast.success(t('absences.toast.sent'));
       setJustifyId(null);
       setReason('');
     },
-    onError: () => toast.error('Impossible d\'envoyer la justification'),
+    onError: () => toast.error(t('absences.toast.error')),
   });
 
   const fmtDate = (d) =>
     d ? new Date(d).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
-  const pending  = absences.filter((a) => a.status === 'ABSENT' && a.note?.startsWith('JUSTIFY_PENDING:'));
-  const excused  = absences.filter((a) => a.status === 'EXCUSED');
+  const pending    = absences.filter((a) => a.status === 'ABSENT' && a.note?.startsWith('JUSTIFY_PENDING:'));
+  const excused    = absences.filter((a) => a.status === 'EXCUSED');
   const unjustified = absences.filter((a) => a.status === 'ABSENT' && !a.note?.startsWith('JUSTIFY_PENDING:'));
+  const absentCount = absences.filter((a) => a.status === 'ABSENT').length;
 
   return (
     <AppShell>
       <PageHeader
-        title="Absences de mes enfants"
-        subtitle={`${absences.filter(a => a.status === 'ABSENT').length} absence${absences.filter(a => a.status === 'ABSENT').length !== 1 ? 's' : ''} · ${excused.length} excusée${excused.length !== 1 ? 's' : ''}`}
+        title={t('absences.title')}
+        subtitle={t('absences.subtitle', { absent: absentCount, excused: excused.length })}
       />
 
-      {/* Child selector */}
       {children.length > 1 && (
         <div className="pabs-child-tabs">
           {children.map((c) => (
@@ -76,12 +76,12 @@ export default function ParentAbsencesPage() {
       )}
 
       {loadingChildren || loadingAbs ? (
-        <Card><p className="pabs-empty">Chargement…</p></Card>
+        <Card><p className="pabs-empty">{t('action.loading')}</p></Card>
       ) : absences.length === 0 ? (
         <Card>
           <div className="pabs-empty">
             <span className="pabs-empty__icon">✅</span>
-            <p>Aucune absence enregistrée pour cet enfant.</p>
+            <p>{t('absences.empty')}</p>
           </div>
         </Card>
       ) : (
@@ -89,7 +89,7 @@ export default function ParentAbsencesPage() {
           {unjustified.length > 0 && (
             <div className="pabs-section">
               <h3 className="pabs-section__title">
-                <span className="pabs-dot pabs-dot--red" /> Absences non justifiées ({unjustified.length})
+                <span className="pabs-dot pabs-dot--red" /> {t('absences.unjustifiedSection', { count: unjustified.length })}
               </h3>
               <div className="pabs-list">
                 {unjustified.map((a) => (
@@ -105,22 +105,22 @@ export default function ParentAbsencesPage() {
                           rows={2}
                           value={reason}
                           onChange={(e) => setReason(e.target.value)}
-                          placeholder="Motif de l'absence (maladie, urgence familiale…)"
+                          placeholder={t('absences.reasonPlaceholder')}
                         />
                         <div className="pabs-justify-form__btns">
-                          <Button variant="ghost" size="sm" onClick={() => { setJustifyId(null); setReason(''); }}>Annuler</Button>
+                          <Button variant="ghost" size="sm" onClick={() => { setJustifyId(null); setReason(''); }}>{t('action.cancel')}</Button>
                           <Button
                             size="sm"
                             disabled={!reason.trim() || justifyMutation.isPending}
                             onClick={() => justifyMutation.mutate({ id: a.id, reason })}
                           >
-                            {justifyMutation.isPending ? 'Envoi…' : 'Envoyer'}
+                            {justifyMutation.isPending ? t('absences.sending') : t('action.confirm')}
                           </Button>
                         </div>
                       </div>
                     ) : (
                       <Button size="sm" variant="ghost" onClick={() => { setJustifyId(a.id); setReason(''); }}>
-                        ✏️ Justifier
+                        {t('absences.justify')}
                       </Button>
                     )}
                   </div>
@@ -132,7 +132,7 @@ export default function ParentAbsencesPage() {
           {pending.length > 0 && (
             <div className="pabs-section">
               <h3 className="pabs-section__title">
-                <span className="pabs-dot pabs-dot--yellow" /> En attente de validation ({pending.length})
+                <span className="pabs-dot pabs-dot--yellow" /> {t('absences.pendingSection', { count: pending.length })}
               </h3>
               <div className="pabs-list">
                 {pending.map((a) => (
@@ -142,7 +142,7 @@ export default function ParentAbsencesPage() {
                       {a.class?.name && <span className="pabs-card__class">{a.class.name}</span>}
                     </div>
                     <span className="pabs-card__note">{a.note?.replace('JUSTIFY_PENDING:', '').trim()}</span>
-                    <span className="pabs-status pabs-status--pending">⏳ En attente</span>
+                    <span className="pabs-status pabs-status--pending">{t('absences.pendingStatus')}</span>
                   </div>
                 ))}
               </div>
@@ -152,7 +152,7 @@ export default function ParentAbsencesPage() {
           {excused.length > 0 && (
             <div className="pabs-section">
               <h3 className="pabs-section__title">
-                <span className="pabs-dot pabs-dot--green" /> Absences excusées ({excused.length})
+                <span className="pabs-dot pabs-dot--green" /> {t('absences.excusedSection', { count: excused.length })}
               </h3>
               <div className="pabs-list">
                 {excused.map((a) => (
@@ -162,7 +162,7 @@ export default function ParentAbsencesPage() {
                       {a.class?.name && <span className="pabs-card__class">{a.class.name}</span>}
                     </div>
                     {a.note && <span className="pabs-card__note">{a.note.replace('JUSTIFIED:', '').trim()}</span>}
-                    <span className="pabs-status pabs-status--excused">✅ Excusée</span>
+                    <span className="pabs-status pabs-status--excused">{t('absences.excusedStatus')}</span>
                   </div>
                 ))}
               </div>

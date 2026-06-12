@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { paymentPlansService } from '../../../services/paymentPlansService';
 import { studentsService } from '../../../services/studentsService';
@@ -17,13 +18,13 @@ import './PaymentPlansPage.css';
 
 const EMPTY_INSTALMENT = { dueDate: '', amount: '' };
 
-function InstalmentRow({ idx, inst, onChange, onRemove, canRemove }) {
+function InstalmentRow({ idx, inst, onChange, onRemove, canRemove, t }) {
   return (
     <div className="pp-inst-row">
       <span className="pp-inst-row__num">{idx + 1}</span>
       <Input
         id={`due-${idx}`}
-        label="Date d'échéance"
+        label={t('paymentPlans.dueDate')}
         type="date"
         value={inst.dueDate}
         onChange={(e) => onChange(idx, 'dueDate', e.target.value)}
@@ -31,7 +32,7 @@ function InstalmentRow({ idx, inst, onChange, onRemove, canRemove }) {
       />
       <Input
         id={`amt-${idx}`}
-        label="Montant (FCFA)"
+        label={t('paymentPlans.amount')}
         type="number"
         min="1"
         value={inst.amount}
@@ -39,13 +40,13 @@ function InstalmentRow({ idx, inst, onChange, onRemove, canRemove }) {
         required
       />
       {canRemove && (
-        <button className="pp-inst-row__remove" onClick={() => onRemove(idx)} title="Supprimer">✕</button>
+        <button className="pp-inst-row__remove" onClick={() => onRemove(idx)} title={t('action.delete')}>✕</button>
       )}
     </div>
   );
 }
 
-function PlanCard({ plan, onPayInstalment, onDelete, locale }) {
+function PlanCard({ plan, onPayInstalment, onDelete, locale, t }) {
   const [expanded, setExpanded] = useState(false);
   const [payModal, setPayModal] = useState(null);
   const [payAmount, setPayAmount] = useState('');
@@ -58,7 +59,7 @@ function PlanCard({ plan, onPayInstalment, onDelete, locale }) {
 
   function handlePay() {
     const amt = Number(payAmount);
-    if (!amt || amt <= 0) { toast.error('Montant invalide'); return; }
+    if (!amt || amt <= 0) { toast.error(t('paymentPlans.errors.amountInvalid')); return; }
     onPayInstalment(payModal, amt, () => { setPayModal(null); setPayAmount(''); });
   }
 
@@ -76,8 +77,8 @@ function PlanCard({ plan, onPayInstalment, onDelete, locale }) {
           <span className="pp-card__pct">{pct}%</span>
         </div>
         <div className="pp-card__amounts">
-          <span className="pp-card__paid">{paid.toLocaleString(locale)} FCFA payés</span>
-          <span className="pp-card__remaining">{remaining.toLocaleString(locale)} FCFA restants</span>
+          <span className="pp-card__paid">{t('paymentPlans.paid_fcfa', { amount: paid.toLocaleString(locale) })}</span>
+          <span className="pp-card__remaining">{t('paymentPlans.remaining_fcfa', { amount: remaining.toLocaleString(locale) })}</span>
         </div>
         <button className="pp-card__toggle">{expanded ? '▲' : '▼'}</button>
       </div>
@@ -88,11 +89,11 @@ function PlanCard({ plan, onPayInstalment, onDelete, locale }) {
           <table className="pp-inst-table">
             <thead>
               <tr>
-                <th>Échéance</th>
-                <th>Montant prévu</th>
-                <th>Statut</th>
-                <th>Payé le</th>
-                <th>Montant payé</th>
+                <th>{t('paymentPlans.instalment')}</th>
+                <th>{t('paymentPlans.amount')}</th>
+                <th>{t('paymentPlans.status.PENDING')}</th>
+                <th>{t('paymentPlans.paidOn')}</th>
+                <th>{t('paymentPlans.paidAmount')}</th>
                 <th></th>
               </tr>
             </thead>
@@ -103,7 +104,11 @@ function PlanCard({ plan, onPayInstalment, onDelete, locale }) {
                   <td>{Number(inst.amount).toLocaleString(locale)} FCFA</td>
                   <td>
                     <span className={`pp-status pp-status--${inst.paidAt ? 'paid' : new Date(inst.dueDate) < new Date() ? 'overdue' : 'pending'}`}>
-                      {inst.paidAt ? 'Payé' : new Date(inst.dueDate) < new Date() ? 'En retard' : 'À venir'}
+                      {inst.paidAt
+                        ? t('paymentPlans.status.PAID')
+                        : new Date(inst.dueDate) < new Date()
+                          ? t('paymentPlans.status.OVERDUE')
+                          : t('paymentPlans.status.PENDING')}
                     </span>
                   </td>
                   <td>{inst.paidAt ? new Date(inst.paidAt).toLocaleDateString(locale) : '—'}</td>
@@ -111,7 +116,7 @@ function PlanCard({ plan, onPayInstalment, onDelete, locale }) {
                   <td>
                     {!inst.paidAt && (
                       <Button size="sm" variant="primary" onClick={() => { setPayModal(inst.id); setPayAmount(String(inst.amount)); }}>
-                        Encaisser
+                        {t('paymentPlans.collect')}
                       </Button>
                     )}
                   </td>
@@ -121,7 +126,7 @@ function PlanCard({ plan, onPayInstalment, onDelete, locale }) {
           </table>
           <div className="pp-card__footer">
             <Button size="sm" variant="danger" onClick={() => onDelete(plan.id)}>
-              Supprimer le plan
+              {t('paymentPlans.deletePlan')}
             </Button>
           </div>
         </div>
@@ -131,18 +136,18 @@ function PlanCard({ plan, onPayInstalment, onDelete, locale }) {
         <OffCanvas
           open
           onClose={() => { setPayModal(null); setPayAmount(''); }}
-          title="Enregistrer le paiement"
+          title={t('paymentPlans.recordPayment')}
           size="sm"
           footer={
             <>
-              <Button variant="ghost" onClick={() => setPayModal(null)}>Annuler</Button>
-              <Button onClick={handlePay}>Confirmer</Button>
+              <Button variant="ghost" onClick={() => setPayModal(null)}>{t('action.cancel')}</Button>
+              <Button onClick={handlePay}>{t('action.confirm')}</Button>
             </>
           }
         >
           <Input
             id="pay-inst-amount"
-            label="Montant encaissé (FCFA)"
+            label={t('paymentPlans.collectedAmount')}
             type="number"
             min="1"
             value={payAmount}
@@ -158,6 +163,7 @@ function PlanCard({ plan, onPayInstalment, onDelete, locale }) {
 const EMPTY_FORM = { studentId: '', academicYear: '', totalAmount: '', notes: '', instalments: [{ ...EMPTY_INSTALMENT }] };
 
 function PaymentPlansPage() {
+  const { t } = useTranslation();
   const locale = 'fr-FR';
   const qc = useQueryClient();
   const { institution } = useInstitution();
@@ -188,29 +194,29 @@ function PaymentPlansPage() {
     mutationFn: (data) => paymentPlansService.create(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['payment-plans'] });
-      toast.success('Plan créé');
+      toast.success(t('paymentPlans.toast.created'));
       setModal(false);
       setForm(EMPTY_FORM);
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur'),
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('paymentPlans.toast.error')),
   });
 
   const payMutation = useMutation({
     mutationFn: ({ instalmentId, paidAmount }) => paymentPlansService.payInstalment(instalmentId, { paidAmount }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['payment-plans'] });
-      toast.success('Paiement enregistré');
+      toast.success(t('paymentPlans.toast.paid'));
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur'),
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('paymentPlans.toast.error')),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => paymentPlansService.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['payment-plans'] });
-      toast.success('Plan supprimé');
+      toast.success(t('paymentPlans.toast.deleted'));
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur'),
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('paymentPlans.toast.error')),
   });
 
   function handleChangeForm(field, value) {
@@ -235,12 +241,12 @@ function PaymentPlansPage() {
 
   function handleSubmit() {
     if (!form.studentId || !form.academicYear || !form.totalAmount) {
-      toast.error('Étudiant, année et montant total sont requis');
+      toast.error(t('paymentPlans.errors.fieldsRequired'));
       return;
     }
     const instalments = form.instalments.filter((i) => i.dueDate && i.amount);
     if (!instalments.length) {
-      toast.error('Au moins une échéance est requise');
+      toast.error(t('paymentPlans.errors.instalmentRequired'));
       return;
     }
     createMutation.mutate({
@@ -268,21 +274,21 @@ function PaymentPlansPage() {
   }, [institution]);
 
   return (
-    <AppShell title="Plans de paiement">
+    <AppShell title={t('paymentPlans.title')}>
       <PageHeader
-        title="Plans de paiement échelonné"
-        subtitle={`${plans.length} plan${plans.length !== 1 ? 's' : ''} en cours`}
-        actions={<Button icon="+" onClick={() => setModal(true)}>Nouveau plan</Button>}
+        title={t('paymentPlans.title')}
+        subtitle={t('paymentPlans.subtitle', { count: plans.length })}
+        actions={<Button icon="+" onClick={() => setModal(true)}>{t('paymentPlans.newPlan')}</Button>}
       />
 
       <div className="pp-toolbar">
-        <SearchBar value={search} onChange={setSearch} placeholder="Rechercher un élève..." className="pp-toolbar__search" />
+        <SearchBar value={search} onChange={setSearch} placeholder={t('paymentPlans.search')} className="pp-toolbar__search" />
       </div>
 
       {isLoading ? (
         <Loading />
       ) : filtered.length === 0 ? (
-        <div className="pp-empty">Aucun plan de paiement trouvé</div>
+        <div className="pp-empty">{t('paymentPlans.empty')}</div>
       ) : (
         <div className="pp-list">
           {filtered.map((plan) => (
@@ -290,11 +296,12 @@ function PaymentPlansPage() {
               key={plan.id}
               plan={plan}
               locale={locale}
+              t={t}
               onPayInstalment={(instalmentId, paidAmount, cb) => {
                 payMutation.mutate({ instalmentId, paidAmount }, { onSuccess: cb });
               }}
               onDelete={(id) => {
-                if (window.confirm('Supprimer ce plan ? Cette action est irréversible.')) {
+                if (window.confirm(t('paymentPlans.confirmDelete'))) {
                   deleteMutation.mutate(id);
                 }
               }}
@@ -306,13 +313,13 @@ function PaymentPlansPage() {
       <OffCanvas
         open={modal}
         onClose={() => { setModal(false); setForm(EMPTY_FORM); }}
-        title="Nouveau plan de paiement"
+        title={t('paymentPlans.newPlan')}
         size="lg"
         footer={
           <>
-            <Button variant="ghost" onClick={() => setModal(false)} disabled={createMutation.isPending}>Annuler</Button>
+            <Button variant="ghost" onClick={() => setModal(false)} disabled={createMutation.isPending}>{t('action.cancel')}</Button>
             <Button onClick={handleSubmit} disabled={createMutation.isPending}>
-              {createMutation.isPending ? 'Création...' : 'Créer le plan'}
+              {createMutation.isPending ? t('paymentPlans.creating') : t('paymentPlans.createBtn')}
             </Button>
           </>
         }
@@ -320,26 +327,26 @@ function PaymentPlansPage() {
         <div className="pp-form">
           <Select
             id="pp-student"
-            label="Élève"
+            label={t('paymentPlans.student')}
             required
             value={form.studentId}
             options={studentOptions}
-            placeholder="Sélectionner un élève"
+            placeholder={t('paymentPlans.selectStudent')}
             onChange={(e) => handleChangeForm('studentId', e.target.value)}
           />
           <div className="pp-form__row">
             <Select
               id="pp-year"
-              label="Année académique"
+              label={t('paymentPlans.academicYear')}
               required
               value={form.academicYear}
               options={yearOptions}
-              placeholder="Sélectionner"
+              placeholder={t('action.select')}
               onChange={(e) => handleChangeForm('academicYear', e.target.value)}
             />
             <Input
               id="pp-total"
-              label="Montant total (FCFA)"
+              label={t('paymentPlans.totalAmount')}
               type="number"
               min="1"
               required
@@ -349,14 +356,14 @@ function PaymentPlansPage() {
           </div>
           <Input
             id="pp-notes"
-            label="Notes (facultatif)"
+            label={t('paymentPlans.notesHint')}
             value={form.notes}
             onChange={(e) => handleChangeForm('notes', e.target.value)}
           />
 
           <div className="pp-form__inst-header">
-            <span className="pp-form__inst-title">Échéances</span>
-            <Button size="sm" variant="ghost" onClick={addInstalment}>+ Ajouter une échéance</Button>
+            <span className="pp-form__inst-title">{t('paymentPlans.instalments')}</span>
+            <Button size="sm" variant="ghost" onClick={addInstalment}>{t('paymentPlans.addInstalment')}</Button>
           </div>
 
           {form.instalments.map((inst, idx) => (
@@ -367,6 +374,7 @@ function PaymentPlansPage() {
               onChange={handleChangeInstalment}
               onRemove={removeInstalment}
               canRemove={form.instalments.length > 1}
+              t={t}
             />
           ))}
         </div>

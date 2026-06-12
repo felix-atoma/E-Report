@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { mockExamsService } from '../../../services/mockExamsService';
 import { classesService } from '../../../services/classesService';
 import { useAuth } from '../../../context/AuthContext';
@@ -13,7 +14,7 @@ import Button from '../../../components/common/Button/Button';
 import { fmtSessionDates } from '../../../utils/fmtSessionDates';
 import './MockExamsPage.css';
 
-/* ── Config per exam type ─────────────────────────────────────────────────── */
+/* ── Config per exam type (proper nouns — not translated) ─────────────────── */
 const EXAM_TYPES = [
   {
     value: 'CEPE',
@@ -21,7 +22,7 @@ const EXAM_TYPES = [
     full: 'Certificat d\'Études Primaires Élémentaires',
     color: '#15803d', bg: '#f0fdf4', border: '#86efac',
     icon: '🎓',
-    desc: 'Préparation au CEPE — CM2',
+    desc: 'CEPE — CM2',
   },
   {
     value: 'BEPC',
@@ -29,7 +30,7 @@ const EXAM_TYPES = [
     full: 'Brevet d\'Études du Premier Cycle',
     color: '#1d4ed8', bg: '#eff6ff', border: '#93c5fd',
     icon: '📘',
-    desc: 'Préparation au BEPC — 3ème',
+    desc: 'BEPC — 3ème',
   },
   {
     value: 'BAC1',
@@ -37,7 +38,7 @@ const EXAM_TYPES = [
     full: 'Baccalauréat Première Partie',
     color: '#7e22ce', bg: '#fdf4ff', border: '#d8b4fe',
     icon: '📗',
-    desc: 'Préparation au BAC 1er degré — 1ère',
+    desc: 'BAC 1er degré — 1ère',
   },
   {
     value: 'BAC2',
@@ -45,7 +46,7 @@ const EXAM_TYPES = [
     full: 'Baccalauréat Deuxième Partie',
     color: '#c2410c', bg: '#fff7ed', border: '#fdba74',
     icon: '🏆',
-    desc: 'Préparation au BAC 2e degré — Terminale',
+    desc: 'BAC 2e degré — Terminale',
   },
   {
     value: 'BLANC',
@@ -53,7 +54,7 @@ const EXAM_TYPES = [
     full: 'Examen Blanc (toutes classes)',
     color: '#374151', bg: '#f9fafb', border: '#d1d5db',
     icon: '📝',
-    desc: 'Examen blanc général — toutes classes',
+    desc: 'Examen blanc général',
   },
 ];
 
@@ -62,9 +63,10 @@ function fmtDate(iso) {
   return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-/* ── Create form (used inside OffCanvas) ──────────────────────────────────── */
+/* ── Create form ──────────────────────────────────────────────────────────── */
 function CreateForm({ examType, classes, onClose, onCreate }) {
-  const type = EXAM_TYPES.find((t) => t.value === examType);
+  const { t } = useTranslation();
+  const type = EXAM_TYPES.find((et) => et.value === examType);
   const CURRENT_YEAR = new Date().getFullYear();
   const DEFAULT_YEAR = `${CURRENT_YEAR - 1}-${CURRENT_YEAR}`;
 
@@ -78,7 +80,7 @@ function CreateForm({ examType, classes, onClose, onCreate }) {
   const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
 
   const handleSubmit = () => {
-    if (!form.classId || !form.label.trim()) { setError('Classe et libellé sont obligatoires.'); return; }
+    if (!form.classId || !form.label.trim()) { setError(t('mockExams.classRequired')); return; }
     setError('');
     onCreate(form);
   };
@@ -94,16 +96,16 @@ function CreateForm({ examType, classes, onClose, onCreate }) {
       {error && <div className="mex-alert">{error}</div>}
 
       <Select
-        label="Classe"
+        label={t('mockExams.form.class')}
         required
-        placeholder="— Choisir une classe —"
+        placeholder={t('mockExams.form.selectClass')}
         value={form.classId}
         options={classOptions}
         onChange={(e) => set('classId', e.target.value)}
       />
 
       <Input
-        label="Libellé"
+        label={t('mockExams.form.label')}
         required
         placeholder={`ex: 1er ${type?.label} — Janvier 2025`}
         value={form.label}
@@ -112,20 +114,20 @@ function CreateForm({ examType, classes, onClose, onCreate }) {
 
       <div className="mex-row">
         <Input
-          label="Année scolaire"
+          label={t('mockExams.form.academicYear')}
           required
           placeholder="2024-2025"
           value={form.academicYear}
           onChange={(e) => set('academicYear', e.target.value)}
         />
         <Input
-          label="Date de début"
+          label={t('mockExams.form.dateStart')}
           type="date"
           value={form.examDate}
           onChange={(e) => set('examDate', e.target.value)}
         />
         <Input
-          label="Date de fin"
+          label={t('mockExams.form.dateEnd')}
           type="date"
           value={form.examEndDate}
           onChange={(e) => set('examEndDate', e.target.value)}
@@ -133,8 +135,8 @@ function CreateForm({ examType, classes, onClose, onCreate }) {
       </div>
 
       <div className="mex-form__actions">
-        <Button variant="ghost" onClick={onClose}>Annuler</Button>
-        <Button onClick={handleSubmit}>Créer la session</Button>
+        <Button variant="ghost" onClick={onClose}>{t('action.cancel')}</Button>
+        <Button onClick={handleSubmit}>{t('mockExams.form.create')}</Button>
       </div>
     </div>
   );
@@ -142,6 +144,7 @@ function CreateForm({ examType, classes, onClose, onCreate }) {
 
 /* ── Single exam row ──────────────────────────────────────────────────────── */
 function ExamRow({ exam, isAdmin, onDelete, color, onDatesUpdated }) {
+  const { t } = useTranslation();
   const [editingDates, setEditingDates] = useState(false);
   const [dateStart, setDateStart] = useState(exam.examDate ? exam.examDate.slice(0, 10) : '');
   const [dateEnd,   setDateEnd]   = useState(exam.examEndDate ? exam.examEndDate.slice(0, 10) : '');
@@ -187,7 +190,6 @@ function ExamRow({ exam, isAdmin, onDelete, color, onDatesUpdated }) {
             value={exam.examType}
             onChange={handleTypeChange}
             disabled={savingType}
-            title="Modifier le type d'examen"
           >
             <option value="BLANC">Examen Blanc</option>
             <option value="CEPE">CEPE Blanc</option>
@@ -205,7 +207,6 @@ function ExamRow({ exam, isAdmin, onDelete, color, onDatesUpdated }) {
                 type="date" value={dateStart}
                 onChange={(e) => setDateStart(e.target.value)}
                 className="mex-date-input"
-                placeholder="Début"
               />
               <span className="mex-date-sep">→</span>
               <input
@@ -213,7 +214,6 @@ function ExamRow({ exam, isAdmin, onDelete, color, onDatesUpdated }) {
                 min={dateStart || undefined}
                 onChange={(e) => setDateEnd(e.target.value)}
                 className="mex-date-input"
-                placeholder="Fin"
               />
               <button className="mex-date-save" onClick={handleSaveDates} disabled={saving}>
                 {saving ? '…' : '✓'}
@@ -224,63 +224,54 @@ function ExamRow({ exam, isAdmin, onDelete, color, onDatesUpdated }) {
             <span
               className="mex-date-display"
               onClick={() => setEditingDates(true)}
-              title="Cliquer pour modifier les dates"
             >
               📅 {fmtSessionDates(exam.examDate, exam.examEndDate) ?? '—'} ✏️
             </span>
           )}
 
-          <span>📝 {exam._count?.grades ?? 0} notes</span>
+          <span>📝 {exam._count?.grades ?? 0} {t('mockExams.notes')}</span>
           <span className={`mex-status-dot mex-status-dot--${exam.status === 'PUBLISHED' ? 'pub' : 'draft'}`}>
-            {exam.status === 'PUBLISHED' ? 'Publié' : 'Brouillon'}
+            {exam.status === 'PUBLISHED' ? t('mockExams.published') : t('mockExams.draft')}
           </span>
         </div>
       </div>
 
       <div className="mex-exam-row__docs">
-        {/* 1 — Fiche de notes (grade entry per teacher) */}
         <Link
           to={`/mock-exams/${exam.id}/fiche`}
           className="mex-doc-btn mex-doc-btn--fiche"
-          title="Saisie des notes par matière"
         >
           <span className="mex-doc-btn__icon">📋</span>
-          <span className="mex-doc-btn__label">Fiches de notes</span>
-          <span className="mex-doc-btn__sub">Saisie par prof</span>
+          <span className="mex-doc-btn__label">{t('mockExams.fiches')}</span>
+          <span className="mex-doc-btn__sub">{t('mockExams.fichesDesc')}</span>
         </Link>
 
-        {/* 2 — Résultats / Palmarès */}
         <Link
           to={`/mock-exams/${exam.id}/palmares`}
           className="mex-doc-btn mex-doc-btn--palmares"
-          title="Tableau des résultats par ordre de mérite"
         >
           <span className="mex-doc-btn__icon">📊</span>
-          <span className="mex-doc-btn__label">Résultats</span>
-          <span className="mex-doc-btn__sub">Ordre de mérite</span>
+          <span className="mex-doc-btn__label">{t('mockExams.results')}</span>
+          <span className="mex-doc-btn__sub">{t('mockExams.resultsDesc')}</span>
         </Link>
 
-        {/* 3 — Relevé de notes (bulletin de l'examen blanc) */}
         <Link
           to={`/mock-exams/${exam.id}/releve`}
           className="mex-doc-btn mex-doc-btn--releve"
-          title="Bulletin / Relevé de notes individuel de l'examen blanc"
         >
           <span className="mex-doc-btn__icon">📄</span>
-          <span className="mex-doc-btn__label">Relevé de notes</span>
-          <span className="mex-doc-btn__sub">Bulletin élève</span>
+          <span className="mex-doc-btn__label">{t('mockExams.releve')}</span>
+          <span className="mex-doc-btn__sub">{t('mockExams.releveDesc')}</span>
         </Link>
 
-        {/* Admin: full grade table overview */}
         {isAdmin && (
           <Link
             to={`/admin/mock-exams/${exam.id}/grades`}
             className="mex-doc-btn mex-doc-btn--table"
-            title="Tableau complet admin"
           >
             <span className="mex-doc-btn__icon">🗂</span>
-            <span className="mex-doc-btn__label">Tableau</span>
-            <span className="mex-doc-btn__sub">Vue admin</span>
+            <span className="mex-doc-btn__label">{t('mockExams.table')}</span>
+            <span className="mex-doc-btn__sub">{t('mockExams.tableDesc')}</span>
           </Link>
         )}
       </div>
@@ -288,9 +279,8 @@ function ExamRow({ exam, isAdmin, onDelete, color, onDatesUpdated }) {
       {exam.status === 'DRAFT' && (isAdmin || exam.createdBy?.id) && (
         <button
           className="mex-exam-row__del"
-          title="Supprimer"
           onClick={() => {
-            if (confirm('Supprimer ce relevé définitivement ?')) onDelete(exam.id);
+            if (confirm(t('mockExams.confirmDelete'))) onDelete(exam.id);
           }}
         >
           ✕
@@ -302,12 +292,12 @@ function ExamRow({ exam, isAdmin, onDelete, color, onDatesUpdated }) {
 
 /* ── Type section ─────────────────────────────────────────────────────────── */
 function TypeSection({ typeCfg, exams, classes, isAdmin, onDelete, onCreateClick, onDatesUpdated }) {
+  const { t } = useTranslation();
   const typeExams = exams.filter((e) => e.examType === typeCfg.value);
   const [open, setOpen] = useState(true);
 
   return (
     <div className="mex-section" style={{ '--type-color': typeCfg.color, '--type-bg': typeCfg.bg, '--type-border': typeCfg.border }}>
-      {/* Section header */}
       <div className="mex-section__header" onClick={() => setOpen((v) => !v)}>
         <div className="mex-section__header-left">
           <span className="mex-section__icon">{typeCfg.icon}</span>
@@ -315,26 +305,27 @@ function TypeSection({ typeCfg, exams, classes, isAdmin, onDelete, onCreateClick
             <div className="mex-section__title">{typeCfg.label}</div>
             <div className="mex-section__full">{typeCfg.full}</div>
           </div>
-          <span className="mex-section__count">{typeExams.length} session{typeExams.length !== 1 ? 's' : ''}</span>
+          <span className="mex-section__count">
+            {t('mockExams.sessions', { count: typeExams.length })}
+          </span>
         </div>
         <div className="mex-section__header-right">
           <button
             className="mex-section__create-btn"
             onClick={(e) => { e.stopPropagation(); onCreateClick(typeCfg.value); }}
           >
-            + Nouvelle session
+            {t('mockExams.newSession')}
           </button>
           <span className="mex-section__toggle">{open ? '▲' : '▼'}</span>
         </div>
       </div>
 
-      {/* Session list */}
       {open && (
         <div className="mex-section__body">
           {typeExams.length === 0 ? (
             <div className="mex-section__empty">
-              <span>{typeCfg.desc}</span>
-              <span> — Aucune session créée. Cliquez sur <strong>+ Nouvelle session</strong> pour commencer.</span>
+              <span>{typeCfg.desc} — </span>
+              <span>{t('mockExams.noSessions')}</span>
             </div>
           ) : (
             typeExams.map((exam) => (
@@ -356,11 +347,12 @@ function TypeSection({ typeCfg, exams, classes, isAdmin, onDelete, onCreateClick
 
 /* ── Page ─────────────────────────────────────────────────────────────────── */
 function MockExamsPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const qc = useQueryClient();
   const isAdmin = user?.role === 'ADMIN';
 
-  const [createType, setCreateType] = useState(null); // which type modal is open
+  const [createType, setCreateType] = useState(null);
 
   const { data: classes = [] } = useQuery({
     queryKey: ['classes'],
@@ -382,18 +374,20 @@ function MockExamsPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['mock-exams'] }),
   });
 
+  const activeType = createType ? EXAM_TYPES.find((et) => et.value === createType) : null;
+
   return (
-    <AppShell title="Examens Blancs & Nationaux">
+    <AppShell title={t('mockExams.title')}>
       <PageHeader
-        title="Examens blancs & examens nationaux"
-        subtitle="CEPE · BEPC · BAC 1 · BAC 2 · Examens blancs généraux"
+        title={t('mockExams.title')}
+        subtitle={t('mockExams.subtitle')}
       />
 
       {isLoading && (
-        <div className="mex-empty"><div className="mex-spinner" /> Chargement...</div>
+        <div className="mex-empty"><div className="mex-spinner" /> {t('mockExams.loading')}</div>
       )}
       {isError && (
-        <div className="mex-error">Erreur de chargement. Vérifiez votre connexion.</div>
+        <div className="mex-error">{t('mockExams.error')}</div>
       )}
 
       {!isLoading && (
@@ -416,7 +410,7 @@ function MockExamsPage() {
       <OffCanvas
         open={!!createType}
         onClose={() => setCreateType(null)}
-        title={createType ? `${EXAM_TYPES.find((t) => t.value === createType)?.icon} Nouvelle session — ${EXAM_TYPES.find((t) => t.value === createType)?.label}` : ''}
+        title={activeType ? `${activeType.icon} ${t('mockExams.form.title')} — ${activeType.label}` : ''}
         size="md"
       >
         {createType && (

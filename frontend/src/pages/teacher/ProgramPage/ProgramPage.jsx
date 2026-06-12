@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { classesService } from '../../../services/classesService';
 import { programsService } from '../../../services/programsService';
@@ -15,6 +16,7 @@ function makeChapter(order) {
 }
 
 function ProgramPage() {
+  const { t } = useTranslation();
   const { classId, subjectId } = useParams();
   const qc = useQueryClient();
 
@@ -64,10 +66,10 @@ function ProgramPage() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['program', classId, subjectId, academicYear] });
-      toast.success('Programme enregistré');
+      toast.success(t('programPage.toast.saved'));
       setDirty(false);
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur de sauvegarde'),
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('programPage.toast.error')),
   });
 
   function markDirty() { setDirty(true); }
@@ -88,49 +90,43 @@ function ProgramPage() {
   }
 
   if (loadingClass || loadingProgram) {
-    return <AppShell title="Programme"><Loading /></AppShell>;
+    return <AppShell title={t('programPage.title')}><Loading /></AppShell>;
   }
 
   const completedCount = chapters.filter((c) => c.isCompleted).length;
+  const pct = chapters.length > 0 ? Math.round((completedCount / chapters.length) * 100) : 0;
 
   return (
-    <AppShell title="Programme">
+    <AppShell title={t('programPage.title')}>
       <PageHeader
-        title={`Programme — ${subjectInfo?.nameFr ?? '…'}`}
+        title={`${t('programPage.title')} — ${subjectInfo?.nameFr ?? '…'}`}
         subtitle={`${cls?.name ?? ''} — ${academicYear}`}
         actions={
           <Link to={`/teacher/classes/${classId}`} className="program-page__back">
-            ← Retour à la classe
+            {t('programPage.back')}
           </Link>
         }
       />
 
-      {/* Stats */}
       {chapters.length > 0 && (
         <div className="program-page__stats">
-          <span><strong>{chapters.length}</strong> chapitre{chapters.length !== 1 ? 's' : ''}</span>
-          <span><strong>{completedCount}</strong> complété{completedCount !== 1 ? 's' : ''}</span>
-          <span>
-            <strong>
-              {chapters.length > 0 ? Math.round((completedCount / chapters.length) * 100) : 0}%
-            </strong> du programme couvert
-          </span>
+          <span><strong>{chapters.length}</strong> {t('programPage.stats.chapters', { count: chapters.length })}</span>
+          <span><strong>{completedCount}</strong> {t('programPage.stats.completed', { count: completedCount })}</span>
+          <span><strong>{pct}%</strong> {t('programPage.stats.coverage', { pct })}</span>
         </div>
       )}
 
-      {/* Program description */}
       <div className="program-page__description-wrap">
-        <div className="program-page__description-label">Description générale du programme</div>
+        <div className="program-page__description-label">{t('programPage.descLabel')}</div>
         <textarea
           className="program-page__description-input"
           rows={2}
           value={description}
-          placeholder="Objectifs généraux, orientations pédagogiques…"
+          placeholder={t('programPage.descPlaceholder')}
           onChange={(e) => { setDescription(e.target.value); markDirty(); }}
         />
       </div>
 
-      {/* Chapters */}
       <div className="program-page__chapters">
         {chapters.map((ch, idx) => (
           <ChapterCard
@@ -144,7 +140,7 @@ function ProgramPage() {
       </div>
 
       <button className="program-page__add-btn" onClick={addChapter}>
-        + Ajouter un chapitre
+        {t('programPage.addChapter')}
       </button>
 
       <div className="program-page__footer">
@@ -159,13 +155,13 @@ function ProgramPage() {
           }}
           disabled={!dirty || saveMutation.isPending}
         >
-          Annuler
+          {t('programPage.actions.cancel')}
         </Button>
         <Button
           onClick={() => saveMutation.mutate()}
           disabled={saveMutation.isPending || !dirty}
         >
-          {saveMutation.isPending ? 'Enregistrement…' : 'Enregistrer le programme'}
+          {saveMutation.isPending ? t('programPage.actions.saving') : t('programPage.actions.save')}
         </Button>
       </div>
     </AppShell>
@@ -173,6 +169,7 @@ function ProgramPage() {
 }
 
 function ChapterCard({ chapter, index, onChange, onRemove }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(true);
 
   return (
@@ -182,7 +179,7 @@ function ChapterCard({ chapter, index, onChange, onRemove }) {
         <input
           className="program-page__chapter-title-input"
           value={chapter.title}
-          placeholder={`Titre du chapitre ${index + 1}…`}
+          placeholder={t('programPage.chapter.titlePlaceholder', { n: index + 1 })}
           onClick={(e) => e.stopPropagation()}
           onChange={(e) => onChange('title', e.target.value)}
         />
@@ -190,9 +187,9 @@ function ChapterCard({ chapter, index, onChange, onRemove }) {
           className={`program-page__chapter-done-btn${chapter.isCompleted ? ' program-page__chapter-done-btn--active' : ''}`}
           onClick={(e) => { e.stopPropagation(); onChange('isCompleted', !chapter.isCompleted); }}
         >
-          {chapter.isCompleted ? '✓ Complété' : 'Marquer complété'}
+          {chapter.isCompleted ? t('programPage.chapter.done') : t('programPage.chapter.markDone')}
         </button>
-        <button className="program-page__chapter-remove" onClick={(e) => { e.stopPropagation(); onRemove(); }} title="Supprimer">
+        <button className="program-page__chapter-remove" onClick={(e) => { e.stopPropagation(); onRemove(); }} title={t('action.delete')}>
           ✕
         </button>
       </div>
@@ -201,36 +198,36 @@ function ChapterCard({ chapter, index, onChange, onRemove }) {
         <div className="program-page__chapter-body">
           <div>
             <div className="program-page__field-label">
-              Plan du chapitre
-              <span className="program-page__field-hint"> — contenu, progression des séances</span>
+              {t('programPage.chapter.planLabel')}
+              <span className="program-page__field-hint">{t('programPage.chapter.planHint')}</span>
             </div>
             <textarea
               className="program-page__textarea"
               rows={4}
               value={chapter.plan}
-              placeholder="Ex: Séance 1 — Introduction…&#10;Séance 2 — Exercices d'application…"
+              placeholder={t('programPage.chapter.planPlaceholder')}
               onChange={(e) => onChange('plan', e.target.value)}
             />
           </div>
           <div>
             <div className="program-page__field-label">
-              Objectifs pédagogiques
-              <span className="program-page__field-hint"> — ce que l'élève doit savoir/savoir-faire</span>
+              {t('programPage.chapter.objectivesLabel')}
+              <span className="program-page__field-hint">{t('programPage.chapter.objectivesHint')}</span>
             </div>
             <textarea
               className="program-page__textarea"
               rows={4}
               value={chapter.objectives}
-              placeholder="À la fin de ce chapitre, l'élève sera capable de…"
+              placeholder={t('programPage.chapter.objectivesPlaceholder')}
               onChange={(e) => onChange('objectives', e.target.value)}
             />
           </div>
           <div>
-            <div className="program-page__field-label">Durée estimée</div>
+            <div className="program-page__field-label">{t('programPage.chapter.durationLabel')}</div>
             <input
               className="program-page__duration-input"
               value={chapter.duration}
-              placeholder="ex: 3 semaines"
+              placeholder={t('programPage.chapter.durationPlaceholder')}
               onChange={(e) => onChange('duration', e.target.value)}
             />
           </div>

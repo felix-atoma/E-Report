@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { calendarService } from '../../../services/calendarService';
 import { useAuth } from '../../../context/AuthContext';
@@ -15,56 +16,26 @@ import Loading from '../../../components/common/Loading/Loading';
 import EmptyState from '../../../components/common/EmptyState/EmptyState';
 import './CalendarPage.css';
 
-const EVENT_TYPE_CONFIG = {
-  HOLIDAY:        { label: 'Congé/Fête',       bg: '#fee2e2', color: '#b91c1c' },
-  EXAM:           { label: 'Examen',            bg: '#ffedd5', color: '#c2410c' },
-  EVENT:          { label: 'Événement',         bg: '#dbeafe', color: '#1d4ed8' },
-  MEETING:        { label: 'Réunion',           bg: '#f3e8ff', color: '#7e22ce' },
-  PARENT_MEETING: { label: 'Réunion parents',   bg: '#ccfbf1', color: '#0f766e' },
-  SPORT:          { label: 'Sport',             bg: '#dcfce7', color: '#15803d' },
-  CULTURAL:       { label: 'Culturel',          bg: '#fce7f3', color: '#be185d' },
-  DEADLINE:       { label: 'Échéance',          bg: '#fef9c3', color: '#a16207' },
-  OTHER:          { label: 'Autre',             bg: '#f3f4f6', color: '#4b5563' },
+const EVENT_TYPE_KEYS = ['HOLIDAY', 'EXAM', 'EVENT', 'MEETING', 'PARENT_MEETING', 'SPORT', 'CULTURAL', 'DEADLINE', 'OTHER'];
+
+const EVENT_TYPE_STYLE = {
+  HOLIDAY:        { bg: '#fee2e2', color: '#b91c1c' },
+  EXAM:           { bg: '#ffedd5', color: '#c2410c' },
+  EVENT:          { bg: '#dbeafe', color: '#1d4ed8' },
+  MEETING:        { bg: '#f3e8ff', color: '#7e22ce' },
+  PARENT_MEETING: { bg: '#ccfbf1', color: '#0f766e' },
+  SPORT:          { bg: '#dcfce7', color: '#15803d' },
+  CULTURAL:       { bg: '#fce7f3', color: '#be185d' },
+  DEADLINE:       { bg: '#fef9c3', color: '#a16207' },
+  OTHER:          { bg: '#f3f4f6', color: '#4b5563' },
 };
-
-const TYPE_OPTIONS = [
-  { value: '', label: 'Tous les types' },
-  ...Object.entries(EVENT_TYPE_CONFIG).map(([v, c]) => ({ value: v, label: c.label })),
-];
-
-const TYPE_SELECT_OPTIONS = [
-  { value: 'EVENT', label: 'Événement' },
-  { value: 'HOLIDAY', label: 'Congé/Fête' },
-  { value: 'EXAM', label: 'Examen' },
-  { value: 'MEETING', label: 'Réunion' },
-  { value: 'PARENT_MEETING', label: 'Réunion parents' },
-  { value: 'SPORT', label: 'Sport' },
-  { value: 'CULTURAL', label: 'Culturel' },
-  { value: 'DEADLINE', label: 'Échéance' },
-  { value: 'OTHER', label: 'Autre' },
-];
 
 const PRESET_COLORS = ['#1E2A78', '#FF7A59', '#E94F8A', '#0ea5e9', '#22c55e', '#f59e0b'];
 
 const EMPTY_FORM = {
-  title: '',
-  type: 'EVENT',
-  startDate: '',
-  endDate: '',
-  allDay: true,
-  description: '',
-  isPublic: true,
-  color: '',
+  title: '', type: 'EVENT', startDate: '', endDate: '',
+  allDay: true, description: '', isPublic: true, color: '',
 };
-
-function EventChip({ type }) {
-  const cfg = EVENT_TYPE_CONFIG[type] ?? EVENT_TYPE_CONFIG.OTHER;
-  return (
-    <span className="cal-chip" style={{ background: cfg.bg, color: cfg.color }}>
-      {cfg.label}
-    </span>
-  );
-}
 
 function ColorPicker({ value, onChange }) {
   return (
@@ -95,6 +66,7 @@ function groupByMonth(events) {
 }
 
 function CalendarPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
@@ -105,6 +77,15 @@ function CalendarPage() {
   const [confirm, setConfirm] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
+
+  const typeOptions = useMemo(() => [
+    { value: '', label: t('calendar.allTypes') },
+    ...EVENT_TYPE_KEYS.map((k) => ({ value: k, label: t(`calendar.types.${k}`) })),
+  ], [t]);
+
+  const typeSelectOptions = EVENT_TYPE_KEYS.map((k) => ({
+    value: k, label: t(`calendar.types.${k}`),
+  }));
 
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['calendar'],
@@ -121,20 +102,20 @@ function CalendarPage() {
     mutationFn: (data) => calendarService.create(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['calendar'] });
-      toast.success('Événement ajouté');
+      toast.success(t('calendar.toast.created'));
       setOpen(false);
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur'),
+    onError: () => toast.error(t('calendar.toast.error')),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => calendarService.remove(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['calendar'] });
-      toast.success('Événement supprimé');
+      toast.success(t('calendar.toast.deleted'));
       setConfirm(null);
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur'),
+    onError: () => toast.error(t('calendar.toast.error')),
   });
 
   function handleChange(field, value) {
@@ -150,15 +131,15 @@ function CalendarPage() {
 
   function validate() {
     const errs = {};
-    if (!form.title.trim()) errs.title = 'Titre requis';
-    if (!form.startDate) errs.startDate = 'Date de début requise';
+    if (!form.title.trim()) errs.title = t('calendar.errors.title');
+    if (!form.startDate) errs.startDate = t('calendar.errors.startDate');
     return errs;
   }
 
   function handleSubmit() {
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
-    const payload = {
+    createMutation.mutate({
       title:       form.title,
       type:        form.type,
       startDate:   form.startDate,
@@ -167,27 +148,25 @@ function CalendarPage() {
       description: form.description || undefined,
       isPublic:    form.isPublic,
       color:       form.color || undefined,
-    };
-    createMutation.mutate(payload);
+    });
   }
 
   return (
-    <AppShell title="Calendrier scolaire">
+    <AppShell title={t('calendar.title')}>
       <PageHeader
-        title="Calendrier scolaire"
-        subtitle={`${events.length} événement${events.length !== 1 ? 's' : ''}`}
+        title={t('calendar.title')}
+        subtitle={t('calendar.subtitle', { count: events.length })}
         actions={
           canCreate && (
             <Button icon="+" onClick={openCreate}>
-              Ajouter un événement
+              {t('calendar.add')}
             </Button>
           )
         }
       />
 
-      {/* Type filter pills */}
       <div className="cal-filters">
-        {TYPE_OPTIONS.map((opt) => (
+        {typeOptions.map((opt) => (
           <button
             key={opt.value}
             className={`cal-filter-pill ${typeFilter === opt.value ? 'cal-filter-pill--active' : ''}`}
@@ -201,7 +180,7 @@ function CalendarPage() {
       {isLoading ? (
         <Loading />
       ) : grouped.length === 0 ? (
-        <EmptyState message="Aucun événement pour le moment." />
+        <EmptyState message={t('calendar.empty')} />
       ) : (
         <div className="cal-list">
           {grouped.map(([key, group]) => (
@@ -209,17 +188,19 @@ function CalendarPage() {
               <h3 className="cal-month-group__title">{group.label}</h3>
               <div className="cal-events">
                 {group.events.map((ev) => {
-                  const cfg = EVENT_TYPE_CONFIG[ev.type] ?? EVENT_TYPE_CONFIG.OTHER;
-                  const dot = ev.color || cfg.bg;
+                  const style = EVENT_TYPE_STYLE[ev.type] ?? EVENT_TYPE_STYLE.OTHER;
+                  const dot = ev.color || style.bg;
                   return (
                     <div key={ev.id} className="cal-event-row">
                       <div className="cal-event-row__dot" style={{ background: dot }} />
                       <div className="cal-event-row__body">
                         <div className="cal-event-row__header">
                           <span className="cal-event-row__title">{ev.title}</span>
-                          <EventChip type={ev.type} />
+                          <span className="cal-chip" style={{ background: style.bg, color: style.color }}>
+                            {t(`calendar.types.${ev.type}`, ev.type)}
+                          </span>
                           {!ev.isPublic && (
-                            <span className="cal-event-row__private">Privé</span>
+                            <span className="cal-event-row__private">{t('calendar.private')}</span>
                           )}
                         </div>
                         <div className="cal-event-row__dates">
@@ -227,7 +208,7 @@ function CalendarPage() {
                           {ev.endDate && ev.endDate !== ev.startDate && (
                             <> — {new Date(ev.endDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</>
                           )}
-                          {ev.allDay && <span className="cal-event-row__allday">Journée entière</span>}
+                          {ev.allDay && <span className="cal-event-row__allday">{t('calendar.allDay')}</span>}
                         </div>
                         {ev.description && (
                           <p className="cal-event-row__desc">{ev.description}</p>
@@ -237,7 +218,7 @@ function CalendarPage() {
                         <button
                           className="cal-event-row__delete"
                           onClick={() => setConfirm(ev)}
-                          title="Supprimer"
+                          title={t('calendar.confirmLabel')}
                         >
                           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
                         </button>
@@ -251,19 +232,18 @@ function CalendarPage() {
         </div>
       )}
 
-      {/* Add event OffCanvas */}
       <OffCanvas
         open={open}
         onClose={() => setOpen(false)}
-        title="Ajouter un événement"
+        title={t('calendar.form.offcanvasTitle')}
         size="md"
         footer={
           <>
             <Button variant="ghost" onClick={() => setOpen(false)} disabled={createMutation.isPending}>
-              Annuler
+              {t('action.cancel')}
             </Button>
             <Button onClick={handleSubmit} disabled={createMutation.isPending}>
-              {createMutation.isPending ? 'Enregistrement…' : 'Enregistrer'}
+              {createMutation.isPending ? t('action.saving') : t('action.save')}
             </Button>
           </>
         }
@@ -271,24 +251,24 @@ function CalendarPage() {
         <div className="cal-form">
           <Input
             id="title"
-            label="Titre"
+            label={t('calendar.form.titleLabel')}
             required
             value={form.title}
             error={errors.title}
-            placeholder="ex: Réunion des parents, Examen trimestriel…"
+            placeholder={t('calendar.form.titlePlaceholder')}
             onChange={(e) => handleChange('title', e.target.value)}
           />
           <Select
             id="type"
-            label="Type"
+            label={t('calendar.form.typeLabel')}
             value={form.type}
-            options={TYPE_SELECT_OPTIONS}
+            options={typeSelectOptions}
             onChange={(e) => handleChange('type', e.target.value)}
           />
           <div className="cal-form__row">
             <Input
               id="startDate"
-              label="Date de début"
+              label={t('calendar.form.startDate')}
               type="date"
               required
               value={form.startDate}
@@ -297,7 +277,7 @@ function CalendarPage() {
             />
             <Input
               id="endDate"
-              label="Date de fin"
+              label={t('calendar.form.endDate')}
               type="date"
               value={form.endDate}
               onChange={(e) => handleChange('endDate', e.target.value)}
@@ -310,7 +290,7 @@ function CalendarPage() {
                 checked={form.allDay}
                 onChange={(e) => handleChange('allDay', e.target.checked)}
               />
-              Journée entière
+              {t('calendar.allDay')}
             </label>
             <label className="form-field__checkbox">
               <input
@@ -318,18 +298,18 @@ function CalendarPage() {
                 checked={form.isPublic}
                 onChange={(e) => handleChange('isPublic', e.target.checked)}
               />
-              Visible par les parents/élèves
+              {t('calendar.visibleToParents')}
             </label>
           </div>
           <div>
-            <label className="cal-form__label">Couleur (optionnel)</label>
+            <label className="cal-form__label">{t('calendar.colorLabel')}</label>
             <ColorPicker value={form.color} onChange={(c) => handleChange('color', c)} />
           </div>
           <Textarea
             id="description"
-            label="Description"
+            label={t('action.description') ?? 'Description'}
             rows={3}
-            placeholder="Description optionnelle…"
+            placeholder={t('calendar.form.descPlaceholder')}
             value={form.description}
             onChange={(e) => handleChange('description', e.target.value)}
           />
@@ -341,9 +321,9 @@ function CalendarPage() {
         onClose={() => setConfirm(null)}
         onConfirm={() => deleteMutation.mutate(confirm.id)}
         loading={deleteMutation.isPending}
-        title="Supprimer l'événement"
-        message={`Supprimer "${confirm?.title}" du calendrier ?`}
-        confirmLabel="Supprimer"
+        title={t('calendar.confirmTitle')}
+        message={t('calendar.confirmMessage', { title: confirm?.title })}
+        confirmLabel={t('calendar.confirmLabel')}
         variant="danger"
       />
     </AppShell>

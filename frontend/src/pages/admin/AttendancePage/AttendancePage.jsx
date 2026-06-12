@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { classesService } from '../../../services/classesService';
@@ -18,10 +19,11 @@ function rate(v, total) {
 }
 
 export default function AdminAttendancePage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const { institution } = useInstitution();
   const [classId, setClassId] = useState('');
-  const [view, setView] = useState('summary'); // 'summary' | 'list'
+  const [view, setView] = useState('summary');
   const [date, setDate] = useState('');
 
   const { data: pending = [], isLoading: loadingPending } = useQuery({
@@ -33,9 +35,9 @@ export default function AdminAttendancePage() {
     mutationFn: (id) => attendanceService.approveJustification(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['att-pending-justifications'] });
-      toast.success('Justification approuvée — absence marquée excusée');
+      toast.success(t('attendance.approved'));
     },
-    onError: () => toast.error('Impossible d\'approuver la justification'),
+    onError: () => toast.error(t('attendance.approveError')),
   });
 
   const { data: classes = [], isLoading: l1 } = useQuery({
@@ -59,52 +61,51 @@ export default function AdminAttendancePage() {
     enabled: !!classId && view === 'list' && !!date,
   });
 
-  if (l1) return <AppShell title="Présences"><Loading /></AppShell>;
+  if (l1) return <AppShell title={t('attendance.pageTitle')}><Loading /></AppShell>;
 
   return (
-    <AppShell title="Présences">
-      <PageHeader title="Suivi des présences" subtitle="Consultez le taux de présence par classe" />
+    <AppShell title={t('attendance.pageTitle')}>
+      <PageHeader title={t('attendance.trackTitle')} subtitle={t('attendance.trackSubtitle')} />
 
       <Card className="att-controls">
         <div className="att-controls__row">
           <div className="att-controls__field">
-            <label>Classe</label>
+            <label>{t('attendance.class')}</label>
             <select value={classId} onChange={(e) => setClassId(e.target.value)}>
-              <option value="">— Sélectionner —</option>
+              <option value="">— {t('common.all')} —</option>
               {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
           <div className="att-controls__field">
-            <label>Vue</label>
+            <label>{t('attendance.view')}</label>
             <select value={view} onChange={(e) => setView(e.target.value)}>
-              <option value="summary">Résumé annuel par élève</option>
-              <option value="list">Présences d'un jour</option>
+              <option value="summary">{t('attendance.annualSummary')}</option>
+              <option value="list">{t('attendance.dayList')}</option>
             </select>
           </div>
           {view === 'list' && (
             <div className="att-controls__field">
-              <label>Date</label>
+              <label>{t('attendance.date')}</label>
               <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
             </div>
           )}
         </div>
       </Card>
 
-      {/* Summary view */}
       {view === 'summary' && classId && (
         l2 ? <Loading /> : summary.length === 0 ? (
-          <EmptyState message="Aucune donnée de présence pour cette classe." />
+          <EmptyState message={t('attendance.noData')} />
         ) : (
           <Card className="att-table-wrap">
             <table className="att-table">
               <thead>
                 <tr>
-                  <th>Élève</th>
-                  <th>Présent</th>
-                  <th>Absent</th>
-                  <th>Retard</th>
-                  <th>Excusé</th>
-                  <th>Taux présence</th>
+                  <th>{t('students.title')}</th>
+                  <th>{t('attendance.PRESENT')}</th>
+                  <th>{t('attendance.ABSENT')}</th>
+                  <th>{t('attendance.LATE')}</th>
+                  <th>{t('attendance.EXCUSED')}</th>
+                  <th>{t('attendance.rate')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -137,20 +138,19 @@ export default function AdminAttendancePage() {
         )
       )}
 
-      {/* Day list view */}
       {view === 'list' && classId && date && (
         l3 ? <Loading /> : dayList.length === 0 ? (
-          <EmptyState message="Aucune feuille de présence pour cette date." />
+          <EmptyState message={t('attendance.noDataDay')} />
         ) : (
           <Card className="att-table-wrap">
             <table className="att-table">
               <thead>
                 <tr>
-                  <th>Élève</th>
-                  <th>Statut</th>
-                  <th>Matière</th>
-                  <th>Note</th>
-                  <th>Enregistré par</th>
+                  <th>{t('students.title')}</th>
+                  <th>{t('attendance.status')}</th>
+                  <th>{t('attendance.subject')}</th>
+                  <th>{t('attendance.note')}</th>
+                  <th>{t('attendance.recordedBy')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -170,24 +170,23 @@ export default function AdminAttendancePage() {
       )}
 
       {!classId && (
-        <EmptyState message="Sélectionnez une classe pour voir les présences." />
+        <EmptyState message={t('attendance.selectClass')} />
       )}
 
-      {/* Pending justifications */}
       {(loadingPending || pending.length > 0) && (
         <div style={{ marginTop: '1.5rem' }}>
           <h3 className="att-section-title">
-            ⏳ Justifications en attente ({pending.length})
+            {t('attendance.justificationsTitle', { count: pending.length })}
           </h3>
           {loadingPending ? <Loading /> : (
             <Card className="att-table-wrap">
               <table className="att-table">
                 <thead>
                   <tr>
-                    <th>Élève</th>
-                    <th>Classe</th>
-                    <th>Date</th>
-                    <th>Motif</th>
+                    <th>{t('students.title')}</th>
+                    <th>{t('classes.title')}</th>
+                    <th>{t('attendance.date')}</th>
+                    <th>{t('attendance.motive')}</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -206,7 +205,7 @@ export default function AdminAttendancePage() {
                           disabled={approveMutation.isPending}
                           onClick={() => approveMutation.mutate(rec.id)}
                         >
-                          ✅ Approuver
+                          ✅ {t('attendance.approve')}
                         </Button>
                       </td>
                     </tr>

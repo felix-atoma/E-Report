@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { reportsService } from '../../../services/reportsService';
 import { classesService } from '../../../services/classesService';
@@ -13,37 +14,27 @@ import Input from '../../../components/common/Input/Input';
 import Button from '../../../components/common/Button/Button';
 import './CreateReportCardPage.css';
 
-const TERM_TYPES = [
-  { value: 'TRIMESTRE', label: 'Trimestriel' },
-  { value: 'SEMESTRE',  label: 'Semestriel' },
-  { value: 'CUSTOM',    label: 'Personnalisé' },
-];
-
-const TRIMESTRE_NAMES = [
-  { value: '1', label: '1er trimestre' },
-  { value: '2', label: '2ème trimestre' },
-  { value: '3', label: '3ème trimestre' },
-];
-
-const SEMESTRE_NAMES = [
-  { value: '1', label: '1er semestre' },
-  { value: '2', label: '2ème semestre' },
-];
-
-function validate(form) {
-  const errors = {};
-  if (!form.classId)          errors.classId     = 'Classe requise';
-  if (!form.academicYear.trim()) errors.academicYear = 'Année scolaire requise';
-  if (!form.termType)         errors.termType    = 'Type de période requis';
-  if (!form.termNumber)       errors.termNumber  = 'Période requise';
-  return errors;
-}
-
 function CreateReportCardPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const preselectedClass = searchParams.get('classId') ?? '';
+
+  const termTypes = [
+    { value: 'TRIMESTRE', label: t('createReport.termTypes.TRIMESTRE') },
+    { value: 'SEMESTRE',  label: t('createReport.termTypes.SEMESTRE') },
+    { value: 'CUSTOM',    label: t('createReport.termTypes.CUSTOM') },
+  ];
+  const triOptions = [
+    { value: '1', label: t('createReport.trimestres.1') },
+    { value: '2', label: t('createReport.trimestres.2') },
+    { value: '3', label: t('createReport.trimestres.3') },
+  ];
+  const semOptions = [
+    { value: '1', label: t('createReport.semestres.1') },
+    { value: '2', label: t('createReport.semestres.2') },
+  ];
 
   const [form, setForm]   = useState({
     classId:      preselectedClass,
@@ -63,15 +54,24 @@ function CreateReportCardPage() {
     mutationFn: (data) => reportsService.create(data),
     onSuccess: (res) => {
       const count = res.data?.count ?? 1;
-      toast.success(`${count} bulletin${count !== 1 ? 's' : ''} créé${count !== 1 ? 's' : ''}`);
+      toast.success(t('createReport.toast.created', { count }));
       navigate(user?.role === 'ADMIN' ? '/admin/reports' : '/teacher/reports');
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur de création'),
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('createReport.toast.error')),
   });
 
   function set(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
     if (errors[field]) setErrors((e) => ({ ...e, [field]: undefined }));
+  }
+
+  function validate(form) {
+    const errors = {};
+    if (!form.classId)             errors.classId     = t('createReport.errors.classRequired');
+    if (!form.academicYear.trim()) errors.academicYear = t('createReport.errors.academicYearRequired');
+    if (!form.termType)            errors.termType    = t('createReport.errors.termTypeRequired');
+    if (!form.termNumber)          errors.termNumber  = t('createReport.errors.termNumberRequired');
+    return errors;
   }
 
   function handleSubmit() {
@@ -87,30 +87,34 @@ function CreateReportCardPage() {
   }
 
   const termOptions =
-    form.termType === 'SEMESTRE' ? SEMESTRE_NAMES :
-    form.termType === 'TRIMESTRE' ? TRIMESTRE_NAMES : [];
+    form.termType === 'SEMESTRE' ? semOptions :
+    form.termType === 'TRIMESTRE' ? triOptions : [];
 
   const classOptions = classes.map((c) => ({ value: c.id, label: c.name }));
 
+  const exampleLabel = form.termType === 'SEMESTRE'
+    ? t('createReport.semestres.1')
+    : t('createReport.trimestres.1');
+
   return (
-    <AppShell title="Nouveau bulletin">
+    <AppShell title={t('createReport.title')}>
       <PageHeader
-        title="Nouveau bulletin de notes"
-        subtitle="Créez un bulletin pour une classe et une période"
+        title={t('createReport.pageTitle')}
+        subtitle={t('createReport.subtitle')}
       />
 
       <Card className="create-report__card">
         <div className="create-report__form">
           <Select
-            id="classId" label="Classe" required
+            id="classId" label={t('createReport.fields.class')} required
             value={form.classId} error={errors.classId}
-            placeholder="Sélectionner une classe"
+            placeholder={t('createReport.fields.classPlaceholder')}
             options={classOptions}
             onChange={(e) => set('classId', e.target.value)}
           />
 
           <Input
-            id="academicYear" label="Année scolaire" required
+            id="academicYear" label={t('createReport.fields.academicYear')} required
             value={form.academicYear} error={errors.academicYear}
             placeholder="ex: 2024-2025"
             onChange={(e) => set('academicYear', e.target.value)}
@@ -118,23 +122,23 @@ function CreateReportCardPage() {
 
           <div className="create-report__row">
             <Select
-              id="termType" label="Type de période" required
+              id="termType" label={t('createReport.fields.termType')} required
               value={form.termType} error={errors.termType}
-              options={TERM_TYPES}
+              options={termTypes}
               onChange={(e) => { set('termType', e.target.value); set('termNumber', '1'); }}
             />
             {form.termType !== 'CUSTOM' ? (
               <Select
-                id="termNumber" label="Période" required
+                id="termNumber" label={t('createReport.fields.period')} required
                 value={form.termNumber} error={errors.termNumber}
                 options={termOptions}
                 onChange={(e) => set('termNumber', e.target.value)}
               />
             ) : (
               <Input
-                id="termName" label="Nom de la période" required
+                id="termName" label={t('createReport.fields.periodName')} required
                 value={form.termName} error={errors.termNumber}
-                placeholder="ex: Période 1"
+                placeholder={t('createReport.fields.periodPlaceholder')}
                 onChange={(e) => { set('termName', e.target.value); set('termNumber', '1'); }}
               />
             )}
@@ -142,19 +146,19 @@ function CreateReportCardPage() {
 
           {form.termType !== 'CUSTOM' && (
             <Input
-              id="termName" label="Libellé personnalisé (optionnel)"
+              id="termName" label={t('createReport.fields.customLabel')}
               value={form.termName}
-              placeholder={`ex: ${form.termType === 'SEMESTRE' ? '1er semestre 2024' : '1er trimestre 2024'}`}
+              placeholder={`ex: ${exampleLabel} 2024`}
               onChange={(e) => set('termName', e.target.value)}
             />
           )}
 
           <div className="create-report__actions">
             <Button variant="ghost" onClick={() => navigate(-1)} disabled={mutation.isPending}>
-              Annuler
+              {t('createReport.actions.cancel')}
             </Button>
             <Button onClick={handleSubmit} disabled={mutation.isPending}>
-              {mutation.isPending ? 'Création…' : 'Créer le bulletin'}
+              {mutation.isPending ? t('createReport.actions.creating') : t('createReport.actions.create')}
             </Button>
           </div>
         </div>

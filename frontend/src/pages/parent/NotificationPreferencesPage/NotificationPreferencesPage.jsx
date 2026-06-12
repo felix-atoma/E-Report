@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../../context/AuthContext';
@@ -10,18 +11,9 @@ import Input from '../../../components/common/Input/Input';
 import Button from '../../../components/common/Button/Button';
 import './NotificationPreferencesPage.css';
 
-const CHANNEL_LABELS = {
-  whatsapp: 'WhatsApp',
-  email: 'Email',
-  sms: 'SMS',
-};
-
-const EVENT_LABELS = {
-  bulletinPublished: 'Bulletin publié',
-  paymentConfirmed: 'Paiement confirmé',
-  announcementPosted: 'Nouvelle annonce',
-  paymentReminder: 'Rappel de paiement',
-};
+const CHANNEL_KEYS = ['whatsapp', 'email', 'sms'];
+const CHANNEL_LABELS = { whatsapp: 'WhatsApp', email: 'Email', sms: 'SMS' };
+const EVENT_KEYS = ['bulletinPublished', 'paymentConfirmed', 'announcementPosted', 'paymentReminder'];
 
 function Toggle({ checked, onChange, id }) {
   return (
@@ -41,12 +33,21 @@ function Toggle({ checked, onChange, id }) {
 }
 
 function PushNotificationsCard() {
+  const { t } = useTranslation();
   const [permission, setPermission] = useState(
     typeof Notification !== 'undefined' ? Notification.permission : 'unsupported'
   );
   const [loading, setLoading] = useState(false);
 
   const supported = typeof Notification !== 'undefined' && 'serviceWorker' in navigator;
+
+  const statusMap = {
+    granted:     { label: t('notifPrefs.push.granted'),    color: '#15803d', bg: '#dcfce7' },
+    denied:      { label: t('notifPrefs.push.denied'),     color: '#b91c1c', bg: '#fee2e2' },
+    default:     { label: t('notifPrefs.push.default'),    color: '#a16207', bg: '#fef3c7' },
+    unsupported: { label: t('notifPrefs.push.unsupported'),color: '#6b7280', bg: '#f3f4f6' },
+  };
+  const status = statusMap[permission] ?? statusMap.unsupported;
 
   async function requestPush() {
     if (!supported) return;
@@ -55,48 +56,39 @@ function PushNotificationsCard() {
       const result = await Notification.requestPermission();
       setPermission(result);
       if (result === 'granted') {
-        toast.success('Notifications activées !');
-        // Send a test notification
+        toast.success(t('notifPrefs.toast.granted'));
         new Notification('NovaBulletin', {
-          body: 'Vous recevrez désormais les alertes importantes ici.',
+          body: t('notifPrefs.push.testBody'),
           icon: '/pwa-192.svg',
         });
       } else {
-        toast.error('Notifications refusées par le navigateur');
+        toast.error(t('notifPrefs.toast.denied'));
       }
     } finally {
       setLoading(false);
     }
   }
 
-  const statusMap = {
-    granted:     { label: 'Activées',    color: '#15803d', bg: '#dcfce7' },
-    denied:      { label: 'Bloquées',    color: '#b91c1c', bg: '#fee2e2' },
-    default:     { label: 'Non activées', color: '#a16207', bg: '#fef3c7' },
-    unsupported: { label: 'Non supporté', color: '#6b7280', bg: '#f3f4f6' },
-  };
-  const status = statusMap[permission] ?? statusMap.unsupported;
-
   return (
     <Card className="np-section">
-      <h3 className="np-section__title">Notifications du navigateur (PWA)</h3>
-      <p className="np-section__desc">Recevez des alertes directement dans votre navigateur, même quand l'application est fermée.</p>
+      <h3 className="np-section__title">{t('notifPrefs.push.title')}</h3>
+      <p className="np-section__desc">{t('notifPrefs.push.desc')}</p>
       <div className="np-push-row">
         <span className="np-push-badge" style={{ color: status.color, background: status.bg }}>
           {status.label}
         </span>
         {permission !== 'granted' && permission !== 'denied' && supported && (
           <Button size="sm" onClick={requestPush} disabled={loading}>
-            {loading ? 'Activation…' : 'Activer les notifications'}
+            {loading ? t('notifPrefs.push.activating') : t('notifPrefs.push.activate')}
           </Button>
         )}
         {permission === 'granted' && (
-          <Button size="sm" variant="ghost" onClick={() => new Notification('NovaBulletin', { body: 'Test notification', icon: '/pwa-192.svg' })}>
-            Tester
+          <Button size="sm" variant="ghost" onClick={() => new Notification('NovaBulletin', { body: t('notifPrefs.push.testBody'), icon: '/pwa-192.svg' })}>
+            {t('notifPrefs.push.test')}
           </Button>
         )}
         {permission === 'denied' && (
-          <p className="np-push-hint">Autorisez les notifications dans les paramètres de votre navigateur.</p>
+          <p className="np-push-hint">{t('notifPrefs.push.deniedHint')}</p>
         )}
       </div>
     </Card>
@@ -104,6 +96,7 @@ function PushNotificationsCard() {
 }
 
 function NotificationPreferencesPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
 
   const defaultPrefs = {
@@ -130,8 +123,8 @@ function NotificationPreferencesPage() {
 
   const mutation = useMutation({
     mutationFn: (data) => usersService.update(user.id, data),
-    onSuccess: () => toast.success('Préférences enregistrées'),
-    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur de sauvegarde'),
+    onSuccess: () => toast.success(t('notifPrefs.toast.saved')),
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('notifPrefs.toast.error')),
   });
 
   function toggleChannel(ch) {
@@ -150,7 +143,7 @@ function NotificationPreferencesPage() {
 
   function handleSave() {
     if (prefs.channels.whatsapp && !whatsappNumber.trim()) {
-      setWhatsappError('Numéro WhatsApp requis pour activer ce canal');
+      setWhatsappError(t('notifPrefs.whatsappError'));
       return;
     }
     setWhatsappError('');
@@ -161,28 +154,25 @@ function NotificationPreferencesPage() {
   }
 
   return (
-    <AppShell title="Notifications">
+    <AppShell title={t('notifPrefs.title')}>
       <PageHeader
-        title="Préférences de notification"
-        subtitle="Choisissez comment vous souhaitez être informé"
+        title={t('notifPrefs.title')}
+        subtitle={t('notifPrefs.subtitle')}
         actions={
           <Button onClick={handleSave} disabled={mutation.isPending}>
-            {mutation.isPending ? 'Enregistrement…' : 'Enregistrer'}
+            {mutation.isPending ? t('action.saving') : t('action.save')}
           </Button>
         }
       />
 
       <div className="np-layout">
-        {/* WhatsApp number */}
         <Card className="np-section">
-          <h3 className="np-section__title">Contact WhatsApp</h3>
-          <p className="np-section__desc">
-            Entrez votre numéro pour recevoir les notifications par WhatsApp.
-          </p>
+          <h3 className="np-section__title">{t('notifPrefs.whatsappSection')}</h3>
+          <p className="np-section__desc">{t('notifPrefs.whatsappDesc')}</p>
           <div className="np-whatsapp-row">
             <Input
               id="whatsapp"
-              label="Numéro WhatsApp"
+              label={t('notifPrefs.whatsappLabel')}
               value={whatsappNumber}
               onChange={(e) => {
                 setWhatsappNumber(e.target.value);
@@ -190,25 +180,24 @@ function NotificationPreferencesPage() {
               }}
               placeholder="+228 90 00 00 00"
               error={whatsappError}
-              hint="Format international requis (ex : +228…)"
+              hint={t('notifPrefs.whatsappHint')}
             />
           </div>
           {user?.whatsappVerified && (
-            <p className="np-verified">✓ Numéro vérifié</p>
+            <p className="np-verified">{t('notifPrefs.whatsappVerified')}</p>
           )}
         </Card>
 
-        {/* Channels */}
         <Card className="np-section">
-          <h3 className="np-section__title">Canaux de notification</h3>
-          <p className="np-section__desc">Activez ou désactivez chaque canal.</p>
+          <h3 className="np-section__title">{t('notifPrefs.channelsSection')}</h3>
+          <p className="np-section__desc">{t('notifPrefs.channelsDesc')}</p>
           <div className="np-list">
-            {Object.entries(CHANNEL_LABELS).map(([ch, label]) => (
+            {CHANNEL_KEYS.map((ch) => (
               <div key={ch} className="np-row">
                 <div className="np-row__info">
-                  <span className="np-row__label">{label}</span>
+                  <span className="np-row__label">{CHANNEL_LABELS[ch]}</span>
                   {ch === 'whatsapp' && !user?.whatsappVerified && (
-                    <span className="np-row__badge np-row__badge--warn">Non vérifié</span>
+                    <span className="np-row__badge np-row__badge--warn">{t('notifPrefs.unverified')}</span>
                   )}
                   {ch === 'email' && (
                     <span className="np-row__sub">{user?.email}</span>
@@ -224,14 +213,13 @@ function NotificationPreferencesPage() {
           </div>
         </Card>
 
-        {/* Events */}
         <Card className="np-section">
-          <h3 className="np-section__title">Événements à notifier</h3>
-          <p className="np-section__desc">Choisissez pour quels événements vous souhaitez recevoir des alertes.</p>
+          <h3 className="np-section__title">{t('notifPrefs.eventsSection')}</h3>
+          <p className="np-section__desc">{t('notifPrefs.eventsDesc')}</p>
           <div className="np-list">
-            {Object.entries(EVENT_LABELS).map(([ev, label]) => (
+            {EVENT_KEYS.map((ev) => (
               <div key={ev} className="np-row">
-                <span className="np-row__label">{label}</span>
+                <span className="np-row__label">{t(`notifPrefs.events.${ev}`)}</span>
                 <Toggle
                   id={`ev-${ev}`}
                   checked={prefs.events[ev] ?? false}
@@ -242,13 +230,11 @@ function NotificationPreferencesPage() {
           </div>
         </Card>
 
-        {/* PWA Push Notifications */}
         <PushNotificationsCard />
 
-        {/* Info note */}
         <Card className="np-section np-section--info">
           <p className="np-info-text">
-            Les bulletins retenus pour défaut de paiement ne sont pas concernés par ces préférences — ils sont automatiquement libérés dès régularisation.
+            {t('notifPrefs.infoNote')}
           </p>
         </Card>
       </div>

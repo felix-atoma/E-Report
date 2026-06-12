@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { programsService } from '../../../services/programsService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
@@ -14,18 +15,20 @@ function currentAcademicYear() {
 }
 
 function ProgressBar({ done, total }) {
+  const { t } = useTranslation();
   const pct = total === 0 ? 0 : Math.round((done / total) * 100);
   return (
     <div className="roadmap__progress">
       <div className="roadmap__progress-track">
         <div className="roadmap__progress-fill" style={{ width: `${pct}%` }} />
       </div>
-      <span className="roadmap__progress-label">{done}/{total} chapitres ({pct}%)</span>
+      <span className="roadmap__progress-label">{t('teacherRoadmap.progress', { done, total, pct })}</span>
     </div>
   );
 }
 
 function TeacherRoadmapPage() {
+  const { t } = useTranslation();
   const [year, setYear] = useState(currentAcademicYear);
   const [collapsed, setCollapsed] = useState({});
 
@@ -47,14 +50,14 @@ function TeacherRoadmapPage() {
   const doneChapters   = roadmap.reduce((n, i) => n + (i.program?.chapters?.filter(c => c.isCompleted).length ?? 0), 0);
 
   return (
-    <AppShell title="Feuille de route">
+    <AppShell title={t('teacherRoadmap.title')}>
       <PageHeader
-        title="Feuille de route de l'année"
-        subtitle="Programmes, chapitres et progression par matière"
+        title={t('teacherRoadmap.pageTitle')}
+        subtitle={t('teacherRoadmap.subtitle')}
       />
 
       <div className="roadmap__toolbar">
-        <label className="roadmap__year-label">Année scolaire :</label>
+        <label className="roadmap__year-label">{t('teacherRoadmap.yearLabel')}</label>
         <input
           type="text"
           value={year}
@@ -69,8 +72,8 @@ function TeacherRoadmapPage() {
         <Card>
           <div className="roadmap__empty">
             <span>📋</span>
-            <p>Aucune matière assignée pour {year}.</p>
-            <p className="roadmap__empty-sub">L'administrateur doit vous assigner à des classes et matières.</p>
+            <p>{t('teacherRoadmap.empty', { year })}</p>
+            <p className="roadmap__empty-sub">{t('teacherRoadmap.emptySub')}</p>
           </div>
         </Card>
       ) : (
@@ -78,19 +81,19 @@ function TeacherRoadmapPage() {
           <div className="roadmap__summary">
             <div className="roadmap__summary-stat">
               <span className="roadmap__summary-val">{totalSubjects}</span>
-              <span className="roadmap__summary-lbl">Matières</span>
+              <span className="roadmap__summary-lbl">{t('teacherRoadmap.summary.subjects')}</span>
             </div>
             <div className="roadmap__summary-stat roadmap__summary-stat--ok">
               <span className="roadmap__summary-val">{withProgram}/{totalSubjects}</span>
-              <span className="roadmap__summary-lbl">Avec programme</span>
+              <span className="roadmap__summary-lbl">{t('teacherRoadmap.summary.withProgram')}</span>
             </div>
             <div className="roadmap__summary-stat">
               <span className="roadmap__summary-val">{totalChapters}</span>
-              <span className="roadmap__summary-lbl">Chapitres prévus</span>
+              <span className="roadmap__summary-lbl">{t('teacherRoadmap.summary.planned')}</span>
             </div>
             <div className="roadmap__summary-stat roadmap__summary-stat--green">
               <span className="roadmap__summary-val">{doneChapters}</span>
-              <span className="roadmap__summary-lbl">Terminés</span>
+              <span className="roadmap__summary-lbl">{t('teacherRoadmap.summary.done')}</span>
             </div>
           </div>
 
@@ -105,7 +108,7 @@ function TeacherRoadmapPage() {
                 >
                   <span className="roadmap__class-icon">🏫</span>
                   <strong className="roadmap__class-name">{className}</strong>
-                  <span className="roadmap__class-count">{subjects.length} matière{subjects.length > 1 ? 's' : ''}</span>
+                  <span className="roadmap__class-count">{t('teacherRoadmap.subjects', { count: subjects.length })}</span>
                   <span className="roadmap__chevron">{isOpen ? '▲' : '▼'}</span>
                 </button>
 
@@ -125,7 +128,7 @@ function TeacherRoadmapPage() {
                               to={`/teacher/classes/${classId}/subjects/${item.subjectId}/program`}
                               className="roadmap__edit-btn"
                             >
-                              {item.program ? '✏️ Modifier' : '+ Créer le programme'}
+                              {item.program ? t('teacherRoadmap.editBtn') : t('teacherRoadmap.createBtn')}
                             </Link>
                           </div>
 
@@ -150,11 +153,11 @@ function TeacherRoadmapPage() {
                                   </div>
                                 </>
                               ) : (
-                                <p className="roadmap__no-chapters">Programme sans chapitres — cliquez Modifier pour en ajouter.</p>
+                                <p className="roadmap__no-chapters">{t('teacherRoadmap.noChapters')}</p>
                               )}
                             </>
                           ) : (
-                            <p className="roadmap__no-program">Aucun programme défini — cliquez pour créer.</p>
+                            <p className="roadmap__no-program">{t('teacherRoadmap.noProgram')}</p>
                           )}
                         </div>
                       );

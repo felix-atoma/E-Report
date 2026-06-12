@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -30,6 +31,7 @@ const MENTION_VARIANT = (avg) => {
 };
 
 function ReportItem({ report }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const termLabel = report.termName ?? `Trimestre ${report.termNumber}`;
@@ -65,9 +67,9 @@ function ReportItem({ report }) {
             <table className="student-grades-table">
               <thead>
                 <tr>
-                  <th>Matière</th>
-                  <th>Coef.</th>
-                  <th>Note</th>
+                  <th>{t('gradeTable.subject')}</th>
+                  <th>{t('gradeTable.coef')}</th>
+                  <th>{t('gradeTable.score')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -84,7 +86,7 @@ function ReportItem({ report }) {
               {avg != null && (
                 <tfoot>
                   <tr className="student-grades-table__avg-row">
-                    <td colSpan={2}>Moyenne générale</td>
+                    <td colSpan={2}>{t('myReports.overallAvg')}</td>
                     <td className="student-grades-table__score">
                       <strong>{String(avg).replace('.', ',')} / 20</strong>
                     </td>
@@ -101,7 +103,7 @@ function ReportItem({ report }) {
               rel="noreferrer"
               className="student-report-item__btn student-report-item__btn--download"
             >
-              🖨️ Imprimer / PDF
+              {t('reportCards.printPdf')}
             </Link>
             <button
               className="student-report-item__btn student-report-item__btn--print"
@@ -111,19 +113,19 @@ function ReportItem({ report }) {
                 try {
                   await downloadPdf(report.id, report.termNumber);
                 } catch {
-                  toast.error('Échec du téléchargement du PDF');
+                  toast.error(t('myReports.downloadError'));
                 } finally {
                   setDownloading(false);
                 }
               }}
             >
-              {downloading ? '⏳ …' : '↓ Télécharger'}
+              {downloading ? '⏳ …' : t('myReports.download')}
             </button>
           </div>
 
           {report.teacherComment && (
             <div className="student-report-item__comment">
-              <span className="student-report-item__comment-label">Appréciation :</span>
+              <span className="student-report-item__comment-label">{t('myReports.appreciation')} :</span>
               <p>"{report.teacherComment}"</p>
             </div>
           )}
@@ -134,6 +136,8 @@ function ReportItem({ report }) {
 }
 
 function MyReportCardsPage() {
+  const { t } = useTranslation();
+
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ['student-reports'],
     queryFn: () => reportsService.list().then((r) => r.data),
@@ -141,20 +145,20 @@ function MyReportCardsPage() {
 
   const published = reports.filter((r) => r.status === 'PUBLISHED');
 
-  if (isLoading) return <AppShell title="Mes bulletins"><Loading /></AppShell>;
+  if (isLoading) return <AppShell title={t('myReports.title')}><Loading /></AppShell>;
 
   return (
-    <AppShell title="Mes bulletins">
+    <AppShell title={t('myReports.title')}>
       <PageHeader
-        title="Mes bulletins de notes"
-        subtitle={`${published.length} bulletin${published.length !== 1 ? 's' : ''} disponible${published.length !== 1 ? 's' : ''}`}
+        title={t('myReports.title')}
+        subtitle={t('myReports.subtitle', { count: published.length })}
       />
 
       {published.length === 0 ? (
         <EmptyState
           icon="📋"
-          message="Aucun bulletin disponible"
-          description="Vos bulletins apparaîtront ici une fois publiés par votre enseignant."
+          message={t('myReports.empty')}
+          description={t('myReports.emptyDesc')}
         />
       ) : (
         <div className="student-reports__list">

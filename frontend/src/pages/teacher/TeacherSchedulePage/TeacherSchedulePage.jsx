@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { timetablesService } from '../../../services/timetablesService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
@@ -8,9 +9,8 @@ import Card from '../../../components/common/Card/Card';
 import Loading from '../../../components/common/Loading/Loading';
 import './TeacherSchedulePage.css';
 
-const DAY_ORDER  = ['LUNDI','MARDI','MERCREDI','JEUDI','VENDREDI','SAMEDI'];
-const DAY_LABELS = { LUNDI:'Lundi', MARDI:'Mardi', MERCREDI:'Mercredi', JEUDI:'Jeudi', VENDREDI:'Vendredi', SAMEDI:'Samedi' };
-const TODAY_MAP  = { 1:'LUNDI', 2:'MARDI', 3:'MERCREDI', 4:'JEUDI', 5:'VENDREDI', 6:'SAMEDI' };
+const DAY_ORDER = ['LUNDI','MARDI','MERCREDI','JEUDI','VENDREDI','SAMEDI'];
+const TODAY_MAP = { 1:'LUNDI', 2:'MARDI', 3:'MERCREDI', 4:'JEUDI', 5:'VENDREDI', 6:'SAMEDI' };
 const SLOT_COLORS = ['#dbeafe','#dcfce7','#fce7f3','#fef3c7','#ede9fe','#ccfbf1','#fee2e2','#e0f2fe','#fdf4ff','#f0fdf4'];
 
 function currentAcademicYear() {
@@ -19,6 +19,7 @@ function currentAcademicYear() {
 }
 
 function TeacherSchedulePage() {
+  const { t } = useTranslation();
   const [year, setYear] = useState(currentAcademicYear);
 
   const { data: slots = [], isLoading } = useQuery({
@@ -42,14 +43,14 @@ function TeacherSchedulePage() {
   const todaySlots = byDay[today] ?? [];
 
   return (
-    <AppShell title="Tableau de service">
+    <AppShell title={t('teacherSchedule.title')}>
       <PageHeader
-        title="Mon tableau de service"
-        subtitle="Emploi du temps personnel — classes et créneaux assignés"
+        title={t('teacherSchedule.title')}
+        subtitle={t('teacherSchedule.subtitle')}
       />
 
       <div className="teacher-sched__toolbar">
-        <label className="teacher-sched__year-label">Année scolaire :</label>
+        <label className="teacher-sched__year-label">{t('teacherSchedule.yearLabel')}</label>
         <input
           type="text"
           value={year}
@@ -58,7 +59,7 @@ function TeacherSchedulePage() {
         />
         {!isLoading && slots.length > 0 && (
           <span className="teacher-sched__meta">
-            {activeDays.length} jour{activeDays.length > 1 ? 's' : ''} · {totalPeriods} cours/semaine
+            {t('teacherSchedule.meta', { count: activeDays.length, periods: totalPeriods })}
           </span>
         )}
       </div>
@@ -69,8 +70,8 @@ function TeacherSchedulePage() {
         <Card>
           <div className="teacher-sched__empty">
             <span className="teacher-sched__empty-icon">📅</span>
-            <p>Aucun créneau assigné pour l'année {year}.</p>
-            <p className="teacher-sched__empty-sub">L'administrateur doit configurer l'emploi du temps et vous y assigner.</p>
+            <p>{t('teacherSchedule.empty', { year })}</p>
+            <p className="teacher-sched__empty-sub">{t('teacherSchedule.emptySub')}</p>
           </div>
         </Card>
       ) : (
@@ -79,7 +80,7 @@ function TeacherSchedulePage() {
             <div className="teacher-sched__today-banner">
               <span className="teacher-sched__today-icon">📌</span>
               <div>
-                <strong>Aujourd'hui</strong>
+                <strong>{t('teacherSchedule.today')}</strong>
                 <span className="teacher-sched__today-list">
                   {todaySlots.map(s => `${s.subject?.nameFr} (${s.class?.name}) ${s.startTime}–${s.endTime}`).join(' · ')}
                 </span>
@@ -95,9 +96,9 @@ function TeacherSchedulePage() {
               return (
                 <div key={day} className={`teacher-sched__day${isToday ? ' teacher-sched__day--today' : ''}`}>
                   <div className="teacher-sched__day-header">
-                    <span className="teacher-sched__day-name">{DAY_LABELS[day]}</span>
-                    {isToday && <span className="teacher-sched__today-badge">Aujourd'hui</span>}
-                    <span className="teacher-sched__day-count">{daySlots.length} cours</span>
+                    <span className="teacher-sched__day-name">{t(`teacherSchedule.days.${day}`, day)}</span>
+                    {isToday && <span className="teacher-sched__today-badge">{t('teacherSchedule.todayBadge')}</span>}
+                    <span className="teacher-sched__day-count">{daySlots.length} {t('teacherSchedule.courses')}</span>
                   </div>
                   <div className="teacher-sched__slots">
                     {daySlots.map(slot => (
@@ -120,7 +121,7 @@ function TeacherSchedulePage() {
                           to={`/teacher/classes/${slot.classId}/grades/${slot.subjectId}`}
                           className="teacher-sched__slot-link"
                         >
-                          Saisir les notes →
+                          {t('teacherSchedule.enterGrades')}
                         </Link>
                       </div>
                     ))}

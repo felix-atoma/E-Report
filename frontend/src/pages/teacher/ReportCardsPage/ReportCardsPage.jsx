@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../../../services/api';
@@ -17,20 +18,6 @@ import StatusPill from '../../../components/common/StatusPill/StatusPill';
 import ConfirmDialog from '../../../components/common/ConfirmDialog/ConfirmDialog';
 import './ReportCardsPage.css';
 
-const TERM_TYPES = [
-  { value: 'TRIMESTRE', label: 'Trimestriel' },
-  { value: 'SEMESTRE',  label: 'Semestriel' },
-  { value: 'CUSTOM',    label: 'Personnalisé' },
-];
-const TRIMESTRE_NAMES = [
-  { value: '1', label: '1er trimestre' },
-  { value: '2', label: '2ème trimestre' },
-  { value: '3', label: '3ème trimestre' },
-];
-const SEMESTRE_NAMES = [
-  { value: '1', label: '1er semestre' },
-  { value: '2', label: '2ème semestre' },
-];
 const EMPTY_CREATE = { classId: '', academicYear: '', termType: 'TRIMESTRE', termNumber: '1', termName: '' };
 
 function downloadBlob(blob, filename) {
@@ -41,12 +28,6 @@ function downloadBlob(blob, filename) {
   a.click();
   window.URL.revokeObjectURL(url);
 }
-
-const STATUS_OPTIONS = [
-  { value: 'DRAFT',     label: 'Brouillon' },
-  { value: 'REVIEW',    label: 'En révision' },
-  { value: 'PUBLISHED', label: 'Publié' },
-];
 
 async function downloadReportPdf(reportId) {
   const res = await api.get(`/reports/${reportId}/pdf-download`, { responseType: 'blob' });
@@ -59,9 +40,11 @@ async function downloadReportPdf(reportId) {
 }
 
 function ReportCardsPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
   const qc = useQueryClient();
+
   const [classFilter, setClass]    = useState('');
   const [statusFilter, setStatus]  = useState('');
   const [yearFilter, setYear]      = useState('');
@@ -72,22 +55,50 @@ function ReportCardsPage() {
   const [confirmBulkPublish, setConfirmBulkPublish] = useState(false);
   const [downloadingId, setDownloadingId] = useState(null);
 
-  // ── Create bulletin OffCanvas ──────────────────────────────────────────
   const [createOpen, setCreateOpen]   = useState(false);
   const [createForm, setCreateForm]   = useState(EMPTY_CREATE);
   const [createErrors, setCreateErrors] = useState({});
+
+  const TERM_TYPES = [
+    { value: 'TRIMESTRE', label: t('reportCardsFull.termTypes.TRIMESTRE') },
+    { value: 'SEMESTRE',  label: t('reportCardsFull.termTypes.SEMESTRE') },
+    { value: 'CUSTOM',    label: t('reportCardsFull.termTypes.CUSTOM') },
+  ];
+
+  const TRIMESTRE_NAMES = [
+    { value: '1', label: t('reportCardsFull.trimestreNames.1') },
+    { value: '2', label: t('reportCardsFull.trimestreNames.2') },
+    { value: '3', label: t('reportCardsFull.trimestreNames.3') },
+  ];
+
+  const SEMESTRE_NAMES = [
+    { value: '1', label: t('reportCardsFull.semestreNames.1') },
+    { value: '2', label: t('reportCardsFull.semestreNames.2') },
+  ];
+
+  const STATUS_OPTIONS = [
+    { value: 'DRAFT',     label: t('reportCardsFull.statusOptions.DRAFT') },
+    { value: 'REVIEW',    label: t('reportCardsFull.statusOptions.REVIEW') },
+    { value: 'PUBLISHED', label: t('reportCardsFull.statusOptions.PUBLISHED') },
+  ];
+
+  const termOptions = [
+    { value: '1', label: t('reportCardsFull.termOptions.1') },
+    { value: '2', label: t('reportCardsFull.termOptions.2') },
+    { value: '3', label: t('reportCardsFull.termOptions.3') },
+  ];
 
   const createMutation = useMutation({
     mutationFn: (data) => reportsService.create(data),
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ['reports'] });
       const count = res.data?.count ?? 1;
-      toast.success(`${count} bulletin${count !== 1 ? 's' : ''} créé${count !== 1 ? 's' : ''}`);
+      toast.success(t('reportCards.toast.created', { count }));
       setCreateOpen(false);
       setCreateForm(EMPTY_CREATE);
       setCreateErrors({});
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur de création'),
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('reportCards.toast.error')),
   });
 
   function setCreate(field, value) {
@@ -97,10 +108,10 @@ function ReportCardsPage() {
 
   function handleCreate() {
     const e = {};
-    if (!createForm.classId)             e.classId     = 'Classe requise';
-    if (!createForm.academicYear.trim()) e.academicYear = 'Année scolaire requise';
-    if (!createForm.termType)            e.termType    = 'Type de période requis';
-    if (!createForm.termNumber)          e.termNumber  = 'Période requise';
+    if (!createForm.classId)             e.classId     = t('reportCards.errors.classRequired');
+    if (!createForm.academicYear.trim()) e.academicYear = t('reportCards.errors.yearRequired');
+    if (!createForm.termType)            e.termType    = t('reportCards.errors.termTypeRequired');
+    if (!createForm.termNumber)          e.termNumber  = t('reportCards.errors.termRequired');
     if (Object.keys(e).length) { setCreateErrors(e); return; }
     createMutation.mutate({
       classId:      createForm.classId,
@@ -125,11 +136,11 @@ function ReportCardsPage() {
     mutationFn: (id) => reportsService.publish(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['reports'] });
-      toast.success('Bulletin publié ! Le PDF sera disponible dans quelques instants.');
+      toast.success(t('reportCardsFull.toast.publishedNotif'));
       setConfirmPublish(null);
     },
     onError: (e) => {
-      toast.error(e?.response?.data?.message ?? 'Erreur lors de la publication');
+      toast.error(e?.response?.data?.message ?? t('reportCardsFull.toast.publishError'));
       setConfirmPublish(null);
     },
   });
@@ -138,9 +149,9 @@ function ReportCardsPage() {
     mutationFn: (id) => reportsService.regeneratePdf(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['reports'] });
-      toast.success('PDF généré avec succès !');
+      toast.success(t('reportCardsFull.toast.pdfOk'));
     },
-    onError: (e) => toast.error(e?.response?.data?.message ?? 'Erreur lors de la génération PDF'),
+    onError: (e) => toast.error(e?.response?.data?.message ?? t('reportCardsFull.toast.pdfError')),
   });
 
   const filtered = useMemo(() => {
@@ -160,12 +171,6 @@ function ReportCardsPage() {
     return years.map((y) => ({ value: y, label: y }));
   }, [reports]);
 
-  const termOptions = [
-    { value: '1', label: 'Trimestre 1' },
-    { value: '2', label: 'Trimestre 2' },
-    { value: '3', label: 'Trimestre 3' },
-  ];
-
   const canZip = isAdmin && yearFilter && termFilter;
   const canBulkPublish = isAdmin && classFilter && yearFilter && termFilter;
   const reviewCount = filtered.filter((r) => r.status === 'REVIEW').length;
@@ -181,9 +186,11 @@ function ReportCardsPage() {
       });
       const { published, skipped } = res.data;
       qc.invalidateQueries({ queryKey: ['reports'] });
-      toast.success(`${published} bulletin${published !== 1 ? 's' : ''} publié${published !== 1 ? 's' : ''} ! Les notifications WhatsApp/Email partent dans 2 min.${skipped > 0 ? ` (${skipped} ignorés)` : ''}`);
+      const msg = t('reportCardsFull.toast.bulkPublished', { published })
+        + (skipped > 0 ? ' ' + t('reportCardsFull.toast.bulkSkipped', { skipped }) : '');
+      toast.success(msg);
     } catch (e) {
-      toast.error(e?.response?.data?.message ?? 'Erreur lors de la publication groupée');
+      toast.error(e?.response?.data?.message ?? t('reportCardsFull.toast.bulkError'));
     } finally {
       setBulkPublishing(false);
     }
@@ -202,10 +209,9 @@ function ReportCardsPage() {
         ? (classes.find((c) => c.id === classFilter)?.name ?? 'classe')
         : 'ecole';
       downloadBlob(res.data, `bulletins-${yearFilter}-T${termFilter}-${scope}.zip`);
-      toast.success('ZIP téléchargé avec succès !');
+      toast.success(t('reportCardsFull.toast.zipOk'));
     } catch (e) {
-      const msg = e?.response?.data?.message ?? e?.message ?? 'Erreur lors de la génération du ZIP';
-      toast.error(msg);
+      toast.error(e?.response?.data?.message ?? e?.message ?? t('reportCardsFull.toast.zipError'));
     } finally {
       setZipping(false);
     }
@@ -214,32 +220,32 @@ function ReportCardsPage() {
   const columns = [
     {
       key: 'class',
-      label: 'Classe',
+      label: t('reportCardsFull.columns.class'),
       render: (r) => <span className="reports-table__class">{r.class?.name ?? '—'}</span>,
     },
     {
       key: 'student',
-      label: 'Élève',
+      label: t('reportCardsFull.columns.student'),
       render: (r) => r.student?.user?.name ?? r.student?.admissionNumber ?? '—',
     },
     {
       key: 'term',
-      label: 'Période',
+      label: t('reportCardsFull.columns.term'),
       render: (r) => r.termName ?? `Trimestre ${r.termNumber}`,
     },
     {
       key: 'academicYear',
-      label: 'Année scolaire',
+      label: t('reportCardsFull.columns.academicYear'),
       render: (r) => r.academicYear ?? '—',
     },
     {
       key: 'status',
-      label: 'Statut',
+      label: t('reportCardsFull.columns.status'),
       render: (r) => <StatusPill status={r.status} />,
     },
     {
       key: 'updatedAt',
-      label: 'Modifié le',
+      label: t('reportCardsFull.columns.updatedAt'),
       render: (r) =>
         r.updatedAt
           ? new Date(r.updatedAt).toLocaleDateString('fr-FR')
@@ -252,16 +258,16 @@ function ReportCardsPage() {
       render: (r) => (
         <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
           <Link to={isAdmin ? `/admin/reports/${r.id}` : `/teacher/reports/${r.id}`}>
-            <Button size="sm" variant="ghost">Ouvrir</Button>
+            <Button size="sm" variant="ghost">{t('reportCardsFull.open')}</Button>
           </Link>
           {(r.status === 'REVIEW' || r.status === 'PUBLISHED') && (
             <Link to={`/reports/${r.id}/print`} target="_blank" rel="noreferrer">
-              <Button size="sm" variant="ghost">🖨️ Imprimer</Button>
+              <Button size="sm" variant="ghost">{t('reportCardsFull.printBtn')}</Button>
             </Link>
           )}
           {isAdmin && r.status === 'REVIEW' && (
             <Button size="sm" variant="primary" onClick={() => setConfirmPublish(r)}>
-              Publier
+              {t('reportCardsFull.publish')}
             </Button>
           )}
           {r.status === 'PUBLISHED' && (
@@ -274,18 +280,18 @@ function ReportCardsPage() {
                 try {
                   await downloadReportPdf(r.id);
                 } catch {
-                  toast.error('Échec du téléchargement du PDF');
+                  toast.error(t('reportCardsFull.toast.downloadError'));
                 } finally {
                   setDownloadingId(null);
                 }
               }}
             >
-              {downloadingId === r.id ? '⏳…' : '📥 PDF'}
+              {downloadingId === r.id ? t('reportCardsFull.downloading') : t('reportCardsFull.pdfBtn')}
             </Button>
           )}
           {r.status === 'PUBLISHED' && r.academicYear && (
             <Link to={`/reports/annual/${r.studentId}/${r.academicYear}`} target="_blank" rel="noreferrer">
-              <Button size="sm" variant="ghost" title="Voir le relevé annuel de cet élève">📋 Annuel</Button>
+              <Button size="sm" variant="ghost" title={t('reportCardsFull.annual')}>{t('reportCardsFull.annual')}</Button>
             </Link>
           )}
         </div>
@@ -294,18 +300,18 @@ function ReportCardsPage() {
   ];
 
   return (
-    <AppShell title="Bulletins">
+    <AppShell title={t('reportCards.title')}>
       <PageHeader
-        title="Bulletins de notes"
-        subtitle={`${filtered.length} bulletin${filtered.length !== 1 ? 's' : ''}`}
-        actions={<Button size="sm" onClick={() => setCreateOpen(true)}>+ Nouveau bulletin</Button>}
+        title={t('reportCards.title')}
+        subtitle={t('reportCardsFull.subtitle', { count: filtered.length })}
+        actions={<Button size="sm" onClick={() => setCreateOpen(true)}>{t('reportCards.newReports')}</Button>}
       />
 
       <div className="reports-page__toolbar">
         <Select
           id="class-filter"
           value={classFilter}
-          placeholder="Toutes les classes"
+          placeholder={t('reportCards.filter.allClasses')}
           options={classOptions}
           onChange={(e) => setClass(e.target.value)}
           className="reports-page__filter"
@@ -313,7 +319,7 @@ function ReportCardsPage() {
         <Select
           id="status-filter"
           value={statusFilter}
-          placeholder="Tous les statuts"
+          placeholder={t('reportCards.filter.allStatuses')}
           options={STATUS_OPTIONS}
           onChange={(e) => setStatus(e.target.value)}
           className="reports-page__filter"
@@ -321,7 +327,7 @@ function ReportCardsPage() {
         <Select
           id="year-filter"
           value={yearFilter}
-          placeholder="Année scolaire"
+          placeholder={t('reportCards.filter.allYears')}
           options={yearOptions}
           onChange={(e) => setYear(e.target.value)}
           className="reports-page__filter"
@@ -329,7 +335,7 @@ function ReportCardsPage() {
         <Select
           id="term-filter"
           value={termFilter}
-          placeholder="Trimestre"
+          placeholder={t('reportCards.filter.allTerms')}
           options={termOptions}
           onChange={(e) => setTerm(e.target.value)}
           className="reports-page__filter"
@@ -340,7 +346,9 @@ function ReportCardsPage() {
             onClick={() => setConfirmBulkPublish(true)}
             disabled={bulkPublishing}
           >
-            {bulkPublishing ? '⏳ Publication…' : `🚀 Publier tout (${reviewCount})`}
+            {bulkPublishing
+              ? t('reportCardsFull.bulkPublishing')
+              : t('reportCardsFull.publishAllBtn', { count: reviewCount })}
           </Button>
         )}
         {isAdmin && (
@@ -348,9 +356,12 @@ function ReportCardsPage() {
             variant="ghost"
             onClick={handleBulkZip}
             disabled={!canZip || zipping}
-            title={!yearFilter || !termFilter ? 'Sélectionnez une année et un trimestre' : classFilter ? 'Télécharger les bulletins de cette classe en ZIP' : 'Télécharger tous les bulletins de l\'école en ZIP'}
           >
-            {zipping ? '⏳ Génération…' : `📦 ZIP ${classFilter ? 'Classe' : 'École'}`}
+            {zipping
+              ? t('reportCardsFull.zipping')
+              : classFilter
+                ? t('reportCardsFull.zipClass')
+                : t('reportCardsFull.zipEcole')}
           </Button>
         )}
       </div>
@@ -359,7 +370,7 @@ function ReportCardsPage() {
         columns={columns}
         rows={filtered}
         loading={isLoading}
-        emptyMessage="Aucun bulletin trouvé"
+        emptyMessage={t('reportCards.noReports')}
       />
 
       <ConfirmDialog
@@ -367,9 +378,12 @@ function ReportCardsPage() {
         onClose={() => setConfirmPublish(null)}
         onConfirm={() => publishMut.mutate(confirmPublish.id)}
         loading={publishMut.isPending}
-        title="Publier le bulletin"
-        message={`Publier le bulletin de ${confirmPublish?.student?.user?.name ?? confirmPublish?.student?.admissionNumber ?? '…'} (${confirmPublish?.termName ?? ''}) ? Cette action est irréversible.`}
-        confirmLabel="Publier"
+        title={t('reportCardsFull.publishTitle')}
+        message={t('reportCardsFull.publishMessage', {
+          name: confirmPublish?.student?.user?.name ?? confirmPublish?.student?.admissionNumber ?? '…',
+          term: confirmPublish?.termName ?? '',
+        })}
+        confirmLabel={t('reportCardsFull.publish')}
         variant="primary"
       />
       <ConfirmDialog
@@ -377,26 +391,25 @@ function ReportCardsPage() {
         onClose={() => setConfirmBulkPublish(false)}
         onConfirm={handleBulkPublish}
         loading={bulkPublishing}
-        title="Publier tous les bulletins"
-        message={`Publier les ${reviewCount} bulletin${reviewCount !== 1 ? 's' : ''} en statut "En révision" pour cette classe ? Les parents recevront une notification WhatsApp et email dans les 2 minutes. Cette action est irréversible.`}
-        confirmLabel={`Publier ${reviewCount} bulletin${reviewCount !== 1 ? 's' : ''}`}
+        title={t('reportCardsFull.bulkPublishTitle')}
+        message={t('reportCardsFull.bulkPublishMessage', { count: reviewCount })}
+        confirmLabel={t('reportCardsFull.bulkPublishBtn', { count: reviewCount })}
         variant="primary"
       />
 
-      {/* Nouveau bulletin de notes — OffCanvas */}
       <OffCanvas
         open={createOpen}
         onClose={() => { setCreateOpen(false); setCreateForm(EMPTY_CREATE); setCreateErrors({}); }}
-        title="Nouveau bulletin de notes"
-        subtitle="Générez les bulletins pour une classe et une période"
+        title={t('reportCardsFull.newReportTitle')}
+        subtitle={t('reportCardsFull.newReportSubtitle')}
         size="md"
         footer={
           <>
             <Button variant="ghost" onClick={() => setCreateOpen(false)} disabled={createMutation.isPending}>
-              Annuler
+              {t('action.cancel')}
             </Button>
             <Button onClick={handleCreate} disabled={createMutation.isPending}>
-              {createMutation.isPending ? 'Création…' : 'Créer le bulletin'}
+              {createMutation.isPending ? t('reportCardsFull.creating') : t('reportCardsFull.createBtn')}
             </Button>
           </>
         }
@@ -404,18 +417,18 @@ function ReportCardsPage() {
         <div className="create-report-form">
           <Select
             id="cr-classId"
-            label="Classe"
+            label={t('reportCards.class')}
             required
             value={createForm.classId}
             error={createErrors.classId}
-            placeholder="Sélectionner une classe"
+            placeholder={t('reportCards.filter.allClasses')}
             options={classes.map((c) => ({ value: c.id, label: c.name }))}
             onChange={(e) => setCreate('classId', e.target.value)}
           />
 
           <Input
             id="cr-academicYear"
-            label="Année scolaire"
+            label={t('reportCards.academicYear')}
             required
             value={createForm.academicYear}
             error={createErrors.academicYear}
@@ -425,38 +438,38 @@ function ReportCardsPage() {
 
           <div className="create-report-form__row">
             <div className="form-field">
-              <label className="form-field__label">Type de période <span style={{color:'#ef4444'}}>*</span></label>
+              <label className="form-field__label">{t('reportCards.termType')} <span style={{color:'#ef4444'}}>*</span></label>
               <select
                 className="create-report-form__select"
                 value={createForm.termType}
                 onChange={(e) => { setCreate('termType', e.target.value); setCreate('termNumber', '1'); }}
               >
-                {TERM_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                {TERM_TYPES.map((tt) => <option key={tt.value} value={tt.value}>{tt.label}</option>)}
               </select>
               {createErrors.termType && <span className="create-report-form__error">{createErrors.termType}</span>}
             </div>
 
             {createForm.termType !== 'CUSTOM' ? (
               <div className="form-field">
-                <label className="form-field__label">Période <span style={{color:'#ef4444'}}>*</span></label>
+                <label className="form-field__label">{t('reportCards.currentPeriod')} <span style={{color:'#ef4444'}}>*</span></label>
                 <select
                   className="create-report-form__select"
                   value={createForm.termNumber}
                   onChange={(e) => setCreate('termNumber', e.target.value)}
                 >
                   {(createForm.termType === 'SEMESTRE' ? SEMESTRE_NAMES : TRIMESTRE_NAMES)
-                    .map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                    .map((tt) => <option key={tt.value} value={tt.value}>{tt.label}</option>)}
                 </select>
                 {createErrors.termNumber && <span className="create-report-form__error">{createErrors.termNumber}</span>}
               </div>
             ) : (
               <Input
                 id="cr-termName"
-                label="Nom de la période"
+                label={t('reportCardsFull.customPeriodName')}
                 required
                 value={createForm.termName}
                 error={createErrors.termNumber}
-                placeholder="ex : Période 1"
+                placeholder={t('reportCardsFull.customPeriodPlaceholder')}
                 onChange={(e) => { setCreate('termName', e.target.value); setCreate('termNumber', '1'); }}
               />
             )}
@@ -465,9 +478,9 @@ function ReportCardsPage() {
           {createForm.termType !== 'CUSTOM' && (
             <Input
               id="cr-termLabel"
-              label="Libellé personnalisé (optionnel)"
+              label={t('reportCardsFull.termPeriodLabel')}
               value={createForm.termName}
-              placeholder={`ex : ${createForm.termType === 'SEMESTRE' ? '1er semestre 2024' : '1er trimestre 2024'}`}
+              placeholder={`ex : ${createForm.termType === 'SEMESTRE' ? t('reportCardsFull.semestreNames.1') + ' 2024' : t('reportCardsFull.trimestreNames.1') + ' 2024'}`}
               onChange={(e) => setCreate('termName', e.target.value)}
             />
           )}

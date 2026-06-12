@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { alumniService } from '../../../services/alumniService';
@@ -25,6 +26,7 @@ const EMPTY_FORM = {
 };
 
 export default function AlumniPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const [search, setSearch]       = useState('');
   const [yearFilter, setYearFilter] = useState('');
@@ -45,19 +47,19 @@ export default function AlumniPage() {
     mutationFn: (data) => alumniService.upsert(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['alumni'] });
-      toast.success(isEditing ? 'Fiche modifiée' : 'Ancien élève enregistré');
+      toast.success(isEditing ? t('alumni.toast.updated') : t('alumni.toast.saved'));
       closePanel();
     },
-    onError: () => toast.error('Une erreur est survenue'),
+    onError: () => toast.error(t('alumni.toast.error')),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (studentId) => alumniService.remove(studentId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['alumni'] });
-      toast.success('Fiche supprimée');
+      toast.success(t('alumni.toast.deleted'));
     },
-    onError: () => toast.error('Impossible de supprimer cette fiche'),
+    onError: () => toast.error(t('alumni.toast.deleteError')),
   });
 
   function openPanel(record = null) {
@@ -99,8 +101,8 @@ export default function AlumniPage() {
 
   function validate() {
     const e = {};
-    if (!form.studentId.trim()) e.studentId      = 'Ce champ est requis';
-    if (!form.graduationYear)   e.graduationYear  = 'Ce champ est requis';
+    if (!form.studentId.trim()) e.studentId      = t('alumni.errors.studentRequired');
+    if (!form.graduationYear)   e.graduationYear  = t('alumni.errors.yearRequired');
     setErrors(e);
     return !Object.keys(e).length;
   }
@@ -115,8 +117,8 @@ export default function AlumniPage() {
   const years = [...new Set(alumni.map((a) => a.graduationYear))].sort((a, b) => b - a);
 
   const subtitle = alumni.length > 0
-    ? `${alumni.length} diplômé${alumni.length !== 1 ? 's' : ''} enregistré${alumni.length !== 1 ? 's' : ''}`
-    : 'Aucun ancien élève enregistré — ajoutez le premier';
+    ? t('alumni.subtitle', { count: alumni.length })
+    : t('alumni.subtitleEmpty');
 
   const exportCSV = () => {
     const rows = alumni.map((a) => ({
@@ -138,21 +140,20 @@ export default function AlumniPage() {
   return (
     <AppShell>
       <PageHeader
-        title="Anciens Élèves"
+        title={t('alumni.title')}
         subtitle={subtitle}
         actions={
           <div style={{ display: 'flex', gap: '.5rem' }}>
-            <Button variant="ghost" size="sm" onClick={exportCSV}>↓ CSV</Button>
-            <Button size="sm" onClick={() => openPanel()}>+ Ajouter</Button>
+            <Button variant="ghost" size="sm" onClick={exportCSV}>{t('alumni.exportCsv')}</Button>
+            <Button size="sm" onClick={() => openPanel()}>+ {t('alumni.addAlumni')}</Button>
           </div>
         }
       />
 
-      {/* Filters */}
       <div className="alumni-page__filters">
         <input
           className="alumni-page__search"
-          placeholder="Rechercher par nom ou matricule…"
+          placeholder={t('students.searchPlaceholder')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -161,23 +162,22 @@ export default function AlumniPage() {
           value={yearFilter}
           onChange={(e) => setYearFilter(e.target.value)}
         >
-          <option value="">Toutes les promotions</option>
+          <option value="">{t('alumni.allPromos')}</option>
           {years.map((y) => (
-            <option key={y} value={y}>Promotion {y}</option>
+            <option key={y} value={y}>{t('alumni.promo', { year: y })}</option>
           ))}
         </select>
       </div>
 
-      {/* Content */}
       {isLoading ? (
-        <p className="alumni-page__loading">Chargement…</p>
+        <p className="alumni-page__loading">{t('action.loading')}</p>
       ) : alumni.length === 0 ? (
         <Card>
           <div className="alumni-page__empty">
             <span className="alumni-page__empty-icon">🎓</span>
-            <p>Aucun ancien élève enregistré.</p>
+            <p>{t('alumni.empty')}</p>
             <Button size="sm" onClick={() => openPanel()} style={{ marginTop: '1rem' }}>
-              + Ajouter le premier diplômé
+              {t('alumni.addFirst')}
             </Button>
           </div>
         </Card>
@@ -198,13 +198,13 @@ export default function AlumniPage() {
                     {rec.student?.user?.name ?? rec.student?.admissionNumber ?? '—'}
                   </strong>
                   <span className="alumni-card__number">{rec.student?.admissionNumber}</span>
-                  <span className="alumni-card__year">Promotion {rec.graduationYear}</span>
+                  <span className="alumni-card__year">{t('alumni.promo', { year: rec.graduationYear })}</span>
                 </div>
               </div>
 
               {rec.lastClass && (
                 <div className="alumni-card__row">
-                  <span className="alumni-card__label">Dernière classe</span>
+                  <span className="alumni-card__label">{t('alumni.lastClass')}</span>
                   <span>{rec.lastClass}</span>
                 </div>
               )}
@@ -218,27 +218,27 @@ export default function AlumniPage() {
               )}
               {rec.furtherEducation && (
                 <div className="alumni-card__row">
-                  <span className="alumni-card__label">Poursuite</span>
+                  <span className="alumni-card__label">{t('alumni.followUp')}</span>
                   <span>{rec.furtherEducation}</span>
                 </div>
               )}
               {rec.contactPhone && (
                 <div className="alumni-card__row">
-                  <span className="alumni-card__label">Contact</span>
+                  <span className="alumni-card__label">{t('alumni.contact')}</span>
                   <span>{rec.contactPhone}</span>
                 </div>
               )}
 
               <div className="alumni-card__actions">
-                <button className="alumni-card__btn-edit" onClick={() => openPanel(rec)}>Modifier</button>
+                <button className="alumni-card__btn-edit" onClick={() => openPanel(rec)}>{t('action.edit')}</button>
                 <button
                   className="alumni-card__btn-del"
                   onClick={() => {
-                    if (window.confirm('Supprimer cet enregistrement ?'))
+                    if (window.confirm(t('alumni.deleteConfirm')))
                       deleteMutation.mutate(rec.studentId);
                   }}
                 >
-                  Supprimer
+                  {t('action.delete')}
                 </button>
               </div>
             </div>
@@ -246,30 +246,23 @@ export default function AlumniPage() {
         </div>
       )}
 
-      {/* Fiche Alumni OffCanvas */}
       <OffCanvas
         open={panelOpen}
         onClose={closePanel}
-        title="Fiche Alumni"
-        subtitle={
-          isEditing
-            ? 'Mettez à jour les informations de cet ancien élève'
-            : 'Enregistrez un diplômé dans la base des anciens élèves'
-        }
+        title={t('alumni.title')}
         size="md"
         footer={
           <>
             <Button variant="ghost" onClick={closePanel} disabled={upsertMutation.isPending}>
-              Annuler
+              {t('action.cancel')}
             </Button>
             <Button onClick={handleSubmit} disabled={upsertMutation.isPending}>
-              {upsertMutation.isPending ? 'Enregistrement…' : 'Enregistrer'}
+              {upsertMutation.isPending ? t('action.saving') : t('action.save')}
             </Button>
           </>
         }
       >
         <div className="alumni-form">
-          {/* Student ID */}
           <Input
             label="ID Élève"
             required
@@ -280,10 +273,9 @@ export default function AlumniPage() {
             disabled={isEditing}
           />
 
-          {/* Graduation year + last class */}
           <div className="alumni-form__row2">
             <Input
-              label="Année de diplomation"
+              label={t('alumni.graduationYear')}
               required
               type="number"
               min="1990"
@@ -293,31 +285,29 @@ export default function AlumniPage() {
               error={errors.graduationYear}
             />
             <Input
-              label="Dernière classe"
+              label={t('alumni.lastClass')}
               placeholder="ex : Terminale D"
               value={form.lastClass}
               onChange={(e) => set('lastClass', e.target.value)}
             />
           </div>
 
-          {/* Exam section header */}
           <p className="alumni-form__section-label">Résultats aux examens</p>
 
-          {/* Exam type + result */}
           <div className="alumni-form__row2">
             <div className="form-field">
-              <label className="form-field__label">Type d'examen</label>
+              <label className="form-field__label">{t('alumni.examType')}</label>
               <select
                 className="alumni-form__select"
                 value={form.examType}
                 onChange={(e) => set('examType', e.target.value)}
               >
                 <option value="">—</option>
-                {EXAM_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+                {EXAM_TYPES.map((et) => <option key={et} value={et}>{et}</option>)}
               </select>
             </div>
             <div className="form-field">
-              <label className="form-field__label">Résultat</label>
+              <label className="form-field__label">{t('alumni.examResult')}</label>
               <select
                 className="alumni-form__select"
                 value={form.examResult}
@@ -329,16 +319,15 @@ export default function AlumniPage() {
             </div>
           </div>
 
-          {/* Session + centre */}
           <div className="alumni-form__row2">
             <Input
-              label="Session"
+              label={t('alumni.examSession')}
               placeholder="ex : 2024 Session Normale"
               value={form.examSession}
               onChange={(e) => set('examSession', e.target.value)}
             />
             <Input
-              label="Centre d'examen"
+              label={t('alumni.examCenter')}
               placeholder="ex : Lycée de Lomé"
               value={form.nationalExamCenter}
               onChange={(e) => set('nationalExamCenter', e.target.value)}
@@ -346,39 +335,37 @@ export default function AlumniPage() {
           </div>
 
           <Input
-            label="N° Diplôme"
+            label={t('alumni.diplomaNumber')}
             placeholder="Numéro officiel du diplôme"
             value={form.diplomaNumber}
             onChange={(e) => set('diplomaNumber', e.target.value)}
           />
 
-          {/* Tracking section */}
           <p className="alumni-form__section-label">Suivi post-diplomation</p>
 
           <Input
-            label="Poursuite d'études"
+            label={t('alumni.furtherEducation')}
             placeholder="ex : Université de Lomé, BTS Informatique…"
             value={form.furtherEducation}
             onChange={(e) => set('furtherEducation', e.target.value)}
           />
 
           <Input
-            label="Employeur actuel"
+            label={t('alumni.currentEmployer')}
             placeholder="Entreprise ou administration"
             value={form.currentEmployer}
             onChange={(e) => set('currentEmployer', e.target.value)}
           />
 
-          {/* Contact */}
           <div className="alumni-form__row2">
             <Input
-              label="Téléphone"
+              label={t('alumni.contactPhone')}
               placeholder="+228…"
               value={form.contactPhone}
               onChange={(e) => set('contactPhone', e.target.value)}
             />
             <Input
-              label="Email"
+              label={t('alumni.contactEmail')}
               type="email"
               placeholder="email@example.com"
               value={form.contactEmail}
@@ -386,9 +373,8 @@ export default function AlumniPage() {
             />
           </div>
 
-          {/* Notes */}
           <div className="form-field">
-            <label className="form-field__label">Notes</label>
+            <label className="form-field__label">{t('alumni.notes')}</label>
             <textarea
               className="alumni-form__textarea"
               value={form.notes}

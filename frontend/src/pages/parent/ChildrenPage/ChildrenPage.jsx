@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { studentsService } from '../../../services/studentsService';
@@ -12,12 +13,12 @@ import EmptyState from '../../../components/common/EmptyState/EmptyState';
 import './ChildrenPage.css';
 
 const PAYMENT_VARIANT = { PAID: 'success', PARTIAL: 'warning', UNPAID: 'danger', EXEMPT: 'default' };
-const PAYMENT_LABEL   = { PAID: 'Frais à jour', PARTIAL: 'Paiement partiel', UNPAID: 'Frais impayés', EXEMPT: 'Exonéré' };
 
 const CURRENT_YEAR = new Date().getFullYear();
 const ACADEMIC_YEAR = `${CURRENT_YEAR - 1}-${CURRENT_YEAR}`;
 
 function ChildrenPage() {
+  const { t } = useTranslation();
   const [paying, setPaying] = useState(null);
 
   const { data: children = [], isLoading } = useQuery({
@@ -36,27 +37,27 @@ function ChildrenPage() {
       });
       window.location.href = res.data.url;
     } catch (err) {
-      const msg = err?.response?.data?.message ?? 'Erreur lors de l\'initialisation du paiement.';
+      const msg = err?.response?.data?.message ?? t('common.errorGeneric');
       alert(msg);
     } finally {
       setPaying(null);
     }
   };
 
-  if (isLoading) return <AppShell title="Mes enfants"><Loading /></AppShell>;
+  if (isLoading) return <AppShell title={t('children.title')}><Loading /></AppShell>;
 
   return (
-    <AppShell title="Mes enfants">
+    <AppShell title={t('children.title')}>
       <PageHeader
-        title="Mes enfants"
-        subtitle={`${children.length} enfant${children.length !== 1 ? 's' : ''}`}
+        title={t('children.title')}
+        subtitle={t('children.subtitle', { count: children.length })}
       />
 
       {children.length === 0 ? (
         <EmptyState
           icon="👶"
-          message="Aucun enfant associé à votre compte"
-          description="Contactez l'administration pour associer vos enfants à votre compte parent."
+          message={t('children.empty')}
+          description={t('children.emptyDesc')}
         />
       ) : (
         <div className="children-page__grid">
@@ -80,12 +81,12 @@ function ChildrenPage() {
               <div className="child-card__footer">
                 {child.paymentStatus ? (
                   <Badge variant={PAYMENT_VARIANT[child.paymentStatus] ?? 'default'}>
-                    {PAYMENT_LABEL[child.paymentStatus] ?? child.paymentStatus}
+                    {t(`children.paymentStatus.${child.paymentStatus}`, child.paymentStatus)}
                   </Badge>
                 ) : (
-                  <Badge variant="default">Statut inconnu</Badge>
+                  <Badge variant="default">{t('children.paymentStatus.UNKNOWN')}</Badge>
                 )}
-                <span className="child-card__link">Voir les bulletins →</span>
+                <span className="child-card__link">{t('children.seeReports')}</span>
               </div>
 
               {(child.paymentStatus === 'UNPAID' || child.paymentStatus === 'PARTIAL') && (
@@ -101,7 +102,7 @@ function ChildrenPage() {
                       <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
                     </svg>
                   )}
-                  Payer avec MoMo
+                  {t('children.payWithMomo')}
                 </button>
               )}
             </Link>

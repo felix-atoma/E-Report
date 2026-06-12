@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -43,11 +44,11 @@ const LEVEL_VARIANT = {
 
 const EMPTY_FORM = { name: '', level: '', academicYear: '', capacity: '', teacherId: '', subjects: [] };
 
-function validate(form) {
+function validate(form, t) {
   const errors = {};
-  if (!form.name.trim())         errors.name         = 'Nom de classe requis';
-  if (!form.level)               errors.level        = 'Niveau requis';
-  if (!form.academicYear.trim()) errors.academicYear = 'Année scolaire requise';
+  if (!form.name.trim())         errors.name         = t('classes.errors.nameRequired');
+  if (!form.level)               errors.level        = t('classes.level') + ' ' + t('common.required').toLowerCase();
+  if (!form.academicYear.trim()) errors.academicYear = t('classes.errors.yearRequired');
   return errors;
 }
 
@@ -353,6 +354,7 @@ function ManageSubjectsModal({ cls, teachers, allSubjects, onClose, qc }) {
 
 /* ── Main page ── */
 function ClassesPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const [search, setSearch]         = useState('');
   const [levelFilter, setLevel]     = useState('');
@@ -401,37 +403,37 @@ function ClassesPage() {
       }
       return res;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['classes'] }); qc.invalidateQueries({ queryKey: ['analytics'] }); toast.success('Classe créée'); closeModal(); },
-    onError:   (err) => toast.error(err?.response?.data?.message ?? 'Erreur de création'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['classes'] }); qc.invalidateQueries({ queryKey: ['analytics'] }); toast.success(t('classes.toast.created')); closeModal(); },
+    onError:   (err) => toast.error(err?.response?.data?.message ?? t('common.errorGeneric')),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => classesService.update(id, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['classes'] }); toast.success('Classe mise à jour'); closeModal(); },
-    onError:   (err) => toast.error(err?.response?.data?.message ?? 'Erreur de mise à jour'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['classes'] }); toast.success(t('classes.toast.updated')); closeModal(); },
+    onError:   (err) => toast.error(err?.response?.data?.message ?? t('common.errorGeneric')),
   });
 
   const deactivateMutation = useMutation({
     mutationFn: (id) => classesService.deactivate(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['classes'] }); toast.success('Classe désactivée'); setConfirm(null); },
-    onError:   (err) => toast.error(err?.response?.data?.message ?? 'Erreur'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['classes'] }); toast.success(t('action.deactivate')); setConfirm(null); },
+    onError:   (err) => toast.error(err?.response?.data?.message ?? t('common.errorGeneric')),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => classesService.delete(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['classes'] }); qc.invalidateQueries({ queryKey: ['analytics'] }); toast.success('Classe supprimée'); setConfirm(null); },
-    onError:   (err) => toast.error(err?.response?.data?.message ?? 'Erreur de suppression'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['classes'] }); qc.invalidateQueries({ queryKey: ['analytics'] }); toast.success(t('classes.toast.deleted')); setConfirm(null); },
+    onError:   (err) => toast.error(err?.response?.data?.message ?? t('common.errorGeneric')),
   });
 
   const bulkDeleteMutation = useMutation({
     mutationFn: (ids) => classesService.bulkDelete(ids),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['classes'] });
-      toast.success(`${selectedIds.size} classe${selectedIds.size > 1 ? 's' : ''} supprimée${selectedIds.size > 1 ? 's' : ''}`);
+      toast.success(t('classes.toast.deleted'));
       setSelectedIds(new Set());
       setBulkConfirm(false);
     },
-    onError: () => { qc.invalidateQueries({ queryKey: ['classes'] }); toast.error('Certaines suppressions ont échoué'); setBulkConfirm(false); setSelectedIds(new Set()); },
+    onError: () => { qc.invalidateQueries({ queryKey: ['classes'] }); toast.error(t('common.errorGeneric')); setBulkConfirm(false); setSelectedIds(new Set()); },
   });
 
   function openCreate() {
@@ -467,7 +469,7 @@ function ClassesPage() {
   }
 
   function handleSubmit() {
-    const errs = validate(form);
+    const errs = validate(form, t);
     if (Object.keys(errs).length) { setErrors(errs); return; }
     const payload = {
       name:         form.name,
@@ -486,7 +488,7 @@ function ClassesPage() {
   const columns = [
     {
       key: 'name',
-      label: 'Classe',
+      label: t('classes.title'),
       render: (c) => (
         <Link to={`/admin/classes/${c.id}`} className="classes-table__name-link">
           {c.name}
@@ -495,7 +497,7 @@ function ClassesPage() {
     },
     {
       key: 'level',
-      label: 'Niveau',
+      label: t('classes.level'),
       render: (c) => (
         <Badge variant={LEVEL_VARIANT[c.level] ?? 'default'}>
           {LEVELS.find((l) => l.value === c.level)?.label ?? c.level}
@@ -504,12 +506,12 @@ function ClassesPage() {
     },
     {
       key: 'academicYear',
-      label: 'Année scolaire',
+      label: t('classes.academicYear'),
       render: (c) => c.academicYear ?? '—',
     },
     {
       key: 'teacher',
-      label: 'Prof. principal',
+      label: t('classes.teacher'),
       render: (c) =>
         c.teacher
           ? (c.teacher.name ?? c.teacher.email)
@@ -517,12 +519,12 @@ function ClassesPage() {
     },
     {
       key: 'subjects',
-      label: 'Matières',
+      label: t('classes.subjects'),
       render: (c) => c._count?.subjects ?? '—',
     },
     {
       key: 'students',
-      label: 'Élèves',
+      label: t('classes.students'),
       render: (c) => {
         const count = c._count?.students ?? '—';
         const cap   = c.capacity ? ` / ${c.capacity}` : '';
@@ -531,10 +533,10 @@ function ClassesPage() {
     },
     {
       key: 'status',
-      label: 'Statut',
+      label: t('common.status'),
       render: (c) => (
         <Badge variant={c.isActive !== false ? 'success' : 'default'}>
-          {c.isActive !== false ? 'Active' : 'Inactive'}
+          {c.isActive !== false ? t('common.active') : t('common.inactive')}
         </Badge>
       ),
     },
@@ -544,36 +546,36 @@ function ClassesPage() {
       style: { width: '220px', textAlign: 'right' },
       render: (c) => (
         <div className="classes-table__actions">
-          <Button size="sm" variant="ghost" onClick={() => setManage(c)}>Matières</Button>
-          <Button size="sm" variant="ghost" onClick={() => openEdit(c)}>Modifier</Button>
+          <Button size="sm" variant="ghost" onClick={() => setManage(c)}>{t('classes.subjects')}</Button>
+          <Button size="sm" variant="ghost" onClick={() => openEdit(c)}>{t('action.edit')}</Button>
           {c.isActive !== false && (
-            <Button size="sm" variant="ghost" onClick={() => setConfirm({ action: 'deactivate', cls: c })}>Désactiver</Button>
+            <Button size="sm" variant="ghost" onClick={() => setConfirm({ action: 'deactivate', cls: c })}>{t('action.deactivate')}</Button>
           )}
-          <Button size="sm" variant="ghost" onClick={() => setConfirm({ action: 'delete', cls: c })}>Supprimer</Button>
+          <Button size="sm" variant="ghost" onClick={() => setConfirm({ action: 'delete', cls: c })}>{t('action.delete')}</Button>
         </div>
       ),
     },
   ];
 
   return (
-    <AppShell title="Classes">
+    <AppShell title={t('classes.title')}>
       <PageHeader
-        title="Classes"
-        subtitle={`${classes.length} classe${classes.length !== 1 ? 's' : ''}`}
-        actions={<Button icon="+" onClick={openCreate}>Nouvelle classe</Button>}
+        title={t('classes.title')}
+        subtitle={`${classes.length} ${t('classes.title').toLowerCase()}`}
+        actions={<Button icon="+" onClick={openCreate}>{t('classes.addClass')}</Button>}
       />
 
       <div className="classes-page__toolbar">
         <SearchBar
           value={search}
           onChange={setSearch}
-          placeholder="Rechercher par nom…"
+          placeholder={t('common.search')}
           className="classes-page__search"
         />
         <Select
           id="level-filter"
           value={levelFilter}
-          placeholder="Tous les niveaux"
+          placeholder={t('common.all')}
           options={LEVELS}
           onChange={(e) => setLevel(e.target.value)}
           className="classes-page__level-filter"
@@ -591,7 +593,7 @@ function ClassesPage() {
         columns={columns}
         rows={filtered}
         loading={isLoading}
-        emptyMessage="Aucune classe trouvée"
+        emptyMessage={t('classes.noClasses')}
         selectable
         selectedIds={selectedIds}
         onSelectionChange={setSelectedIds}
@@ -601,13 +603,13 @@ function ClassesPage() {
       <OffCanvas
         open={!!modal}
         onClose={closeModal}
-        title={modal === 'create' ? 'Nouvelle classe' : 'Modifier la classe'}
+        title={modal === 'create' ? t('classes.addClass') : t('classes.editClass')}
         size={modal === 'create' ? 'lg' : 'md'}
         footer={
           <>
-            <Button variant="ghost" onClick={closeModal} disabled={isSaving}>Annuler</Button>
+            <Button variant="ghost" onClick={closeModal} disabled={isSaving}>{t('action.cancel')}</Button>
             <Button onClick={handleSubmit} disabled={isSaving}>
-              {isSaving ? 'Enregistrement…' : 'Enregistrer'}
+              {isSaving ? t('action.saving') : t('action.save')}
             </Button>
           </>
         }
@@ -638,9 +640,9 @@ function ClassesPage() {
         onClose={() => setConfirm(null)}
         onConfirm={() => deactivateMutation.mutate(confirm.cls.id)}
         loading={deactivateMutation.isPending}
-        title="Désactiver la classe"
-        message={`Désactiver la classe "${confirm?.cls?.name}" ? Les données seront conservées.`}
-        confirmLabel="Désactiver"
+        title={t('classes.deleteClass')}
+        message={`${t('action.deactivate')} "${confirm?.cls?.name}" ?`}
+        confirmLabel={t('action.deactivate')}
         variant="danger"
       />
 
@@ -649,9 +651,9 @@ function ClassesPage() {
         onClose={() => setConfirm(null)}
         onConfirm={() => deleteMutation.mutate(confirm.cls.id)}
         loading={deleteMutation.isPending}
-        title="Supprimer définitivement"
-        message={`Supprimer la classe "${confirm?.cls?.name}" ? Toutes les notes, bulletins et données associées seront définitivement effacés.`}
-        confirmLabel="Supprimer définitivement"
+        title={t('classes.deleteClass')}
+        message={`${t('common.confirmDelete')} "${confirm?.cls?.name}" ? ${t('common.deleteWarning')}`}
+        confirmLabel={t('action.delete')}
         variant="danger"
       />
 
@@ -660,9 +662,9 @@ function ClassesPage() {
         onClose={() => setBulkConfirm(false)}
         onConfirm={() => bulkDeleteMutation.mutate([...selectedIds])}
         loading={bulkDeleteMutation.isPending}
-        title={`Supprimer ${selectedIds.size} classe${selectedIds.size > 1 ? 's' : ''}`}
-        message={`Supprimer définitivement ${selectedIds.size} classe${selectedIds.size > 1 ? 's' : ''} ? Toutes les notes, bulletins et données associées seront effacés. Cette action est irréversible.`}
-        confirmLabel={`Supprimer ${selectedIds.size} classe${selectedIds.size > 1 ? 's' : ''}`}
+        title={`${t('action.delete')} (${selectedIds.size})`}
+        message={t('common.deleteWarning')}
+        confirmLabel={t('action.delete')}
         variant="danger"
       />
     </AppShell>

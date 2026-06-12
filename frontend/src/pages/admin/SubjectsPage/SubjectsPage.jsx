@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -16,16 +17,7 @@ import Badge from '../../../components/common/Badge/Badge';
 import SearchBar from '../../../components/common/SearchBar/SearchBar';
 import './SubjectsPage.css';
 
-const CATEGORIES = [
-  { value: 'SCIENCES',   label: 'Sciences' },
-  { value: 'LETTRES',    label: 'Lettres' },
-  { value: 'MATHS',      label: 'Mathématiques' },
-  { value: 'LANGUES',    label: 'Langues' },
-  { value: 'ARTS',       label: 'Arts' },
-  { value: 'EPS',        label: 'EPS' },
-  { value: 'TECHNIQUES', label: 'Techniques' },
-  { value: 'AUTRE',      label: 'Autre' },
-];
+const CATEGORY_KEYS = ['SCIENCES', 'LETTRES', 'MATHS', 'LANGUES', 'ARTS', 'EPS', 'TECHNIQUES', 'AUTRE'];
 
 const CATEGORY_VARIANT = {
   SCIENCES: 'info', LETTRES: 'success', MATHS: 'warning',
@@ -35,40 +27,41 @@ const CATEGORY_VARIANT = {
 
 const EMPTY_FORM = { nameFr: '', code: '', category: '', description: '' };
 
-function validate(form) {
+function validate(form, t) {
   const errors = {};
-  if (!form.nameFr.trim()) errors.nameFr = 'Nom de la matière requis';
+  if (!form.nameFr.trim()) errors.nameFr = t('subjects.errors.nameRequired');
   return errors;
 }
 
-function SubjectForm({ form, errors, onChange }) {
+function SubjectForm({ form, errors, onChange, t }) {
+  const categories = CATEGORY_KEYS.map((k) => ({ value: k, label: t(`subjects.categories.${k}`) }));
   return (
     <div className="subject-form">
       <div className="subject-form__row">
         <Input
-          id="nameFr" label="Nom de la matière" required
+          id="nameFr" label={t('subjects.name')} required
           value={form.nameFr} error={errors.nameFr}
-          placeholder="ex: Mathématiques, Français…"
+          placeholder={t('subjects.namePlaceholder')}
           onChange={(e) => onChange('nameFr', e.target.value)}
         />
         <Input
-          id="code" label="Code"
+          id="code" label={t('subjects.code')}
           value={form.code}
-          placeholder="ex: MATH (auto si vide)"
+          placeholder={t('subjects.codePlaceholder')}
           onChange={(e) => onChange('code', e.target.value)}
         />
       </div>
       <Select
-        id="category" label="Catégorie"
+        id="category" label={t('subjects.category')}
         value={form.category}
-        placeholder="Sélectionner une catégorie"
-        options={CATEGORIES}
+        placeholder={t('subjects.allCategories')}
+        options={categories}
         onChange={(e) => onChange('category', e.target.value)}
       />
       <Input
-        id="description" label="Description"
+        id="description" label={t('subjects.description')}
         value={form.description}
-        placeholder="Optionnel"
+        placeholder={t('common.optional')}
         onChange={(e) => onChange('description', e.target.value)}
       />
     </div>
@@ -76,6 +69,7 @@ function SubjectForm({ form, errors, onChange }) {
 }
 
 function SubjectsPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const [search, setSearch]     = useState('');
   const [catFilter, setCat]     = useState('');
@@ -105,31 +99,31 @@ function SubjectsPage() {
 
   const createMutation = useMutation({
     mutationFn: (data) => subjectsService.create(data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['subjects'] }); toast.success('Matière créée'); closeModal(); },
-    onError:   (err) => toast.error(err?.response?.data?.message ?? 'Erreur de création'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['subjects'] }); toast.success(t('subjects.toast.created')); closeModal(); },
+    onError:   (err) => toast.error(err?.response?.data?.message ?? t('common.errorGeneric')),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => subjectsService.update(id, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['subjects'] }); toast.success('Matière mise à jour'); closeModal(); },
-    onError:   (err) => toast.error(err?.response?.data?.message ?? 'Erreur de mise à jour'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['subjects'] }); toast.success(t('subjects.toast.updated')); closeModal(); },
+    onError:   (err) => toast.error(err?.response?.data?.message ?? t('common.errorGeneric')),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => subjectsService.delete(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['subjects'] }); toast.success('Matière supprimée'); setConfirm(null); },
-    onError:   (err) => toast.error(err?.response?.data?.message ?? 'Erreur de suppression'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['subjects'] }); toast.success(t('subjects.toast.deleted')); setConfirm(null); },
+    onError:   (err) => toast.error(err?.response?.data?.message ?? t('common.errorGeneric')),
   });
 
   const bulkDeleteMutation = useMutation({
     mutationFn: (ids) => subjectsService.bulkDelete(ids),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['subjects'] });
-      toast.success(`${selectedIds.size} matière${selectedIds.size > 1 ? 's' : ''} supprimée${selectedIds.size > 1 ? 's' : ''}`);
+      toast.success(t('subjects.toast.deleted'));
       setSelectedIds(new Set());
       setBulkConfirm(false);
     },
-    onError: () => { qc.invalidateQueries({ queryKey: ['subjects'] }); toast.error('Certaines suppressions ont échoué'); setBulkConfirm(false); setSelectedIds(new Set()); },
+    onError: () => { qc.invalidateQueries({ queryKey: ['subjects'] }); toast.error(t('common.errorGeneric')); setBulkConfirm(false); setSelectedIds(new Set()); },
   });
 
   function openCreate() {
@@ -163,7 +157,7 @@ function SubjectsPage() {
   }
 
   function handleSubmit() {
-    const errs = validate(form);
+    const errs = validate(form, t);
     if (Object.keys(errs).length) { setErrors(errs); return; }
     const payload = {
       nameFr:      form.nameFr,
@@ -180,10 +174,12 @@ function SubjectsPage() {
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
+  const categoryOptions = CATEGORY_KEYS.map((k) => ({ value: k, label: t(`subjects.categories.${k}`) }));
+
   const columns = [
     {
       key: 'nameFr',
-      label: 'Matière',
+      label: t('subjects.name'),
       render: (s) => (
         <Link to={`/admin/subjects/${s.id}`} className="subjects-table__profile-link">
           <div className="subjects-table__name">{s.nameFr}</div>
@@ -193,17 +189,17 @@ function SubjectsPage() {
     },
     {
       key: 'category',
-      label: 'Catégorie',
+      label: t('subjects.category'),
       render: (s) =>
         s.category
           ? <Badge variant={CATEGORY_VARIANT[s.category] ?? 'default'}>
-              {CATEGORIES.find((c) => c.value === s.category)?.label ?? s.category}
+              {t(`subjects.categories.${s.category}`, s.category)}
             </Badge>
           : <span className="subjects-table__empty">—</span>,
     },
     {
       key: 'description',
-      label: 'Description',
+      label: t('subjects.description'),
       render: (s) => s.description ?? <span className="subjects-table__empty">—</span>,
     },
     {
@@ -212,33 +208,33 @@ function SubjectsPage() {
       style: { width: '120px', textAlign: 'right' },
       render: (s) => (
         <div className="subjects-table__actions">
-          <Button size="sm" variant="ghost" onClick={() => openEdit(s)}>Modifier</Button>
-          <Button size="sm" variant="ghost" onClick={() => setConfirm(s)}>Supprimer</Button>
+          <Button size="sm" variant="ghost" onClick={() => openEdit(s)}>{t('action.edit')}</Button>
+          <Button size="sm" variant="ghost" onClick={() => setConfirm(s)}>{t('action.delete')}</Button>
         </div>
       ),
     },
   ];
 
   return (
-    <AppShell title="Matières">
+    <AppShell title={t('subjects.title')}>
       <PageHeader
-        title="Matières"
-        subtitle={`${subjects.length} matière${subjects.length !== 1 ? 's' : ''}`}
-        actions={<Button icon="+" onClick={openCreate}>Nouvelle matière</Button>}
+        title={t('subjects.title')}
+        subtitle={`${subjects.length} ${t('subjects.title').toLowerCase()}`}
+        actions={<Button icon="+" onClick={openCreate}>{t('subjects.addSubject')}</Button>}
       />
 
       <div className="subjects-page__toolbar">
         <SearchBar
           value={search}
           onChange={setSearch}
-          placeholder="Rechercher par nom ou code…"
+          placeholder={t('subjects.searchPlaceholder')}
           className="subjects-page__search"
         />
         <Select
           id="cat-filter"
           value={catFilter}
-          placeholder="Toutes les catégories"
-          options={CATEGORIES}
+          placeholder={t('subjects.allCategories')}
+          options={categoryOptions}
           onChange={(e) => setCat(e.target.value)}
           className="subjects-page__cat-filter"
         />
@@ -255,7 +251,7 @@ function SubjectsPage() {
         columns={columns}
         rows={filtered}
         loading={isLoading}
-        emptyMessage="Aucune matière trouvée"
+        emptyMessage={t('subjects.noFound')}
         selectable
         selectedIds={selectedIds}
         onSelectionChange={setSelectedIds}
@@ -264,18 +260,18 @@ function SubjectsPage() {
       <OffCanvas
         open={!!modal}
         onClose={closeModal}
-        title={modal === 'create' ? 'Nouvelle matière' : 'Modifier la matière'}
+        title={modal === 'create' ? t('subjects.addSubject') : t('subjects.editSubject')}
         size="md"
         footer={
           <>
-            <Button variant="ghost" onClick={closeModal} disabled={isSaving}>Annuler</Button>
+            <Button variant="ghost" onClick={closeModal} disabled={isSaving}>{t('action.cancel')}</Button>
             <Button onClick={handleSubmit} disabled={isSaving}>
-              {isSaving ? 'Enregistrement…' : 'Enregistrer'}
+              {isSaving ? t('action.saving') : t('action.save')}
             </Button>
           </>
         }
       >
-        <SubjectForm form={form} errors={errors} onChange={handleChange} />
+        <SubjectForm form={form} errors={errors} onChange={handleChange} t={t} />
       </OffCanvas>
 
       <ConfirmDialog
@@ -283,9 +279,9 @@ function SubjectsPage() {
         onClose={() => setConfirm(null)}
         onConfirm={() => deleteMutation.mutate(confirm.id)}
         loading={deleteMutation.isPending}
-        title="Supprimer la matière"
-        message={`Supprimer "${confirm?.nameFr}" ? Cette action est irréversible.`}
-        confirmLabel="Supprimer"
+        title={t('subjects.deleteSubject')}
+        message={`${t('common.confirmDelete')} "${confirm?.nameFr}" ? ${t('common.deleteWarning')}`}
+        confirmLabel={t('action.delete')}
         variant="danger"
       />
 
@@ -294,9 +290,9 @@ function SubjectsPage() {
         onClose={() => setBulkConfirm(false)}
         onConfirm={() => bulkDeleteMutation.mutate([...selectedIds])}
         loading={bulkDeleteMutation.isPending}
-        title={`Supprimer ${selectedIds.size} matière${selectedIds.size > 1 ? 's' : ''}`}
-        message={`Supprimer définitivement ${selectedIds.size} matière${selectedIds.size > 1 ? 's' : ''} ? Tous les cours, fiches de notes et données associées seront effacés. Cette action est irréversible.`}
-        confirmLabel={`Supprimer ${selectedIds.size} matière${selectedIds.size > 1 ? 's' : ''}`}
+        title={`${t('action.delete')} (${selectedIds.size})`}
+        message={t('common.deleteWarning')}
+        confirmLabel={t('action.delete')}
         variant="danger"
       />
     </AppShell>

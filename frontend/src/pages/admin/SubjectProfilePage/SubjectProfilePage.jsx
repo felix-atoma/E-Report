@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { subjectsService } from '../../../services/subjectsService';
 import { subjectHoursService } from '../../../services/subjectHoursService';
@@ -15,23 +16,11 @@ import Select from '../../../components/common/Select/Select';
 import Loading from '../../../components/common/Loading/Loading';
 import './SubjectProfilePage.css';
 
-const CATEGORY_LABEL = {
-  SCIENCES: 'Sciences', LETTRES: 'Lettres', MATHS: 'Mathématiques',
-  LANGUES: 'Langues', ARTS: 'Arts', EPS: 'EPS',
-  TECHNIQUES: 'Techniques', AUTRE: 'Autre',
-};
-
 const CATEGORY_VARIANT = {
   SCIENCES: 'info', LETTRES: 'success', MATHS: 'warning',
   LANGUES: 'danger', ARTS: 'default', EPS: 'info',
   TECHNIQUES: 'warning', AUTRE: 'default',
 };
-
-const TERM_OPTIONS = [
-  { value: '1', label: 'Trimestre 1' },
-  { value: '2', label: 'Trimestre 2' },
-  { value: '3', label: 'Trimestre 3' },
-];
 
 const EMPTY_HOURS_FORM = {
   classId: '', academicYear: '', termNumber: '1', termName: '',
@@ -61,12 +50,19 @@ function DetailRow({ label, children }) {
 }
 
 function AdminSubjectProfilePage() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const qc = useQueryClient();
 
   const [hoursModal, setHoursModal] = useState(false);
   const [hoursForm, setHoursForm]   = useState(EMPTY_HOURS_FORM);
+
+  const termOptions = [
+    { value: '1', label: `${t('subjectProfile.form.term')} 1` },
+    { value: '2', label: `${t('subjectProfile.form.term')} 2` },
+    { value: '3', label: `${t('subjectProfile.form.term')} 3` },
+  ];
 
   const { data: subject, isLoading } = useQuery({
     queryKey: ['subject', id],
@@ -84,14 +80,14 @@ function AdminSubjectProfilePage() {
     mutationFn: (data) => subjectHoursService.upsert(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['subject-hours', id] });
-      toast.success('Enregistré');
+      toast.success(t('subjectProfile.toast.saved'));
       setHoursModal(false);
       setHoursForm(EMPTY_HOURS_FORM);
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur'),
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('subjectProfile.toast.error')),
   });
 
-  if (isLoading) return <AppShell title="Profil matière"><Loading /></AppShell>;
+  if (isLoading) return <AppShell title={t('subjectProfile.title')}><Loading /></AppShell>;
 
   const classSubjects = subject?.classSubjects ?? [];
   const classCount    = classSubjects.length;
@@ -113,10 +109,10 @@ function AdminSubjectProfilePage() {
 
   function handleHoursSubmit() {
     if (!hoursForm.classId || !hoursForm.academicYear || !hoursForm.termNumber) {
-      toast.error('Classe, année scolaire et trimestre requis');
+      toast.error(t('subjectProfile.errors.required'));
       return;
     }
-    const termLabel = TERM_OPTIONS.find((t) => t.value === hoursForm.termNumber)?.label ?? '';
+    const termLabel = termOptions.find((to) => to.value === hoursForm.termNumber)?.label ?? '';
     upsertMutation.mutate({
       classId:          hoursForm.classId,
       academicYear:     hoursForm.academicYear,
@@ -131,20 +127,19 @@ function AdminSubjectProfilePage() {
   }
 
   return (
-    <AppShell title="Profil matière">
+    <AppShell title={t('subjectProfile.title')}>
       <PageHeader
         title={subject?.nameFr ?? '—'}
-        subtitle={subject?.code ? `Code : ${subject.code}` : ''}
+        subtitle={subject?.code ? t('subjectProfile.codeLabel', { code: subject.code }) : ''}
         actions={
           <button className="spp-back-btn" onClick={() => navigate('/admin/subjects')}>
-            ← Retour aux matières
+            {t('subjectProfile.back')}
           </button>
         }
       />
 
       <div className="spp-layout">
 
-        {/* ── Identity card ── */}
         <Card className="spp-identity">
           <div className="spp-identity__icon-wrap">
             <span className="spp-identity__emoji">📚</span>
@@ -158,59 +153,39 @@ function AdminSubjectProfilePage() {
               {subject?.code && <Badge variant="default">{subject.code}</Badge>}
               {subject?.category && (
                 <Badge variant={CATEGORY_VARIANT[subject.category] ?? 'default'}>
-                  {CATEGORY_LABEL[subject.category] ?? subject.category}
+                  {t(`subjectProfile.categories.${subject.category}`, subject.category)}
                 </Badge>
               )}
-              {subject?.isActive === false && <Badge variant="danger">Inactif</Badge>}
+              {subject?.isActive === false && <Badge variant="danger">{t('subjectProfile.inactive')}</Badge>}
             </div>
           </div>
           <dl className="spp-identity__details">
-            <DetailRow label="Département">{subject?.department}</DetailRow>
-            <DetailRow label="Note de passage">
-              {subject?.passMark != null ? `${subject.passMark} / 20` : null}
+            <DetailRow label={t('subjectProfile.details.department')}>{subject?.department}</DetailRow>
+            <DetailRow label={t('subjectProfile.details.passMark')}>
+              {subject?.passMark != null ? t('subjectProfile.details.passMarkVal', { value: subject.passMark }) : null}
             </DetailRow>
-            <DetailRow label="Description">{subject?.description}</DetailRow>
+            <DetailRow label={t('subjectProfile.details.description')}>{subject?.description}</DetailRow>
           </dl>
         </Card>
 
-        {/* ── KPI row ── */}
         <div className="spp-kpis">
-          <KpiCard
-            icon="🏫"
-            label="Classes assignées"
-            value={classCount}
-            sub="classes utilisant cette matière"
-            colorClass="spp-kpi__icon--blue"
-          />
-          <KpiCard
-            icon="👨‍🏫"
-            label="Enseignants"
-            value={teacherCount || '—'}
-            sub="enseignants assignés"
-            colorClass="spp-kpi__icon--purple"
-          />
-          <KpiCard
-            icon="📝"
-            label="Note de passage"
-            value={subject?.passMark != null ? `${subject.passMark}/20` : '—'}
-            sub="seuil de réussite"
-            colorClass="spp-kpi__icon--gold"
-          />
+          <KpiCard icon="🏫" label={t('subjectProfile.kpi.classes')} value={classCount} sub={t('subjectProfile.kpi.classesSub')} colorClass="spp-kpi__icon--blue" />
+          <KpiCard icon="👨‍🏫" label={t('subjectProfile.kpi.teachers')} value={teacherCount || '—'} sub={t('subjectProfile.kpi.teachersSub')} colorClass="spp-kpi__icon--purple" />
+          <KpiCard icon="📝" label={t('subjectProfile.kpi.passMark')} value={subject?.passMark != null ? `${subject.passMark}/20` : '—'} sub={t('subjectProfile.kpi.passMarkSub')} colorClass="spp-kpi__icon--gold" />
         </div>
 
-        {/* ── Classes & teachers table ── */}
         <Card className="spp-section spp-section--full">
-          <h3 className="spp-section__title">Classes &amp; Enseignants</h3>
+          <h3 className="spp-section__title">{t('subjectProfile.classesTitle')}</h3>
           {classSubjects.length === 0 ? (
-            <p className="spp-empty">Cette matière n'est assignée à aucune classe.</p>
+            <p className="spp-empty">{t('subjectProfile.noClasses')}</p>
           ) : (
             <div className="spp-table-wrap">
               <table className="spp-table">
                 <thead>
                   <tr>
-                    <th>Classe</th>
-                    <th>Année scolaire</th>
-                    <th>Enseignant</th>
+                    <th>{t('subjectProfile.columns.class')}</th>
+                    <th>{t('subjectProfile.columns.year')}</th>
+                    <th>{t('subjectProfile.columns.teacher')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -231,30 +206,29 @@ function AdminSubjectProfilePage() {
           )}
         </Card>
 
-        {/* ── Suivi des heures ── */}
         <Card className="spp-section spp-section--full">
           <div className="spp-section-header">
-            <h3 className="spp-section__title">Suivi des heures &amp; absences</h3>
+            <h3 className="spp-section__title">{t('subjectProfile.hoursTitle')}</h3>
             <Button size="sm" icon="+" onClick={() => openHoursModal()}>
-              Saisir
+              {t('subjectProfile.hoursAdd')}
             </Button>
           </div>
 
           {hoursLogs.length === 0 ? (
-            <p className="spp-empty">Aucune saisie pour le moment.</p>
+            <p className="spp-empty">{t('subjectProfile.hoursEmpty')}</p>
           ) : (
             <div className="spp-table-wrap">
               <table className="spp-table">
                 <thead>
                   <tr>
-                    <th>Classe</th>
-                    <th>Année</th>
-                    <th>Période</th>
-                    <th>H. prévues</th>
-                    <th>H. effectuées</th>
-                    <th>Absences</th>
-                    <th>Retards</th>
-                    <th>Observations</th>
+                    <th>{t('subjectProfile.hoursColumns.class')}</th>
+                    <th>{t('subjectProfile.hoursColumns.year')}</th>
+                    <th>{t('subjectProfile.hoursColumns.period')}</th>
+                    <th>{t('subjectProfile.hoursColumns.planned')}</th>
+                    <th>{t('subjectProfile.hoursColumns.done')}</th>
+                    <th>{t('subjectProfile.hoursColumns.absences')}</th>
+                    <th>{t('subjectProfile.hoursColumns.delays')}</th>
+                    <th>{t('subjectProfile.hoursColumns.notes')}</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -264,7 +238,7 @@ function AdminSubjectProfilePage() {
                       <td>{log.class?.name ?? '—'}</td>
                       <td>{log.academicYear}</td>
                       <td>{log.termName ?? `T${log.termNumber}`}</td>
-                      <td>{log.heuresPrevues    ?? '—'}</td>
+                      <td>{log.heuresPrevues ?? '—'}</td>
                       <td>
                         {log.heuresEffectuees != null && log.heuresPrevues != null ? (
                           <span className={log.heuresEffectuees < log.heuresPrevues ? 'spp-text--warn' : 'spp-text--ok'}>
@@ -272,12 +246,8 @@ function AdminSubjectProfilePage() {
                           </span>
                         ) : (log.heuresEffectuees ?? '—')}
                       </td>
-                      <td className={log.absences > 0 ? 'spp-text--warn' : ''}>
-                        {log.absences ?? '—'}
-                      </td>
-                      <td className={log.retards > 0 ? 'spp-text--warn' : ''}>
-                        {log.retards ?? '—'}
-                      </td>
+                      <td className={log.absences > 0 ? 'spp-text--warn' : ''}>{log.absences ?? '—'}</td>
+                      <td className={log.retards > 0 ? 'spp-text--warn' : ''}>{log.retards ?? '—'}</td>
                       <td className="spp-notes-cell">{log.notes ?? '—'}</td>
                       <td>
                         <button
@@ -294,7 +264,7 @@ function AdminSubjectProfilePage() {
                             notes:            log.notes ?? '',
                           })}
                         >
-                          Modifier
+                          {t('subjectProfile.hoursColumns.edit')}
                         </button>
                       </td>
                     </tr>
@@ -307,19 +277,18 @@ function AdminSubjectProfilePage() {
 
       </div>
 
-      {/* ── Hours modal ── */}
       <Modal
         open={hoursModal}
         onClose={() => { setHoursModal(false); setHoursForm(EMPTY_HOURS_FORM); }}
-        title="Saisie des heures &amp; absences"
+        title={t('subjectProfile.form.title')}
         size="md"
         footer={
           <>
             <Button variant="ghost" onClick={() => { setHoursModal(false); setHoursForm(EMPTY_HOURS_FORM); }}>
-              Annuler
+              {t('action.cancel')}
             </Button>
             <Button onClick={handleHoursSubmit} disabled={upsertMutation.isPending}>
-              {upsertMutation.isPending ? 'Enregistrement…' : 'Enregistrer'}
+              {upsertMutation.isPending ? t('action.saving') : t('action.save')}
             </Button>
           </>
         }
@@ -327,35 +296,35 @@ function AdminSubjectProfilePage() {
         <div className="spp-hours-form">
           <Select
             id="classId"
-            label="Classe"
+            label={t('subjectProfile.form.class')}
             required
             value={hoursForm.classId}
-            placeholder="Sélectionner une classe"
+            placeholder={t('subjectProfile.form.classPlaceholder')}
             options={classOptions}
             onChange={(e) => handleHoursChange('classId', e.target.value)}
           />
           <div className="spp-hours-form__row">
             <Input
               id="academicYear"
-              label="Année scolaire"
+              label={t('subjectProfile.form.year')}
               required
-              placeholder="ex: 2024-2025"
+              placeholder={t('subjectProfile.form.yearPlaceholder')}
               value={hoursForm.academicYear}
               onChange={(e) => handleHoursChange('academicYear', e.target.value)}
             />
             <Select
               id="termNumber"
-              label="Trimestre"
+              label={t('subjectProfile.form.term')}
               required
               value={hoursForm.termNumber}
-              options={TERM_OPTIONS}
+              options={termOptions}
               onChange={(e) => handleHoursChange('termNumber', e.target.value)}
             />
           </div>
           <div className="spp-hours-form__row">
             <Input
               id="heuresPrevues"
-              label="Heures prévues"
+              label={t('subjectProfile.form.planned')}
               type="number"
               min="0"
               placeholder="ex: 30"
@@ -364,7 +333,7 @@ function AdminSubjectProfilePage() {
             />
             <Input
               id="heuresEffectuees"
-              label="Heures effectuées"
+              label={t('subjectProfile.form.done')}
               type="number"
               min="0"
               placeholder="ex: 28"
@@ -375,7 +344,7 @@ function AdminSubjectProfilePage() {
           <div className="spp-hours-form__row">
             <Input
               id="absences"
-              label="Absences élèves"
+              label={t('subjectProfile.form.absences')}
               type="number"
               min="0"
               placeholder="ex: 5"
@@ -384,7 +353,7 @@ function AdminSubjectProfilePage() {
             />
             <Input
               id="retards"
-              label="Retards élèves"
+              label={t('subjectProfile.form.delays')}
               type="number"
               min="0"
               placeholder="ex: 3"
@@ -394,8 +363,8 @@ function AdminSubjectProfilePage() {
           </div>
           <Input
             id="notes"
-            label="Observations"
-            placeholder="Remarques libres du professeur…"
+            label={t('subjectProfile.form.observations')}
+            placeholder={t('subjectProfile.form.observationsPlaceholder')}
             value={hoursForm.notes}
             onChange={(e) => handleHoursChange('notes', e.target.value)}
           />

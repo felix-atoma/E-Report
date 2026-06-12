@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { disciplinaryService } from '../../../services/disciplinaryService';
 import { studentsService } from '../../../services/studentsService';
@@ -15,58 +16,56 @@ import Loading from '../../../components/common/Loading/Loading';
 import EmptyState from '../../../components/common/EmptyState/EmptyState';
 import './DisciplinaryPage.css';
 
-const TYPE_CONFIG = {
-  WARNING:     { label: 'Avertissement', bg: '#ffedd5', color: '#c2410c' },
-  SUSPENSION:  { label: 'Suspension',    bg: '#fee2e2', color: '#b91c1c' },
-  EXCLUSION:   { label: 'Exclusion',     bg: '#fde8e8', color: '#7f1d1d' },
-  NOTE:        { label: 'Note',          bg: '#dbeafe', color: '#1d4ed8' },
-  COMMENDATION:{ label: 'Félicitation',  bg: '#dcfce7', color: '#15803d' },
-  OTHER:       { label: 'Autre',         bg: '#f3f4f6', color: '#4b5563' },
+const TYPE_KEYS = ['WARNING', 'SUSPENSION', 'EXCLUSION', 'NOTE', 'COMMENDATION', 'OTHER'];
+const TYPE_BG = {
+  WARNING:      { bg: '#ffedd5', color: '#c2410c' },
+  SUSPENSION:   { bg: '#fee2e2', color: '#b91c1c' },
+  EXCLUSION:    { bg: '#fde8e8', color: '#7f1d1d' },
+  NOTE:         { bg: '#dbeafe', color: '#1d4ed8' },
+  COMMENDATION: { bg: '#dcfce7', color: '#15803d' },
+  OTHER:        { bg: '#f3f4f6', color: '#4b5563' },
 };
-
-const TYPE_FILTER_OPTIONS = [
-  { value: '', label: 'Tous les types' },
-  ...Object.entries(TYPE_CONFIG).map(([v, c]) => ({ value: v, label: c.label })),
-];
-
-const TYPE_SELECT_OPTIONS = Object.entries(TYPE_CONFIG).map(([v, c]) => ({ value: v, label: c.label }));
-
-const RESOLVED_OPTIONS = [
-  { value: '', label: 'Tous' },
-  { value: 'false', label: 'En cours' },
-  { value: 'true', label: 'Résolus' },
-];
 
 const EMPTY_FORM = {
-  studentId: '',
-  date: '',
-  type: 'WARNING',
-  description: '',
-  sanction: '',
-  sanctionStart: '',
-  sanctionEnd: '',
-  resolved: false,
+  studentId: '', date: '', type: 'WARNING',
+  description: '', sanction: '', sanctionStart: '', sanctionEnd: '', resolved: false,
 };
 
-function TypeBadge({ type }) {
-  const cfg = TYPE_CONFIG[type] ?? TYPE_CONFIG.OTHER;
+function TypeBadge({ type, t }) {
+  const cfg = TYPE_BG[type] ?? TYPE_BG.OTHER;
   return (
     <span className="disc-badge" style={{ background: cfg.bg, color: cfg.color }}>
-      {cfg.label}
+      {t(`studentProfile.discipline.types.${type}`, type)}
     </span>
   );
 }
 
 function DisciplinaryPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
 
-  const [typeFilter, setTypeFilter] = useState('');
+  const [typeFilter, setTypeFilter]     = useState('');
   const [resolvedFilter, setResolvedFilter] = useState('');
-  const [open, setOpen] = useState(false);
-  const [confirm, setConfirm] = useState(null);
-  const [form, setForm] = useState(EMPTY_FORM);
-  const [errors, setErrors] = useState({});
+  const [open, setOpen]                 = useState(false);
+  const [confirm, setConfirm]           = useState(null);
+  const [form, setForm]                 = useState(EMPTY_FORM);
+  const [errors, setErrors]             = useState({});
   const [studentSearch, setStudentSearch] = useState('');
+
+  const typeFilterOptions = [
+    { value: '', label: t('disciplinary.allTypes') },
+    ...TYPE_KEYS.map((k) => ({ value: k, label: t(`studentProfile.discipline.types.${k}`) })),
+  ];
+
+  const typeSelectOptions = TYPE_KEYS.map((k) => ({
+    value: k, label: t(`studentProfile.discipline.types.${k}`),
+  }));
+
+  const resolvedOptions = [
+    { value: '', label: t('disciplinary.all') },
+    { value: 'false', label: t('disciplinary.open') },
+    { value: 'true', label: t('disciplinary.resolved') },
+  ];
 
   const queryParams = useMemo(() => {
     const p = {};
@@ -85,7 +84,6 @@ function DisciplinaryPage() {
     queryFn: () => studentsService.list().then((r) => r.data),
   });
 
-  // Filter students for the searchable dropdown
   const filteredStudents = useMemo(() => {
     if (!studentSearch) return students.slice(0, 30);
     const q = studentSearch.toLowerCase();
@@ -95,38 +93,33 @@ function DisciplinaryPage() {
     }).slice(0, 30);
   }, [students, studentSearch]);
 
-  const studentOptions = filteredStudents.map((s) => ({
-    value: s.id,
-    label: `${s.user?.name ?? s.admissionNumber} (${s.admissionNumber})`,
-  }));
-
   const createMutation = useMutation({
     mutationFn: (data) => disciplinaryService.create(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['disciplinary'] });
-      toast.success('Dossier créé');
+      toast.success(t('disciplinary.toast.created'));
       setOpen(false);
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur'),
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('disciplinary.toast.error')),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => disciplinaryService.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['disciplinary'] });
-      toast.success('Dossier mis à jour');
+      toast.success(t('disciplinary.toast.updated'));
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur'),
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('disciplinary.toast.error')),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => disciplinaryService.remove(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['disciplinary'] });
-      toast.success('Dossier supprimé');
+      toast.success(t('disciplinary.toast.deleted'));
       setConfirm(null);
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur'),
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('disciplinary.toast.error')),
   });
 
   function handleChange(field, value) {
@@ -136,26 +129,25 @@ function DisciplinaryPage() {
 
   function validate() {
     const errs = {};
-    if (!form.studentId) errs.studentId = 'Élève requis';
-    if (!form.date) errs.date = 'Date requise';
-    if (!form.description.trim()) errs.description = 'Description requise';
+    if (!form.studentId) errs.studentId = t('disciplinary.errors.student');
+    if (!form.date) errs.date = t('disciplinary.errors.date');
+    if (!form.description.trim()) errs.description = t('disciplinary.errors.description');
     return errs;
   }
 
   function handleSubmit() {
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
-    const payload = {
-      studentId:    form.studentId,
-      date:         form.date,
-      type:         form.type,
-      description:  form.description,
-      sanction:     form.sanction || undefined,
-      sanctionStart:form.sanctionStart || undefined,
-      sanctionEnd:  form.sanctionEnd || undefined,
-      resolved:     form.resolved,
-    };
-    createMutation.mutate(payload);
+    createMutation.mutate({
+      studentId:     form.studentId,
+      date:          form.date,
+      type:          form.type,
+      description:   form.description,
+      sanction:      form.sanction     || undefined,
+      sanctionStart: form.sanctionStart || undefined,
+      sanctionEnd:   form.sanctionEnd   || undefined,
+      resolved:      form.resolved,
+    });
   }
 
   function handleResolve(record) {
@@ -170,21 +162,20 @@ function DisciplinaryPage() {
   }
 
   return (
-    <AppShell title="Dossiers disciplinaires">
+    <AppShell title={t('disciplinary.title')}>
       <PageHeader
-        title="Dossiers disciplinaires"
-        subtitle={`${records.length} dossier${records.length !== 1 ? 's' : ''}`}
+        title={t('disciplinary.title')}
+        subtitle={t('disciplinary.subtitle', { count: records.length })}
         actions={
           <Button icon="+" onClick={openCreate}>
-            Ajouter un dossier
+            {t('disciplinary.add')}
           </Button>
         }
       />
 
-      {/* Filters */}
       <div className="disc-toolbar">
         <div className="disc-filters">
-          {TYPE_FILTER_OPTIONS.map((opt) => (
+          {typeFilterOptions.map((opt) => (
             <button
               key={opt.value}
               className={`disc-filter-pill ${typeFilter === opt.value ? 'disc-filter-pill--active' : ''}`}
@@ -195,7 +186,7 @@ function DisciplinaryPage() {
           ))}
         </div>
         <div className="disc-resolved-filter">
-          {RESOLVED_OPTIONS.map((opt) => (
+          {resolvedOptions.map((opt) => (
             <button
               key={opt.value}
               className={`disc-resolved-btn ${resolvedFilter === opt.value ? 'disc-resolved-btn--active' : ''}`}
@@ -210,7 +201,7 @@ function DisciplinaryPage() {
       {isLoading ? (
         <Loading />
       ) : records.length === 0 ? (
-        <EmptyState message="Aucun dossier disciplinaire trouvé." />
+        <EmptyState message={t('disciplinary.empty')} />
       ) : (
         <div className="disc-list">
           {records.map((rec) => {
@@ -225,21 +216,21 @@ function DisciplinaryPage() {
                 <div className="disc-card__body">
                   <div className="disc-card__header">
                     <span className="disc-card__student">{studentName}</span>
-                    <TypeBadge type={rec.type} />
+                    <TypeBadge type={rec.type} t={t} />
                     {rec.resolved ? (
-                      <span className="disc-card__resolved-pill">Résolu</span>
+                      <span className="disc-card__resolved-pill">{t('studentProfile.discipline.resolved')}</span>
                     ) : (
-                      <span className="disc-card__open-pill">En cours</span>
+                      <span className="disc-card__open-pill">{t('disciplinary.open')}</span>
                     )}
                   </div>
                   <div className="disc-card__date">
                     {new Date(rec.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
-                    {rec.recordedByName && <span className="disc-card__by"> — Enregistré par {rec.recordedByName}</span>}
+                    {rec.recordedByName && <span className="disc-card__by"> — {t('disciplinary.recordedBy')} {rec.recordedByName}</span>}
                   </div>
                   <p className="disc-card__desc">{rec.description}</p>
                   {rec.sanction && (
                     <div className="disc-card__sanction">
-                      <strong>Sanction :</strong> {rec.sanction}
+                      <strong>{t('disciplinary.sanction')}</strong> {rec.sanction}
                       {rec.sanctionStart && (
                         <> ({new Date(rec.sanctionStart).toLocaleDateString('fr-FR')}
                         {rec.sanctionEnd && <> — {new Date(rec.sanctionEnd).toLocaleDateString('fr-FR')}</>})</>
@@ -252,14 +243,12 @@ function DisciplinaryPage() {
                     className={`disc-card__resolve-btn ${rec.resolved ? 'disc-card__resolve-btn--undo' : ''}`}
                     onClick={() => handleResolve(rec)}
                     disabled={updateMutation.isPending}
-                    title={rec.resolved ? 'Marquer en cours' : 'Marquer résolu'}
                   >
-                    {rec.resolved ? '↺ Réouvrir' : '✓ Résolu'}
+                    {rec.resolved ? t('disciplinary.reopen') : t('disciplinary.markResolved')}
                   </button>
                   <button
                     className="disc-card__delete-btn"
                     onClick={() => setConfirm(rec)}
-                    title="Supprimer"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
                   </button>
@@ -270,31 +259,32 @@ function DisciplinaryPage() {
         </div>
       )}
 
-      {/* Create OffCanvas */}
       <OffCanvas
         open={open}
         onClose={() => setOpen(false)}
-        title="Nouveau dossier disciplinaire"
+        title={t('disciplinary.form.title')}
         size="md"
         footer={
           <>
             <Button variant="ghost" onClick={() => setOpen(false)} disabled={createMutation.isPending}>
-              Annuler
+              {t('action.cancel')}
             </Button>
             <Button onClick={handleSubmit} disabled={createMutation.isPending}>
-              {createMutation.isPending ? 'Enregistrement…' : 'Enregistrer'}
+              {createMutation.isPending ? t('action.saving') : t('action.save')}
             </Button>
           </>
         }
       >
         <div className="disc-form">
           <div>
-            <label className="disc-form__label" htmlFor="student-search">Élève <span className="disc-form__required">*</span></label>
+            <label className="disc-form__label" htmlFor="student-search">
+              {t('disciplinary.form.student')} <span className="disc-form__required">*</span>
+            </label>
             <input
               id="student-search"
               type="text"
               className={`disc-form__search-input ${errors.studentId ? 'disc-form__search-input--error' : ''}`}
-              placeholder="Rechercher un élève…"
+              placeholder={t('disciplinary.form.searchPlaceholder')}
               value={studentSearch}
               onChange={(e) => setStudentSearch(e.target.value)}
             />
@@ -321,7 +311,7 @@ function DisciplinaryPage() {
           <div className="disc-form__row">
             <Input
               id="date"
-              label="Date"
+              label={t('disciplinary.form.date')}
               type="date"
               required
               value={form.date}
@@ -330,19 +320,19 @@ function DisciplinaryPage() {
             />
             <Select
               id="type"
-              label="Type"
+              label={t('disciplinary.form.type')}
               value={form.type}
-              options={TYPE_SELECT_OPTIONS}
+              options={typeSelectOptions}
               onChange={(e) => handleChange('type', e.target.value)}
             />
           </div>
 
           <Textarea
             id="description"
-            label="Description"
+            label={t('disciplinary.form.description')}
             required
             rows={3}
-            placeholder="Décrire l'incident…"
+            placeholder={t('disciplinary.form.descriptionPlaceholder')}
             value={form.description}
             error={errors.description}
             onChange={(e) => handleChange('description', e.target.value)}
@@ -350,23 +340,23 @@ function DisciplinaryPage() {
 
           <Input
             id="sanction"
-            label="Sanction"
+            label={t('disciplinary.form.sanction')}
             value={form.sanction}
-            placeholder="ex: Convocation des parents, Exclusion temporaire…"
+            placeholder={t('disciplinary.form.sanctionPlaceholder')}
             onChange={(e) => handleChange('sanction', e.target.value)}
           />
 
           <div className="disc-form__row">
             <Input
               id="sanctionStart"
-              label="Début sanction"
+              label={t('disciplinary.form.sanctionStart')}
               type="date"
               value={form.sanctionStart}
               onChange={(e) => handleChange('sanctionStart', e.target.value)}
             />
             <Input
               id="sanctionEnd"
-              label="Fin sanction"
+              label={t('disciplinary.form.sanctionEnd')}
               type="date"
               value={form.sanctionEnd}
               onChange={(e) => handleChange('sanctionEnd', e.target.value)}
@@ -379,7 +369,7 @@ function DisciplinaryPage() {
               checked={form.resolved}
               onChange={(e) => handleChange('resolved', e.target.checked)}
             />
-            Marquer comme résolu
+            {t('disciplinary.form.markResolved')}
           </label>
         </div>
       </OffCanvas>
@@ -389,9 +379,9 @@ function DisciplinaryPage() {
         onClose={() => setConfirm(null)}
         onConfirm={() => deleteMutation.mutate(confirm.id)}
         loading={deleteMutation.isPending}
-        title="Supprimer le dossier"
-        message="Supprimer définitivement ce dossier disciplinaire ?"
-        confirmLabel="Supprimer"
+        title={t('disciplinary.confirmTitle')}
+        message={t('disciplinary.confirmMessage')}
+        confirmLabel={t('action.delete')}
         variant="danger"
       />
     </AppShell>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { classesService } from '../../../services/classesService';
 import { timetablesService } from '../../../services/timetablesService';
 import { gradesService } from '../../../services/gradesService';
@@ -12,22 +13,13 @@ import Badge from '../../../components/common/Badge/Badge';
 import Loading from '../../../components/common/Loading/Loading';
 import './ClassDetailPage.css';
 
-const SEX_LABEL   = { M: 'Garçon', F: 'Fille' };
-const SEX_VARIANT = { M: 'info',   F: 'danger' };
-
-const TERM_OPTIONS = [
-  { value: 1, label: '1er Trimestre' },
-  { value: 2, label: '2ème Trimestre' },
-  { value: 3, label: '3ème Trimestre' },
-];
-
 const DAYS = ['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI'];
 const DAY_LABELS = { LUNDI: 'Lundi', MARDI: 'Mardi', MERCREDI: 'Mercredi', JEUDI: 'Jeudi', VENDREDI: 'Vendredi', SAMEDI: 'Samedi' };
 
 const DEFAULT_SLOT = { subjectId: '', teacherId: '', dayOfWeek: 'LUNDI', startTime: '08:00', endTime: '09:00', room: '' };
 
-function TimetableGrid({ slots }) {
-  if (!slots.length) return <p className="acd__empty" style={{ padding: '1.5rem 0' }}>Aucun créneau défini.</p>;
+function TimetableGrid({ slots, t }) {
+  if (!slots.length) return <p className="acd__empty" style={{ padding: '1.5rem 0' }}>{t('classDetail.noSlots')}</p>;
 
   const byDay = {};
   DAYS.forEach((d) => { byDay[d] = []; });
@@ -55,7 +47,7 @@ function TimetableGrid({ slots }) {
   );
 }
 
-function SlotRow({ slot, index, subjects, teachers, onChange, onRemove }) {
+function SlotRow({ slot, index, subjects, teachers, onChange, onRemove, t }) {
   const set = (field) => (e) => onChange(index, { ...slot, [field]: e.target.value });
   return (
     <div className="acd__tt-row">
@@ -65,20 +57,20 @@ function SlotRow({ slot, index, subjects, teachers, onChange, onRemove }) {
       <input className="acd__tt-input" type="time" value={slot.startTime} onChange={set('startTime')} />
       <input className="acd__tt-input" type="time" value={slot.endTime} onChange={set('endTime')} />
       <select className="acd__tt-input acd__tt-input--wide" value={slot.subjectId} onChange={set('subjectId')}>
-        <option value="">— Matière —</option>
+        <option value="">— {t('classDetail.columns.subject')} —</option>
         {subjects.map((s) => <option key={s.subject?.id ?? s.id} value={s.subject?.id ?? s.id}>{s.subject?.nameFr ?? s.nameFr}</option>)}
       </select>
       <select className="acd__tt-input acd__tt-input--wide" value={slot.teacherId} onChange={set('teacherId')}>
-        <option value="">— Enseignant —</option>
-        {teachers.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+        <option value="">— {t('classDetail.columns.teacher')} —</option>
+        {teachers.map((tc) => <option key={tc.id} value={tc.id}>{tc.name}</option>)}
       </select>
       <input className="acd__tt-input" placeholder="Salle" value={slot.room} onChange={set('room')} />
-      <button type="button" className="acd__tt-remove" onClick={() => onRemove(index)} title="Supprimer">✕</button>
+      <button type="button" className="acd__tt-remove" onClick={() => onRemove(index)} title={t('action.delete')}>✕</button>
     </div>
   );
 }
 
-function TimetableEditor({ cls, academicYear, slots, onSaved }) {
+function TimetableEditor({ cls, academicYear, slots, onSaved, t }) {
   const qc = useQueryClient();
   const [rows, setRows] = useState(
     slots.length > 0
@@ -98,7 +90,7 @@ function TimetableEditor({ cls, academicYear, slots, onSaved }) {
       qc.invalidateQueries(['timetable', cls.id]);
       onSaved();
     },
-    onError: (err) => setError(err.response?.data?.message ?? 'Erreur lors de la sauvegarde.'),
+    onError: (err) => setError(err.response?.data?.message ?? t('common.errorGeneric')),
   });
 
   const handleChange = (idx, updated) => setRows((r) => r.map((s, i) => i === idx ? updated : s));
@@ -108,11 +100,11 @@ function TimetableEditor({ cls, academicYear, slots, onSaved }) {
   return (
     <div className="acd__tt-editor">
       <div className="acd__tt-header-row">
-        <span className="acd__tt-col-label">Jour</span>
+        <span className="acd__tt-col-label">{t('classDetail.columns.subject').slice(0, 4)}</span>
         <span className="acd__tt-col-label">Début</span>
         <span className="acd__tt-col-label">Fin</span>
-        <span className="acd__tt-col-label acd__tt-col-label--wide">Matière</span>
-        <span className="acd__tt-col-label acd__tt-col-label--wide">Enseignant</span>
+        <span className="acd__tt-col-label acd__tt-col-label--wide">{t('classDetail.columns.subject')}</span>
+        <span className="acd__tt-col-label acd__tt-col-label--wide">{t('classDetail.columns.teacher')}</span>
         <span className="acd__tt-col-label">Salle</span>
         <span />
       </div>
@@ -125,26 +117,33 @@ function TimetableEditor({ cls, academicYear, slots, onSaved }) {
           teachers={teachers}
           onChange={handleChange}
           onRemove={handleRemove}
+          t={t}
         />
       ))}
       <div className="acd__tt-actions">
-        <button type="button" className="acd__tt-add-btn" onClick={handleAdd}>+ Ajouter un créneau</button>
+        <button type="button" className="acd__tt-add-btn" onClick={handleAdd}>{t('classDetail.addSlot')}</button>
       </div>
       {error && <p className="acd__tt-error">{error}</p>}
       <div className="acd__tt-save-row">
         <button type="button" className="acd__tt-save-btn" onClick={() => mutation.mutate()} disabled={mutation.isPending}>
-          {mutation.isPending ? 'Sauvegarde…' : '💾 Enregistrer l\'emploi du temps'}
+          {mutation.isPending ? t('classDetail.saving') : t('classDetail.saveTimeTable')}
         </button>
-        <button type="button" className="acd__tt-cancel-btn" onClick={onSaved}>Annuler</button>
+        <button type="button" className="acd__tt-cancel-btn" onClick={onSaved}>{t('classDetail.cancelEdit')}</button>
       </div>
     </div>
   );
 }
 
-function FichesPanel({ classId, academicYear }) {
+function FichesPanel({ classId, academicYear, t }) {
   const qc = useQueryClient();
   const [term, setTerm] = useState(1);
   const [verifyingAll, setVerifyingAll] = useState(false);
+
+  const TERM_OPTIONS = [
+    { value: 1, label: t('fees.terms.TRIMESTRE_1') },
+    { value: 2, label: t('fees.terms.TRIMESTRE_2') },
+    { value: 3, label: t('fees.terms.TRIMESTRE_3') },
+  ];
 
   const { data: fiches = [], isLoading } = useQuery({
     queryKey: ['admin-fiches', classId, academicYear, term],
@@ -180,27 +179,27 @@ function FichesPanel({ classId, academicYear }) {
     <div>
       <div className="acd__fiche-bar">
         <div className="acd__term-tabs">
-          {TERM_OPTIONS.map((t) => (
+          {TERM_OPTIONS.map((tt) => (
             <button
-              key={t.value}
-              className={`acd__term-btn${term === t.value ? ' acd__term-btn--active' : ''}`}
-              onClick={() => setTerm(t.value)}
+              key={tt.value}
+              className={`acd__term-btn${term === tt.value ? ' acd__term-btn--active' : ''}`}
+              onClick={() => setTerm(tt.value)}
             >
-              {t.label}
+              {tt.label}
             </button>
           ))}
         </div>
         <div className="acd__fiche-bar-right">
           <span className={`acd__fiche-summary${allSigned ? ' acd__fiche-summary--done' : ''}`}>
             {fiches.length === 0
-              ? 'Aucune fiche'
+              ? t('classDetail.noFichesYet')
               : allSigned
-              ? '✅ Toutes vérifiées'
-              : `${signedCount}/${fiches.length} vérifiée${signedCount !== 1 ? 's' : ''}`}
+              ? t('classDetail.allVerified')
+              : t('classDetail.verifiedCount', { signed: signedCount, total: fiches.length })}
           </span>
           {!allSigned && fiches.length > 0 && (
             <button className="acd__verify-all-btn" onClick={verifyAll} disabled={verifyingAll}>
-              {verifyingAll ? 'Vérification…' : `✅ Tout vérifier (${fiches.length - signedCount})`}
+              {verifyingAll ? t('classDetail.verifying') : t('classDetail.verifyAll', { count: fiches.length - signedCount })}
             </button>
           )}
         </div>
@@ -209,7 +208,7 @@ function FichesPanel({ classId, academicYear }) {
       {isLoading ? (
         <Loading />
       ) : fiches.length === 0 ? (
-        <p className="acd__empty" style={{ padding: '0.5rem 0' }}>Aucune fiche enregistrée pour ce trimestre.</p>
+        <p className="acd__empty" style={{ padding: '0.5rem 0' }}>{t('classDetail.noFiches')}</p>
       ) : (
         <div className="acd__fiche-list">
           {fiches.map((f) => (
@@ -227,7 +226,7 @@ function FichesPanel({ classId, academicYear }) {
                     )}
                   </span>
                 ) : (
-                  <span className="acd__fiche-badge acd__fiche-badge--unsigned">⬜ Non vérifiée</span>
+                  <span className="acd__fiche-badge acd__fiche-badge--unsigned">{t('classDetail.unverified')}</span>
                 )}
               </div>
               <div className="acd__fiche-actions">
@@ -237,7 +236,7 @@ function FichesPanel({ classId, academicYear }) {
                     onClick={() => unverifyMutation.mutate({ subjectId: f.subjectId })}
                     disabled={unverifyMutation.isPending}
                   >
-                    🔓 Annuler
+                    {t('classDetail.unsign')}
                   </button>
                 ) : (
                   <button
@@ -245,7 +244,7 @@ function FichesPanel({ classId, academicYear }) {
                     onClick={() => verifyMutation.mutate({ subjectId: f.subjectId })}
                     disabled={verifyMutation.isPending}
                   >
-                    ✅ Vérifier
+                    {t('classDetail.verify')}
                   </button>
                 )}
               </div>
@@ -258,6 +257,7 @@ function FichesPanel({ classId, academicYear }) {
 }
 
 function ClassDetailPage() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const [editingTimetable, setEditingTimetable] = useState(false);
 
@@ -278,7 +278,7 @@ function ClassDetailPage() {
   if (isLoading) return <AppShell title="Classe"><Loading /></AppShell>;
   if (!cls) return (
     <AppShell title="Classe">
-      <p className="acd__error">Classe introuvable.</p>
+      <p className="acd__error">{t('common.errorGeneric')}</p>
     </AppShell>
   );
 
@@ -295,13 +295,13 @@ function ClassDetailPage() {
   const studentColumns = [
     {
       key: 'rank',
-      label: 'N°',
+      label: t('classDetail.columns.num'),
       style: { width: '40px', color: 'var(--color-text-muted, #6b7280)', fontSize: '0.8rem' },
       render: (_, idx) => idx + 1,
     },
     {
       key: 'name',
-      label: 'Élève',
+      label: t('classDetail.columns.student'),
       render: (cs) => {
         const s = cs.student;
         const name = s?.user?.name ?? s?.admissionNumber ?? '—';
@@ -318,16 +318,17 @@ function ClassDetailPage() {
     },
     {
       key: 'sex',
-      label: 'Sexe',
+      label: t('classDetail.columns.sex'),
       render: (cs) => {
         const sex = cs.student?.sex;
         if (!sex) return <span className="acd__empty">—</span>;
-        return <Badge variant={SEX_VARIANT[sex] ?? 'default'}>{SEX_LABEL[sex] ?? sex}</Badge>;
+        const variant = sex === 'M' ? 'info' : 'danger';
+        return <Badge variant={variant}>{t(`classDetail.sex.${sex}`, sex)}</Badge>;
       },
     },
     {
       key: 'dob',
-      label: 'Date de naissance',
+      label: t('classDetail.columns.dob'),
       render: (cs) =>
         cs.student?.dateOfBirth
           ? new Date(cs.student.dateOfBirth).toLocaleDateString('fr-FR')
@@ -338,7 +339,7 @@ function ClassDetailPage() {
   const subjectColumns = [
     {
       key: 'subject',
-      label: 'Matière',
+      label: t('classDetail.columns.subject'),
       render: (cs) => (
         <div>
           <div className="acd__subject-name">{cs.subject?.nameFr ?? '—'}</div>
@@ -348,11 +349,11 @@ function ClassDetailPage() {
     },
     {
       key: 'teacher',
-      label: 'Enseignant',
+      label: t('classDetail.columns.teacher'),
       render: (cs) =>
         cs.teacher
           ? <span className="acd__teacher">{cs.teacher.name}</span>
-          : <span className="acd__empty">Non assigné</span>,
+          : <span className="acd__empty">{t('classDetail.notAssigned')}</span>,
     },
   ];
 
@@ -363,79 +364,75 @@ function ClassDetailPage() {
         subtitle={`${cls.level ?? ''} — ${cls.academicYear ?? ''}`}
         actions={
           <Link to="/admin/classes" className="acd__back-btn">
-            ← Classes
+            {t('classDetail.back')}
           </Link>
         }
       />
 
-      {/* Meta strip */}
       <div className="acd__meta">
         <div className="acd__meta-item">
-          <span className="acd__meta-label">Élèves</span>
+          <span className="acd__meta-label">{t('classDetail.meta.students')}</span>
           <span className="acd__meta-value">{students.length}</span>
         </div>
         <div className="acd__meta-item">
-          <span className="acd__meta-label">Garçons</span>
+          <span className="acd__meta-label">{t('classDetail.meta.boys')}</span>
           <span className="acd__meta-value acd__meta-value--m">{boys}</span>
         </div>
         <div className="acd__meta-item">
-          <span className="acd__meta-label">Filles</span>
+          <span className="acd__meta-label">{t('classDetail.meta.girls')}</span>
           <span className="acd__meta-value acd__meta-value--f">{girls}</span>
         </div>
         <div className="acd__meta-item">
-          <span className="acd__meta-label">Matières</span>
+          <span className="acd__meta-label">{t('classDetail.meta.subjects')}</span>
           <span className="acd__meta-value">{subjects.length}</span>
         </div>
         {cls.teacher && (
           <div className="acd__meta-item">
-            <span className="acd__meta-label">Prof. principal</span>
+            <span className="acd__meta-label">{t('classDetail.meta.mainTeacher')}</span>
             <span className="acd__meta-value">{cls.teacher.name}</span>
           </div>
         )}
         {cls.room && (
           <div className="acd__meta-item">
-            <span className="acd__meta-label">Salle</span>
+            <span className="acd__meta-label">{t('classDetail.meta.room')}</span>
             <span className="acd__meta-value">{cls.room}</span>
           </div>
         )}
       </div>
 
-      {/* Students table */}
       <section className="acd__section">
         <h2 className="acd__section-title">
-          Liste des élèves
+          {t('classDetail.studentsSection')}
           <span className="acd__section-count">{students.length}</span>
         </h2>
         <Table
           columns={studentColumns}
           rows={students}
-          emptyMessage="Aucun élève inscrit dans cette classe"
+          emptyMessage={t('classDetail.noStudents')}
         />
       </section>
 
-      {/* Subjects table */}
       <section className="acd__section">
         <h2 className="acd__section-title">
-          Matières enseignées
+          {t('classDetail.subjectsSection')}
           <span className="acd__section-count">{subjects.length}</span>
         </h2>
         <Table
           columns={subjectColumns}
           rows={subjects}
-          emptyMessage="Aucune matière assignée à cette classe"
+          emptyMessage={t('classDetail.noSubjects')}
         />
       </section>
 
-      {/* Timetable section */}
       <section className="acd__section">
         <div className="acd__section-title-row">
           <h2 className="acd__section-title">
-            Emploi du temps
-            <span className="acd__section-count">{timetableSlots.length} créneau{timetableSlots.length !== 1 ? 'x' : ''}</span>
+            {t('classDetail.timetableSection')}
+            <span className="acd__section-count">{t('classDetail.slots', { count: timetableSlots.length })}</span>
           </h2>
           {!editingTimetable && (
             <button className="acd__tt-edit-btn" onClick={() => setEditingTimetable(true)}>
-              ✏️ {timetableSlots.length > 0 ? 'Modifier' : 'Créer'}
+              {timetableSlots.length > 0 ? t('classDetail.edit') : t('classDetail.create')}
             </button>
           )}
         </div>
@@ -446,16 +443,16 @@ function ClassDetailPage() {
             academicYear={academicYear}
             slots={timetableSlots}
             onSaved={() => setEditingTimetable(false)}
+            t={t}
           />
         ) : (
-          <TimetableGrid slots={timetableSlots} />
+          <TimetableGrid slots={timetableSlots} t={t} />
         )}
       </section>
 
-      {/* Fiches de notes */}
       <section className="acd__section">
-        <h2 className="acd__section-title">Fiches de notes</h2>
-        <FichesPanel classId={id} academicYear={academicYear} />
+        <h2 className="acd__section-title">{t('classDetail.fichesSection')}</h2>
+        <FichesPanel classId={id} academicYear={academicYear} t={t} />
       </section>
     </AppShell>
   );

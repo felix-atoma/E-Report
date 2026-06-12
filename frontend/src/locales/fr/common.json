@@ -91,7 +91,10 @@
     "assign":     "Assigner",
     "assigning":  "Assignation…",
     "viewAll":    "Voir tout",
-    "loading":    "Chargement…"
+    "loading":    "Chargement…",
+    "select":     "Sélectionner",
+    "print":      "Imprimer",
+    "export":     "Exporter"
   },
 
   "help": {
@@ -357,8 +360,10 @@
 
   "students": {
     "title":           "Élèves",
-    "addStudent":      "Ajouter un élève",
+    "addStudent":      "Nouvel élève",
     "admissionNumber": "Numéro d'admission",
+    "admissionAuto":   "Le numéro matricule sera généré automatiquement à la création.",
+    "admissionLabel":  "Numéro matricule",
     "dateOfBirth":     "Date de naissance",
     "gender":          "Sexe",
     "class":           "Classe",
@@ -366,18 +371,87 @@
     "parentEmail":     "Email du parent",
     "parentPhone":     "Téléphone du parent",
     "noStudents":      "Aucun élève enregistré",
+    "noFound":         "Aucun élève trouvé",
     "importStudents":  "Importer des élèves (CSV)",
     "editStudent":     "Modifier l'élève",
     "viewProfile":     "Voir le profil",
+    "allClasses":      "Toutes les classes",
+    "searchPlaceholder": "Rechercher par nom ou matricule…",
+    "showMore":        "▼ Plus d'informations (adresse, famille, santé…)",
+    "showLess":        "▲ Moins d'informations",
+    "photoId":         "Photo & identité",
+    "basicInfo":       "Informations de base",
+    "statusSection":   "Statut & Scolarité",
+    "previousSchool":  "École précédente",
+    "birthPlace":      "Lieu de naissance",
+    "bloodType":       "Groupe sanguin",
+    "medicalCond":     "Conditions médicales",
+    "address":         "Adresse",
+    "city":            "Ville",
+    "fatherSection":   "Père",
+    "fatherName":      "Nom du père",
+    "fatherPhone":     "Téléphone père",
+    "motherSection":   "Mère",
+    "motherName":      "Nom de la mère",
+    "motherPhone":     "Téléphone mère",
+    "emergencySection":"Contact d'urgence",
+    "emergencyName":   "Nom",
+    "emergencyPhone":  "Téléphone",
+    "emergencyRelation":"Relation",
+    "status": {
+      "ACTIVE":      "Actif",
+      "GRADUATED":   "Diplômé",
+      "TRANSFERRED": "Transféré",
+      "WITHDRAWN":   "Retiré",
+      "SUSPENDED":   "Suspendu"
+    },
     "errors": {
       "nameRequired":  "Nom requis",
-      "classRequired": "Classe requise"
+      "classRequired": "Classe requise",
+      "emailInvalid":  "Email invalide"
     },
     "toast": {
-      "created": "Élève ajouté",
-      "updated": "Élève mis à jour",
-      "deleted": "Élève supprimé",
-      "imported": "{{count}} élève(s) importé(s)"
+      "created":  "Élève ajouté",
+      "updated":  "Élève mis à jour",
+      "deleted":  "Élève supprimé",
+      "imported": "{{count}} élève(s) importé(s)",
+      "photoFail":"Élève créé, mais échec de l'envoi de la photo.",
+      "bulkDeleted": "{{count}} élève(s) supprimé(s)"
+    }
+  },
+
+  "subjects": {
+    "title":        "Matières",
+    "addSubject":   "Nouvelle matière",
+    "editSubject":  "Modifier la matière",
+    "deleteSubject":"Supprimer la matière",
+    "name":         "Nom de la matière",
+    "namePlaceholder": "ex: Mathématiques, Français…",
+    "code":         "Code",
+    "codePlaceholder": "ex: MATH (auto si vide)",
+    "category":     "Catégorie",
+    "description":  "Description",
+    "noSubjects":   "Aucune matière créée",
+    "noFound":      "Aucune matière trouvée",
+    "allCategories":"Toutes les catégories",
+    "searchPlaceholder": "Rechercher par nom ou code…",
+    "categories": {
+      "SCIENCES":   "Sciences",
+      "LETTRES":    "Lettres",
+      "MATHS":      "Mathématiques",
+      "LANGUES":    "Langues",
+      "ARTS":       "Arts",
+      "EPS":        "EPS",
+      "TECHNIQUES": "Techniques",
+      "AUTRE":      "Autre"
+    },
+    "errors": {
+      "nameRequired": "Nom de la matière requis"
+    },
+    "toast": {
+      "created": "Matière créée",
+      "updated": "Matière mise à jour",
+      "deleted": "Matière supprimée"
     }
   },
 
@@ -411,20 +485,144 @@
   },
 
   "settings": {
-    "title":           "Paramètres",
-    "schoolName":      "Nom de l'établissement",
-    "schoolType":      "Type d'établissement",
-    "address":         "Adresse",
-    "phone":           "Téléphone",
-    "academicYear":    "Année scolaire",
-    "currentTerm":     "Trimestre en cours",
-    "language":        "Langue",
-    "notifications":   "Notifications",
-    "appearance":      "Apparence",
-    "security":        "Sécurité",
-    "general":         "Général",
+    "title":             "Paramètres",
+    "schoolName":        "Nom de l'établissement",
+    "schoolType":        "Type d'établissement",
+    "address":           "Adresse",
+    "phone":             "Téléphone",
+    "academicYear":      "Année scolaire",
+    "currentTerm":       "Trimestre en cours",
+    "language":          "Langue",
+    "notifications":     "Notifications",
+    "appearance":        "Apparence",
+    "security":          "Sécurité",
+    "general":           "Général",
+    "institutionInfo":   "Informations de l'établissement",
+    "institutionDesc":   "Nom, coordonnées et textes affichés sur les bulletins.",
+    "academicSection":   "Paramètres académiques",
+    "academicDesc":      "Année en cours, système de périodes et règles de notation.",
+    "rollover":          "Passage en année suivante",
+    "rolloverDesc":      "Réinscrit automatiquement tous les élèves dans les mêmes classes pour une nouvelle année scolaire.",
+    "exportData":        "Export des données",
+    "exportDataDesc":    "Téléchargez toutes les données de votre établissement (élèves, classes, bulletins, notes, paiements) en format CSV dans une archive ZIP.",
+    "termSystem":        "Système de périodes",
+    "currentPeriod":     "Période en cours",
+    "currentYear":       "Année scolaire en cours",
+    "maxScore":          "Note maximale",
+    "maxScoreHint":      "Généralement 20 (système français)",
+    "passMark":          "Moyenne de passage",
+    "passMarkHint":      "Généralement 10/20",
+    "feeGate":           "Blocage des bulletins PDF",
+    "feeGateDesc":       "Lorsqu'activé, le PDF du bulletin est bloqué jusqu'au paiement des frais scolaires.",
+    "feeGateOn":         "Activé — PDF bloqué si frais impayés",
+    "feeGateOff":        "Désactivé — PDF envoyé sans condition",
+    "feeGateStatus":     "Blocage PDF",
+    "on":                "Activé",
+    "off":               "Désactivé",
+    "country":           "Pays / République",
+    "countryHint":       "Affiché en en-tête du bulletin",
+    "countryMotto":      "Devise nationale",
+    "circonscription":   "Circonscription scolaire",
+    "circoHint":         "Affiché dans l'en-tête du bulletin sous le nom de l'école",
+    "officialEmail":     "Email officiel",
+    "website":           "Site web",
+    "motto":             "Devise / Slogan",
+    "missionStatement":  "Déclaration de mission",
+    "missionPlaceholder":"Description courte de la mission de l'établissement…",
+    "fromYear":          "Année source",
+    "toYear":            "Nouvelle année",
+    "confirmRollover":   "Confirmer le passage",
+    "rolloverInProgress":"En cours…",
+    "rolloverBtn":       "🔄 Passer à l'année suivante",
+    "termTypes": {
+      "TRIMESTRE": "Trimestriel (3 trimestres)",
+      "SEMESTRE":  "Semestriel (2 semestres)",
+      "CUSTOM":    "Personnalisé"
+    },
+    "exporting":         "Export en cours…",
+    "exportBtn":         "⬇️ Exporter toutes mes données",
     "toast": {
-      "saved": "Paramètres enregistrés"
+      "saved":             "Paramètres enregistrés",
+      "infoSaved":         "Informations enregistrées",
+      "academicSaved":     "Paramètres académiques enregistrés",
+      "saveError":         "Erreur de sauvegarde",
+      "rolloverSuccess":   "Passage en année suivante réussi",
+      "rolloverError":     "Erreur lors du passage de l'année",
+      "rolloverFillYears": "Renseignez les deux années",
+      "exportError":       "Erreur lors de l'export"
+    }
+  },
+
+  "profile": {
+    "title":           "Mon profil",
+    "loading":         "Chargement…",
+    "personalInfo":    "Informations personnelles",
+    "changePassword":  "Changer de mot de passe",
+    "newPhoto":        "Nouvelle photo de profil",
+    "uploadPhoto":     "Enregistrer la photo",
+    "uploadingPhoto":  "Envoi…",
+    "changePhotoHint": "Cliquer pour changer la photo",
+    "fileHint":        "JPG, PNG ou WebP — max 5 Mo",
+    "emailHint":       "L'email ne peut pas être modifié.",
+    "currentPw":       "Mot de passe actuel",
+    "newPw":           "Nouveau mot de passe",
+    "confirmPw":       "Confirmer le nouveau mot de passe",
+    "pwHint":          "Minimum 8 caractères",
+    "changePwBtn":     "Modifier le mot de passe",
+    "changingPw":      "Modification…",
+    "errors": {
+      "nameRequired":      "Nom complet requis",
+      "currentPwRequired": "Mot de passe actuel requis",
+      "newPwRequired":     "Nouveau mot de passe requis",
+      "pwTooShort":        "Minimum 8 caractères"
+    },
+    "toast": {
+      "updated":          "Profil mis à jour",
+      "updateError":      "Erreur de mise à jour",
+      "passwordUpdated":  "Mot de passe modifié",
+      "passwordError":    "Mot de passe actuel incorrect",
+      "photoUpdated":     "Photo de profil mise à jour",
+      "photoError":       "Erreur lors de l'upload",
+      "formatError":      "Format non supporté. Utilisez JPG, PNG ou WebP.",
+      "sizeError":        "Image trop lourde (max 5 Mo)."
+    }
+  },
+
+  "notifLog": {
+    "title":          "Notifications",
+    "tabHeld":        "En attente",
+    "tabLog":         "Journal",
+    "student":        "Élève",
+    "channel":        "Canal",
+    "heldReason":     "Raison du blocage",
+    "bulletin":       "Bulletin",
+    "waitingSince":   "En attente depuis",
+    "recipient":      "Destinataire",
+    "status":         "Statut",
+    "date":           "Date",
+    "heldSubtitle_one":   "{{count}} notification en attente",
+    "heldSubtitle_other": "{{count}} notifications en attente",
+    "sentSubtitle_one":   "{{count}} notification envoyée",
+    "sentSubtitle_other": "{{count}} notifications envoyées",
+    "paymentReminder": "💬 Rappel paiement",
+    "forceBtn":       "Forcer l'envoi",
+    "forceSendBtn":   "Envoyer",
+    "defaultHeldReason": "Frais impayés",
+    "heldEmpty":      "Aucune notification en attente — tous les bulletins ont été envoyés",
+    "logEmpty":       "Aucune notification dans le journal",
+    "statuses": {
+      "SENT":   "Envoyé",
+      "FAILED": "Échec"
+    },
+    "toast": {
+      "sent":                "Notification envoyée",
+      "sendError":           "Erreur d'envoi",
+      "paymentReminderSent": "Rappel de paiement envoyé sur WhatsApp",
+      "whatsappError":       "Erreur d'envoi WhatsApp"
+    },
+    "forceConfirm": {
+      "title":   "Forcer l'envoi",
+      "message": "Envoyer le bulletin de {{name}} maintenant, même si les frais ne sont pas à jour ?"
     }
   },
 
@@ -581,7 +779,28 @@
     "PRESENT": "Présent",
     "ABSENT":  "Absent",
     "LATE":    "Retard",
-    "EXCUSED": "Excusé"
+    "EXCUSED": "Excusé",
+    "pageTitle":   "Présences",
+    "trackTitle":  "Suivi des présences",
+    "trackSubtitle":"Consultez le taux de présence par classe",
+    "class":       "Classe",
+    "view":        "Vue",
+    "annualSummary":"Résumé annuel par élève",
+    "dayList":     "Présences d'un jour",
+    "date":        "Date",
+    "rate":        "Taux présence",
+    "subject":     "Matière",
+    "note":        "Note",
+    "recordedBy":  "Enregistré par",
+    "status":      "Statut",
+    "justificationsTitle": "⏳ Justifications en attente ({{count}})",
+    "motive":      "Motif",
+    "approve":     "Approuver",
+    "approved":    "Justification approuvée — absence marquée excusée",
+    "approveError":"Impossible d'approuver la justification",
+    "noData":      "Aucune donnée de présence pour cette classe.",
+    "noDataDay":   "Aucune feuille de présence pour cette date.",
+    "selectClass": "Sélectionnez une classe pour voir les présences."
   },
 
   "password": {
@@ -649,5 +868,1985 @@
     "JEUDI":    "Jeudi",
     "VENDREDI": "Vendredi",
     "SAMEDI":   "Samedi"
+  },
+
+  "levels": {
+    "MATERNELLE": "Maternelle",
+    "PRIMAIRE":   "Primaire",
+    "COLLEGE":    "Collège",
+    "LYCEE":      "Lycée"
+  },
+
+  "myClasses": {
+    "title":    "Mes classes",
+    "subtitle_one":   "{{count}} classe assignée",
+    "subtitle_other": "{{count}} classes assignées",
+    "empty":    "Aucune classe ne vous est assignée pour le moment.",
+    "students": "élèves",
+    "subjects": "matières",
+    "seeDetail":"Voir le détail →"
+  },
+
+  "children": {
+    "title":    "Mes enfants",
+    "subtitle_one":   "{{count}} enfant",
+    "subtitle_other": "{{count}} enfants",
+    "empty":    "Aucun enfant associé à votre compte",
+    "emptyDesc":"Contactez l'administration pour associer vos enfants à votre compte parent.",
+    "seeReports":"Voir les bulletins →",
+    "payWithMomo": "Payer avec MoMo",
+    "paymentStatus": {
+      "PAID":    "Frais à jour",
+      "PARTIAL": "Paiement partiel",
+      "UNPAID":  "Frais impayés",
+      "EXEMPT":  "Exonéré",
+      "UNKNOWN": "Statut inconnu"
+    }
+  },
+
+  "bulletins": {
+    "title":       "Annonces",
+    "newBulletin": "Nouvelle annonce",
+    "editBulletin":"Modifier l'annonce",
+    "deleteBulletin":"Supprimer l'annonce",
+    "titleField":  "Titre",
+    "content":     "Contenu",
+    "audience":    "Destinataires",
+    "titlePlaceholder": "ex: Réunion des parents d'élèves",
+    "contentPlaceholder": "Message à diffuser…",
+    "noAnnouncements": "Aucune annonce",
+    "noAnnouncementsDesc": "Les annonces de votre établissement apparaîtront ici.",
+    "subtitle_one":   "{{count}} annonce",
+    "subtitle_other": "{{count}} annonces",
+    "audienceOptions": {
+      "CLASS":       "Classe spécifique",
+      "ALL_PARENTS": "Tous les parents",
+      "ALL":         "Tout l'établissement"
+    },
+    "errors": {
+      "titleRequired":   "Titre requis",
+      "contentRequired": "Contenu requis"
+    },
+    "toast": {
+      "created":   "Annonce créée",
+      "updated":   "Annonce mise à jour",
+      "deleted":   "Annonce supprimée",
+      "published": "Annonce publiée"
+    },
+    "status": {
+      "DRAFT":     "Brouillon",
+      "PUBLISHED": "Publiée",
+      "ARCHIVED":  "Archivée"
+    },
+    "columns": {
+      "title":      "Titre",
+      "audience":   "Destinataires",
+      "status":     "Statut",
+      "publishedAt":"Publié le",
+      "class":      "Classe"
+    }
+  },
+
+  "fiches": {
+    "title":    "Fiches de notes",
+    "subtitle": "Saisissez les notes par matière et par classe. Cliquez sur une matière pour commencer la saisie.",
+    "signed_one":   "{{count}}/{{total}} signée",
+    "signed_other": "{{count}}/{{total}} signées",
+    "noSubjects": "Aucune matière assignée",
+    "enter":    "Saisir →",
+    "allSigned":"Toutes signées"
+  },
+
+  "reportCards": {
+    "title":         "Bulletins",
+    "newReports":    "Créer les bulletins",
+    "status": {
+      "DRAFT":     "Brouillon",
+      "REVIEW":    "En révision",
+      "PUBLISHED": "Publié"
+    },
+    "class":         "Classe",
+    "academicYear":  "Année scolaire",
+    "term":          "Trimestre",
+    "termType":      "Type de période",
+    "currentPeriod": "Période",
+    "termPeriod_one":  "{{count}}er trimestre",
+    "termPeriod_other":"{{count}}ème trimestre",
+    "actions": {
+      "view":         "Voir",
+      "edit":         "Modifier",
+      "publish":      "Publier",
+      "publishAll":   "Publier tous",
+      "download":     "Télécharger PDF",
+      "downloadAll":  "ZIP de la classe"
+    },
+    "errors": {
+      "classRequired":    "Classe requise",
+      "yearRequired":     "Année scolaire requise",
+      "termTypeRequired": "Type de période requis",
+      "termRequired":     "Période requise"
+    },
+    "toast": {
+      "created":   "{{count}} bulletin(s) créé(s)",
+      "published": "Bulletin publié",
+      "allPublished": "Bulletins publiés",
+      "error":     "Erreur de création"
+    },
+    "filter": {
+      "allClasses":  "Toutes les classes",
+      "allStatuses": "Tous les statuts",
+      "allYears":    "Toutes les années",
+      "allTerms":    "Toutes les périodes"
+    },
+    "noReports": "Aucun bulletin trouvé",
+    "available": "Disponible",
+    "feesRequired": "Frais requis",
+    "printPdf":  "🖨️ Imprimer / PDF",
+    "downloadPdf":"Télécharger PDF"
+  },
+
+  "alumni": {
+    "title":       "Anciens Élèves",
+    "addAlumni":   "Ajouter",
+    "addFirst":    "+ Ajouter le premier diplômé",
+    "empty":       "Aucun ancien élève enregistré.",
+    "exportCsv":   "↓ CSV",
+    "allPromos":   "Toutes les promotions",
+    "promo":       "Promotion {{year}}",
+    "lastClass":   "Dernière classe",
+    "followUp":    "Poursuite",
+    "contact":     "Contact",
+    "subtitle_one":   "{{count}} diplômé enregistré",
+    "subtitle_other": "{{count}} diplômés enregistrés",
+    "subtitleEmpty":  "Aucun ancien élève enregistré — ajoutez le premier",
+    "graduationYear": "Année de diplôme",
+    "diplomaNumber":  "N° de diplôme",
+    "examType":       "Type d'examen",
+    "examSession":    "Session",
+    "examResult":     "Résultat",
+    "examCenter":     "Centre national",
+    "furtherEducation": "Poursuite d'études",
+    "currentEmployer":  "Employeur actuel",
+    "contactEmail":     "Email",
+    "contactPhone":     "Téléphone",
+    "notes":            "Notes",
+    "errors": {
+      "studentRequired": "Ce champ est requis",
+      "yearRequired":    "Ce champ est requis"
+    },
+    "toast": {
+      "saved":   "Fiche enregistrée",
+      "updated": "Fiche modifiée",
+      "deleted": "Fiche supprimée",
+      "error":   "Une erreur est survenue",
+      "deleteError": "Impossible de supprimer cette fiche"
+    },
+    "deleteConfirm": "Supprimer cet enregistrement ?"
+  },
+
+  "absences": {
+    "title":       "Absences de mes enfants",
+    "subtitle":    "{{absent}} absence(s) · {{excused}} excusée(s)",
+    "empty":       "Aucune absence enregistrée pour cet enfant.",
+    "unjustifiedSection_one":   "Absences non justifiées ({{count}})",
+    "unjustifiedSection_other": "Absences non justifiées ({{count}})",
+    "pendingSection_one":   "En attente de validation ({{count}})",
+    "pendingSection_other": "En attente de validation ({{count}})",
+    "excusedSection_one":   "Absences excusées ({{count}})",
+    "excusedSection_other": "Absences excusées ({{count}})",
+    "justify":       "✏️ Justifier",
+    "reasonPlaceholder": "Motif de l'absence (maladie, urgence familiale…)",
+    "sending":       "Envoi…",
+    "pendingStatus": "⏳ En attente",
+    "excusedStatus": "✅ Excusée",
+    "toast": {
+      "sent":   "Justification envoyée à l'administration",
+      "error":  "Impossible d'envoyer la justification"
+    }
+  },
+
+  "notifPrefs": {
+    "title":         "Préférences de notification",
+    "subtitle":      "Choisissez comment vous souhaitez être informé",
+    "whatsappSection": "Contact WhatsApp",
+    "whatsappDesc":  "Entrez votre numéro pour recevoir les notifications par WhatsApp.",
+    "whatsappLabel": "Numéro WhatsApp",
+    "whatsappHint":  "Format international requis (ex : +228…)",
+    "whatsappVerified": "✓ Numéro vérifié",
+    "whatsappError": "Numéro WhatsApp requis pour activer ce canal",
+    "channelsSection": "Canaux de notification",
+    "channelsDesc":  "Activez ou désactivez chaque canal.",
+    "eventsSection": "Événements à notifier",
+    "eventsDesc":    "Choisissez pour quels événements vous souhaitez recevoir des alertes.",
+    "unverified":    "Non vérifié",
+    "infoNote":      "Les bulletins retenus pour défaut de paiement ne sont pas concernés par ces préférences — ils sont automatiquement libérés dès régularisation.",
+    "events": {
+      "bulletinPublished":  "Bulletin publié",
+      "paymentConfirmed":   "Paiement confirmé",
+      "announcementPosted": "Nouvelle annonce",
+      "paymentReminder":    "Rappel de paiement"
+    },
+    "push": {
+      "title":    "Notifications du navigateur (PWA)",
+      "desc":     "Recevez des alertes directement dans votre navigateur, même quand l'application est fermée.",
+      "activate": "Activer les notifications",
+      "activating":"Activation…",
+      "test":     "Tester",
+      "deniedHint":"Autorisez les notifications dans les paramètres de votre navigateur.",
+      "testBody": "Vous recevrez désormais les alertes importantes ici.",
+      "granted":  "Activées",
+      "denied":   "Bloquées",
+      "default":  "Non activées",
+      "unsupported":"Non supporté"
+    },
+    "toast": {
+      "saved":   "Préférences enregistrées",
+      "error":   "Erreur de sauvegarde",
+      "granted": "Notifications activées !",
+      "denied":  "Notifications refusées par le navigateur"
+    }
+  },
+
+  "otp": {
+    "title":     "Première connexion",
+    "subtitle":  "Entrez votre email et le code OTP reçu par email.",
+    "otpLabel":  "Code OTP (reçu par email)",
+    "otpPlaceholder": "ex: A1B2C3D4E5F6...",
+    "verifying": "Vérification…",
+    "validate":  "Valider le code",
+    "hasPassword": "Vous avez déjà un mot de passe ?",
+    "loginNormal": "Se connecter normalement",
+    "error": {
+      "emptyFields": "Veuillez renseigner votre email et le code OTP.",
+      "invalid":     "Code OTP invalide ou expiré."
+    }
+  },
+
+  "myReports": {
+    "title":       "Mes bulletins de notes",
+    "subtitle_one":   "{{count}} bulletin disponible",
+    "subtitle_other": "{{count}} bulletins disponibles",
+    "empty":       "Aucun bulletin disponible",
+    "emptyDesc":   "Vos bulletins apparaîtront ici une fois publiés par votre enseignant.",
+    "overallAvg":  "Moyenne générale",
+    "appreciation":"Appréciation",
+    "downloadError":"Échec du téléchargement du PDF",
+    "download":    "↓ Télécharger"
+  },
+
+  "paymentPlans": {
+    "title":       "Plans de paiement",
+    "newPlan":     "Nouveau plan",
+    "empty":       "Aucun plan de paiement",
+    "subtitle_one":   "{{count}} plan en cours",
+    "subtitle_other": "{{count}} plans en cours",
+    "search":      "Rechercher un élève...",
+    "student":     "Élève",
+    "totalAmount": "Montant total (FCFA)",
+    "notes":       "Notes",
+    "notesHint":   "Notes (facultatif)",
+    "instalment":  "Échéance",
+    "instalments": "Échéances",
+    "dueDate":     "Date d'échéance",
+    "amount":      "Montant (FCFA)",
+    "paidOn":      "Payé le",
+    "paidAmount":  "Montant payé",
+    "academicYear": "Année académique",
+    "selectStudent": "Sélectionner un élève",
+    "status": {
+      "PAID":    "Payé",
+      "OVERDUE": "En retard",
+      "PENDING": "À venir"
+    },
+    "paid_fcfa":      "{{amount}} FCFA payés",
+    "remaining_fcfa": "{{amount}} FCFA restants",
+    "addInstalment":  "+ Ajouter une échéance",
+    "collect":        "Encaisser",
+    "deletePlan":     "Supprimer le plan",
+    "recordPayment":  "Enregistrer le paiement",
+    "collectedAmount":"Montant encaissé (FCFA)",
+    "confirmDelete":  "Supprimer ce plan ? Cette action est irréversible.",
+    "creating":       "Création...",
+    "createBtn":      "Créer le plan",
+    "errors": {
+      "amountInvalid":    "Montant invalide",
+      "fieldsRequired":   "Étudiant, année et montant total sont requis",
+      "instalmentRequired": "Au moins une échéance est requise"
+    },
+    "toast": {
+      "created":  "Plan créé",
+      "deleted":  "Plan supprimé",
+      "paid":     "Paiement enregistré",
+      "error":    "Erreur"
+    }
+  },
+
+  "childReports": {
+    "noReports":     "Aucun bulletin disponible",
+    "noReportsDesc": "Les bulletins apparaîtront ici une fois publiés par l'enseignant.",
+    "feesPartial":   "Paiement partiel",
+    "feesUnpaid":    "Frais impayés",
+    "feeBalance":    "Solde restant :",
+    "feePdfDesc":    "Les bulletins sont disponibles en application mais le PDF sera envoyé après règlement.",
+    "printBtn":      "🖨️ Imprimer / PDF",
+    "downloadBtn":   "↓ Télécharger",
+    "downloading":   "⏳ …",
+    "overallAvg":    "Moyenne générale",
+    "appreciation":  "Appréciation :"
+  },
+
+  "progress": {
+    "title":       "Ma progression",
+    "subtitle":    "Évolution de vos moyennes générales",
+    "noDataTitle": "Pas encore assez de données",
+    "noDataDesc":  "Votre graphique de progression apparaîtra après la publication d'au moins deux bulletins.",
+    "chartTitle":  "Évolution des moyennes",
+    "breakdownTitle": "Détail par période",
+    "threshold":   "Seuil 10",
+    "kpi": {
+      "overall": "Moyenne générale",
+      "best":    "Meilleure moyenne",
+      "trend":   "Évolution"
+    },
+    "mention": {
+      "Excellent":   "Excellent",
+      "TresBien":    "Très Bien",
+      "Bien":        "Bien",
+      "AssezBien":   "Assez Bien",
+      "Passable":    "Passable",
+      "Insuffisant": "Insuffisant"
+    }
+  },
+
+  "reportCardsFull": {
+    "subtitle_one":   "{{count}} bulletin",
+    "subtitle_other": "{{count}} bulletins",
+    "termTypes": {
+      "TRIMESTRE": "Trimestriel",
+      "SEMESTRE":  "Semestriel",
+      "CUSTOM":    "Personnalisé"
+    },
+    "trimestreNames": {
+      "1": "1er trimestre",
+      "2": "2ème trimestre",
+      "3": "3ème trimestre"
+    },
+    "semestreNames": {
+      "1": "1er semestre",
+      "2": "2ème semestre"
+    },
+    "termOptions": {
+      "1": "Trimestre 1",
+      "2": "Trimestre 2",
+      "3": "Trimestre 3"
+    },
+    "statusOptions": {
+      "DRAFT":     "Brouillon",
+      "REVIEW":    "En révision",
+      "PUBLISHED": "Publié"
+    },
+    "columns": {
+      "class":       "Classe",
+      "student":     "Élève",
+      "term":        "Période",
+      "academicYear":"Année scolaire",
+      "status":      "Statut",
+      "updatedAt":   "Modifié le"
+    },
+    "publish":        "Publier",
+    "publishTitle":   "Publier le bulletin",
+    "publishMessage": "Publier le bulletin de {{name}} ({{term}}) ? Cette action est irréversible.",
+    "bulkPublishTitle": "Publier tous les bulletins",
+    "bulkPublishMessage": "Publier les {{count}} bulletin(s) en statut \"En révision\" pour cette classe ? Les parents recevront une notification WhatsApp et email dans les 2 minutes. Cette action est irréversible.",
+    "bulkPublishBtn_one":   "Publier {{count}} bulletin",
+    "bulkPublishBtn_other": "Publier {{count}} bulletins",
+    "publishAllBtn_one":    "🚀 Publier tout ({{count}})",
+    "publishAllBtn_other":  "🚀 Publier tout ({{count}})",
+    "zipClass":    "📦 ZIP Classe",
+    "zipEcole":    "📦 ZIP École",
+    "zipping":     "⏳ Génération…",
+    "bulkPublishing": "⏳ Publication…",
+    "open":        "Ouvrir",
+    "printBtn":    "🖨️ Imprimer",
+    "pdfBtn":      "📥 PDF",
+    "annual":      "📋 Annuel",
+    "downloading": "⏳…",
+    "newReportTitle":    "Nouveau bulletin de notes",
+    "newReportSubtitle": "Générez les bulletins pour une classe et une période",
+    "creating":    "Création…",
+    "createBtn":   "Créer le bulletin",
+    "termPeriodLabel":       "Libellé personnalisé (optionnel)",
+    "customPeriodName":      "Nom de la période",
+    "customPeriodPlaceholder":"ex : Période 1",
+    "toast": {
+      "publishedNotif":  "Bulletin publié ! Le PDF sera disponible dans quelques instants.",
+      "bulkPublished":   "{{published}} bulletin(s) publié(s) ! Les notifications WhatsApp/Email partent dans 2 min.",
+      "bulkSkipped":     "({{skipped}} ignoré(s))",
+      "zipOk":           "ZIP téléchargé avec succès !",
+      "zipError":        "Erreur lors de la génération du ZIP",
+      "downloadError":   "Échec du téléchargement du PDF",
+      "pdfOk":           "PDF généré avec succès !",
+      "pdfError":        "Erreur lors de la génération PDF",
+      "publishError":    "Erreur lors de la publication",
+      "bulkError":       "Erreur lors de la publication groupée"
+    }
+  },
+
+  "classDetail": {
+    "studentsSection": "Liste des élèves",
+    "subjectsSection": "Matières enseignées",
+    "timetableSection":"Emploi du temps",
+    "fichesSection":   "Fiches de notes",
+    "noStudents":      "Aucun élève inscrit dans cette classe",
+    "noSubjects":      "Aucune matière assignée à cette classe",
+    "noSlots":         "Aucun créneau défini.",
+    "noFiches":        "Aucune fiche enregistrée pour ce trimestre.",
+    "slots_one":       "{{count}} créneau",
+    "slots_other":     "{{count}} créneaux",
+    "edit":            "✏️ Modifier",
+    "create":          "✏️ Créer",
+    "addSlot":         "+ Ajouter un créneau",
+    "saveTimeTable":   "💾 Enregistrer l'emploi du temps",
+    "saving":          "Sauvegarde…",
+    "cancelEdit":      "Annuler",
+    "notAssigned":     "Non assigné",
+    "allVerified":     "✅ Toutes vérifiées",
+    "noFichesYet":     "Aucune fiche",
+    "verifiedCount":   "{{signed}}/{{total}} vérifiée(s)",
+    "verifyAll":       "✅ Tout vérifier ({{count}})",
+    "verifying":       "Vérification…",
+    "unverified":      "⬜ Non vérifiée",
+    "verify":          "✅ Vérifier",
+    "unsign":          "🔓 Annuler",
+    "back":            "← Classes",
+    "meta": {
+      "students":    "Élèves",
+      "boys":        "Garçons",
+      "girls":       "Filles",
+      "subjects":    "Matières",
+      "mainTeacher": "Prof. principal",
+      "room":        "Salle"
+    },
+    "columns": {
+      "num":       "N°",
+      "student":   "Élève",
+      "sex":       "Sexe",
+      "dob":       "Date de naissance",
+      "subject":   "Matière",
+      "teacher":   "Enseignant"
+    },
+    "sex": {
+      "M": "Garçon",
+      "F": "Fille"
+    }
+  },
+
+  "mockExams": {
+    "title":    "Examens Blancs & Nationaux",
+    "subtitle": "CEPE · BEPC · BAC 1 · BAC 2 · Examens blancs généraux",
+    "loading":  "Chargement...",
+    "error":    "Erreur de chargement. Vérifiez votre connexion.",
+    "newSession": "+ Nouvelle session",
+    "sessions_one":   "{{count}} session",
+    "sessions_other": "{{count}} sessions",
+    "noSessions": "Aucune session créée. Cliquez sur + Nouvelle session pour commencer.",
+    "classRequired": "Classe et libellé sont obligatoires.",
+    "published": "Publié",
+    "draft":     "Brouillon",
+    "notes":     "notes",
+    "confirmDelete": "Supprimer ce relevé définitivement ?",
+    "fiches":    "Fiches de notes",
+    "fichesDesc":"Saisie par prof",
+    "results":   "Résultats",
+    "resultsDesc":"Ordre de mérite",
+    "releve":    "Relevé de notes",
+    "releveDesc":"Bulletin élève",
+    "table":     "Tableau",
+    "tableDesc": "Vue admin",
+    "form": {
+      "title":       "Nouvelle session",
+      "class":       "Classe",
+      "selectClass": "— Choisir une classe —",
+      "label":       "Libellé",
+      "academicYear":"Année scolaire",
+      "dateStart":   "Date de début",
+      "dateEnd":     "Date de fin",
+      "create":      "Créer la session"
+    }
+  },
+
+  "incidents": {
+    "title":   "Signalements d'incidents",
+    "subtitle_one":   "{{count}} signalement",
+    "subtitle_other": "{{count}} signalements",
+    "pending_one":   " · {{count}} en attente",
+    "pending_other": " · {{count}} en attente",
+    "allStatuses": "Tous les statuts",
+    "empty":       "Aucun signalement",
+    "emptyStatus": "Aucun signalement pour ce statut",
+    "anonymous":   "Anonyme",
+    "concerning":  "Concerné(e) :",
+    "reportedBy":  "Signalé par :",
+    "teacher":     "Enseignant",
+    "student":     "Élève",
+    "delete":      "Supprimer",
+    "confirmDelete": "Supprimer ce signalement ?",
+    "category": {
+      "BULLYING":           "Harcèlement / Intimidation",
+      "HARASSMENT":         "Harcèlement sexuel ou moral",
+      "DISCRIMINATION":     "Discrimination",
+      "TEACHER_MISCONDUCT": "Comportement — Enseignant",
+      "STUDENT_MISCONDUCT": "Comportement — Élève",
+      "CHEATING":           "Triche / Fraude",
+      "THEFT":              "Vol",
+      "OTHER":              "Autre"
+    },
+    "status": {
+      "PENDING":      "En attente",
+      "UNDER_REVIEW": "En cours",
+      "RESOLVED":     "Résolu",
+      "DISMISSED":    "Rejeté"
+    },
+    "detail": {
+      "title":        "Détail du signalement",
+      "category":     "Catégorie",
+      "concerning":   "Concerné(e)",
+      "reportedBy":   "Signalé par",
+      "date":         "Date",
+      "subject":      "Objet",
+      "description":  "Description",
+      "changeStatus": "Changer le statut",
+      "adminNotes":   "Notes internes (admin uniquement)",
+      "adminNotesPlaceholder": "Observations, actions prises, décision finale…"
+    },
+    "toast": {
+      "updated": "Signalement mis à jour",
+      "deleted": "Signalement supprimé",
+      "error":   "Erreur"
+    }
+  },
+
+  "reportIncident": {
+    "title":    "Signaler un incident",
+    "subtitle": "Signalez tout comportement inapproprié à l'administration de manière confidentielle.",
+    "newReport":"Nouveau signalement",
+    "empty":    "Vous n'avez soumis aucun signalement.",
+    "emptyTeacher": "Utilisez ce formulaire pour signaler tout comportement inapproprié d'un élève ou d'un collègue.",
+    "emptyStudent": "Utilisez ce formulaire pour signaler tout comportement inapproprié d'un camarade ou d'un enseignant.",
+    "anonymous":    "Anonyme",
+    "concerning":   "Concerné(e) :",
+    "adminNote":    "Note de l'administration :",
+    "category": {
+      "BULLYING":           "Harcèlement / Intimidation",
+      "HARASSMENT":         "Harcèlement sexuel ou moral",
+      "DISCRIMINATION":     "Discrimination",
+      "TEACHER_MISCONDUCT": "Comportement inapproprié d'un enseignant",
+      "STUDENT_MISCONDUCT": "Comportement inapproprié d'un élève",
+      "CHEATING":           "Triche / Fraude scolaire",
+      "THEFT":              "Vol",
+      "OTHER":              "Autre"
+    },
+    "roles": {
+      "Élève":      "Élève",
+      "Enseignant": "Enseignant(e)",
+      "Autre":      "Autre membre du personnel"
+    },
+    "status": {
+      "PENDING":      "En attente",
+      "UNDER_REVIEW": "En cours",
+      "RESOLVED":     "Résolu",
+      "DISMISSED":    "Rejeté"
+    },
+    "form": {
+      "title":       "Nouveau signalement",
+      "subtitle":    "Votre signalement sera transmis uniquement à l'administration. Votre identité sera protégée.",
+      "category":    "Catégorie",
+      "selectCategory": "Sélectionner une catégorie",
+      "accusedName": "Nom de la personne concernée",
+      "accusedRole": "Rôle",
+      "subject":     "Objet du signalement",
+      "subjectPlaceholder": "Résumé en une phrase",
+      "description": "Description détaillée",
+      "descriptionHint": "Minimum 20 caractères — quand, où, comment…",
+      "descriptionPlaceholder": "Décrivez les faits avec précision : quand, où, comment…",
+      "anonymous":   "Soumettre de manière anonyme",
+      "anonymousHint":"(votre nom ne sera pas visible par l'administration)",
+      "submit":      "Envoyer le signalement",
+      "submitting":  "Envoi…"
+    },
+    "errors": {
+      "fieldsRequired":       "Veuillez remplir tous les champs obligatoires",
+      "descriptionTooShort":  "La description doit comporter au moins 20 caractères"
+    },
+    "toast": {
+      "sent":  "Signalement envoyé à l'administration",
+      "error": "Erreur lors de l'envoi"
+    }
+  },
+
+  "studentProfile": {
+    "title":      "Profil élève",
+    "matricule":  "Matricule :",
+    "attestation":"📄 Attestation",
+    "conduct":    "✅ Bonne conduite",
+    "back":       "← Retour aux élèves",
+    "newReport":  "+ Nouveau bulletin",
+    "open":       "Ouvrir →",
+    "sections": {
+      "info":          "Informations",
+      "results":       "Résultats",
+      "allReports":    "Tous les bulletins",
+      "attendance":    "Assiduité",
+      "dailyAttendance":"Présences journalières",
+      "discipline":    "Discipline & Conduite",
+      "finance":       "Situation financière",
+      "academic":      "Parcours scolaire",
+      "disciplinary":  "Dossier disciplinaire",
+      "transfers":     "Transferts",
+      "alumni":        "Dossier Alumni",
+      "nationalExams": "Résultats aux examens nationaux",
+      "library":       "Prêts bibliothèque",
+      "health":        "Dossier médical"
+    },
+    "kpi": {
+      "overall":   "Moyenne générale",
+      "overallSub":"sur tous les trimestres publiés",
+      "best":      "Meilleure moyenne",
+      "bestSub":   "meilleur trimestre",
+      "rank":      "Rang moyen",
+      "rankSub":   "classement en classe",
+      "honor":     "Tableau d'honneur"
+    },
+    "identity": {
+      "dob":          "Date de naissance",
+      "enrollment":   "Date d'inscription",
+      "currentClass": "Classe actuelle",
+      "parent":       "Parent / Tuteur",
+      "contact":      "Contact parent",
+      "gender":       "Genre"
+    },
+    "sex": {
+      "M": "Masculin",
+      "F": "Féminin"
+    },
+    "fee": {
+      "PAID":    "Payé",
+      "PARTIAL": "Partiel",
+      "UNPAID":  "Impayé",
+      "EXEMPT":  "Exempté"
+    },
+    "attendance": {
+      "absences":   "Absences",
+      "delays":     "Retards",
+      "presence":   "Taux de présence",
+      "days":       "Jours de cours",
+      "noData":     "Aucune donnée d'assiduité disponible."
+    },
+    "discipline": {
+      "warnings_one":   "Avertissement",
+      "warnings_other": "Avertissements",
+      "commendations_one":   "Félicitation",
+      "commendations_other": "Félicitations",
+      "honor":    "Tableau d'honneur",
+      "conductByTerm": "Conduite par trimestre",
+      "resolved": "Résolu",
+      "open":     "En cours",
+      "sanction": "Sanction :",
+      "noRecords":"Aucun dossier disciplinaire enregistré.",
+      "conduct": {
+        "TRES_BIEN": "Très Bien",
+        "BIEN":      "Bien",
+        "PASSABLE":  "Passable",
+        "MEDIOCRE":  "Médiocre"
+      },
+      "types": {
+        "WARNING":     "Avertissement",
+        "SUSPENSION":  "Suspension",
+        "EXCLUSION":   "Exclusion",
+        "NOTE":        "Note",
+        "COMMENDATION":"Félicitation",
+        "OTHER":       "Autre"
+      }
+    },
+    "finance": {
+      "status":    "Statut",
+      "totalDue":  "Total dû",
+      "totalPaid": "Total payé",
+      "balance":   "Solde restant"
+    },
+    "academic": {
+      "noReports":    "Aucun bulletin créé pour cet élève.",
+      "noPublished":  "Aucun bulletin publié.",
+      "overallLabel": "moyenne générale / 20",
+      "columns": {
+        "term":        "Période",
+        "year":        "Année",
+        "avg":         "Moyenne",
+        "rank":        "Rang",
+        "mention":     "Mention",
+        "conduct":     "Conduite",
+        "absences":    "Absences",
+        "delays":      "Retards",
+        "warnings":    "Avert.",
+        "commendations":"Fél.",
+        "status":      "Statut",
+        "view":        "Voir →"
+      },
+      "reportStatus": {
+        "DRAFT":     "Brouillon",
+        "REVIEW":    "En révision",
+        "PUBLISHED": "Publié"
+      }
+    },
+    "transfers": {
+      "in":  "↓ Entrée",
+      "out": "↑ Sortie"
+    },
+    "alumni": {
+      "promo":    "Promotion",
+      "lastClass":"Dernière classe",
+      "further":  "Poursuite",
+      "contact":  "Contact"
+    },
+    "nationalExams": {
+      "noResults": "Aucun résultat d'examen national enregistré.",
+      "columns": {
+        "exam":    "Examen",
+        "session": "Session",
+        "year":    "Année",
+        "series":  "Série",
+        "result":  "Résultat",
+        "mention": "Mention",
+        "score":   "Score"
+      },
+      "results": {
+        "ADMIS":   "Admis",
+        "AJOURNE": "Ajourné",
+        "ABSENT":  "Absent",
+        "ELIMINE": "Éliminé"
+      }
+    },
+    "library": {
+      "noLoans":  "Aucun prêt bibliothèque enregistré.",
+      "columns": {
+        "book":    "Livre",
+        "loanDate":"Date prêt",
+        "dueDate": "Échéance",
+        "status":  "Statut"
+      },
+      "returned": "Rendu",
+      "active":   "En cours",
+      "overdue":  "(retard)"
+    },
+    "health": {
+      "noRecords": "Aucune visite médicale enregistrée.",
+      "types": {
+        "CONSULTATION":"Consultation",
+        "ACCIDENT":    "Accident",
+        "VACCINATION": "Vaccination",
+        "DRESSING":    "Pansement",
+        "EVACUATION":  "Évacuation",
+        "OTHER":       "Autre"
+      }
+    },
+    "certError": "Erreur lors de la génération du certificat"
+  },
+
+  "disciplinary": {
+    "title":   "Dossiers disciplinaires",
+    "subtitle_one":   "{{count}} dossier",
+    "subtitle_other": "{{count}} dossiers",
+    "add":     "Ajouter un dossier",
+    "allTypes":"Tous les types",
+    "all":     "Tous",
+    "open":    "En cours",
+    "resolved":"Résolus",
+    "empty":   "Aucun dossier disciplinaire trouvé.",
+    "recordedBy": "Enregistré par",
+    "sanction":   "Sanction :",
+    "reopen":     "↺ Réouvrir",
+    "markResolved":"✓ Résolu",
+    "form": {
+      "title":       "Nouveau dossier disciplinaire",
+      "student":     "Élève",
+      "searchPlaceholder": "Rechercher un élève…",
+      "date":        "Date",
+      "type":        "Type",
+      "description": "Description",
+      "descriptionPlaceholder": "Décrire l'incident…",
+      "sanction":    "Sanction",
+      "sanctionPlaceholder": "ex: Convocation des parents, Exclusion temporaire…",
+      "sanctionStart":"Début sanction",
+      "sanctionEnd":  "Fin sanction",
+      "markResolved": "Marquer comme résolu"
+    },
+    "confirmTitle":   "Supprimer le dossier",
+    "confirmMessage": "Supprimer définitivement ce dossier disciplinaire ?",
+    "toast": {
+      "created": "Dossier créé",
+      "updated": "Dossier mis à jour",
+      "deleted": "Dossier supprimé",
+      "error":   "Erreur"
+    },
+    "errors": {
+      "student":     "Élève requis",
+      "date":        "Date requise",
+      "description": "Description requise"
+    }
+  },
+
+  "health": {
+    "title":    "Dossiers Santé",
+    "subtitle": "Visites infirmerie, consultations, accidents",
+    "new":      "+ Nouvelle visite",
+    "newVisit": "+ Enregistrer une visite",
+    "searchPlaceholder": "Rechercher par élève, plainte, diagnostic…",
+    "all":      "Tous",
+    "loading":  "Chargement…",
+    "empty":    "Aucun dossier médical enregistré.",
+    "evacuated":"Évacué",
+    "complaint":"Plainte :",
+    "diagnosis":"Diagnostic :",
+    "treatment":"Traitement :",
+    "hospital": "Hôpital :",
+    "attendedBy":"Pris en charge par :",
+    "edit":     "Modifier",
+    "delete":   "Supprimer",
+    "confirmDelete": "Supprimer ce dossier ?",
+    "types": {
+      "CONSULTATION":"Consultation",
+      "ACCIDENT":    "Accident",
+      "VACCINATION": "Vaccination",
+      "DRESSING":    "Pansement",
+      "EVACUATION":  "Évacuation",
+      "OTHER":       "Autre"
+    },
+    "form": {
+      "title":       "Nouvelle visite",
+      "editTitle":   "Modifier la visite",
+      "editSubtitle":"Modification du dossier de {{name}}",
+      "newSubtitle": "Enregistrez une visite à l'infirmerie ou un incident médical",
+      "studentId":   "ID Élève",
+      "studentIdPlaceholder": "UUID de l'élève",
+      "date":        "Date",
+      "visitType":   "Type de visite",
+      "complaint":   "Plainte / Motif",
+      "complaintPlaceholder": "ex : Maux de tête, fièvre, blessure au genou…",
+      "diagnosis":   "Diagnostic",
+      "diagnosisPlaceholder": "ex : Paludisme, entorse légère…",
+      "treatment":   "Traitement",
+      "treatmentPlaceholder": "ex : Doliprane 500mg, pansement…",
+      "evacuated":   "Évacué vers un hôpital",
+      "hospitalName":"Nom de l'hôpital",
+      "hospitalPlaceholder": "ex : CHU Campus, Clinique El Fateh…",
+      "attendedBy":  "Pris en charge par",
+      "attendedByPlaceholder": "Nom de l'infirmier(e) ou médecin",
+      "notes":       "Notes",
+      "notesPlaceholder": "Observations supplémentaires…"
+    },
+    "toast": {
+      "created":     "Visite enregistrée",
+      "updated":     "Visite modifiée",
+      "deleted":     "Dossier supprimé",
+      "error":       "Une erreur est survenue",
+      "deleteError": "Impossible de supprimer ce dossier"
+    },
+    "errors": {
+      "required": "Ce champ est requis"
+    }
+  },
+
+  "library": {
+    "title":   "Bibliothèque",
+    "newLoan": "+ Nouveau prêt",
+    "activeTab":  "Prêts en cours",
+    "historyTab": "Historique",
+    "searchPlaceholder": "Rechercher par livre, emprunteur…",
+    "loading":  "Chargement…",
+    "emptyActive": "Aucun prêt en cours.",
+    "emptyAll":    "Aucun prêt trouvé.",
+    "newFirstLoan":"+ Enregistrer un prêt",
+    "overdue":  "En retard",
+    "returned": "Rendu",
+    "active":   "En cours",
+    "return":   "Rendre",
+    "confirmDelete": "Supprimer ce prêt ?",
+    "columns": {
+      "book":       "Livre",
+      "borrower":   "Emprunteur",
+      "loanDate":   "Date prêt",
+      "dueDate":    "Échéance",
+      "status":     "Statut",
+      "conditionOut":"État sortie"
+    },
+    "returnDialog": {
+      "title":     "Retour du livre",
+      "condition": "État au retour",
+      "conditionPlaceholder": "ex : Bon état, pages cornées…",
+      "confirm":   "Confirmer le retour",
+      "processing":"Traitement…"
+    },
+    "form": {
+      "title":    "Nouveau prêt",
+      "subtitle": "Enregistrez un emprunt de document ou de matériel",
+      "itemId":   "ID de l'article",
+      "itemIdPlaceholder": "UUID de l'article inventaire",
+      "studentId":"ID Élève",
+      "studentIdPlaceholder": "UUID de l'élève (optionnel)",
+      "borrowerName":"Nom de l'emprunteur",
+      "borrowerNamePlaceholder": "Pour un emprunteur non-élève",
+      "loanDate": "Date de prêt",
+      "dueDate":  "Date d'échéance",
+      "conditionOut":"État à la sortie",
+      "conditionOutPlaceholder": "ex : Très bon état, couverture légèrement usée…",
+      "notes":    "Notes",
+      "create":   "Créer le prêt"
+    },
+    "toast": {
+      "created":     "Prêt créé",
+      "returned":    "Retour enregistré",
+      "deleted":     "Prêt supprimé",
+      "error":       "Erreur lors de la création du prêt",
+      "returnError": "Erreur lors du retour",
+      "deleteError": "Impossible de supprimer ce prêt"
+    },
+    "errors": {
+      "required": "Ce champ est requis"
+    }
+  },
+
+  "inventory": {
+    "title":          "Inventaire Scolaire",
+    "subtitleItems":  "{{count}} article(s) · Valeur estimée : {{value}} FCFA",
+    "subtitleEmpty":  "Aucun article enregistré — ajoutez votre premier article",
+    "subtitleLoading":"Chargement…",
+    "add":       "+ Ajouter",
+    "all":       "Tous",
+    "loading":   "Chargement…",
+    "empty":     "Aucun article dans l'inventaire.",
+    "addFirst":  "+ Ajouter le premier article",
+    "edit":      "Modifier",
+    "confirmDelete": "Supprimer cet article ?",
+    "columns": {
+      "item":     "Article",
+      "category": "Catégorie",
+      "qty":      "Qté",
+      "condition":"État",
+      "location": "Emplacement",
+      "value":    "Valeur unitaire"
+    },
+    "categories": {
+      "FURNITURE":"Mobilier",
+      "EQUIPMENT":"Équipement",
+      "BOOK":     "Livres",
+      "SPORT":    "Sport",
+      "LAB":      "Labo",
+      "IT":       "Informatique",
+      "OTHER":    "Autre"
+    },
+    "conditions": {
+      "EXCELLENT":"Excellent",
+      "GOOD":     "Bon",
+      "FAIR":     "Passable",
+      "POOR":     "Mauvais",
+      "DAMAGED":  "Endommagé"
+    },
+    "form": {
+      "newTitle":     "Nouvel article",
+      "editTitle":    "Modifier l'article",
+      "newSubtitle":  "Renseignez les informations de l'article à ajouter",
+      "editSubtitle": "Mettez à jour les informations de cet article",
+      "name":         "Désignation",
+      "namePlaceholder": "ex : Table d'élève, Chaise, Microscope…",
+      "category":     "Catégorie",
+      "qty":          "Quantité",
+      "condition":    "État",
+      "location":     "Emplacement",
+      "locationPlaceholder": "ex : Salle 3, Bibliothèque, Labo de physique…",
+      "serial":       "N° de série",
+      "serialPlaceholder": "Optionnel",
+      "supplier":     "Fournisseur",
+      "supplierPlaceholder": "Nom du fournisseur",
+      "purchaseDate": "Date d'achat",
+      "purchaseValue":"Valeur unitaire (FCFA)",
+      "notes":        "Notes",
+      "notesPlaceholder": "Observations, réparations effectuées…",
+      "isActive":     "Article actif (en service)"
+    },
+    "toast": {
+      "created":     "Article ajouté",
+      "updated":     "Article modifié",
+      "deleted":     "Article supprimé",
+      "error":       "Une erreur est survenue",
+      "deleteError": "Impossible de supprimer cet article"
+    },
+    "errors": {
+      "required":    "Ce champ est requis",
+      "qtyPositive": "Doit être ≥ 0"
+    }
+  },
+
+  "staffDir": {
+    "title":   "Répertoire du personnel",
+    "subtitle_one":   "{{count}} membre",
+    "subtitle_other": "{{count}} membres",
+    "searchPlaceholder": "Rechercher par nom ou email…",
+    "empty":   "Aucun membre du personnel trouvé.",
+    "edit":    "Modifier",
+    "since":   "Depuis",
+    "roles": {
+      "ADMIN":   "Admin",
+      "TEACHER": "Enseignant",
+      "BURSAR":  "Économe"
+    },
+    "form": {
+      "profileOf":    "Profil de {{name}}",
+      "editProfile":  "Modifier le profil",
+      "professionalInfo": "Informations professionnelles",
+      "addressIdentity":  "Adresse & Identité",
+      "emergencyContact": "Contact d'urgence",
+      "staffNumber":  "Numéro de matricule",
+      "staffNumberPlaceholder": "ex: PROF-001",
+      "employmentDate":"Date d'embauche",
+      "experienceYears":"Années d'expérience",
+      "contractType": "Type de contrat",
+      "qualification":"Diplôme",
+      "specialization":"Spécialisation",
+      "specializationPlaceholder": "ex: Mathématiques, Sciences…",
+      "address":      "Adresse",
+      "city":         "Ville",
+      "nationality":  "Nationalité",
+      "nationalId":   "Numéro CNI",
+      "nationalIdPlaceholder": "Numéro de pièce d'identité",
+      "emergencyName":"Nom du contact",
+      "emergencyPhone":"Téléphone",
+      "notes":        "Notes",
+      "notesPlaceholder": "Notes internes…"
+    },
+    "toast": {
+      "updated": "Profil mis à jour",
+      "error":   "Erreur"
+    }
+  },
+
+  "gradeEntry": {
+    "title":        "Fiche de notes — {{subject}}",
+    "loading":      "Fiche de notes",
+    "coef":         "Coeff.",
+    "back":         "Retour",
+    "printOffline": "🖨 Fiche hors-ligne",
+    "save":         "Enregistrer",
+    "saving":       "Enregistrement…",
+    "sign":         "✍ Signer la fiche",
+    "unsign":       "🔓 Annuler la signature",
+    "saved":        "Notes enregistrées avec succès.",
+    "csvLabel":     "Import CSV :",
+    "downloadTemplate": "⬇ Télécharger le modèle",
+    "importBtn":    "⬆ Importer les notes",
+    "signedBannerTitle": "Fiche signée et verrouillée",
+    "signedBy":     "Signée par {{name}} le {{date}}",
+    "hoursPanel":   "Suivi des heures & absences",
+    "hoursPlanned": "H. prévues",
+    "hoursDone":    "H. effectuées",
+    "absences":     "Absences",
+    "delays":       "Retards",
+    "observations": "Observations",
+    "saveHours":    "💾 Enregistrer",
+    "teacherProf":  "Prof :",
+    "offline_one":  "{{count}} fiche en attente de synchronisation",
+    "offline_other":"{{count}} fiches en attente de synchronisation",
+    "syncNow":      "Synchroniser maintenant",
+    "syncing":      "Synchronisation…",
+    "noStudents":   "Aucun élève inscrit dans cette classe.",
+    "totals":       "Totaux",
+    "columns": {
+      "student":     "Élève",
+      "classnotes":  "Notes de classe",
+      "int1":        "Int. 1",
+      "int2":        "Int. 2",
+      "int3":        "Int. 3",
+      "int4":        "Int. 4",
+      "moyInterro":  "Moy. interros",
+      "devoir":      "Devoir",
+      "examen":      "Examen",
+      "moy":         "Moy.",
+      "coef":        "Coef.",
+      "total":       "Total",
+      "rang":        "Rang",
+      "appreciation":"Appréciation",
+      "teacher":     "Nom du Prof."
+    },
+    "stats": {
+      "strongest":      "Moy. la plus forte",
+      "weakest":        "Moy. la plus faible",
+      "classAvg":       "Moy. de la classe",
+      "count":          "Effectif",
+      "improved":       "A le plus progressé",
+      "declined":       "A le plus régressé",
+      "noImprovement":  "Aucune progression",
+      "noDecline":      "Aucune régression",
+      "obtainedBy":     "obtenue par"
+    },
+    "signModal": {
+      "title":     "Signer la fiche de notes",
+      "info":      "En signant cette fiche, vous certifiez que les notes saisies sont exactes et définitives. La fiche sera verrouillée et ne pourra plus être modifiée sans annuler la signature.",
+      "cancel":    "Annuler",
+      "confirm":   "✅ Valider et verrouiller",
+      "confirming":"Validation…",
+      "noSig":     "Veuillez apposer votre signature avant de valider."
+    },
+    "legend": {
+      "formula": "Formule : Moy = (moy.interros×1 + devoir×2 + examen×3) ÷ 6",
+      "tb":      "TB ≥ 16",
+      "b":       "B ≥ 14",
+      "ab":      "AB ≥ 12",
+      "p":       "P ≥ 10",
+      "insuf":   "Insuf. < 10"
+    },
+    "csv": {
+      "missingColumn": "Colonne studentId/matricule introuvable",
+      "imported_one":  "{{count}} note importée",
+      "imported_other":"{{count}} notes importées",
+      "failed":        "{{count}} erreur(s)",
+      "error":         "Erreur lors de l'import CSV"
+    },
+    "toast": {
+      "hoursSaved": "Suivi des heures enregistré.",
+      "signed":     "Fiche signée et verrouillée.",
+      "unsigned":   "Signature annulée — fiche déverrouillée.",
+      "signError":  "Erreur de signature",
+      "saveError":  "Erreur lors de l'enregistrement",
+      "hoursError": "Erreur"
+    },
+    "offline": {
+      "queued":      "Note mise en file hors-ligne — sera synchronisée dès la reconnexion",
+      "synced_one":  "{{count}} fiche synchronisée",
+      "synced_other":"{{count}} fiches synchronisées"
+    },
+    "errors": {
+      "load": "Impossible de charger la fiche."
+    }
+  },
+
+  "calendar": {
+    "title":          "Calendrier scolaire",
+    "subtitle_one":   "{{count}} événement",
+    "subtitle_other": "{{count}} événements",
+    "add":            "Ajouter un événement",
+    "empty":          "Aucun événement pour le moment.",
+    "private":        "Privé",
+    "allDay":         "Journée entière",
+    "allTypes":       "Tous les types",
+    "visibleToParents": "Visible par les parents/élèves",
+    "colorLabel":     "Couleur (optionnel)",
+    "confirmTitle":   "Supprimer l'événement",
+    "confirmMessage": "Supprimer \"{{title}}\" du calendrier ?",
+    "confirmLabel":   "Supprimer",
+    "types": {
+      "HOLIDAY":       "Congé/Fête",
+      "EXAM":          "Examen",
+      "EVENT":         "Événement",
+      "MEETING":       "Réunion",
+      "PARENT_MEETING":"Réunion parents",
+      "SPORT":         "Sport",
+      "CULTURAL":      "Culturel",
+      "DEADLINE":      "Échéance",
+      "OTHER":         "Autre"
+    },
+    "form": {
+      "offcanvasTitle": "Ajouter un événement",
+      "titleLabel":     "Titre",
+      "titlePlaceholder": "ex: Réunion des parents, Examen trimestriel…",
+      "typeLabel":      "Type",
+      "startDate":      "Date de début",
+      "endDate":        "Date de fin",
+      "descPlaceholder":"Description optionnelle…"
+    },
+    "errors": {
+      "title":     "Titre requis",
+      "startDate": "Date de début requise"
+    },
+    "toast": {
+      "created": "Événement ajouté",
+      "deleted": "Événement supprimé",
+      "error":   "Erreur"
+    }
+  },
+
+  "nationalExamPage": {
+    "title":          "Examens Nationaux",
+    "subtitleResults":"{{count}} résultat(s) — CEPD, BEPC, BAC, BTS, CAP",
+    "subtitleEmpty":  "CEPD, BEPC, BAC, BTS, CAP — résultats officiels",
+    "addResult":      "+ Ajouter un résultat",
+    "exportCsv":      "↓ CSV",
+    "all":            "Tous",
+    "searchPlaceholder": "Rechercher par élève, session…",
+    "yearPlaceholder":   "Année scolaire",
+    "loading":        "Chargement…",
+    "empty":          "Aucun résultat d'examen enregistré.",
+    "addFirst":       "+ Ajouter le premier résultat",
+    "confirmDelete":  "Supprimer ce résultat ?",
+    "summary": {
+      "total":    "Total",
+      "admis":    "Admis",
+      "ajourne":  "Ajourné",
+      "absent":   "Absent",
+      "passRate": "Réussite"
+    },
+    "columns": {
+      "student": "Élève",
+      "exam":    "Examen",
+      "session": "Session",
+      "year":    "Année",
+      "series":  "Série",
+      "result":  "Résultat",
+      "mention": "Mention",
+      "score":   "Score",
+      "center":  "Centre"
+    },
+    "status": {
+      "ADMIS":   "Admis",
+      "AJOURNE": "Ajourné",
+      "ABSENT":  "Absent",
+      "ELIMINE": "Éliminé"
+    },
+    "examTypes": {
+      "OTHER": "Autre"
+    },
+    "form": {
+      "title":             "Nouveau résultat",
+      "subtitle":          "Enregistrez un résultat officiel à un examen national",
+      "studentId":         "ID Élève",
+      "studentIdPlaceholder": "UUID de l'élève",
+      "examType":          "Type d'examen",
+      "result":            "Résultat",
+      "session":           "Session",
+      "sessionPlaceholder":"ex : Juin 2025",
+      "academicYear":      "Année scolaire",
+      "yearPlaceholder":   "ex : 2024-2025",
+      "series":            "Série",
+      "seriesPlaceholder": "ex : D, A4, C",
+      "mention":           "Mention",
+      "mentionPlaceholder":"ex : Très Bien, Bien",
+      "score":             "Score total",
+      "scorePlaceholder":  "ex : 245.5",
+      "center":            "Centre d'examen",
+      "centerPlaceholder": "Nom du centre",
+      "regNumber":         "N° d'inscription",
+      "notes":             "Notes",
+      "notesPlaceholder":  "Observations…"
+    },
+    "errors": {
+      "required": "Ce champ est requis"
+    },
+    "toast": {
+      "saved":       "Résultat enregistré",
+      "saveError":   "Une erreur est survenue",
+      "deleted":     "Résultat supprimé",
+      "deleteError": "Impossible de supprimer ce résultat"
+    }
+  },
+
+  "schoolDocs": {
+    "title":    "Documents scolaires",
+    "subtitle": "Circulaires, rapports, contrats et autres documents officiels",
+    "add":      "Ajouter un document",
+    "empty":    "Aucun document pour le moment.",
+    "open":     "Ouvrir",
+    "publish":  "Publier",
+    "unpublish":"Priver",
+    "delete":   "Supprimer",
+    "publicBadge": "🌐 Public",
+    "categories": {
+      "all":      "Tous",
+      "CIRCULAR": "Circulaire",
+      "REPORT":   "Rapport",
+      "CONTRACT": "Contrat",
+      "SCHEDULE": "Emploi du temps",
+      "FINANCIAL":"Finance",
+      "EXAM":     "Examen",
+      "STAFF":    "Personnel",
+      "STUDENT":  "Élèves",
+      "OTHER":    "Autre"
+    },
+    "form": {
+      "offcanvasTitle": "Ajouter un document",
+      "subtitle":    "Importez un document officiel et rendez-le accessible à votre équipe.",
+      "titleField":  "Titre",
+      "titlePlaceholder": "Ex : Circulaire de rentrée 2025",
+      "category":    "Catégorie",
+      "description": "Description",
+      "fileLabel":   "Fichier",
+      "visible":     "Visible par les parents et élèves",
+      "submit":      "Ajouter le document",
+      "uploading":   "Téléchargement…",
+      "saving":      "Enregistrement…"
+    },
+    "confirmDelete": "Supprimer \"{{title}}\" ?",
+    "fileRequired":  "Veuillez sélectionner un fichier",
+    "toast": {
+      "created":     "Document ajouté",
+      "deleted":     "Document supprimé",
+      "saveError":   "Erreur lors de l'enregistrement",
+      "deleteError": "Erreur lors de la suppression"
+    }
+  },
+
+  "timetable": {
+    "title":    "Emploi du temps",
+    "subtitle": "Créez et modifiez les emplois du temps par classe",
+    "timeCol":  "Heure",
+    "empty":    "Sélectionnez une classe pour afficher ou créer son emploi du temps.",
+    "loading":  "Chargement…",
+    "classLabel":      "Classe",
+    "classPlaceholder":"Sélectionner une classe",
+    "yearLabel":       "Année scolaire",
+    "subjectLabel":    "Matière *",
+    "subjectPlaceholder":"Choisir une matière",
+    "teacherLabel":    "Enseignant",
+    "noTeacher":       "— Aucun —",
+    "duration":        "Durée",
+    "room":            "Salle (optionnel)",
+    "roomPlaceholder": "ex: Salle A1",
+    "addEdit":         "Ajouter / Modifier",
+    "days": {
+      "MONDAY":   "Lundi",
+      "TUESDAY":  "Mardi",
+      "WEDNESDAY":"Mercredi",
+      "THURSDAY": "Jeudi",
+      "FRIDAY":   "Vendredi",
+      "SATURDAY": "Samedi"
+    },
+    "toast": {
+      "saved": "Emploi du temps enregistré",
+      "error": "Impossible d'enregistrer"
+    },
+    "errors": {
+      "subjectRequired": "Choisissez une matière"
+    }
+  },
+
+  "branding": {
+    "title":   "Identité visuelle",
+    "loading": "Chargement…",
+    "modify":  "Modifier",
+    "colors": {
+      "sectionTitle": "Couleurs",
+      "sectionDesc":  "Couleurs principales appliquées aux bulletins et à l'interface.",
+      "panelTitle":   "Couleurs du bulletin",
+      "primary":      "Couleur principale",
+      "primaryHint":  "En-têtes, barres et boutons du bulletin",
+      "secondary":    "Couleur secondaire",
+      "secondaryHint":"Accents et sous-titres",
+      "preview":      "Aperçu",
+      "mainLabel":    "Principale",
+      "secondLabel":  "Secondaire"
+    },
+    "images": {
+      "sectionTitle": "Images",
+      "sectionDesc":  "Logo, blason et tampon affichés sur les bulletins.",
+      "panelTitle":   "Images de l'établissement",
+      "logoTitle":    "Logo",
+      "logoDesc":     "Affiché dans l'en-tête des bulletins et dans la barre latérale.",
+      "logoLabel":    "Logo de l'établissement",
+      "logoHint":     "PNG ou SVG recommandé · Max 2 Mo",
+      "logoCurrent":  "Logo actuel :",
+      "crestTitle":   "Blason / Armoiries",
+      "crestDesc":    "Affiché à droite du logo sur les bulletins.",
+      "crestLabel":   "Blason de l'établissement",
+      "crestHint":    "PNG ou SVG recommandé · Max 2 Mo",
+      "crestCurrent": "Blason actuel :",
+      "stampTitle":   "Tampon officiel",
+      "stampDesc":    "Tampon apposé en bas à droite du bulletin (semi-transparent).",
+      "stampLabel":   "Tampon de l'établissement",
+      "stampHint":    "PNG avec fond transparent · Max 2 Mo",
+      "stampCurrent": "Tampon actuel :",
+      "view":         "voir"
+    },
+    "typo": {
+      "sectionTitle":   "Typographie",
+      "sectionDesc":    "Police et styles de titres du bulletin imprimé.",
+      "panelTitle":     "Typographie du bulletin",
+      "fontFamilyLabel":"Police de caractères",
+      "fontFamilyHint": "Tapez n'importe quelle police Google Fonts ou système — chargement automatique.",
+      "fontSizeLabel":  "Taille de base",
+      "fontSizeHint":   "Toutes les tailles ci-dessous sont relatives à cette valeur.",
+      "headingsTitle":  "Styles des titres",
+      "headings": {
+        "level":  "Niveau",
+        "size":   "Taille",
+        "weight": "Graisse"
+      },
+      "h1": "H1 — Nom de l'établissement",
+      "h2": "H2 — Titre du bulletin",
+      "h3": "H3 — Titres de sections"
+    },
+    "toast": {
+      "colorsSaved": "Couleurs enregistrées",
+      "imagesSaved": "Images enregistrées",
+      "typoSaved":   "Typographie enregistrée",
+      "error":       "Erreur de sauvegarde"
+    }
+  },
+
+  "subjectProfile": {
+    "title":     "Profil matière",
+    "back":      "← Retour aux matières",
+    "inactive":  "Inactif",
+    "codeLabel": "Code : {{code}}",
+    "details": {
+      "department":  "Département",
+      "passMark":    "Note de passage",
+      "passMarkVal": "{{value}} / 20",
+      "description": "Description"
+    },
+    "kpi": {
+      "classes":    "Classes assignées",
+      "classesSub": "classes utilisant cette matière",
+      "teachers":   "Enseignants",
+      "teachersSub":"enseignants assignés",
+      "passMark":   "Note de passage",
+      "passMarkSub":"seuil de réussite"
+    },
+    "classesTitle": "Classes & Enseignants",
+    "noClasses":    "Cette matière n'est assignée à aucune classe.",
+    "columns": {
+      "class":   "Classe",
+      "year":    "Année scolaire",
+      "teacher": "Enseignant"
+    },
+    "hoursTitle": "Suivi des heures & absences",
+    "hoursAdd":   "Saisir",
+    "hoursEmpty": "Aucune saisie pour le moment.",
+    "hoursColumns": {
+      "class":    "Classe",
+      "year":     "Année",
+      "period":   "Période",
+      "planned":  "H. prévues",
+      "done":     "H. effectuées",
+      "absences": "Absences",
+      "delays":   "Retards",
+      "notes":    "Observations",
+      "edit":     "Modifier"
+    },
+    "categories": {
+      "SCIENCES":   "Sciences",
+      "LETTRES":    "Lettres",
+      "MATHS":      "Mathématiques",
+      "LANGUES":    "Langues",
+      "ARTS":       "Arts",
+      "EPS":        "EPS",
+      "TECHNIQUES": "Techniques",
+      "AUTRE":      "Autre"
+    },
+    "form": {
+      "title":            "Saisie des heures & absences",
+      "class":            "Classe",
+      "classPlaceholder": "Sélectionner une classe",
+      "year":             "Année scolaire",
+      "yearPlaceholder":  "ex: 2024-2025",
+      "term":             "Trimestre",
+      "planned":          "Heures prévues",
+      "done":             "Heures effectuées",
+      "absences":         "Absences élèves",
+      "delays":           "Retards élèves",
+      "observations":     "Observations",
+      "observationsPlaceholder": "Remarques libres du professeur…"
+    },
+    "errors": {
+      "required": "Classe, année scolaire et trimestre requis"
+    },
+    "toast": {
+      "saved": "Enregistré",
+      "error": "Erreur"
+    }
+  },
+
+  "bulkImport": {
+    "title":   "Importation en masse",
+    "subtitle":"Ajoutez plusieurs élèves ou professeurs à la fois depuis un fichier CSV",
+    "drop":    "Glisser un fichier CSV ici ou cliquer pour choisir",
+    "missing": "manquant !",
+    "auto":    "auto",
+    "more":    "… et {{count}} autres",
+    "importing":"Importation…",
+    "students": {
+      "title":   "Importer des élèves",
+      "csvHint": "Colonnes CSV :",
+      "example": "Exemple :",
+      "availableClasses": "Classes disponibles :",
+      "moreClasses":      "… (+{{count}})",
+      "rules": {
+        "admissionNumber":"Si numero_admission est vide, le système en génère un automatiquement.",
+        "className":      "Le nom de la classe doit correspondre exactement à une classe existante (casse non sensible)."
+      },
+      "ready_one":   "{{count}} ligne prête",
+      "ready_other": "{{count}} lignes prêtes",
+      "columns": {
+        "name":      "Nom",
+        "dob":       "Date naiss.",
+        "sex":       "Sexe",
+        "class":     "Classe",
+        "admission": "N° Adm."
+      },
+      "importBtn_one":   "Importer {{count}} élève",
+      "importBtn_other": "Importer {{count}} élèves"
+    },
+    "teachers": {
+      "title":   "Importer des professeurs",
+      "csvHint": "Colonnes CSV :",
+      "example": "Exemple :",
+      "rules": {
+        "password":"Un mot de passe temporaire est généré automatiquement. Le professeur devra le changer à la première connexion.",
+        "email":   "L'email doit être unique. Les doublons sont signalés comme erreurs."
+      },
+      "ready_one":   "{{count}} ligne prête",
+      "ready_other": "{{count}} lignes prêtes",
+      "columns": {
+        "name":  "Nom",
+        "email": "Email",
+        "phone": "Téléphone"
+      },
+      "importBtn_one":   "Importer {{count}} professeur",
+      "importBtn_other": "Importer {{count}} professeurs"
+    },
+    "result": {
+      "created_one":   "✅ {{count}} créé",
+      "created_other": "✅ {{count}} créés",
+      "failed_one":    "⚠️ {{count}} échec",
+      "failed_other":  "⚠️ {{count}} échecs",
+      "success":       "Importation terminée sans erreur."
+    }
+  },
+
+  "institution": {
+    "title":    "Établissement",
+    "pageTitle":"Mon établissement",
+    "subtitle": "Informations générales",
+    "sections": {
+      "identity":"Identité",
+      "location":"Localisation",
+      "contact": "Contact officiel",
+      "summary": "Récapitulatif"
+    },
+    "fields": {
+      "name":             "Nom officiel de l'établissement",
+      "namePlaceholder":  "ex: Lycée de Tokoin",
+      "type":             "Type d'établissement",
+      "director":         "Nom du directeur / proviseur",
+      "directorPlaceholder": "ex: M. Koffi Agbeko",
+      "country":          "Pays",
+      "region":           "Région / Ville",
+      "regionPlaceholder":"ex: Lomé, Maritime",
+      "address":          "Adresse complète",
+      "addressPlaceholder":"ex: Quartier Tokoin, Rue des Écoles, Lomé",
+      "email":            "Email de l'établissement",
+      "emailPlaceholder": "ex: direction@lycee-tokoin.tg",
+      "phone":            "Téléphone principal",
+      "phonePlaceholder": "+228 XX XX XX XX"
+    },
+    "summary": {
+      "school": "Établissement",
+      "type":   "Type",
+      "country":"Pays",
+      "year":   "Année scolaire",
+      "plan":   "Abonnement"
+    },
+    "types": {
+      "MATERNELLE": "Maternelle",
+      "PRIMAIRE":   "École primaire",
+      "COLLEGE":    "Collège",
+      "LYCEE":      "Lycée",
+      "MIXTE":      "Établissement multi-cycles",
+      "UNIVERSITE": "Université / Supérieur",
+      "PRIVE":      "Établissement privé",
+      "AUTRE":      "Autre"
+    },
+    "countries": {
+      "TG": "Togo", "BJ": "Bénin", "CI": "Côte d'Ivoire", "GH": "Ghana",
+      "SN": "Sénégal", "ML": "Mali", "BF": "Burkina Faso", "NE": "Niger",
+      "CM": "Cameroun", "GA": "Gabon", "OTHER": "Autre pays"
+    },
+    "errors": {
+      "nameRequired": "Nom de l'établissement requis"
+    },
+    "toast": {
+      "saved": "Informations enregistrées",
+      "error": "Erreur de sauvegarde"
+    }
+  },
+
+  "mockExamGrade": {
+    "title": "Saisie des notes",
+    "back": "← Retour aux relevés",
+    "statusPublished": "Publié",
+    "statusDraft": "Brouillon",
+    "stats": {
+      "students": "Élèves",
+      "subjects": "Matières",
+      "totalCoeff": "Coeff. total"
+    },
+    "columns": {
+      "student": "Élève",
+      "coeff": "Coeff.",
+      "average": "Moyenne",
+      "rank": "Rang"
+    },
+    "actions": {
+      "saving": "Sauvegarde…",
+      "saved": "✓ Sauvegardé",
+      "savedAll": "✓ Notes sauvegardées",
+      "publish": "Publier",
+      "palmares": "Palmarès →",
+      "releve": "Relevés de notes →"
+    },
+    "confirmPublish": "Publier ce relevé ? Les notes ne pourront plus être modifiées.",
+    "saveError": "Erreur lors de la sauvegarde. Réessayez.",
+    "loadError": "Impossible de charger la feuille de notes. Vérifiez l'identifiant."
+  },
+
+  "teacherSchedule": {
+    "title": "Tableau de service",
+    "subtitle": "Emploi du temps personnel — classes et créneaux assignés",
+    "yearLabel": "Année scolaire :",
+    "today": "Aujourd'hui",
+    "todayBadge": "Aujourd'hui",
+    "meta_one":   "{{count}} jour · {{periods}} cours/semaine",
+    "meta_other": "{{count}} jours · {{periods}} cours/semaine",
+    "courses": "cours",
+    "enterGrades": "Saisir les notes →",
+    "days": {
+      "LUNDI":    "Lundi",
+      "MARDI":    "Mardi",
+      "MERCREDI": "Mercredi",
+      "JEUDI":    "Jeudi",
+      "VENDREDI": "Vendredi",
+      "SAMEDI":   "Samedi"
+    }
+  },
+
+  "programPage": {
+    "title": "Programme",
+    "back": "← Retour à la classe",
+    "descLabel": "Description générale du programme",
+    "descPlaceholder": "Objectifs généraux, orientations pédagogiques…",
+    "addChapter": "+ Ajouter un chapitre",
+    "stats": {
+      "chapters_one":   "{{count}} chapitre",
+      "chapters_other": "{{count}} chapitres",
+      "completed_one":   "{{count}} complété",
+      "completed_other": "{{count}} complétés",
+      "coverage": "{{pct}}% du programme couvert"
+    },
+    "chapter": {
+      "titlePlaceholder": "Titre du chapitre {{n}}…",
+      "done":     "✓ Complété",
+      "markDone": "Marquer complété",
+      "planLabel": "Plan du chapitre",
+      "planHint":  " — contenu, progression des séances",
+      "planPlaceholder": "Ex: Séance 1 — Introduction…",
+      "objectivesLabel": "Objectifs pédagogiques",
+      "objectivesHint":  " — ce que l'élève doit savoir/savoir-faire",
+      "objectivesPlaceholder": "À la fin de ce chapitre, l'élève sera capable de…",
+      "durationLabel": "Durée estimée",
+      "durationPlaceholder": "ex: 3 semaines"
+    },
+    "toast": {
+      "saved": "Programme enregistré",
+      "error": "Erreur de sauvegarde"
+    },
+    "actions": {
+      "cancel":  "Annuler",
+      "save":    "Enregistrer le programme",
+      "saving":  "Enregistrement…"
+    }
+  },
+
+  "createReport": {
+    "title":    "Nouveau bulletin",
+    "pageTitle":"Nouveau bulletin de notes",
+    "subtitle": "Créez un bulletin pour une classe et une période",
+    "fields": {
+      "class":           "Classe",
+      "classPlaceholder":"Sélectionner une classe",
+      "academicYear":    "Année scolaire",
+      "termType":        "Type de période",
+      "period":          "Période",
+      "periodName":      "Nom de la période",
+      "periodPlaceholder":"ex: Période 1",
+      "customLabel":     "Libellé personnalisé (optionnel)"
+    },
+    "termTypes": {
+      "TRIMESTRE": "Trimestriel",
+      "SEMESTRE":  "Semestriel",
+      "CUSTOM":    "Personnalisé"
+    },
+    "trimestres": {
+      "1": "1er trimestre",
+      "2": "2ème trimestre",
+      "3": "3ème trimestre"
+    },
+    "semestres": {
+      "1": "1er semestre",
+      "2": "2ème semestre"
+    },
+    "errors": {
+      "classRequired":        "Classe requise",
+      "academicYearRequired": "Année scolaire requise",
+      "termTypeRequired":     "Type de période requis",
+      "termNumberRequired":   "Période requise"
+    },
+    "toast": {
+      "created_one":   "{{count}} bulletin créé",
+      "created_other": "{{count}} bulletins créés",
+      "error":         "Erreur de création"
+    },
+    "actions": {
+      "cancel":   "Annuler",
+      "create":   "Créer le bulletin",
+      "creating": "Création…"
+    }
+  },
+
+  "teacherRoadmap": {
+    "title":     "Feuille de route",
+    "pageTitle": "Feuille de route de l'année",
+    "subtitle":  "Programmes, chapitres et progression par matière",
+    "yearLabel": "Année scolaire :",
+    "empty":     "Aucune matière assignée pour {{year}}.",
+    "emptySub":  "L'administrateur doit vous assigner à des classes et matières.",
+    "summary": {
+      "subjects":    "Matières",
+      "withProgram": "Avec programme",
+      "planned":     "Chapitres prévus",
+      "done":        "Terminés"
+    },
+    "editBtn":    "✏️ Modifier",
+    "createBtn":  "+ Créer le programme",
+    "noChapters": "Programme sans chapitres — cliquez Modifier pour en ajouter.",
+    "noProgram":  "Aucun programme défini — cliquez pour créer.",
+    "progress":   "{{done}}/{{total}} chapitres ({{pct}}%)",
+    "subjects_one":   "{{count}} matière",
+    "subjects_other": "{{count}} matières"
+  },
+
+  "subscriptionReturn": {
+    "success": {
+      "heading": "Paiement reçu !",
+      "body":    "Votre paiement a bien été reçu. L'abonnement sera activé automatiquement dans quelques instants. Vous recevrez une confirmation par email.",
+      "hint":    "Si l'abonnement n'est pas encore actif dans 5 minutes, contactez le support."
+    },
+    "cancelled": {
+      "heading": "Paiement annulé",
+      "body":    "Vous avez annulé le paiement. Vous pouvez réessayer à tout moment depuis la page Abonnement."
+    },
+    "error": {
+      "heading": "Paiement non abouti",
+      "body":    "Le paiement n'a pas abouti. Veuillez réessayer ou utiliser le paiement Mobile Money si le problème persiste."
+    },
+    "redirect_one":   "Redirection dans {{count}} seconde…",
+    "redirect_other": "Redirection dans {{count}} secondes…",
+    "backBtn": "Retour à l'abonnement"
+  },
+
+  "lms": {
+    "title":          "LMS — Espace d'apprentissage",
+    "by":             "Par",
+    "pageTitle":      "Espace d'apprentissage",
+    "subtitle":       "Annonces · Cours · Devoirs · Quiz",
+    "parentSubtitle": "Suivez les activités scolaires de votre enfant",
+    "studentSubtitle":"Vos cours, devoirs et quiz",
+    "tabs": {
+      "announcements": "Annonces",
+      "materials":     "Cours & Ressources",
+      "materialStudent":"Cours",
+      "assignments":   "Devoirs",
+      "quizzes":       "Quiz"
+    },
+    "empty": {
+      "announcements":     "Aucune annonce pour le moment.",
+      "materials":         "Aucune ressource pour le moment.",
+      "materialStudent":   "Aucune ressource disponible.",
+      "assignments":       "Aucun devoir pour le moment.",
+      "assignmentsStudent":"Aucun devoir assigné pour le moment.",
+      "submissions":       "Aucune soumission encore.",
+      "quizzes":           "Aucun quiz pour le moment.",
+      "questions":         "Aucune question. Ajoutez-en ci-dessous.",
+      "attempts":          "Aucune tentative encore."
+    },
+    "audience": {
+      "ALL":      "Tout le monde",
+      "CLASS":    "Classe spécifique",
+      "TEACHERS": "Enseignants",
+      "STUDENTS": "Élèves",
+      "PARENTS":  "Parents"
+    },
+    "materialTypes": {
+      "DOCUMENT": "Document",
+      "VIDEO":    "Vidéo",
+      "LINK":     "Lien",
+      "IMAGE":    "Image"
+    },
+    "questionTypes": {
+      "MCQ":          "QCM",
+      "TRUE_FALSE":   "Vrai / Faux",
+      "SHORT_ANSWER": "Réponse courte"
+    },
+    "announcements": {
+      "new":       "Nouvelle annonce",
+      "editTitle": "Modifier l'annonce",
+      "newTitle":  "Nouvelle annonce",
+      "pinned":    "📌 Épinglé",
+      "pin":       "Épingler en haut",
+      "fields": {
+        "title":            "Titre",
+        "body":             "Message",
+        "audience":         "Audience",
+        "class":            "Classe",
+        "classPlaceholder": "— Choisir —"
+      },
+      "confirmDelete":    "Supprimer l'annonce",
+      "confirmDeleteMsg": "Supprimer \"{{title}}\" ?",
+      "toast": { "saved": "Sauvegardé", "deleted": "Supprimé" }
+    },
+    "materials": {
+      "add":        "Ajouter une ressource",
+      "addTitle":   "Ajouter une ressource",
+      "allClasses": "Toutes les classes",
+      "allSubjects":"Toutes les matières",
+      "fields": {
+        "title":       "Titre",
+        "description": "Description",
+        "type":        "Type",
+        "year":        "Année scolaire",
+        "url":         "URL / Lien",
+        "urlOr":       "ou",
+        "upload":      "Téléverser un fichier",
+        "class":       "Classe",
+        "subject":     "Matière"
+      },
+      "open":             "Ouvrir",
+      "confirmDelete":    "Supprimer la ressource",
+      "confirmDeleteMsg": "Supprimer \"{{title}}\" ?",
+      "toast": { "added": "Ressource ajoutée", "deleted": "Supprimé" }
+    },
+    "assignments": {
+      "new":        "Nouveau devoir",
+      "editTitle":  "Modifier le devoir",
+      "newTitle":   "Nouveau devoir",
+      "allClasses": "Toutes les classes",
+      "publish":    "Publier",
+      "close":      "Clôturer",
+      "submissions":"Soumissions",
+      "submissionsTitle": "Soumissions — {{title}}",
+      "fields": {
+        "title":        "Titre",
+        "instructions": "Consignes",
+        "attachment":   "Document joint (optionnel)",
+        "dueDate":      "Date limite",
+        "maxScore":     "Note max",
+        "class":        "Classe",
+        "subject":      "Matière",
+        "year":         "Année scolaire"
+      },
+      "dueDate": "à rendre le",
+      "submissions_one":   "{{count}} soumission",
+      "submissions_other": "{{count}} soumissions",
+      "columns": {
+        "student":     "Élève",
+        "status":      "Statut",
+        "submittedAt": "Soumis le",
+        "work":        "Travail",
+        "grade":       "Note"
+      },
+      "gradeBtn":         "Enregistrer",
+      "confirmDelete":    "Supprimer le devoir",
+      "confirmDeleteMsg": "Supprimer \"{{title}}\" ?",
+      "toast": { "saved": "Sauvegardé", "deleted": "Supprimé", "graded": "Note enregistrée", "statusUpdated": "Statut mis à jour" }
+    },
+    "quizzes": {
+      "new":        "Nouveau quiz",
+      "editTitle":  "Modifier le quiz",
+      "newTitle":   "Nouveau quiz",
+      "allClasses": "Toutes les classes",
+      "open":       "Ouvrir",
+      "close":      "Fermer",
+      "questions":  "Questions",
+      "results":    "Résultats",
+      "resultsTitle":   "Résultats — {{title}}",
+      "questionsTitle": "Questions — {{title}}",
+      "fields": {
+        "title":              "Titre",
+        "description":        "Description",
+        "attachment":         "Document joint (optionnel)",
+        "duration":           "Durée (min)",
+        "durationPlaceholder":"Illimitée",
+        "attempts":           "Nb tentatives",
+        "class":              "Classe",
+        "subject":            "Matière",
+        "year":               "Année scolaire",
+        "showResults":        "Afficher le score à l'élève après soumission"
+      },
+      "questions_one":   "{{count}} question",
+      "questions_other": "{{count}} questions",
+      "attempts_one":    "{{count}} tentative",
+      "attempts_other":  "{{count}} tentatives",
+      "trueFalse": { "true": "Vrai", "false": "Faux" },
+      "qBuilder": {
+        "newQuestion":  "Nouvelle question",
+        "addBtn":       "Ajouter la question",
+        "addOption":    "+ Option",
+        "answersLabel": "Réponses (cocher la/les correcte(s))",
+        "fields": { "text": "Question", "type": "Type", "points": "Points" }
+      },
+      "resultsColumns": {
+        "student": "Élève", "score": "Score", "max": "/ Max", "pct": "%", "submittedAt": "Soumis le"
+      },
+      "confirmDelete":    "Supprimer le quiz",
+      "confirmDeleteMsg": "Supprimer \"{{title}}\" ?",
+      "toast": { "saved": "Sauvegardé", "deleted": "Supprimé", "statusUpdated": "Statut mis à jour", "questionAdded": "Question ajoutée" }
+    },
+    "file": {
+      "uploading":  "Téléversement…",
+      "attach":     "📎 Joindre un fichier",
+      "attachment": "Pièce jointe",
+      "toast": { "uploaded": "Fichier téléversé", "error": "Erreur lors du téléversement" }
+    },
+    "actions": {
+      "save":   "Enregistrer",
+      "saving": "Enregistrement…",
+      "cancel": "Annuler",
+      "delete": "Supprimer",
+      "modify": "Modifier"
+    },
+    "student": {
+      "openResource":      "Ouvrir la ressource",
+      "viewSubmit":        "Voir / Soumettre",
+      "openQuiz":          "Ouvrir le quiz",
+      "teacherDoc":        "Document du professeur",
+      "teacherDocDownload":"Télécharger le document du professeur",
+      "gradeScore":        "Note sur",
+      "yourAnswer":        "Votre réponse",
+      "answerPlaceholder": "Écrivez votre réponse ici…",
+      "optionalAttachment":"Pièce jointe (optionnel)",
+      "submitted":         "✔ Devoir soumis le {{date}}",
+      "scoreLabel":        "Note :",
+      "sending":           "Envoi…",
+      "submit":            "Soumettre",
+      "close":             "Fermer",
+      "submittedSuccess":  "Devoir soumis !",
+      "quizDuration":      "Durée :",
+      "unlimited":         "Illimitée",
+      "maxAttempts":       "Tentatives max :",
+      "prevAttempts":      "Tentatives effectuées :",
+      "myAttempts":        "Mes tentatives précédentes",
+      "startQuiz":         "Commencer le quiz",
+      "starting":          "Démarrage…",
+      "submitQuiz":        "Soumettre le quiz",
+      "submitting":        "Envoi…",
+      "quizSubmitted":     "Quiz soumis avec succès !",
+      "backToList":        "Retour à la liste",
+      "attachedDoc":       "📎 Document joint"
+    }
   }
 }

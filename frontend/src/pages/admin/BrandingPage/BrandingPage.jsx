@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { institutionsService } from '../../../services/institutionsService';
 import { uploadService } from '../../../services/uploadService';
@@ -13,7 +14,6 @@ import Button from '../../../components/common/Button/Button';
 import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
 import './BrandingPage.css';
 
-/* ── Font helpers ── */
 const FONT_PRESETS = [
   'Arial', 'Helvetica', 'Times New Roman', 'Georgia', 'Garamond',
   'Palatino Linotype', 'Trebuchet MS', 'Verdana', 'Courier New', 'Impact',
@@ -57,12 +57,6 @@ const FONT_SIZES_EM = [
 
 const FONT_WEIGHTS = ['400','500','600','700','800','900'];
 
-const HEADING_LEVELS = [
-  { key: 'H1', label: 'H1 — Nom de l\'établissement', defaultSize: '1.3em', defaultWeight: '900' },
-  { key: 'H2', label: 'H2 — Titre du bulletin',       defaultSize: '1.1em', defaultWeight: '900' },
-  { key: 'H3', label: 'H3 — Titres de sections',      defaultSize: '0.8em', defaultWeight: '800' },
-];
-
 const DEFAULT_FORM = {
   primaryColor:     '#1e40af',
   secondaryColor:   '#f59e0b',
@@ -78,6 +72,7 @@ const DEFAULT_FORM = {
 };
 
 function BrandingPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const { refreshInstitution } = useInstitution();
 
@@ -90,6 +85,12 @@ function BrandingPage() {
   const [colorsOpen, setColorsOpen] = useState(false);
   const [imagesOpen, setImagesOpen] = useState(false);
   const [typoOpen, setTypoOpen]     = useState(false);
+
+  const headingLevels = [
+    { key: 'H1', label: t('branding.typo.h1'), defaultSize: '1.3em', defaultWeight: '900' },
+    { key: 'H2', label: t('branding.typo.h2'), defaultSize: '1.1em', defaultWeight: '900' },
+    { key: 'H3', label: t('branding.typo.h3'), defaultSize: '0.8em', defaultWeight: '800' },
+  ];
 
   const { data: institution, isLoading } = useQuery({
     queryKey: ['institution-me'],
@@ -117,7 +118,6 @@ function BrandingPage() {
     });
   }, [institution]);
 
-  /* Live color preview on the admin UI itself */
   useEffect(() => {
     const root = document.documentElement;
     if (form.primaryColor)   root.style.setProperty('--color-primary',   form.primaryColor);
@@ -144,7 +144,6 @@ function BrandingPage() {
     }
   }, [form.primaryColor, form.secondaryColor]);
 
-  /* Load Google Font for typography preview */
   useEffect(() => { loadGoogleFont(form.bulletinFontFamily?.trim()); }, [form.bulletinFontFamily]);
 
   function set(field, value) { setForm((f) => ({ ...f, [field]: value })); }
@@ -152,16 +151,13 @@ function BrandingPage() {
   async function handleColorsSave() {
     setSaving(true);
     try {
-      await institutionsService.updateBranding({
-        primaryColor:  form.primaryColor,
-        secondaryColor: form.secondaryColor,
-      });
+      await institutionsService.updateBranding({ primaryColor: form.primaryColor, secondaryColor: form.secondaryColor });
       qc.invalidateQueries({ queryKey: ['institution-me'] });
       refreshInstitution();
-      toast.success('Couleurs enregistrées');
+      toast.success(t('branding.toast.colorsSaved'));
       setColorsOpen(false);
     } catch (err) {
-      toast.error(err?.response?.data?.message ?? 'Erreur de sauvegarde');
+      toast.error(err?.response?.data?.message ?? t('branding.toast.error'));
     } finally { setSaving(false); }
   }
 
@@ -180,18 +176,15 @@ function BrandingPage() {
       if (uploads[1]) crestUrl = uploads[1].data.url;
       if (uploads[2]) stampUrl = uploads[2].data.url;
       await institutionsService.updateBranding({
-        logoUrl,
-        crest:     crestUrl  || undefined,
-        stamp:     stampUrl  || undefined,
-        faviconUrl: form.faviconUrl || undefined,
+        logoUrl, crest: crestUrl || undefined, stamp: stampUrl || undefined, faviconUrl: form.faviconUrl || undefined,
       });
       qc.invalidateQueries({ queryKey: ['institution-me'] });
       refreshInstitution();
       setLogo(null); setCrest(null); setStamp(null);
-      toast.success('Images enregistrées');
+      toast.success(t('branding.toast.imagesSaved'));
       setImagesOpen(false);
     } catch (err) {
-      toast.error(err?.response?.data?.message ?? 'Erreur de sauvegarde');
+      toast.error(err?.response?.data?.message ?? t('branding.toast.error'));
     } finally { setSaving(false); }
   }
 
@@ -210,50 +203,48 @@ function BrandingPage() {
       });
       qc.invalidateQueries({ queryKey: ['institution-me'] });
       refreshInstitution();
-      toast.success('Typographie enregistrée');
+      toast.success(t('branding.toast.typoSaved'));
       setTypoOpen(false);
     } catch (err) {
-      toast.error(err?.response?.data?.message ?? 'Erreur de sauvegarde');
+      toast.error(err?.response?.data?.message ?? t('branding.toast.error'));
     } finally { setSaving(false); }
   }
 
-  if (isLoading) return <AppShell title="Identité visuelle"><div className="branding-page__loading">Chargement…</div></AppShell>;
+  if (isLoading) return <AppShell title={t('branding.title')}><div className="branding-page__loading">{t('branding.loading')}</div></AppShell>;
 
   const bs = institution?.brandingSettings ?? {};
 
   return (
-    <AppShell title="Identité visuelle">
-      <PageHeader title="Identité visuelle" subtitle={institution?.name} />
+    <AppShell title={t('branding.title')}>
+      <PageHeader title={t('branding.title')} subtitle={institution?.name} />
 
       <div className="branding-page__grid">
 
-        {/* ── Colors card ── */}
         <Card className="branding-section">
           <div className="branding-section__header">
             <div>
-              <h3 className="branding-section__title">Couleurs</h3>
-              <p className="branding-section__desc">Couleurs principales appliquées aux bulletins et à l'interface.</p>
+              <h3 className="branding-section__title">{t('branding.colors.sectionTitle')}</h3>
+              <p className="branding-section__desc">{t('branding.colors.sectionDesc')}</p>
             </div>
-            <Button size="sm" onClick={() => setColorsOpen(true)}>Modifier</Button>
+            <Button size="sm" onClick={() => setColorsOpen(true)}>{t('branding.modify')}</Button>
           </div>
           <div className="branding-colors-preview">
             <div className="branding-colors-preview__swatch" style={{ background: bs.primaryColor ?? DEFAULT_FORM.primaryColor }}>
-              <span>Principale</span>
+              <span>{t('branding.colors.mainLabel')}</span>
             </div>
             <div className="branding-colors-preview__swatch branding-colors-preview__swatch--secondary" style={{ background: bs.secondaryColor ?? DEFAULT_FORM.secondaryColor }}>
-              <span>Secondaire</span>
+              <span>{t('branding.colors.secondLabel')}</span>
             </div>
           </div>
         </Card>
 
-        {/* ── Images card ── */}
         <Card className="branding-section">
           <div className="branding-section__header">
             <div>
-              <h3 className="branding-section__title">Images</h3>
-              <p className="branding-section__desc">Logo, blason et tampon affichés sur les bulletins.</p>
+              <h3 className="branding-section__title">{t('branding.images.sectionTitle')}</h3>
+              <p className="branding-section__desc">{t('branding.images.sectionDesc')}</p>
             </div>
-            <Button size="sm" onClick={() => setImagesOpen(true)}>Modifier</Button>
+            <Button size="sm" onClick={() => setImagesOpen(true)}>{t('branding.modify')}</Button>
           </div>
           <div className="branding-images-preview">
             {institution?.logo
@@ -268,14 +259,13 @@ function BrandingPage() {
           </div>
         </Card>
 
-        {/* ── Typography card ── */}
         <Card className="branding-section">
           <div className="branding-section__header">
             <div>
-              <h3 className="branding-section__title">Typographie</h3>
-              <p className="branding-section__desc">Police et styles de titres du bulletin imprimé.</p>
+              <h3 className="branding-section__title">{t('branding.typo.sectionTitle')}</h3>
+              <p className="branding-section__desc">{t('branding.typo.sectionDesc')}</p>
             </div>
-            <Button size="sm" onClick={() => setTypoOpen(true)}>Modifier</Button>
+            <Button size="sm" onClick={() => setTypoOpen(true)}>{t('branding.modify')}</Button>
           </div>
           <div
             className="branding-typo-preview-card"
@@ -301,120 +291,118 @@ function BrandingPage() {
 
       </div>
 
-      {/* ════ OffCanvas: Couleurs ════ */}
+      {/* Colors OffCanvas */}
       <OffCanvas
         open={colorsOpen}
         onClose={() => setColorsOpen(false)}
-        title="Couleurs du bulletin"
+        title={t('branding.colors.panelTitle')}
         size="sm"
         footer={
           <>
-            <Button variant="ghost" onClick={() => setColorsOpen(false)} disabled={saving}>Annuler</Button>
+            <Button variant="ghost" onClick={() => setColorsOpen(false)} disabled={saving}>{t('action.cancel')}</Button>
             <Button onClick={handleColorsSave} disabled={saving}>
-              {saving ? 'Enregistrement…' : 'Enregistrer'}
+              {saving ? t('action.saving') : t('action.save')}
             </Button>
           </>
         }
       >
         <div className="branding-section" style={{ gap: '1.25rem' }}>
           <ColorPicker
-            id="primaryColor" label="Couleur principale"
+            id="primaryColor" label={t('branding.colors.primary')}
             value={form.primaryColor}
             onChange={(v) => set('primaryColor', v)}
-            hint="En-têtes, barres et boutons du bulletin"
+            hint={t('branding.colors.primaryHint')}
           />
           <ColorPicker
-            id="secondaryColor" label="Couleur secondaire"
+            id="secondaryColor" label={t('branding.colors.secondary')}
             value={form.secondaryColor}
             onChange={(v) => set('secondaryColor', v)}
-            hint="Accents et sous-titres"
+            hint={t('branding.colors.secondaryHint')}
           />
           <div className="branding-preview">
             <div className="branding-preview__bar"    style={{ background: form.primaryColor }} />
             <div className="branding-preview__accent" style={{ background: form.secondaryColor }} />
-            <span className="branding-preview__label">Aperçu</span>
+            <span className="branding-preview__label">{t('branding.colors.preview')}</span>
           </div>
         </div>
       </OffCanvas>
 
-      {/* ════ OffCanvas: Images ════ */}
+      {/* Images OffCanvas */}
       <OffCanvas
         open={imagesOpen}
         onClose={() => setImagesOpen(false)}
-        title="Images de l'établissement"
+        title={t('branding.images.panelTitle')}
         size="md"
         footer={
           <>
-            <Button variant="ghost" onClick={() => setImagesOpen(false)} disabled={saving}>Annuler</Button>
+            <Button variant="ghost" onClick={() => setImagesOpen(false)} disabled={saving}>{t('action.cancel')}</Button>
             <Button onClick={handleImagesSave} disabled={saving}>
-              {saving ? 'Enregistrement…' : 'Enregistrer'}
+              {saving ? t('action.saving') : t('action.save')}
             </Button>
           </>
         }
       >
         <div className="branding-section" style={{ gap: '1.5rem' }}>
           <div>
-            <p className="branding-section__title" style={{ marginBottom: '0.5rem' }}>Logo</p>
-            <p className="branding-section__desc">Affiché dans l'en-tête des bulletins et dans la barre latérale.</p>
+            <p className="branding-section__title" style={{ marginBottom: '0.5rem' }}>{t('branding.images.logoTitle')}</p>
+            <p className="branding-section__desc">{t('branding.images.logoDesc')}</p>
             <FileUpload
-              id="logo" label="Logo de l'établissement"
+              id="logo" label={t('branding.images.logoLabel')}
               value={logoFile ?? (form.logoUrl || null)}
               onChange={setLogo} preview
-              hint="PNG ou SVG recommandé · Max 2 Mo"
+              hint={t('branding.images.logoHint')}
             />
             {form.logoUrl && !logoFile && (
-              <p className="branding-section__current">Logo actuel : <a href={form.logoUrl} target="_blank" rel="noreferrer">voir</a></p>
+              <p className="branding-section__current">{t('branding.images.logoCurrent')} <a href={form.logoUrl} target="_blank" rel="noreferrer">{t('branding.images.view')}</a></p>
             )}
           </div>
           <div>
-            <p className="branding-section__title" style={{ marginBottom: '0.5rem' }}>Blason / Armoiries</p>
-            <p className="branding-section__desc">Affiché à droite du logo sur les bulletins.</p>
+            <p className="branding-section__title" style={{ marginBottom: '0.5rem' }}>{t('branding.images.crestTitle')}</p>
+            <p className="branding-section__desc">{t('branding.images.crestDesc')}</p>
             <FileUpload
-              id="crest" label="Blason de l'établissement"
+              id="crest" label={t('branding.images.crestLabel')}
               value={crestFile ?? (form.crestUrl || null)}
               onChange={setCrest} preview
-              hint="PNG ou SVG recommandé · Max 2 Mo"
+              hint={t('branding.images.crestHint')}
             />
             {form.crestUrl && !crestFile && (
-              <p className="branding-section__current">Blason actuel : <a href={form.crestUrl} target="_blank" rel="noreferrer">voir</a></p>
+              <p className="branding-section__current">{t('branding.images.crestCurrent')} <a href={form.crestUrl} target="_blank" rel="noreferrer">{t('branding.images.view')}</a></p>
             )}
           </div>
           <div>
-            <p className="branding-section__title" style={{ marginBottom: '0.5rem' }}>Tampon officiel</p>
-            <p className="branding-section__desc">Tampon apposé en bas à droite du bulletin (semi-transparent).</p>
+            <p className="branding-section__title" style={{ marginBottom: '0.5rem' }}>{t('branding.images.stampTitle')}</p>
+            <p className="branding-section__desc">{t('branding.images.stampDesc')}</p>
             <FileUpload
-              id="stamp" label="Tampon de l'établissement"
+              id="stamp" label={t('branding.images.stampLabel')}
               value={stampFile ?? (form.stampUrl || null)}
               onChange={setStamp} preview
-              hint="PNG avec fond transparent · Max 2 Mo"
+              hint={t('branding.images.stampHint')}
             />
             {form.stampUrl && !stampFile && (
-              <p className="branding-section__current">Tampon actuel : <a href={form.stampUrl} target="_blank" rel="noreferrer">voir</a></p>
+              <p className="branding-section__current">{t('branding.images.stampCurrent')} <a href={form.stampUrl} target="_blank" rel="noreferrer">{t('branding.images.view')}</a></p>
             )}
           </div>
         </div>
       </OffCanvas>
 
-      {/* ════ OffCanvas: Typographie ════ */}
+      {/* Typography OffCanvas */}
       <OffCanvas
         open={typoOpen}
         onClose={() => setTypoOpen(false)}
-        title="Typographie du bulletin"
+        title={t('branding.typo.panelTitle')}
         size="md"
         footer={
           <>
-            <Button variant="ghost" onClick={() => setTypoOpen(false)} disabled={saving}>Annuler</Button>
+            <Button variant="ghost" onClick={() => setTypoOpen(false)} disabled={saving}>{t('action.cancel')}</Button>
             <Button onClick={handleTypographySave} disabled={saving}>
-              {saving ? 'Enregistrement…' : 'Enregistrer'}
+              {saving ? t('action.saving') : t('action.save')}
             </Button>
           </>
         }
       >
         <div className="branding-typo-canvas">
-
-          {/* Font family */}
           <div className="branding-field">
-            <label className="branding-field__label" htmlFor="bulletinFontFamily">Police de caractères</label>
+            <label className="branding-field__label" htmlFor="bulletinFontFamily">{t('branding.typo.fontFamilyLabel')}</label>
             <input
               id="bulletinFontFamily"
               list="font-presets-list"
@@ -428,12 +416,11 @@ function BrandingPage() {
             <datalist id="font-presets-list">
               {FONT_PRESETS.map((f) => <option key={f} value={f} />)}
             </datalist>
-            <p className="branding-field__hint">Tapez n'importe quelle police Google Fonts ou système — chargement automatique.</p>
+            <p className="branding-field__hint">{t('branding.typo.fontFamilyHint')}</p>
           </div>
 
-          {/* Base size */}
           <div className="branding-field">
-            <label className="branding-field__label" htmlFor="bulletinFontSize">Taille de base</label>
+            <label className="branding-field__label" htmlFor="bulletinFontSize">{t('branding.typo.fontSizeLabel')}</label>
             <select
               id="bulletinFontSize"
               className="branding-field__select"
@@ -442,44 +429,33 @@ function BrandingPage() {
             >
               {FONT_SIZES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
             </select>
-            <p className="branding-field__hint">Toutes les tailles ci-dessous sont relatives à cette valeur.</p>
+            <p className="branding-field__hint">{t('branding.typo.fontSizeHint')}</p>
           </div>
 
-          {/* Heading levels table */}
           <div className="branding-typo__headings">
-            <p className="branding-typo__headings-title">Styles des titres</p>
+            <p className="branding-typo__headings-title">{t('branding.typo.headingsTitle')}</p>
             <table className="branding-typo__table">
               <thead>
                 <tr>
-                  <th>Niveau</th>
-                  <th>Taille</th>
-                  <th>Graisse</th>
+                  <th>{t('branding.typo.headings.level')}</th>
+                  <th>{t('branding.typo.headings.size')}</th>
+                  <th>{t('branding.typo.headings.weight')}</th>
                 </tr>
               </thead>
               <tbody>
-                {HEADING_LEVELS.map(({ key, label }) => {
+                {headingLevels.map(({ key, label }) => {
                   const sizeKey   = `bulletin${key}Size`;
                   const weightKey = `bulletin${key}Weight`;
                   return (
                     <tr key={key}>
                       <td className="branding-typo__level-label">{label}</td>
                       <td>
-                        <select
-                          className="branding-typo__select"
-                          value={form[sizeKey]}
-                          onChange={(e) => set(sizeKey, e.target.value)}
-                          aria-label={`Taille ${key}`}
-                        >
+                        <select className="branding-typo__select" value={form[sizeKey]} onChange={(e) => set(sizeKey, e.target.value)}>
                           {FONT_SIZES_EM.map((v) => <option key={v} value={v}>{v}</option>)}
                         </select>
                       </td>
                       <td>
-                        <select
-                          className="branding-typo__select"
-                          value={form[weightKey]}
-                          onChange={(e) => set(weightKey, e.target.value)}
-                          aria-label={`Graisse ${key}`}
-                        >
+                        <select className="branding-typo__select" value={form[weightKey]} onChange={(e) => set(weightKey, e.target.value)}>
                           {FONT_WEIGHTS.map((v) => <option key={v} value={v}>{v}</option>)}
                         </select>
                       </td>
@@ -490,7 +466,6 @@ function BrandingPage() {
             </table>
           </div>
 
-          {/* Live preview */}
           <div
             className="branding-typo__preview"
             style={{ fontFamily: `'${form.bulletinFontFamily}', sans-serif`, fontSize: form.bulletinFontSize }}
@@ -505,7 +480,6 @@ function BrandingPage() {
               RÉSULTATS DU TRIMESTRE
             </div>
           </div>
-
         </div>
       </OffCanvas>
 

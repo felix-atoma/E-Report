@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { institutionsService } from '../../../services/institutionsService';
@@ -12,12 +13,6 @@ import Select from '../../../components/common/Select/Select';
 import Button from '../../../components/common/Button/Button';
 import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
 import './SettingsPage.css';
-
-const TERM_TYPES = [
-  { value: 'TRIMESTRE', label: 'Trimestriel (3 trimestres)' },
-  { value: 'SEMESTRE',  label: 'Semestriel (2 semestres)' },
-  { value: 'CUSTOM',    label: 'Personnalisé' },
-];
 
 const DEFAULT_INFO = {
   name: '', country: '', countryMotto: '', circonscription: '',
@@ -40,8 +35,15 @@ function SummaryRow({ label, value }) {
 }
 
 function SettingsPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const { setInstitution } = useInstitution();
+
+  const TERM_TYPES = [
+    { value: 'TRIMESTRE', label: t('settings.termTypes.TRIMESTRE') },
+    { value: 'SEMESTRE',  label: t('settings.termTypes.SEMESTRE') },
+    { value: 'CUSTOM',    label: t('settings.termTypes.CUSTOM') },
+  ];
 
   const [infoForm, setInfoForm]         = useState(DEFAULT_INFO);
   const [academicForm, setAcademicForm] = useState(DEFAULT_ACADEMIC);
@@ -87,20 +89,20 @@ function SettingsPage() {
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ['institution-me'] });
       if (res?.data) setInstitution(res.data);
-      toast.success('Informations enregistrées');
+      toast.success(t('settings.toast.infoSaved'));
       setInfoOpen(false);
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur de sauvegarde'),
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('settings.toast.saveError')),
   });
 
   const academicMutation = useMutation({
     mutationFn: (data) => institutionsService.updateAcademicSettings(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['institution-me'] });
-      toast.success('Paramètres académiques enregistrés');
+      toast.success(t('settings.toast.academicSaved'));
       setAcademicOpen(false);
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur de sauvegarde'),
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('settings.toast.saveError')),
   });
 
   function setInfo(field, value) { setInfoForm((f) => ({ ...f, [field]: value })); }
@@ -133,16 +135,16 @@ function SettingsPage() {
   }
 
   async function handleRollover() {
-    if (!rolloverForm.fromYear || !rolloverForm.toYear) { toast.error('Renseignez les deux années'); return; }
-    if (!window.confirm(`Réinscrire tous les élèves de ${rolloverForm.fromYear} vers ${rolloverForm.toYear} ?`)) return;
+    if (!rolloverForm.fromYear || !rolloverForm.toYear) { toast.error(t('settings.toast.rolloverFillYears')); return; }
+    if (!window.confirm(t('settings.rolloverDesc'))) return;
     setRollingOver(true);
     try {
       const res = await studentsService.yearRollover(rolloverForm.fromYear, rolloverForm.toYear);
-      toast.success(res.data?.message ?? 'Passage en année suivante réussi');
+      toast.success(res.data?.message ?? t('settings.toast.rolloverSuccess'));
       setRolloverOpen(false);
       qc.invalidateQueries({ queryKey: ['institution-me'] });
     } catch (err) {
-      toast.error(err?.response?.data?.message ?? 'Erreur lors du passage de l\'année');
+      toast.error(err?.response?.data?.message ?? t('settings.toast.rolloverError'));
     } finally {
       setRollingOver(false);
     }
@@ -159,7 +161,7 @@ function SettingsPage() {
       a.click();
       URL.revokeObjectURL(url);
     } catch {
-      toast.error('Erreur lors de l\'export');
+      toast.error(t('settings.toast.exportError'));
     } finally {
       setExporting(false);
     }
@@ -167,114 +169,105 @@ function SettingsPage() {
 
   const termCountOptions =
     academicForm.termType === 'SEMESTRE'
-      ? [{ value: '1', label: '1er semestre' }, { value: '2', label: '2ème semestre' }]
+      ? [{ value: '1', label: t('fees.terms.SEMESTRE_1') }, { value: '2', label: t('fees.terms.SEMESTRE_2') }]
       : [
-          { value: '1', label: '1er trimestre' },
-          { value: '2', label: '2ème trimestre' },
-          { value: '3', label: '3ème trimestre' },
+          { value: '1', label: t('fees.terms.TRIMESTRE_1') },
+          { value: '2', label: t('fees.terms.TRIMESTRE_2') },
+          { value: '3', label: t('fees.terms.TRIMESTRE_3') },
         ];
 
   const bs = institution?.brandingSettings ?? {};
   const ac = institution?.academicSettings ?? {};
 
-  if (isLoading) return <AppShell title="Paramètres"><div className="settings-loading">Chargement…</div></AppShell>;
+  if (isLoading) return <AppShell title={t('settings.title')}><div className="settings-loading">{t('action.loading')}</div></AppShell>;
 
   return (
-    <AppShell title="Paramètres">
-      <PageHeader title="Paramètres" subtitle={institution?.name} />
+    <AppShell title={t('settings.title')}>
+      <PageHeader title={t('settings.title')} subtitle={institution?.name} />
 
       <div className="settings-page__grid">
 
-        {/* ── Informations ── */}
         <Card className="settings-section">
           <div className="settings-section__header">
             <div>
-              <h3 className="settings-section__title">Informations de l'établissement</h3>
-              <p className="settings-section__desc">Nom, coordonnées et textes affichés sur les bulletins.</p>
+              <h3 className="settings-section__title">{t('settings.institutionInfo')}</h3>
+              <p className="settings-section__desc">{t('settings.institutionDesc')}</p>
             </div>
-            <Button size="sm" onClick={() => setInfoOpen(true)}>Modifier</Button>
+            <Button size="sm" onClick={() => setInfoOpen(true)}>{t('action.edit')}</Button>
           </div>
           <div className="settings-summary">
-            <SummaryRow label="Nom"            value={institution?.name} />
-            <SummaryRow label="Pays"           value={institution?.country} />
-            <SummaryRow label="Devise nat."    value={institution?.countryMotto} />
-            <SummaryRow label="Circonscription" value={bs.circonscription} />
-            <SummaryRow label="Email"          value={institution?.email} />
-            <SummaryRow label="Téléphone"      value={institution?.phone} />
-            <SummaryRow label="Adresse"        value={institution?.address} />
-            <SummaryRow label="Site web"       value={institution?.website} />
-            <SummaryRow label="Devise"         value={institution?.motto} />
+            <SummaryRow label={t('settings.schoolName')}     value={institution?.name} />
+            <SummaryRow label={t('settings.country')}        value={institution?.country} />
+            <SummaryRow label={t('settings.countryMotto')}   value={institution?.countryMotto} />
+            <SummaryRow label={t('settings.circonscription')} value={bs.circonscription} />
+            <SummaryRow label={t('users.email')}             value={institution?.email} />
+            <SummaryRow label={t('settings.phone')}          value={institution?.phone} />
+            <SummaryRow label={t('settings.address')}        value={institution?.address} />
+            <SummaryRow label={t('settings.website')}        value={institution?.website} />
+            <SummaryRow label={t('settings.motto')}          value={institution?.motto} />
           </div>
         </Card>
 
-        {/* ── Paramètres académiques ── */}
         <Card className="settings-section">
           <div className="settings-section__header">
             <div>
-              <h3 className="settings-section__title">Paramètres académiques</h3>
-              <p className="settings-section__desc">Année en cours, système de périodes et règles de notation.</p>
+              <h3 className="settings-section__title">{t('settings.academicSection')}</h3>
+              <p className="settings-section__desc">{t('settings.academicDesc')}</p>
             </div>
-            <Button size="sm" onClick={() => setAcademicOpen(true)}>Modifier</Button>
+            <Button size="sm" onClick={() => setAcademicOpen(true)}>{t('action.edit')}</Button>
           </div>
           <div className="settings-summary">
-            <SummaryRow label="Année scolaire" value={institution?.academicYear} />
-            <SummaryRow label="Système"        value={TERM_TYPES.find((t) => t.value === (ac.termType ?? 'TRIMESTRE'))?.label} />
-            <SummaryRow label="Période cours"  value={`Période ${ac.currentTerm ?? 1}`} />
-            <SummaryRow label="Note max"       value={ac.maxScore ? `${ac.maxScore}` : '20'} />
-            <SummaryRow label="Moy. passage"   value={ac.passMark ? `${ac.passMark}` : '10'} />
+            <SummaryRow label={t('settings.academicYear')} value={institution?.academicYear} />
+            <SummaryRow label={t('settings.termSystem')}   value={TERM_TYPES.find((opt) => opt.value === (ac.termType ?? 'TRIMESTRE'))?.label} />
+            <SummaryRow label={t('settings.currentPeriod')} value={`${t('fees.period')} ${ac.currentTerm ?? 1}`} />
+            <SummaryRow label={t('settings.maxScore')}     value={ac.maxScore ? `${ac.maxScore}` : '20'} />
+            <SummaryRow label={t('settings.passMark')}     value={ac.passMark ? `${ac.passMark}` : '10'} />
             <div className="settings-summary__row">
-              <span className="settings-summary__label">Blocage PDF</span>
+              <span className="settings-summary__label">{t('settings.feeGateStatus')}</span>
               <span className={`settings-summary__badge ${ac.feeGateEnabled !== false ? 'settings-summary__badge--on' : 'settings-summary__badge--off'}`}>
-                {ac.feeGateEnabled !== false ? 'Activé' : 'Désactivé'}
+                {ac.feeGateEnabled !== false ? t('settings.on') : t('settings.off')}
               </span>
             </div>
           </div>
         </Card>
 
-        {/* ── Export ── */}
-        {/* ── Academic year rollover ─────────────────────────────────── */}
         <Card className="settings-section">
-          <h3 className="settings-section__title">Passage en année suivante</h3>
-          <p className="settings-section__desc">
-            Réinscrit automatiquement tous les élèves dans les mêmes classes pour une nouvelle année scolaire.
-          </p>
+          <h3 className="settings-section__title">{t('settings.rollover')}</h3>
+          <p className="settings-section__desc">{t('settings.rolloverDesc')}</p>
           {rolloverOpen ? (
             <div className="settings-rollover">
               <div className="settings-rollover__row">
                 <div className="form-field">
-                  <label className="form-field__label">Année source</label>
+                  <label className="form-field__label">{t('settings.fromYear')}</label>
                   <input className="settings-rollover__input" placeholder="2023-2024"
                     value={rolloverForm.fromYear}
                     onChange={(e) => setRolloverForm((f) => ({ ...f, fromYear: e.target.value }))} />
                 </div>
                 <div className="settings-rollover__arrow">→</div>
                 <div className="form-field">
-                  <label className="form-field__label">Nouvelle année</label>
+                  <label className="form-field__label">{t('settings.toYear')}</label>
                   <input className="settings-rollover__input" placeholder="2024-2025"
                     value={rolloverForm.toYear}
                     onChange={(e) => setRolloverForm((f) => ({ ...f, toYear: e.target.value }))} />
                 </div>
               </div>
               <div className="settings-rollover__btns">
-                <Button variant="ghost" size="sm" onClick={() => setRolloverOpen(false)}>Annuler</Button>
+                <Button variant="ghost" size="sm" onClick={() => setRolloverOpen(false)}>{t('action.cancel')}</Button>
                 <Button size="sm" onClick={handleRollover} disabled={rollingOver}>
-                  {rollingOver ? 'En cours…' : 'Confirmer le passage'}
+                  {rollingOver ? t('settings.rolloverInProgress') : t('settings.confirmRollover')}
                 </Button>
               </div>
             </div>
           ) : (
             <Button variant="ghost" onClick={() => setRolloverOpen(true)}>
-              🔄 Passer à l'année suivante
+              {t('settings.rolloverBtn')}
             </Button>
           )}
         </Card>
 
         <Card className="settings-section">
-          <h3 className="settings-section__title">Export des données</h3>
-          <p className="settings-section__desc">
-            Téléchargez toutes les données de votre établissement (élèves, classes, bulletins,
-            notes, paiements) en format CSV dans une archive ZIP.
-          </p>
+          <h3 className="settings-section__title">{t('settings.exportData')}</h3>
+          <p className="settings-section__desc">{t('settings.exportDataDesc')}</p>
           <div className="settings-export">
             <div className="settings-export__files">
               <span>📄 eleves.csv</span>
@@ -285,153 +278,151 @@ function SettingsPage() {
               <span>📄 paiements.csv</span>
             </div>
             <Button onClick={handleExport} disabled={exporting}>
-              {exporting ? 'Export en cours…' : '⬇️ Exporter toutes mes données'}
+              {exporting ? t('settings.exporting') : t('settings.exportBtn')}
             </Button>
           </div>
         </Card>
 
       </div>
 
-      {/* ── OffCanvas: Informations ── */}
       <OffCanvas
         open={infoOpen}
         onClose={() => setInfoOpen(false)}
-        title="Informations de l'établissement"
+        title={t('settings.institutionInfo')}
         size="md"
         footer={
           <>
             <Button variant="ghost" onClick={() => setInfoOpen(false)} disabled={infoMutation.isPending}>
-              Annuler
+              {t('action.cancel')}
             </Button>
             <Button onClick={handleInfoSave} disabled={infoMutation.isPending}>
-              {infoMutation.isPending ? 'Enregistrement…' : 'Enregistrer'}
+              {infoMutation.isPending ? t('action.saving') : t('action.save')}
             </Button>
           </>
         }
       >
         <div className="settings-section__body">
           <Input
-            id="instName" label="Nom de l'établissement"
+            id="instName" label={t('settings.schoolName')}
             value={infoForm.name} placeholder="ex: Lycée Démonstration de Lomé"
             onChange={(e) => setInfo('name', e.target.value)}
           />
           <div className="settings-row">
             <Input
-              id="instCountry" label="Pays / République"
+              id="instCountry" label={t('settings.country')}
               value={infoForm.country} placeholder="ex: République Togolaise"
               onChange={(e) => setInfo('country', e.target.value)}
-              hint="Affiché en en-tête du bulletin"
+              hint={t('settings.countryHint')}
             />
             <Input
-              id="instCountryMotto" label="Devise nationale"
+              id="instCountryMotto" label={t('settings.countryMotto')}
               value={infoForm.countryMotto} placeholder="ex: Travail · Liberté · Patrie"
               onChange={(e) => setInfo('countryMotto', e.target.value)}
             />
           </div>
           <Input
-            id="instCirconscription" label="Circonscription scolaire"
+            id="instCirconscription" label={t('settings.circonscription')}
             value={infoForm.circonscription}
             placeholder="ex : Inspection de l'Enseignement du 1er Degré de Lomé-Commune"
             onChange={(e) => setInfo('circonscription', e.target.value)}
-            hint="Affiché dans l'en-tête du bulletin sous le nom de l'école"
+            hint={t('settings.circoHint')}
           />
           <div className="settings-row">
             <Input
-              id="instEmail" label="Email officiel" type="email"
+              id="instEmail" label={t('settings.officialEmail')} type="email"
               value={infoForm.email} placeholder="contact@etablissement.tg"
               onChange={(e) => setInfo('email', e.target.value)}
             />
             <Input
-              id="instPhone" label="Téléphone"
+              id="instPhone" label={t('settings.phone')}
               value={infoForm.phone} placeholder="+228 XX XX XX XX"
               onChange={(e) => setInfo('phone', e.target.value)}
             />
           </div>
           <div className="settings-row">
             <Input
-              id="instAddress" label="Adresse"
+              id="instAddress" label={t('settings.address')}
               value={infoForm.address} placeholder="ex: Lomé, Togo"
               onChange={(e) => setInfo('address', e.target.value)}
             />
             <Input
-              id="instWebsite" label="Site web"
+              id="instWebsite" label={t('settings.website')}
               value={infoForm.website} placeholder="https://…"
               onChange={(e) => setInfo('website', e.target.value)}
             />
           </div>
           <Input
-            id="instMotto" label="Devise / Slogan"
+            id="instMotto" label={t('settings.motto')}
             value={infoForm.motto} placeholder="ex: L'excellence au service de la nation"
             onChange={(e) => setInfo('motto', e.target.value)}
           />
           <div className="settings-field">
-            <label className="settings-field__label" htmlFor="instMission">Déclaration de mission</label>
+            <label className="settings-field__label" htmlFor="instMission">{t('settings.missionStatement')}</label>
             <textarea
               id="instMission" className="settings-field__textarea" rows={3}
               value={infoForm.missionStatement}
-              placeholder="Description courte de la mission de l'établissement…"
+              placeholder={t('settings.missionPlaceholder')}
               onChange={(e) => setInfo('missionStatement', e.target.value)}
             />
           </div>
         </div>
       </OffCanvas>
 
-      {/* ── OffCanvas: Paramètres académiques ── */}
       <OffCanvas
         open={academicOpen}
         onClose={() => setAcademicOpen(false)}
-        title="Paramètres académiques"
+        title={t('settings.academicSection')}
         size="md"
         footer={
           <>
             <Button variant="ghost" onClick={() => setAcademicOpen(false)} disabled={academicMutation.isPending}>
-              Annuler
+              {t('action.cancel')}
             </Button>
             <Button onClick={handleAcademicSave} disabled={academicMutation.isPending}>
-              {academicMutation.isPending ? 'Enregistrement…' : 'Enregistrer'}
+              {academicMutation.isPending ? t('action.saving') : t('action.save')}
             </Button>
           </>
         }
       >
         <div className="settings-section__body">
           <Input
-            id="academicYear" label="Année scolaire en cours"
+            id="academicYear" label={t('settings.currentYear')}
             value={academicForm.academicYear} placeholder="ex: 2024-2025"
             onChange={(e) => setAcademic('academicYear', e.target.value)}
           />
           <div className="settings-row">
             <Select
-              id="termType" label="Système de périodes"
+              id="termType" label={t('settings.termSystem')}
               value={academicForm.termType} options={TERM_TYPES}
               onChange={(e) => setAcademic('termType', e.target.value)}
             />
             <Select
-              id="currentTerm" label="Période en cours"
+              id="currentTerm" label={t('settings.currentPeriod')}
               value={academicForm.currentTerm} options={termCountOptions}
               onChange={(e) => setAcademic('currentTerm', e.target.value)}
             />
           </div>
           <div className="settings-row">
             <Input
-              id="maxScore" label="Note maximale" type="number" min="10" max="100"
+              id="maxScore" label={t('settings.maxScore')} type="number" min="10" max="100"
               value={academicForm.maxScore}
               onChange={(e) => setAcademic('maxScore', e.target.value)}
-              hint="Généralement 20 (système français)"
+              hint={t('settings.maxScoreHint')}
             />
             <Input
-              id="passMark" label="Moyenne de passage" type="number" min="0"
+              id="passMark" label={t('settings.passMark')} type="number" min="0"
               value={academicForm.passMark}
               onChange={(e) => setAcademic('passMark', e.target.value)}
-              hint="Généralement 10/20"
+              hint={t('settings.passMarkHint')}
             />
           </div>
 
           <div className="settings-section__divider" />
 
           <div>
-            <p className="settings-field__label" style={{ marginBottom: '0.5rem' }}>Blocage des bulletins PDF</p>
+            <p className="settings-field__label" style={{ marginBottom: '0.5rem' }}>{t('settings.feeGate')}</p>
             <p className="settings-section__desc" style={{ marginBottom: '0.75rem' }}>
-              Lorsqu'activé, le PDF du bulletin est bloqué jusqu'au paiement des frais scolaires.
+              {t('settings.feeGateDesc')}
             </p>
             <label className="settings-toggle">
               <input
@@ -441,7 +432,7 @@ function SettingsPage() {
               />
               <span className="settings-toggle__track" />
               <span className="settings-toggle__label">
-                {academicForm.feeGateEnabled ? 'Activé — PDF bloqué si frais impayés' : 'Désactivé — PDF envoyé sans condition'}
+                {academicForm.feeGateEnabled ? t('settings.feeGateOn') : t('settings.feeGateOff')}
               </span>
             </label>
           </div>

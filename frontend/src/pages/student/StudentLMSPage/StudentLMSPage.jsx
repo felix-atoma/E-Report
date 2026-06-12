@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
@@ -8,12 +9,7 @@ import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
 import { lmsService, uploadLmsFile } from '../../../services/lmsService';
 import './StudentLMSPage.css';
 
-const TABS = [
-  { key: 'announcements', label: 'Annonces' },
-  { key: 'materials',     label: 'Cours' },
-  { key: 'assignments',   label: 'Devoirs' },
-  { key: 'quizzes',       label: 'Quiz' },
-];
+const TAB_KEYS = ['announcements', 'materials', 'assignments', 'quizzes'];
 
 function fmt(d) {
   if (!d) return null;
@@ -25,6 +21,7 @@ function Badge({ status }) {
 }
 
 function FilePickerField({ value, onChange }) {
+  const { t } = useTranslation();
   const ref = useRef(null);
   const [uploading, setUploading] = useState(false);
 
@@ -35,9 +32,9 @@ function FilePickerField({ value, onChange }) {
     try {
       const res = await uploadLmsFile(file);
       onChange(res.data.url);
-      toast.success('Fichier téléversé');
+      toast.success(t('lms.file.toast.uploaded'));
     } catch (err) {
-      toast.error(err?.response?.data?.message ?? 'Erreur lors du téléversement');
+      toast.error(err?.response?.data?.message ?? t('lms.file.toast.error'));
     } finally {
       setUploading(false);
       e.target.value = '';
@@ -54,7 +51,7 @@ function FilePickerField({ value, onChange }) {
         </div>
       ) : (
         <button type="button" className="slms__file-btn" disabled={uploading} onClick={() => ref.current?.click()}>
-          {uploading ? 'Téléversement…' : '📎 Joindre un fichier'}
+          {uploading ? t('lms.file.uploading') : t('lms.file.attach')}
         </button>
       )}
       <input ref={ref} type="file" style={{ display: 'none' }} onChange={handlePick} />
@@ -64,13 +61,14 @@ function FilePickerField({ value, onChange }) {
 
 // ── Announcements ─────────────────────────────────────────────────────────────
 function AnnouncementsSection() {
+  const { t } = useTranslation();
   const { data: items = [] } = useQuery({
     queryKey: ['lms-announcements-student'],
     queryFn: () => lmsService.announcements.list().then((r) => r.data),
   });
 
   return items.length === 0 ? (
-    <div className="slms__empty">Aucune annonce pour le moment.</div>
+    <div className="slms__empty">{t('lms.empty.announcements')}</div>
   ) : (
     <div className="slms__grid">
       {items.map((a) => (
@@ -78,7 +76,7 @@ function AnnouncementsSection() {
           <div className="slms__card-title">{a.isPinned ? '📌 ' : ''}{a.title}</div>
           <div className="slms__card-body">{a.body}</div>
           <div className="slms__card-meta">
-            <span>Par {a.author?.name}</span>
+            <span>{t('lms.by')} {a.author?.name}</span>
             {a.publishedAt && <span>· {fmt(a.publishedAt)}</span>}
           </div>
         </div>
@@ -89,13 +87,14 @@ function AnnouncementsSection() {
 
 // ── Materials ─────────────────────────────────────────────────────────────────
 function MaterialsSection() {
+  const { t } = useTranslation();
   const { data: items = [] } = useQuery({
     queryKey: ['lms-materials-student'],
     queryFn: () => lmsService.materials.list({}).then((r) => r.data),
   });
 
   return items.length === 0 ? (
-    <div className="slms__empty">Aucune ressource disponible.</div>
+    <div className="slms__empty">{t('lms.empty.materialStudent')}</div>
   ) : (
     <div className="slms__grid">
       {items.map((m) => (
@@ -107,7 +106,7 @@ function MaterialsSection() {
           </div>
           <div className="slms__card-actions">
             <a href={m.url} target="_blank" rel="noreferrer">
-              <Button size="sm">Ouvrir la ressource</Button>
+              <Button size="sm">{t('lms.student.openResource')}</Button>
             </a>
           </div>
         </div>
@@ -118,8 +117,9 @@ function MaterialsSection() {
 
 // ── Assignments ───────────────────────────────────────────────────────────────
 function AssignmentsSection() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
-  const [active, setActive] = useState(null); // assignment being submitted
+  const [active, setActive] = useState(null);
   const [content, setContent] = useState('');
   const [attachmentUrl, setAttachmentUrl] = useState('');
 
@@ -139,7 +139,7 @@ function AssignmentsSection() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['lms-my-submission', active?.id] });
       qc.invalidateQueries({ queryKey: ['lms-assignments-student'] });
-      toast.success('Devoir soumis !');
+      toast.success(t('lms.student.submittedSuccess'));
       setContent('');
       setAttachmentUrl('');
     },
@@ -155,7 +155,7 @@ function AssignmentsSection() {
   return (
     <>
       {items.length === 0 ? (
-        <div className="slms__empty">Aucun devoir assigné pour le moment.</div>
+        <div className="slms__empty">{t('lms.empty.assignmentsStudent')}</div>
       ) : (
         <div className="slms__grid">
           {items.map((a) => (
@@ -163,17 +163,17 @@ function AssignmentsSection() {
               <div className="slms__card-title">{a.title}</div>
               <div className="slms__card-meta">
                 <span>{a.class?.name}</span> · <span>{a.subject?.nameFr}</span>
-                {a.dueDate && <span>· à rendre le <strong>{fmt(a.dueDate)}</strong></span>}
-                · <span>Note sur {a.maxScore}</span>
+                {a.dueDate && <span>· {t('lms.assignments.dueDate')} <strong>{fmt(a.dueDate)}</strong></span>}
+                · <span>{t('lms.student.gradeScore')} {a.maxScore}</span>
               </div>
               {a.instructions && <div className="slms__card-body" style={{ WebkitLineClamp: 2, overflow: 'hidden', display: '-webkit-box', WebkitBoxOrient: 'vertical' }}>{a.instructions}</div>}
               {a.attachmentUrl && (
                 <a href={a.attachmentUrl} target="_blank" rel="noreferrer" className="slms__attach-link">
-                  📎 Document du professeur
+                  📎 {t('lms.student.teacherDoc')}
                 </a>
               )}
               <div className="slms__card-actions">
-                <Button size="sm" onClick={() => openAssignment(a)}>Voir / Soumettre</Button>
+                <Button size="sm" onClick={() => openAssignment(a)}>{t('lms.student.viewSubmit')}</Button>
               </div>
             </div>
           ))}
@@ -187,9 +187,9 @@ function AssignmentsSection() {
         size="md"
         footer={
           mySubmission ? null : (
-            <><Button variant="ghost" onClick={() => setActive(null)}>Fermer</Button>
+            <><Button variant="ghost" onClick={() => setActive(null)}>{t('lms.student.close')}</Button>
               <Button onClick={() => submitMut.mutate()} disabled={submitMut.isPending || (!content && !attachmentUrl)}>
-                {submitMut.isPending ? 'Envoi…' : 'Soumettre'}
+                {submitMut.isPending ? t('lms.student.sending') : t('lms.student.submit')}
               </Button></>
           )
         }
@@ -198,7 +198,7 @@ function AssignmentsSection() {
           <div className="slms__submit-form">
             <div className="slms__card-meta">
               <span>{active.class?.name}</span> · <span>{active.subject?.nameFr}</span>
-              {active.dueDate && <span>· à rendre le {fmt(active.dueDate)}</span>}
+              {active.dueDate && <span>· {t('lms.assignments.dueDate')} {fmt(active.dueDate)}</span>}
             </div>
             {active.instructions && (
               <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 6, padding: '0.75rem', fontSize: '0.875rem', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
@@ -207,15 +207,15 @@ function AssignmentsSection() {
             )}
             {active.attachmentUrl && (
               <a href={active.attachmentUrl} target="_blank" rel="noreferrer" className="slms__attach-link">
-                📎 Télécharger le document du professeur
+                📎 {t('lms.student.teacherDocDownload')}
               </a>
             )}
             {mySubmission ? (
               <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 8, padding: '1rem' }}>
-                <strong style={{ color: '#15803d' }}>✔ Devoir soumis le {fmt(mySubmission.submittedAt)}</strong>
+                <strong style={{ color: '#15803d' }}>{t('lms.student.submitted', { date: fmt(mySubmission.submittedAt) })}</strong>
                 {mySubmission.score != null && (
                   <div style={{ marginTop: '0.5rem', fontSize: '0.9rem' }}>
-                    Note : <strong>{mySubmission.score} / {active.maxScore}</strong>
+                    {t('lms.student.scoreLabel')} <strong>{mySubmission.score} / {active.maxScore}</strong>
                     {mySubmission.feedback && <p style={{ marginTop: '0.4rem', color: '#374151' }}>{mySubmission.feedback}</p>}
                   </div>
                 )}
@@ -224,11 +224,11 @@ function AssignmentsSection() {
               </div>
             ) : (
               <>
-                <label className="slms__label">Votre réponse
-                  <textarea className="slms__textarea" rows={6} value={content} onChange={(e) => setContent(e.target.value)} placeholder="Écrivez votre réponse ici…" />
+                <label className="slms__label">{t('lms.student.yourAnswer')}
+                  <textarea className="slms__textarea" rows={6} value={content} onChange={(e) => setContent(e.target.value)} placeholder={t('lms.student.answerPlaceholder')} />
                 </label>
                 <label className="slms__label" style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                  Pièce jointe (optionnel)
+                  {t('lms.student.optionalAttachment')}
                   <FilePickerField value={attachmentUrl} onChange={setAttachmentUrl} />
                 </label>
               </>
@@ -242,11 +242,12 @@ function AssignmentsSection() {
 
 // ── Quizzes ───────────────────────────────────────────────────────────────────
 function QuizzesSection() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
-  const [active, setActive]     = useState(null); // quiz being taken
-  const [attempt, setAttempt]   = useState(null); // current attempt
-  const [answers, setAnswers]   = useState({});   // questionId -> {selectedOptionId?, textAnswer?}
-  const [result, setResult]     = useState(null); // submitted attempt result
+  const [active, setActive]   = useState(null);
+  const [attempt, setAttempt] = useState(null);
+  const [answers, setAnswers] = useState({});
+  const [result, setResult]   = useState(null);
 
   const { data: items = [] } = useQuery({
     queryKey: ['lms-quizzes-student'],
@@ -293,7 +294,7 @@ function QuizzesSection() {
   return (
     <>
       {items.length === 0 ? (
-        <div className="slms__empty">Aucun quiz disponible pour le moment.</div>
+        <div className="slms__empty">{t('lms.empty.quizzes')}</div>
       ) : (
         <div className="slms__grid">
           {items.map((q) => (
@@ -301,18 +302,18 @@ function QuizzesSection() {
               <div className="slms__card-title">{q.title}</div>
               <div className="slms__card-meta">
                 <span>{q.class?.name}</span> · <span>{q.subject?.nameFr}</span>
-                <span>· {q._count?.questions ?? 0} question{q._count?.questions !== 1 ? 's' : ''}</span>
+                <span>· {t('lms.quizzes.questions', { count: q._count?.questions ?? 0 })}</span>
                 {q.durationMinutes && <span>· {q.durationMinutes} min</span>}
               </div>
               {q.description && <div className="slms__card-body">{q.description}</div>}
               {q.attachmentUrl && (
                 <a href={q.attachmentUrl} target="_blank" rel="noreferrer" className="slms__attach-link">
-                  📎 Document joint
+                  {t('lms.student.attachedDoc')}
                 </a>
               )}
               <div className="slms__card-actions">
                 <Button size="sm" onClick={() => { setActive(q); setAttempt(null); setResult(null); setAnswers({}); }}>
-                  Ouvrir le quiz
+                  {t('lms.student.openQuiz')}
                 </Button>
               </div>
             </div>
@@ -327,9 +328,9 @@ function QuizzesSection() {
         size="lg"
         footer={
           attempt ? (
-            <><Button variant="ghost" onClick={() => setAttempt(null)}>Annuler</Button>
+            <><Button variant="ghost" onClick={() => setAttempt(null)}>{t('lms.actions.cancel')}</Button>
               <Button onClick={() => submitMut.mutate()} disabled={submitMut.isPending}>
-                {submitMut.isPending ? 'Envoi…' : 'Soumettre le quiz'}
+                {submitMut.isPending ? t('lms.student.submitting') : t('lms.student.submitQuiz')}
               </Button></>
           ) : null
         }
@@ -338,23 +339,23 @@ function QuizzesSection() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {active.description && <p style={{ fontSize: '0.875rem', color: '#374151' }}>{active.description}</p>}
             <div className="slms__card-meta">
-              <span>Durée : {active.durationMinutes ? `${active.durationMinutes} min` : 'Illimitée'}</span>
-              <span>· Tentatives max : {active.maxAttempts}</span>
-              <span>· Tentatives effectuées : {prevDone.length}</span>
+              <span>{t('lms.student.quizDuration')} {active.durationMinutes ? `${active.durationMinutes} min` : t('lms.student.unlimited')}</span>
+              <span>· {t('lms.student.maxAttempts')} {active.maxAttempts}</span>
+              <span>· {t('lms.student.prevAttempts')} {prevDone.length}</span>
             </div>
             {prevDone.length > 0 && (
               <div>
-                <strong style={{ fontSize: '0.85rem', display: 'block', marginBottom: '0.5rem' }}>Mes tentatives précédentes</strong>
+                <strong style={{ fontSize: '0.85rem', display: 'block', marginBottom: '0.5rem' }}>{t('lms.student.myAttempts')}</strong>
                 {prevDone.map((a) => (
                   <div key={a.id} style={{ fontSize: '0.85rem', padding: '0.4rem 0', borderBottom: '1px solid #f3f4f6' }}>
-                    {fmt(a.submittedAt)} — Score : {a.score ?? '—'} / {a.maxScore ?? '—'}
+                    {fmt(a.submittedAt)} — {t('lms.student.scoreLabel')} {a.score ?? '—'} / {a.maxScore ?? '—'}
                   </div>
                 ))}
               </div>
             )}
             {prevDone.length < active.maxAttempts && (
               <Button onClick={() => startMut.mutate()} disabled={startMut.isPending}>
-                {startMut.isPending ? 'Démarrage…' : 'Commencer le quiz'}
+                {startMut.isPending ? t('lms.student.starting') : t('lms.student.startQuiz')}
               </Button>
             )}
           </div>
@@ -369,7 +370,7 @@ function QuizzesSection() {
                   <textarea className="slms__textarea"
                     value={answers[q.id]?.textAnswer ?? ''}
                     onChange={(e) => setAnswer(q.id, 'textAnswer', e.target.value)}
-                    placeholder="Votre réponse…" />
+                    placeholder={t('lms.student.answerPlaceholder')} />
                 ) : (
                   <div className="slms__options">
                     {q.options?.map((o) => (
@@ -397,8 +398,8 @@ function QuizzesSection() {
                 </div>
               </div>
             )}
-            <p style={{ textAlign: 'center', color: '#374151', fontSize: '0.9rem' }}>Quiz soumis avec succès !</p>
-            <Button variant="ghost" onClick={() => { setResult(null); }}>Retour à la liste</Button>
+            <p style={{ textAlign: 'center', color: '#374151', fontSize: '0.9rem' }}>{t('lms.student.quizSubmitted')}</p>
+            <Button variant="ghost" onClick={() => { setResult(null); }}>{t('lms.student.backToList')}</Button>
           </div>
         )}
       </OffCanvas>
@@ -408,16 +409,17 @@ function QuizzesSection() {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function StudentLMSPage() {
+  const { t } = useTranslation();
   const [tab, setTab] = useState('announcements');
 
   return (
-    <AppShell title="Espace d'apprentissage">
-      <PageHeader title="Espace d'apprentissage" subtitle="Vos cours, devoirs et quiz" />
+    <AppShell title={t('lms.pageTitle')}>
+      <PageHeader title={t('lms.pageTitle')} subtitle={t('lms.studentSubtitle')} />
       <div className="slms">
         <div className="slms__tabs">
-          {TABS.map((t) => (
-            <button key={t.key} className={`slms__tab${tab === t.key ? ' slms__tab--active' : ''}`} onClick={() => setTab(t.key)}>
-              {t.label}
+          {TAB_KEYS.map((key) => (
+            <button key={key} className={`slms__tab${tab === key ? ' slms__tab--active' : ''}`} onClick={() => setTab(key)}>
+              {t(`lms.tabs.${key === 'materials' ? 'materialStudent' : key}`)}
             </button>
           ))}
         </div>

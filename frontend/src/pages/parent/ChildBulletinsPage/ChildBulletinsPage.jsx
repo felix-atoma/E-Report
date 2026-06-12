@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { bulletinsService } from '../../../services/bulletinsService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
@@ -8,6 +9,8 @@ import EmptyState from '../../../components/common/EmptyState/EmptyState';
 import './ChildBulletinsPage.css';
 
 function ChildBulletinsPage() {
+  const { t } = useTranslation();
+
   const { data: bulletins = [], isLoading } = useQuery({
     queryKey: ['bulletins'],
     queryFn: () => bulletinsService.list().then((r) => r.data),
@@ -15,20 +18,20 @@ function ChildBulletinsPage() {
 
   const published = bulletins.filter((b) => !!b.publishedAt);
 
-  if (isLoading) return <AppShell title="Annonces"><Loading /></AppShell>;
+  if (isLoading) return <AppShell title={t('bulletins.title')}><Loading /></AppShell>;
 
   return (
-    <AppShell title="Annonces">
+    <AppShell title={t('bulletins.title')}>
       <PageHeader
-        title="Annonces de l'établissement"
-        subtitle={`${published.length} annonce${published.length !== 1 ? 's' : ''}`}
+        title={t('bulletins.title')}
+        subtitle={t('bulletins.subtitle', { count: published.length })}
       />
 
       {published.length === 0 ? (
         <EmptyState
           icon="📢"
-          message="Aucune annonce disponible"
-          description="Les annonces de l'établissement apparaîtront ici."
+          message={t('bulletins.noAnnouncements')}
+          description={t('bulletins.noAnnouncementsDesc')}
         />
       ) : (
         <div className="parent-bulletins__list">
@@ -41,7 +44,7 @@ function ChildBulletinsPage() {
                 </span>
               </div>
               {b.class?.name && (
-                <div className="parent-bulletin-card__class">Classe : {b.class.name}</div>
+                <div className="parent-bulletin-card__class">{t('classes.title')} : {b.class.name}</div>
               )}
               <p className="parent-bulletin-card__content">{b.content}</p>
             </Card>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { notificationsService } from '../../../services/notificationsService';
@@ -14,6 +15,7 @@ const CHANNEL_LABEL  = { WHATSAPP: 'WhatsApp', EMAIL: 'Email', IN_APP: 'In-app' 
 const CHANNEL_VARIANT = { WHATSAPP: 'success', EMAIL: 'info', IN_APP: 'default' };
 
 function NotificationLogsPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const [tab, setTab]         = useState('held');
   const [confirm, setConfirm] = useState(null);
@@ -32,22 +34,22 @@ function NotificationLogsPage() {
     mutationFn: (id) => notificationsService.forceSend(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['notifications'] });
-      toast.success('Notification envoyée');
+      toast.success(t('notifLog.toast.sent'));
       setConfirm(null);
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur d\'envoi'),
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('notifLog.toast.sendError')),
   });
 
   const sendPaymentLink = useMutation({
     mutationFn: (id) => notificationsService.sendPaymentLink(id),
-    onSuccess: () => toast.success('Rappel de paiement envoyé sur WhatsApp'),
-    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur d\'envoi WhatsApp'),
+    onSuccess: () => toast.success(t('notifLog.toast.paymentReminderSent')),
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('notifLog.toast.whatsappError')),
   });
 
   const heldColumns = [
     {
       key: 'student',
-      label: 'Élève',
+      label: t('notifLog.student'),
       render: (n) => (
         <div>
           <div className="notif-table__name">
@@ -61,7 +63,7 @@ function NotificationLogsPage() {
     },
     {
       key: 'channel',
-      label: 'Canal',
+      label: t('notifLog.channel'),
       render: (n) => (
         <Badge variant={CHANNEL_VARIANT[n.channel] ?? 'default'}>
           {CHANNEL_LABEL[n.channel] ?? n.channel}
@@ -70,21 +72,21 @@ function NotificationLogsPage() {
     },
     {
       key: 'reason',
-      label: 'Raison du blocage',
+      label: t('notifLog.heldReason'),
       render: (n) => (
         <span className="notif-table__reason">
-          {n.heldReason ?? 'Frais impayés'}
+          {n.heldReason ?? t('notifLog.defaultHeldReason')}
         </span>
       ),
     },
     {
       key: 'report',
-      label: 'Bulletin',
+      label: t('notifLog.bulletin'),
       render: (n) => n.reportCard?.term ?? n.reportId ?? '—',
     },
     {
       key: 'createdAt',
-      label: 'En attente depuis',
+      label: t('notifLog.waitingSince'),
       render: (n) =>
         n.createdAt
           ? new Date(n.createdAt).toLocaleDateString('fr-FR')
@@ -101,12 +103,11 @@ function NotificationLogsPage() {
             variant="ghost"
             disabled={sendPaymentLink.isPending}
             onClick={() => sendPaymentLink.mutate(n.id)}
-            title="Envoyer un rappel de paiement sur WhatsApp au parent"
           >
-            💬 Rappel paiement
+            {t('notifLog.paymentReminder')}
           </Button>
           <Button size="sm" variant="primary" onClick={() => setConfirm(n)}>
-            Forcer l'envoi
+            {t('notifLog.forceBtn')}
           </Button>
         </div>
       ),
@@ -116,7 +117,7 @@ function NotificationLogsPage() {
   const logColumns = [
     {
       key: 'recipient',
-      label: 'Destinataire',
+      label: t('notifLog.recipient'),
       render: (n) => (
         <div>
           <div className="notif-table__name">
@@ -130,7 +131,7 @@ function NotificationLogsPage() {
     },
     {
       key: 'channel',
-      label: 'Canal',
+      label: t('notifLog.channel'),
       render: (n) => (
         <Badge variant={CHANNEL_VARIANT[n.channel] ?? 'default'}>
           {CHANNEL_LABEL[n.channel] ?? n.channel}
@@ -139,16 +140,16 @@ function NotificationLogsPage() {
     },
     {
       key: 'status',
-      label: 'Statut',
+      label: t('notifLog.status'),
       render: (n) => (
         <Badge variant={n.status === 'SENT' ? 'success' : n.status === 'FAILED' ? 'danger' : 'default'}>
-          {n.status === 'SENT' ? 'Envoyé' : n.status === 'FAILED' ? 'Échec' : n.status ?? '—'}
+          {t(`notifLog.statuses.${n.status}`, n.status ?? '—')}
         </Badge>
       ),
     },
     {
       key: 'createdAt',
-      label: 'Date',
+      label: t('notifLog.date'),
       render: (n) =>
         n.createdAt
           ? new Date(n.createdAt).toLocaleDateString('fr-FR')
@@ -161,13 +162,13 @@ function NotificationLogsPage() {
   const columns   = tab === 'held' ? heldColumns : logColumns;
 
   return (
-    <AppShell title="Notifications">
+    <AppShell title={t('notifLog.title')}>
       <PageHeader
-        title="Notifications"
+        title={t('notifLog.title')}
         subtitle={
           tab === 'held'
-            ? `${held.length} notification${held.length !== 1 ? 's' : ''} en attente`
-            : `${mine.length} notification${mine.length !== 1 ? 's' : ''} envoyées`
+            ? t('notifLog.heldSubtitle', { count: held.length })
+            : t('notifLog.sentSubtitle', { count: mine.length })
         }
       />
 
@@ -176,14 +177,14 @@ function NotificationLogsPage() {
           className={`notif-tab ${tab === 'held' ? 'notif-tab--active' : ''}`}
           onClick={() => setTab('held')}
         >
-          En attente
+          {t('notifLog.tabHeld')}
           {held.length > 0 && <span className="notif-tab__badge">{held.length}</span>}
         </button>
         <button
           className={`notif-tab ${tab === 'log' ? 'notif-tab--active' : ''}`}
           onClick={() => setTab('log')}
         >
-          Journal
+          {t('notifLog.tabLog')}
         </button>
       </div>
 
@@ -191,11 +192,7 @@ function NotificationLogsPage() {
         columns={columns}
         rows={rows}
         loading={isLoading}
-        emptyMessage={
-          tab === 'held'
-            ? 'Aucune notification en attente — tous les bulletins ont été envoyés'
-            : 'Aucune notification dans le journal'
-        }
+        emptyMessage={tab === 'held' ? t('notifLog.heldEmpty') : t('notifLog.logEmpty')}
       />
 
       <ConfirmDialog
@@ -203,9 +200,11 @@ function NotificationLogsPage() {
         onClose={() => setConfirm(null)}
         onConfirm={() => forceSend.mutate(confirm.id)}
         loading={forceSend.isPending}
-        title="Forcer l'envoi"
-        message={`Envoyer le bulletin de ${confirm?.student?.user?.name ?? confirm?.student?.admissionNumber ?? 'cet élève'} maintenant, même si les frais ne sont pas à jour ?`}
-        confirmLabel="Envoyer"
+        title={t('notifLog.forceConfirm.title')}
+        message={t('notifLog.forceConfirm.message', {
+          name: confirm?.student?.user?.name ?? confirm?.student?.admissionNumber ?? '—',
+        })}
+        confirmLabel={t('notifLog.forceSendBtn')}
         variant="primary"
       />
     </AppShell>

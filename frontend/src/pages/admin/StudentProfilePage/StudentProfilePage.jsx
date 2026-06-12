@@ -1,4 +1,5 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useInstitution } from '../../../context/InstitutionContext';
 import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -19,26 +20,35 @@ import Loading from '../../../components/common/Loading/Loading';
 import AttendanceInput from '../../../components/reports/AttendanceInput/AttendanceInput';
 import './StudentProfilePage.css';
 
-/* ── Constants ── */
-const FEE_VARIANT = { PAID: 'success', PARTIAL: 'warning', UNPAID: 'danger', EXEMPT: 'info' };
-const FEE_LABEL   = { PAID: 'Payé', PARTIAL: 'Partiel', UNPAID: 'Impayé', EXEMPT: 'Exempté' };
+const FEE_VARIANT      = { PAID: 'success', PARTIAL: 'warning', UNPAID: 'danger', EXEMPT: 'info' };
+const CONDUCT_VARIANT  = { TRES_BIEN: 'success', BIEN: 'info', PASSABLE: 'warning', MEDIOCRE: 'danger' };
+const REPORT_VARIANT   = { DRAFT: 'default', REVIEW: 'warning', PUBLISHED: 'success' };
 
-const DISC_TYPE_CONFIG = {
-  WARNING:     { label: 'Avertissement', bg: '#ffedd5', color: '#c2410c' },
-  SUSPENSION:  { label: 'Suspension',    bg: '#fee2e2', color: '#b91c1c' },
-  EXCLUSION:   { label: 'Exclusion',     bg: '#fde8e8', color: '#7f1d1d' },
-  NOTE:        { label: 'Note',          bg: '#dbeafe', color: '#1d4ed8' },
-  COMMENDATION:{ label: 'Félicitation',  bg: '#dcfce7', color: '#15803d' },
-  OTHER:       { label: 'Autre',         bg: '#f3f4f6', color: '#4b5563' },
+const DISC_TYPE_BG = {
+  WARNING:      { bg: '#ffedd5', color: '#c2410c' },
+  SUSPENSION:   { bg: '#fee2e2', color: '#b91c1c' },
+  EXCLUSION:    { bg: '#fde8e8', color: '#7f1d1d' },
+  NOTE:         { bg: '#dbeafe', color: '#1d4ed8' },
+  COMMENDATION: { bg: '#dcfce7', color: '#15803d' },
+  OTHER:        { bg: '#f3f4f6', color: '#4b5563' },
 };
 
-const CONDUCT_LABEL   = { TRES_BIEN: 'Très Bien', BIEN: 'Bien', PASSABLE: 'Passable', MEDIOCRE: 'Médiocre' };
-const CONDUCT_VARIANT = { TRES_BIEN: 'success', BIEN: 'info', PASSABLE: 'warning', MEDIOCRE: 'danger' };
+const EXAM_RESULT_COLORS = {
+  ADMIS:   { color: '#15803d', bg: '#dcfce7' },
+  AJOURNE: { color: '#b45309', bg: '#fef3c7' },
+  ABSENT:  { color: '#6b7280', bg: '#f3f4f6' },
+  ELIMINE: { color: '#b91c1c', bg: '#fee2e2' },
+};
 
-const REPORT_VARIANT = { DRAFT: 'default', REVIEW: 'warning', PUBLISHED: 'success' };
-const REPORT_LABEL   = { DRAFT: 'Brouillon', REVIEW: 'En révision', PUBLISHED: 'Publié' };
+const HEALTH_BADGE_COLORS = {
+  CONSULTATION: { color: '#1d4ed8', bg: '#dbeafe' },
+  ACCIDENT:     { color: '#b91c1c', bg: '#fee2e2' },
+  VACCINATION:  { color: '#15803d', bg: '#dcfce7' },
+  DRESSING:     { color: '#a16207', bg: '#fef3c7' },
+  EVACUATION:   { color: '#c2410c', bg: '#ffedd5' },
+  OTHER:        { color: '#6b7280', bg: '#f3f4f6' },
+};
 
-/* ── Sub-components ── */
 function KpiCard({ icon, label, value, sub, colorClass }) {
   return (
     <Card className="asp-kpi">
@@ -61,8 +71,8 @@ function DetailRow({ label, children }) {
   );
 }
 
-/* ── Main page ── */
 function AdminStudentProfilePage() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const { institution } = useInstitution();
@@ -115,15 +125,14 @@ function AdminStudentProfilePage() {
     enabled: !!id,
   });
 
-  if (isLoading) return <AppShell title="Profil élève"><Loading /></AppShell>;
+  if (isLoading) return <AppShell title={t('studentProfile.title')}><Loading /></AppShell>;
 
   const name = student?.user?.name ?? student?.admissionNumber ?? '—';
   const reportCards = student?.reportCards ?? [];
   const published   = reportCards.filter((r) => r.status === 'PUBLISHED');
 
-  /* ── Computed stats ── */
   const avgAll = published.length
-    ? (published.reduce((s, r) => s + Number(r.overallAverage ?? 0), 0) / published.length)
+    ? published.reduce((s, r) => s + Number(r.overallAverage ?? 0), 0) / published.length
     : null;
 
   const bestAvg = published.length
@@ -131,23 +140,23 @@ function AdminStudentProfilePage() {
     : null;
 
   const avgRank = published.length
-    ? Math.round(published.filter((r) => r.classRank).reduce((s, r) => s + r.classRank, 0)
-        / (published.filter((r) => r.classRank).length || 1))
+    ? Math.round(
+        published.filter((r) => r.classRank).reduce((s, r) => s + r.classRank, 0)
+        / (published.filter((r) => r.classRank).length || 1)
+      )
     : null;
 
   const honorCount = published.filter((r) => r.honorCouncil).length;
 
-  /* ── Attendance aggregated ── */
-  const withAtt        = published.filter((r) => r.attendanceDays != null);
-  const totalJours     = withAtt.reduce((s, r) => s + (r.attendanceDays ?? 0), 0);
-  const totalPresent   = withAtt.reduce((s, r) => s + (r.attendancePresent ?? 0), 0);
-  const totalAbsences  = withAtt.reduce((s, r) => s + (r.attendanceAbsent ?? Math.max(0, (r.attendanceDays ?? 0) - (r.attendancePresent ?? 0))), 0);
-  const totalRetards   = withAtt.reduce((s, r) => s + (r.attendanceLate ?? 0), 0);
-  const tauxPresence   = totalJours > 0 ? Math.round((totalPresent / totalJours) * 100) : null;
+  const withAtt      = published.filter((r) => r.attendanceDays != null);
+  const totalJours   = withAtt.reduce((s, r) => s + (r.attendanceDays ?? 0), 0);
+  const totalPresent = withAtt.reduce((s, r) => s + (r.attendancePresent ?? 0), 0);
+  const totalAbsences = withAtt.reduce((s, r) => s + (r.attendanceAbsent ?? Math.max(0, (r.attendanceDays ?? 0) - (r.attendancePresent ?? 0))), 0);
+  const totalRetards  = withAtt.reduce((s, r) => s + (r.attendanceLate ?? 0), 0);
+  const tauxPresence  = totalJours > 0 ? Math.round((totalPresent / totalJours) * 100) : null;
 
-  /* ── Discipline aggregated ── */
-  const totalAvert   = published.reduce((s, r) => s + (r.warnings    ?? 0), 0);
-  const totalFel     = published.reduce((s, r) => s + (r.commendations ?? 0), 0);
+  const totalAvert = published.reduce((s, r) => s + (r.warnings ?? 0), 0);
+  const totalFel   = published.reduce((s, r) => s + (r.commendations ?? 0), 0);
 
   const currentClass = student?.classes?.[0]?.class;
   const dob = student?.dateOfBirth
@@ -168,35 +177,33 @@ function AdminStudentProfilePage() {
       a.href = url; a.download = `${labels[type]}-${student?.admissionNumber ?? id}.pdf`; a.click();
       URL.revokeObjectURL(url);
     } catch {
-      toast.error('Erreur lors de la génération du certificat');
+      toast.error(t('studentProfile.certError'));
     }
   }
 
   return (
-    <AppShell title="Profil élève">
+    <AppShell title={t('studentProfile.title')}>
       <PageHeader
         title={name}
-        subtitle={`Matricule : ${student?.admissionNumber ?? '—'}`}
+        subtitle={`${t('studentProfile.matricule')} ${student?.admissionNumber ?? '—'}`}
         actions={
           <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap' }}>
             <button
               className="asp-back-btn"
               onClick={() => downloadCertificate('enrollment')}
-              title="Attestation d'inscription"
               style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '.4rem .875rem', fontWeight: 600, cursor: 'pointer', fontSize: '.82rem' }}
             >
-              📄 Attestation
+              {t('studentProfile.attestation')}
             </button>
             <button
               className="asp-back-btn"
               onClick={() => downloadCertificate('conduct')}
-              title="Certificat de bonne conduite"
               style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '.4rem .875rem', fontWeight: 600, cursor: 'pointer', fontSize: '.82rem' }}
             >
-              ✅ Bonne conduite
+              {t('studentProfile.conduct')}
             </button>
             <button className="asp-back-btn" onClick={() => navigate('/admin/students')}>
-              ← Retour aux élèves
+              {t('studentProfile.back')}
             </button>
           </div>
         }
@@ -204,7 +211,7 @@ function AdminStudentProfilePage() {
 
       <div className="asp-layout">
 
-        {/* ── Identity card ── */}
+        {/* Identity */}
         <Card className="asp-identity">
           <Avatar name={name} src={student?.user?.profileImage} size="xl" />
           <div className="asp-identity__main">
@@ -212,86 +219,88 @@ function AdminStudentProfilePage() {
             <p className="asp-identity__matricule">{student?.admissionNumber ?? '—'}</p>
             <div className="asp-identity__badges">
               {student?.sex && (
-                <Badge variant="info">{student.sex === 'M' ? 'Masculin' : 'Féminin'}</Badge>
+                <Badge variant="info">{t(`studentProfile.sex.${student.sex}`)}</Badge>
               )}
               {currentClass && (
                 <Badge variant="default">{currentClass.name}</Badge>
               )}
               {feeSummary && (
-                <Badge variant={FEE_VARIANT[payStatus]}>{FEE_LABEL[payStatus]}</Badge>
+                <Badge variant={FEE_VARIANT[payStatus]}>{t(`studentProfile.fee.${payStatus}`)}</Badge>
               )}
             </div>
           </div>
           <dl className="asp-identity__details">
-            <DetailRow label="Date de naissance">{dob}</DetailRow>
-            <DetailRow label="Date d'inscription">{enrollment}</DetailRow>
-            <DetailRow label="Classe actuelle">{currentClass ? `${currentClass.name} (${currentClass.academicYear})` : '—'}</DetailRow>
-            <DetailRow label="Parent / Tuteur">{student?.parent?.name ?? '—'}</DetailRow>
-            <DetailRow label="Contact parent">
+            <DetailRow label={t('studentProfile.identity.dob')}>{dob}</DetailRow>
+            <DetailRow label={t('studentProfile.identity.enrollment')}>{enrollment}</DetailRow>
+            <DetailRow label={t('studentProfile.identity.currentClass')}>
+              {currentClass ? `${currentClass.name} (${currentClass.academicYear})` : '—'}
+            </DetailRow>
+            <DetailRow label={t('studentProfile.identity.parent')}>{student?.parent?.name ?? '—'}</DetailRow>
+            <DetailRow label={t('studentProfile.identity.contact')}>
               {student?.parent?.whatsappNumber ?? student?.parent?.email ?? '—'}
             </DetailRow>
           </dl>
         </Card>
 
-        {/* ── KPI row ── */}
+        {/* KPIs */}
         <div className="asp-kpis">
           <KpiCard
             icon="📊"
-            label="Moyenne générale"
+            label={t('studentProfile.kpi.overall')}
             value={avgAll != null ? avgAll.toFixed(2).replace('.', ',') : '—'}
-            sub="sur tous les trimestres publiés"
+            sub={t('studentProfile.kpi.overallSub')}
             colorClass="asp-kpi__icon--blue"
           />
           <KpiCard
             icon="🏅"
-            label="Meilleure moyenne"
+            label={t('studentProfile.kpi.best')}
             value={bestAvg != null ? bestAvg.toFixed(2).replace('.', ',') : '—'}
-            sub="meilleur trimestre"
+            sub={t('studentProfile.kpi.bestSub')}
             colorClass="asp-kpi__icon--gold"
           />
           <KpiCard
             icon="📈"
-            label="Rang moyen"
+            label={t('studentProfile.kpi.rank')}
             value={avgRank ? `${avgRank}e` : '—'}
-            sub="classement en classe"
+            sub={t('studentProfile.kpi.rankSub')}
             colorClass="asp-kpi__icon--purple"
           />
           <KpiCard
             icon="⭐"
-            label="Tableau d'honneur"
+            label={t('studentProfile.kpi.honor')}
             value={honorCount}
-            sub={`fois sur ${published.length} trimestre${published.length !== 1 ? 's' : ''}`}
+            sub={`${honorCount} / ${published.length}`}
             colorClass="asp-kpi__icon--star"
           />
         </div>
 
-        {/* ── Assiduité ── */}
+        {/* Attendance */}
         <Card className="asp-section">
-          <h3 className="asp-section__title">Assiduité</h3>
+          <h3 className="asp-section__title">{t('studentProfile.sections.attendance')}</h3>
           {withAtt.length === 0 ? (
-            <p className="asp-empty">Aucune donnée d'assiduité disponible.</p>
+            <p className="asp-empty">{t('studentProfile.attendance.noData')}</p>
           ) : (
             <>
               <div className="asp-attend-kpis">
                 <div className="asp-attend-kpi asp-attend-kpi--absent">
                   <span className="asp-attend-kpi__num">{totalAbsences}</span>
-                  <span className="asp-attend-kpi__lbl">Absences</span>
+                  <span className="asp-attend-kpi__lbl">{t('studentProfile.attendance.absences')}</span>
                 </div>
                 <div className="asp-attend-kpi asp-attend-kpi--late">
                   <span className="asp-attend-kpi__num">{totalRetards}</span>
-                  <span className="asp-attend-kpi__lbl">Retards</span>
+                  <span className="asp-attend-kpi__lbl">{t('studentProfile.attendance.delays')}</span>
                 </div>
                 <div className="asp-attend-kpi asp-attend-kpi--present">
                   <span className="asp-attend-kpi__num">{tauxPresence != null ? `${tauxPresence}%` : '—'}</span>
-                  <span className="asp-attend-kpi__lbl">Taux de présence</span>
+                  <span className="asp-attend-kpi__lbl">{t('studentProfile.attendance.presence')}</span>
                 </div>
                 <div className="asp-attend-kpi asp-attend-kpi--total">
                   <span className="asp-attend-kpi__num">{totalJours}</span>
-                  <span className="asp-attend-kpi__lbl">Jours de cours</span>
+                  <span className="asp-attend-kpi__lbl">{t('studentProfile.attendance.days')}</span>
                 </div>
               </div>
               {tauxPresence != null && (
-                <div className="asp-attend-bar-wrap" title={`${tauxPresence}% de présence`}>
+                <div className="asp-attend-bar-wrap" title={`${tauxPresence}%`}>
                   <div className="asp-attend-bar" style={{ width: `${tauxPresence}%` }} />
                 </div>
               )}
@@ -299,33 +308,33 @@ function AdminStudentProfilePage() {
           )}
         </Card>
 
-        {/* ── Daily Attendance Records ── */}
+        {/* Daily attendance */}
         <Card className="asp-section">
-          <h3 className="asp-section__title">Présences journalières</h3>
+          <h3 className="asp-section__title">{t('studentProfile.sections.dailyAttendance')}</h3>
           <AttendanceInput studentId={student.id} />
         </Card>
 
-        {/* ── Discipline & Conduite ── */}
+        {/* Discipline & Conduct */}
         <Card className="asp-section">
-          <h3 className="asp-section__title">Discipline &amp; Conduite</h3>
+          <h3 className="asp-section__title">{t('studentProfile.sections.discipline')}</h3>
           <div className="asp-discipline-kpis">
             <div className="asp-disc-kpi asp-disc-kpi--warn">
               <span className="asp-disc-kpi__num">{totalAvert}</span>
-              <span className="asp-disc-kpi__lbl">Avertissement{totalAvert !== 1 ? 's' : ''}</span>
+              <span className="asp-disc-kpi__lbl">{t('studentProfile.discipline.warnings', { count: totalAvert })}</span>
             </div>
             <div className="asp-disc-kpi asp-disc-kpi--fel">
               <span className="asp-disc-kpi__num">{totalFel}</span>
-              <span className="asp-disc-kpi__lbl">Félicitation{totalFel !== 1 ? 's' : ''}</span>
+              <span className="asp-disc-kpi__lbl">{t('studentProfile.discipline.commendations', { count: totalFel })}</span>
             </div>
             <div className="asp-disc-kpi asp-disc-kpi--honor">
               <span className="asp-disc-kpi__num">{honorCount}</span>
-              <span className="asp-disc-kpi__lbl">Tableau d'honneur</span>
+              <span className="asp-disc-kpi__lbl">{t('studentProfile.discipline.honor')}</span>
             </div>
           </div>
 
           {published.length > 0 && (
             <div className="asp-conduct-list">
-              <p className="asp-conduct-list__label">Conduite par trimestre</p>
+              <p className="asp-conduct-list__label">{t('studentProfile.discipline.conductByTerm')}</p>
               {published.map((r) => (
                 <div key={r.id} className="asp-conduct-row">
                   <span className="asp-conduct-row__period">
@@ -333,7 +342,7 @@ function AdminStudentProfilePage() {
                   </span>
                   {r.conductRating ? (
                     <Badge variant={CONDUCT_VARIANT[r.conductRating] ?? 'default'}>
-                      {CONDUCT_LABEL[r.conductRating] ?? r.conductRating}
+                      {t(`studentProfile.discipline.conduct.${r.conductRating}`, r.conductRating)}
                     </Badge>
                   ) : (
                     <span className="asp-empty-inline">—</span>
@@ -344,21 +353,21 @@ function AdminStudentProfilePage() {
           )}
         </Card>
 
-        {/* ── Situation financière ── */}
+        {/* Financial status */}
         {feeSummary && (
           <Card className="asp-section">
-            <h3 className="asp-section__title">Situation financière</h3>
+            <h3 className="asp-section__title">{t('studentProfile.sections.finance')}</h3>
             <dl className="asp-details">
-              <DetailRow label="Statut">
-                <Badge variant={FEE_VARIANT[payStatus]}>{FEE_LABEL[payStatus]}</Badge>
+              <DetailRow label={t('studentProfile.finance.status')}>
+                <Badge variant={FEE_VARIANT[payStatus]}>{t(`studentProfile.fee.${payStatus}`)}</Badge>
               </DetailRow>
-              <DetailRow label="Total dû">
+              <DetailRow label={t('studentProfile.finance.totalDue')}>
                 {(feeSummary.totalDue ?? 0).toLocaleString('fr-FR')} XOF
               </DetailRow>
-              <DetailRow label="Total payé">
+              <DetailRow label={t('studentProfile.finance.totalPaid')}>
                 {(feeSummary.totalPaid ?? 0).toLocaleString('fr-FR')} XOF
               </DetailRow>
-              <DetailRow label="Solde restant">
+              <DetailRow label={t('studentProfile.finance.balance')}>
                 <span className={feeSummary.balance > 0 ? 'asp-text--danger' : ''}>
                   {(feeSummary.balance ?? 0).toLocaleString('fr-FR')} XOF
                 </span>
@@ -367,27 +376,27 @@ function AdminStudentProfilePage() {
           </Card>
         )}
 
-        {/* ── Parcours scolaire ── */}
+        {/* Academic record */}
         <Card className="asp-section asp-section--full">
-          <h3 className="asp-section__title">Parcours scolaire</h3>
+          <h3 className="asp-section__title">{t('studentProfile.sections.academic')}</h3>
           {reportCards.length === 0 ? (
-            <p className="asp-empty">Aucun bulletin créé pour cet élève.</p>
+            <p className="asp-empty">{t('studentProfile.academic.noReports')}</p>
           ) : (
             <div className="asp-table-wrap">
               <table className="asp-table">
                 <thead>
                   <tr>
-                    <th>Période</th>
-                    <th>Année</th>
-                    <th>Moyenne</th>
-                    <th>Rang</th>
-                    <th>Mention</th>
-                    <th>Conduite</th>
-                    <th>Absences</th>
-                    <th>Retards</th>
-                    <th>Avert.</th>
-                    <th>Fél.</th>
-                    <th>Statut</th>
+                    <th>{t('studentProfile.academic.columns.term')}</th>
+                    <th>{t('studentProfile.academic.columns.year')}</th>
+                    <th>{t('studentProfile.academic.columns.avg')}</th>
+                    <th>{t('studentProfile.academic.columns.rank')}</th>
+                    <th>{t('studentProfile.academic.columns.mention')}</th>
+                    <th>{t('studentProfile.academic.columns.conduct')}</th>
+                    <th>{t('studentProfile.academic.columns.absences')}</th>
+                    <th>{t('studentProfile.academic.columns.delays')}</th>
+                    <th>{t('studentProfile.academic.columns.warnings')}</th>
+                    <th>{t('studentProfile.academic.columns.commendations')}</th>
+                    <th>{t('studentProfile.academic.columns.status')}</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -411,31 +420,23 @@ function AdminStudentProfilePage() {
                         <td>
                           {r.conductRating ? (
                             <Badge variant={CONDUCT_VARIANT[r.conductRating] ?? 'default'}>
-                              {CONDUCT_LABEL[r.conductRating]}
+                              {t(`studentProfile.discipline.conduct.${r.conductRating}`, r.conductRating)}
                             </Badge>
                           ) : '—'}
                         </td>
-                        <td className={absences > 0 ? 'asp-text--warn' : ''}>
-                          {absences != null ? absences : '—'}
-                        </td>
-                        <td className={r.attendanceLate > 0 ? 'asp-text--warn' : ''}>
-                          {r.attendanceLate != null ? r.attendanceLate : '—'}
-                        </td>
-                        <td className={r.warnings > 0 ? 'asp-text--danger' : ''}>
-                          {r.warnings ?? 0}
-                        </td>
-                        <td className={r.commendations > 0 ? 'asp-text--success' : ''}>
-                          {r.commendations ?? 0}
-                        </td>
+                        <td className={absences > 0 ? 'asp-text--warn' : ''}>{absences != null ? absences : '—'}</td>
+                        <td className={r.attendanceLate > 0 ? 'asp-text--warn' : ''}>{r.attendanceLate != null ? r.attendanceLate : '—'}</td>
+                        <td className={r.warnings > 0 ? 'asp-text--danger' : ''}>{r.warnings ?? 0}</td>
+                        <td className={r.commendations > 0 ? 'asp-text--success' : ''}>{r.commendations ?? 0}</td>
                         <td>
                           <Badge variant={REPORT_VARIANT[r.status] ?? 'default'}>
-                            {REPORT_LABEL[r.status] ?? r.status}
+                            {t(`studentProfile.academic.reportStatus.${r.status}`, r.status)}
                           </Badge>
                         </td>
                         <td>
                           {r.status === 'PUBLISHED' && (
                             <Link to={`/admin/reports/${r.id}`} className="asp-link">
-                              Voir →
+                              {t('studentProfile.academic.columns.view')}
                             </Link>
                           )}
                         </td>
@@ -448,15 +449,15 @@ function AdminStudentProfilePage() {
           )}
         </Card>
 
-        {/* ── Dossier disciplinaire ── */}
+        {/* Disciplinary file */}
         <Card className="asp-section asp-section--full">
-          <h3 className="asp-section__title">Dossier disciplinaire</h3>
+          <h3 className="asp-section__title">{t('studentProfile.sections.disciplinary')}</h3>
           {disciplinaryRecords.length === 0 ? (
-            <p className="asp-empty">Aucun dossier disciplinaire enregistré.</p>
+            <p className="asp-empty">{t('studentProfile.discipline.noRecords')}</p>
           ) : (
             <div className="asp-disc-records">
               {disciplinaryRecords.map((rec) => {
-                const cfg = DISC_TYPE_CONFIG[rec.type] ?? DISC_TYPE_CONFIG.OTHER;
+                const cfg = DISC_TYPE_BG[rec.type] ?? DISC_TYPE_BG.OTHER;
                 return (
                   <div key={rec.id} className={`asp-disc-record ${rec.resolved ? 'asp-disc-record--resolved' : ''}`}>
                     <div className="asp-disc-record__header">
@@ -464,21 +465,21 @@ function AdminStudentProfilePage() {
                         className="asp-disc-record__type"
                         style={{ background: cfg.bg, color: cfg.color }}
                       >
-                        {cfg.label}
+                        {t(`studentProfile.discipline.types.${rec.type}`, rec.type)}
                       </span>
                       <span className="asp-disc-record__date">
                         {new Date(rec.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
                       </span>
                       {rec.resolved ? (
-                        <span className="asp-disc-record__pill asp-disc-record__pill--ok">Résolu</span>
+                        <span className="asp-disc-record__pill asp-disc-record__pill--ok">{t('studentProfile.discipline.resolved')}</span>
                       ) : (
-                        <span className="asp-disc-record__pill asp-disc-record__pill--open">En cours</span>
+                        <span className="asp-disc-record__pill asp-disc-record__pill--open">{t('studentProfile.discipline.open')}</span>
                       )}
                     </div>
                     <p className="asp-disc-record__desc">{rec.description}</p>
                     {rec.sanction && (
                       <div className="asp-disc-record__sanction">
-                        <strong>Sanction :</strong> {rec.sanction}
+                        <strong>{t('studentProfile.discipline.sanction')}</strong> {rec.sanction}
                         {rec.sanctionStart && (
                           <> ({new Date(rec.sanctionStart).toLocaleDateString('fr-FR')}
                           {rec.sanctionEnd && <> — {new Date(rec.sanctionEnd).toLocaleDateString('fr-FR')}</>})</>
@@ -492,39 +493,39 @@ function AdminStudentProfilePage() {
           )}
         </Card>
 
-        {/* ── Transferts ── */}
+        {/* Transfers */}
         {transfers.length > 0 && (
           <Card className="asp-section asp-section--full">
-            <h3 className="asp-section__title">Transferts</h3>
+            <h3 className="asp-section__title">{t('studentProfile.sections.transfers')}</h3>
             <div className="asp-transfers">
-              {transfers.map((t) => (
-                <div key={t.id} className={`asp-transfer asp-transfer--${t.direction.toLowerCase()}`}>
-                  <span className={`asp-transfer__badge asp-transfer__badge--${t.direction.toLowerCase()}`}>
-                    {t.direction === 'IN' ? '↓ Entrée' : '↑ Sortie'}
+              {transfers.map((tr) => (
+                <div key={tr.id} className={`asp-transfer asp-transfer--${tr.direction.toLowerCase()}`}>
+                  <span className={`asp-transfer__badge asp-transfer__badge--${tr.direction.toLowerCase()}`}>
+                    {tr.direction === 'IN' ? t('studentProfile.transfers.in') : t('studentProfile.transfers.out')}
                   </span>
-                  <span className="asp-transfer__school">{t.otherSchool}</span>
+                  <span className="asp-transfer__school">{tr.otherSchool}</span>
                   <span className="asp-transfer__date">
-                    {new Date(t.transferDate).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    {new Date(tr.transferDate).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
                   </span>
-                  {t.reason && <span className="asp-transfer__reason">{t.reason}</span>}
+                  {tr.reason && <span className="asp-transfer__reason">{tr.reason}</span>}
                 </div>
               ))}
             </div>
           </Card>
         )}
 
-        {/* ── Dossier Alumni ── */}
+        {/* Alumni */}
         {alumniRecord && (
           <Card className="asp-section asp-section--full">
-            <h3 className="asp-section__title">Dossier Alumni</h3>
+            <h3 className="asp-section__title">{t('studentProfile.sections.alumni')}</h3>
             <div className="asp-alumni">
               <div className="asp-alumni__row">
-                <span className="asp-alumni__label">Promotion</span>
+                <span className="asp-alumni__label">{t('studentProfile.alumni.promo')}</span>
                 <strong>{alumniRecord.graduationYear}</strong>
               </div>
               {alumniRecord.lastClass && (
                 <div className="asp-alumni__row">
-                  <span className="asp-alumni__label">Dernière classe</span>
+                  <span className="asp-alumni__label">{t('studentProfile.alumni.lastClass')}</span>
                   <span>{alumniRecord.lastClass}</span>
                 </div>
               )}
@@ -538,13 +539,13 @@ function AdminStudentProfilePage() {
               )}
               {alumniRecord.furtherEducation && (
                 <div className="asp-alumni__row">
-                  <span className="asp-alumni__label">Poursuite</span>
+                  <span className="asp-alumni__label">{t('studentProfile.alumni.further')}</span>
                   <span>{alumniRecord.furtherEducation}</span>
                 </div>
               )}
               {alumniRecord.contactPhone && (
                 <div className="asp-alumni__row">
-                  <span className="asp-alumni__label">Contact</span>
+                  <span className="asp-alumni__label">{t('studentProfile.alumni.contact')}</span>
                   <span>{alumniRecord.contactPhone}</span>
                 </div>
               )}
@@ -552,35 +553,28 @@ function AdminStudentProfilePage() {
           </Card>
         )}
 
-        {/* ── Résultats aux examens nationaux ── */}
+        {/* National exam results */}
         <Card className="asp-section asp-section--full">
-          <h3 className="asp-section__title">Résultats aux examens nationaux</h3>
+          <h3 className="asp-section__title">{t('studentProfile.sections.nationalExams')}</h3>
           {nationalExamResults.length === 0 ? (
-            <p className="asp-empty">Aucun résultat d'examen national enregistré.</p>
+            <p className="asp-empty">{t('studentProfile.nationalExams.noResults')}</p>
           ) : (
             <div className="asp-table-wrap">
               <table className="asp-table">
                 <thead>
                   <tr>
-                    <th>Examen</th>
-                    <th>Session</th>
-                    <th>Année</th>
-                    <th>Série</th>
-                    <th>Résultat</th>
-                    <th>Mention</th>
-                    <th>Score</th>
+                    <th>{t('studentProfile.nationalExams.columns.exam')}</th>
+                    <th>{t('studentProfile.nationalExams.columns.session')}</th>
+                    <th>{t('studentProfile.nationalExams.columns.year')}</th>
+                    <th>{t('studentProfile.nationalExams.columns.series')}</th>
+                    <th>{t('studentProfile.nationalExams.columns.result')}</th>
+                    <th>{t('studentProfile.nationalExams.columns.mention')}</th>
+                    <th>{t('studentProfile.nationalExams.columns.score')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {nationalExamResults.map((r) => {
-                    const resultColors = {
-                      ADMIS:   { color: '#15803d', bg: '#dcfce7' },
-                      AJOURNE: { color: '#b45309', bg: '#fef3c7' },
-                      ABSENT:  { color: '#6b7280', bg: '#f3f4f6' },
-                      ELIMINE: { color: '#b91c1c', bg: '#fee2e2' },
-                    };
-                    const resultLabels = { ADMIS: 'Admis', AJOURNE: 'Ajourné', ABSENT: 'Absent', ELIMINE: 'Éliminé' };
-                    const cfg = resultColors[r.result] ?? resultColors.ABSENT;
+                    const cfg = EXAM_RESULT_COLORS[r.result] ?? EXAM_RESULT_COLORS.ABSENT;
                     return (
                       <tr key={r.id}>
                         <td><strong>{r.examType}</strong></td>
@@ -589,7 +583,7 @@ function AdminStudentProfilePage() {
                         <td>{r.series ?? '—'}</td>
                         <td>
                           <span style={{ fontSize: '.72rem', fontWeight: 700, padding: '.15rem .5rem', borderRadius: 6, color: cfg.color, background: cfg.bg }}>
-                            {resultLabels[r.result] ?? r.result}
+                            {t(`studentProfile.nationalExams.results.${r.result}`, r.result)}
                           </span>
                         </td>
                         <td>{r.mention ?? '—'}</td>
@@ -603,20 +597,20 @@ function AdminStudentProfilePage() {
           )}
         </Card>
 
-        {/* ── Prêts bibliothèque ── */}
+        {/* Library loans */}
         <Card className="asp-section asp-section--full">
-          <h3 className="asp-section__title">Prêts bibliothèque</h3>
+          <h3 className="asp-section__title">{t('studentProfile.sections.library')}</h3>
           {libraryLoans.length === 0 ? (
-            <p className="asp-empty">Aucun prêt bibliothèque enregistré.</p>
+            <p className="asp-empty">{t('studentProfile.library.noLoans')}</p>
           ) : (
             <div className="asp-table-wrap">
               <table className="asp-table">
                 <thead>
                   <tr>
-                    <th>Livre</th>
-                    <th>Date prêt</th>
-                    <th>Échéance</th>
-                    <th>Statut</th>
+                    <th>{t('studentProfile.library.columns.book')}</th>
+                    <th>{t('studentProfile.library.columns.loanDate')}</th>
+                    <th>{t('studentProfile.library.columns.dueDate')}</th>
+                    <th>{t('studentProfile.library.columns.status')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -628,13 +622,13 @@ function AdminStudentProfilePage() {
                         <td>{loan.loanDate ? new Date(loan.loanDate).toLocaleDateString('fr-FR') : '—'}</td>
                         <td className={isOverdue ? 'asp-text--danger' : ''}>
                           {loan.dueDate ? new Date(loan.dueDate).toLocaleDateString('fr-FR') : '—'}
-                          {isOverdue && ' (retard)'}
+                          {isOverdue && ` ${t('studentProfile.library.overdue')}`}
                         </td>
                         <td>
                           {loan.isReturned ? (
-                            <Badge variant="success">Rendu</Badge>
+                            <Badge variant="success">{t('studentProfile.library.returned')}</Badge>
                           ) : (
-                            <Badge variant={isOverdue ? 'danger' : 'info'}>En cours</Badge>
+                            <Badge variant={isOverdue ? 'danger' : 'info'}>{t('studentProfile.library.active')}</Badge>
                           )}
                         </td>
                       </tr>
@@ -646,30 +640,22 @@ function AdminStudentProfilePage() {
           )}
         </Card>
 
-        {/* ── Dossier médical ── */}
+        {/* Medical file */}
         <Card className="asp-section asp-section--full">
-          <h3 className="asp-section__title">Dossier médical</h3>
+          <h3 className="asp-section__title">{t('studentProfile.sections.health')}</h3>
           {healthRecords.length === 0 ? (
-            <p className="asp-empty">Aucune visite médicale enregistrée.</p>
+            <p className="asp-empty">{t('studentProfile.health.noRecords')}</p>
           ) : (
             <div className="asp-health-records">
               {healthRecords.map((rec) => {
-                const visitBadge = {
-                  CONSULTATION: { label: 'Consultation', color: '#1d4ed8', bg: '#dbeafe' },
-                  ACCIDENT:     { label: 'Accident',     color: '#b91c1c', bg: '#fee2e2' },
-                  VACCINATION:  { label: 'Vaccination',  color: '#15803d', bg: '#dcfce7' },
-                  DRESSING:     { label: 'Pansement',    color: '#a16207', bg: '#fef3c7' },
-                  EVACUATION:   { label: 'Évacuation',   color: '#c2410c', bg: '#ffedd5' },
-                  OTHER:        { label: 'Autre',        color: '#6b7280', bg: '#f3f4f6' },
-                };
-                const cfg = visitBadge[rec.visitType] ?? visitBadge.OTHER;
+                const cfg = HEALTH_BADGE_COLORS[rec.visitType] ?? HEALTH_BADGE_COLORS.OTHER;
                 return (
                   <div key={rec.id} className="asp-health-row">
                     <span className="asp-health-row__date">
                       {rec.date ? new Date(rec.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
                     </span>
                     <span className="asp-health-row__badge" style={{ color: cfg.color, background: cfg.bg }}>
-                      {cfg.label}
+                      {t(`studentProfile.health.types.${rec.visitType}`, rec.visitType)}
                     </span>
                     {rec.complaint && (
                       <span className="asp-health-row__complaint">{rec.complaint}</span>

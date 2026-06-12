@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { schoolDocumentsService } from '../../../services/schoolDocumentsService';
 import { uploadService } from '../../../services/uploadService';
@@ -15,18 +16,7 @@ import EmptyState from '../../../components/common/EmptyState/EmptyState';
 import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
 import './SchoolDocumentsPage.css';
 
-const CATEGORIES = [
-  { value: '',            label: 'Tous' },
-  { value: 'CIRCULAR',   label: 'Circulaire' },
-  { value: 'REPORT',     label: 'Rapport' },
-  { value: 'CONTRACT',   label: 'Contrat' },
-  { value: 'SCHEDULE',   label: 'Emploi du temps' },
-  { value: 'FINANCIAL',  label: 'Finance' },
-  { value: 'EXAM',       label: 'Examen' },
-  { value: 'STAFF',      label: 'Personnel' },
-  { value: 'STUDENT',    label: 'Élèves' },
-  { value: 'OTHER',      label: 'Autre' },
-];
+const CATEGORY_KEYS = ['CIRCULAR', 'REPORT', 'CONTRACT', 'SCHEDULE', 'FINANCIAL', 'EXAM', 'STAFF', 'STUDENT', 'OTHER'];
 
 const CAT_ICONS = {
   CIRCULAR: '📢', REPORT: '📊', CONTRACT: '📝', SCHEDULE: '📅',
@@ -36,12 +26,17 @@ const CAT_ICONS = {
 const EMPTY_FORM = { title: '', category: 'OTHER', description: '', isPublic: false };
 
 export default function SchoolDocumentsPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const [filter, setFilter] = useState('');
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [uploading, setUploading] = useState(false);
   const [file, setFile] = useState(null);
+
+  const categoryOptions = CATEGORY_KEYS.map((k) => ({
+    value: k, label: t(`schoolDocs.categories.${k}`),
+  }));
 
   const { data: docs = [], isLoading } = useQuery({
     queryKey: ['school-documents', filter],
@@ -57,11 +52,11 @@ export default function SchoolDocumentsPage() {
         fileUrl = res.data?.url ?? res.data;
         setUploading(false);
       }
-      if (!fileUrl) throw new Error('Veuillez sélectionner un fichier');
+      if (!fileUrl) throw new Error(t('schoolDocs.fileRequired'));
       return schoolDocumentsService.create({ ...form, fileUrl });
     },
     onSuccess: () => {
-      toast.success('Document ajouté');
+      toast.success(t('schoolDocs.toast.created'));
       qc.invalidateQueries(['school-documents']);
       setOpen(false);
       setForm(EMPTY_FORM);
@@ -69,14 +64,14 @@ export default function SchoolDocumentsPage() {
     },
     onError: (e) => {
       setUploading(false);
-      toast.error(e.message ?? 'Erreur lors de l\'enregistrement');
+      toast.error(e.message ?? t('schoolDocs.toast.saveError'));
     },
   });
 
   const { mutate: remove } = useMutation({
     mutationFn: (id) => schoolDocumentsService.remove(id),
-    onSuccess: () => { toast.success('Document supprimé'); qc.invalidateQueries(['school-documents']); },
-    onError: () => toast.error('Erreur lors de la suppression'),
+    onSuccess: () => { toast.success(t('schoolDocs.toast.deleted')); qc.invalidateQueries(['school-documents']); },
+    onError: () => toast.error(t('schoolDocs.toast.deleteError')),
   });
 
   const { mutate: togglePublic } = useMutation({
@@ -84,23 +79,29 @@ export default function SchoolDocumentsPage() {
     onSuccess: () => qc.invalidateQueries(['school-documents']),
   });
 
+  const closePanel = () => { setOpen(false); setForm(EMPTY_FORM); setFile(null); };
+
   const confirmDelete = (doc) => {
-    if (window.confirm(`Supprimer "${doc.title}" ?`)) remove(doc.id);
+    if (window.confirm(t('schoolDocs.confirmDelete', { title: doc.title }))) remove(doc.id);
   };
 
-  if (isLoading) return <AppShell title="Documents"><Loading /></AppShell>;
+  if (isLoading) return <AppShell title={t('schoolDocs.title')}><Loading /></AppShell>;
+
+  const allFilters = [
+    { value: '', label: t('schoolDocs.categories.all') },
+    ...CATEGORY_KEYS.map((k) => ({ value: k, label: t(`schoolDocs.categories.${k}`) })),
+  ];
 
   return (
-    <AppShell title="Documents scolaires">
+    <AppShell title={t('schoolDocs.title')}>
       <PageHeader
-        title="Documents scolaires"
-        subtitle="Circulaires, rapports, contrats et autres documents officiels"
-        actions={<Button icon="+" onClick={() => setOpen(true)}>Ajouter un document</Button>}
+        title={t('schoolDocs.title')}
+        subtitle={t('schoolDocs.subtitle')}
+        actions={<Button icon="+" onClick={() => setOpen(true)}>{t('schoolDocs.add')}</Button>}
       />
 
-      {/* Category filter */}
       <div className="sdoc-filters">
-        {CATEGORIES.map((c) => (
+        {allFilters.map((c) => (
           <button
             key={c.value}
             type="button"
@@ -114,7 +115,7 @@ export default function SchoolDocumentsPage() {
       </div>
 
       {docs.length === 0 ? (
-        <EmptyState message="Aucun document pour le moment." />
+        <EmptyState message={t('schoolDocs.empty')} />
       ) : (
         <div className="sdoc-grid">
           {docs.map((doc) => (
@@ -124,28 +125,28 @@ export default function SchoolDocumentsPage() {
                 <strong className="sdoc-card__title">{doc.title}</strong>
                 {doc.description && <p className="sdoc-card__desc">{doc.description}</p>}
                 <div className="sdoc-card__meta">
-                  <span className="sdoc-badge">{CATEGORIES.find((c) => c.value === doc.category)?.label ?? doc.category}</span>
-                  {doc.isPublic && <span className="sdoc-badge sdoc-badge--public">🌐 Public</span>}
+                  <span className="sdoc-badge">{t(`schoolDocs.categories.${doc.category}`, doc.category)}</span>
+                  {doc.isPublic && <span className="sdoc-badge sdoc-badge--public">{t('schoolDocs.publicBadge')}</span>}
                   {doc.fileSize && <span className="sdoc-badge">{(doc.fileSize / 1024).toFixed(0)} KB</span>}
                 </div>
               </div>
               <div className="sdoc-card__actions">
                 <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" className="sdoc-action-btn sdoc-action-btn--view">
-                  Ouvrir
+                  {t('schoolDocs.open')}
                 </a>
                 <button
                   type="button"
                   className={`sdoc-action-btn ${doc.isPublic ? 'sdoc-action-btn--unpublish' : 'sdoc-action-btn--publish'}`}
                   onClick={() => togglePublic({ id: doc.id, isPublic: !doc.isPublic })}
                 >
-                  {doc.isPublic ? 'Priver' : 'Publier'}
+                  {doc.isPublic ? t('schoolDocs.unpublish') : t('schoolDocs.publish')}
                 </button>
                 <button
                   type="button"
                   className="sdoc-action-btn sdoc-action-btn--delete"
                   onClick={() => confirmDelete(doc)}
                 >
-                  Supprimer
+                  {t('schoolDocs.delete')}
                 </button>
               </div>
             </Card>
@@ -153,20 +154,19 @@ export default function SchoolDocumentsPage() {
         </div>
       )}
 
-      {/* Add Document OffCanvas */}
       <OffCanvas
         open={open}
-        onClose={() => { setOpen(false); setForm(EMPTY_FORM); setFile(null); }}
-        title="Ajouter un document"
-        subtitle="Importez un document officiel et rendez-le accessible à votre équipe."
+        onClose={closePanel}
+        title={t('schoolDocs.form.offcanvasTitle')}
+        subtitle={t('schoolDocs.form.subtitle')}
         size="md"
         footer={
           <>
-            <Button variant="ghost" onClick={() => { setOpen(false); setForm(EMPTY_FORM); setFile(null); }} disabled={saving || uploading}>
-              Annuler
+            <Button variant="ghost" onClick={closePanel} disabled={saving || uploading}>
+              {t('action.cancel')}
             </Button>
             <Button onClick={() => save()} disabled={saving || uploading || !form.title}>
-              {uploading ? 'Téléchargement…' : saving ? 'Enregistrement…' : 'Ajouter le document'}
+              {uploading ? t('schoolDocs.form.uploading') : saving ? t('schoolDocs.form.saving') : t('schoolDocs.form.submit')}
             </Button>
           </>
         }
@@ -174,29 +174,29 @@ export default function SchoolDocumentsPage() {
         <div className="sdoc-form">
           <Input
             id="sdoc-title"
-            label="Titre"
+            label={t('schoolDocs.form.titleField')}
             required
-            placeholder="Ex : Circulaire de rentrée 2025"
+            placeholder={t('schoolDocs.form.titlePlaceholder')}
             value={form.title}
             onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
           />
           <Select
             id="sdoc-category"
-            label="Catégorie"
+            label={t('schoolDocs.form.category')}
             value={form.category}
-            options={CATEGORIES.filter((c) => c.value)}
+            options={categoryOptions}
             onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
           />
           <Textarea
             id="sdoc-description"
-            label="Description"
+            label={t('schoolDocs.form.description')}
             rows={3}
             placeholder="Description optionnelle…"
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
           />
           <div className="form-field">
-            <label className="form-field__label">Fichier <span className="form-field__required"> *</span></label>
+            <label className="form-field__label">{t('schoolDocs.form.fileLabel')} <span className="form-field__required"> *</span></label>
             <input
               type="file"
               className="sdoc-file-input"
@@ -212,7 +212,7 @@ export default function SchoolDocumentsPage() {
               checked={form.isPublic}
               onChange={(e) => setForm((f) => ({ ...f, isPublic: e.target.checked }))}
             />
-            Visible par les parents et élèves
+            {t('schoolDocs.form.visible')}
           </label>
         </div>
       </OffCanvas>

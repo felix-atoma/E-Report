@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { mockExamsService } from '../../../services/mockExamsService';
 import { useAuth } from '../../../context/AuthContext';
 import AppShell from '../../../components/layout/AppShell/AppShell';
@@ -39,6 +40,7 @@ function computeAvg(gradesRow, subjects) {
 }
 
 function MockExamGradePage() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -118,23 +120,23 @@ function MockExamGradePage() {
       setDirty(false);
       setSaved(true);
     } catch {
-      alert('Erreur lors de la sauvegarde. Réessayez.');
+      alert(t('mockExamGrade.saveError'));
     } finally {
       setSaving(false);
     }
   };
 
   const handlePublish = async () => {
-    if (!confirm('Publier ce relevé ? Les notes ne pourront plus être modifiées.')) return;
+    if (!confirm(t('mockExamGrade.confirmPublish'))) return;
     await mockExamsService.publish(id);
     qc.invalidateQueries({ queryKey: ['mock-exam-sheet', id] });
     navigate(`/mock-exams/${id}/releve`);
   };
 
-  if (isLoading) return <AppShell title="Saisie des notes"><Loading /></AppShell>;
+  if (isLoading) return <AppShell title={t('mockExamGrade.title')}><Loading /></AppShell>;
   if (isError || !data) return (
-    <AppShell title="Saisie des notes">
-      <div className="meg-error">Impossible de charger la feuille de notes. Vérifiez l'identifiant.</div>
+    <AppShell title={t('mockExamGrade.title')}>
+      <div className="meg-error">{t('mockExamGrade.loadError')}</div>
     </AppShell>
   );
 
@@ -145,19 +147,18 @@ function MockExamGradePage() {
     !isPublished && (editableSubjectIds === null || editableSubjectIds.includes(subjId));
 
   return (
-    <AppShell title={`Saisie — ${exam.label}`}>
+    <AppShell title={`${t('mockExamGrade.title')} — ${exam.label}`}>
       <div className="meg-page">
 
-        {/* Header */}
         <div className="meg-header">
           <div className="meg-header__left">
-            <Link to={`${base}/mock-exams`} className="meg-back">← Retour aux relevés</Link>
+            <Link to={`${base}/mock-exams`} className="meg-back">{t('mockExamGrade.back')}</Link>
             <h1 className="meg-title">{exam.label}</h1>
             <div className="meg-meta">
               <span>🏫 {exam.class?.name}</span>
               <span>📅 {exam.examDate ? new Date(exam.examDate).toLocaleDateString('fr-FR') : '—'}</span>
               <span className={`meg-status meg-status--${isPublished ? 'pub' : 'draft'}`}>
-                {isPublished ? 'Publié' : 'Brouillon'}
+                {isPublished ? t('mockExamGrade.statusPublished') : t('mockExamGrade.statusDraft')}
               </span>
             </div>
           </div>
@@ -166,14 +167,14 @@ function MockExamGradePage() {
             <div className="meg-header__actions">
               {dirty && (
                 <button className="meg-btn meg-btn--save" onClick={handleSave} disabled={saving}>
-                  {saving ? 'Sauvegarde...' : '💾 Sauvegarder'}
+                  {saving ? t('mockExamGrade.actions.saving') : '💾 ' + t('action.save')}
                 </button>
               )}
               {saved && !dirty && (
-                <span className="meg-saved-hint">✓ Sauvegardé</span>
+                <span className="meg-saved-hint">{t('mockExamGrade.actions.saved')}</span>
               )}
               <button className="meg-btn meg-btn--publish" onClick={handlePublish}>
-                Publier
+                {t('mockExamGrade.actions.publish')}
               </button>
             </div>
           )}
@@ -181,47 +182,45 @@ function MockExamGradePage() {
           {isPublished && (
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               <Link to={`/mock-exams/${id}/palmares`} className="meg-btn meg-btn--palmares">
-                Palmarès →
+                {t('mockExamGrade.actions.palmares')}
               </Link>
               <Link to={`/mock-exams/${id}/releve`} className="meg-btn meg-btn--releve">
-                Relevés de notes →
+                {t('mockExamGrade.actions.releve')}
               </Link>
             </div>
           )}
         </div>
 
-        {/* Stats bar */}
         <div className="meg-stats">
           <div className="meg-stat">
             <span className="meg-stat__val">{students.length}</span>
-            <span className="meg-stat__lbl">Élèves</span>
+            <span className="meg-stat__lbl">{t('mockExamGrade.stats.students')}</span>
           </div>
           <div className="meg-stat">
             <span className="meg-stat__val">{subjects.length}</span>
-            <span className="meg-stat__lbl">Matières</span>
+            <span className="meg-stat__lbl">{t('mockExamGrade.stats.subjects')}</span>
           </div>
           <div className="meg-stat">
             <span className="meg-stat__val">
               {subjects.reduce((s, subj) => s + subj.coefficient, 0)}
             </span>
-            <span className="meg-stat__lbl">Coeff. total</span>
+            <span className="meg-stat__lbl">{t('mockExamGrade.stats.totalCoeff')}</span>
           </div>
         </div>
 
-        {/* Grade table */}
         <div className="meg-table-wrap">
           <table className="meg-table">
             <thead>
               <tr>
-                <th className="meg-th meg-th--student" rowSpan={2}>Élève</th>
+                <th className="meg-th meg-th--student" rowSpan={2}>{t('mockExamGrade.columns.student')}</th>
                 {subjects.map((subj) => (
                   <th key={subj.id} className="meg-th meg-th--subject">
                     <div className="meg-subject-name">{subj.nameFr}</div>
-                    <div className="meg-subject-coeff">Coeff. {subj.coefficient}</div>
+                    <div className="meg-subject-coeff">{t('mockExamGrade.columns.coeff')} {subj.coefficient}</div>
                   </th>
                 ))}
-                <th className="meg-th meg-th--avg" rowSpan={2}>Moyenne</th>
-                <th className="meg-th meg-th--rank" rowSpan={2}>Rang</th>
+                <th className="meg-th meg-th--avg" rowSpan={2}>{t('mockExamGrade.columns.average')}</th>
+                <th className="meg-th meg-th--rank" rowSpan={2}>{t('mockExamGrade.columns.rank')}</th>
               </tr>
               <tr>
                 {subjects.map((subj) => (
@@ -292,9 +291,9 @@ function MockExamGradePage() {
         {!isPublished && (
           <div className="meg-footer">
             <button className="meg-btn meg-btn--save" onClick={handleSave} disabled={saving || !dirty}>
-              {saving ? 'Sauvegarde...' : '💾 Sauvegarder'}
+              {saving ? t('mockExamGrade.actions.saving') : '💾 ' + t('action.save')}
             </button>
-            {saved && !dirty && <span className="meg-saved-hint">✓ Notes sauvegardées</span>}
+            {saved && !dirty && <span className="meg-saved-hint">{t('mockExamGrade.actions.savedAll')}</span>}
           </div>
         )}
       </div>

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { classesService } from '../../../services/classesService';
@@ -15,30 +16,25 @@ const LEVEL_VARIANT = {
   LYCEE:      'danger',
 };
 
-const LEVEL_LABEL = {
-  MATERNELLE: 'Maternelle',
-  PRIMAIRE:   'Primaire',
-  COLLEGE:    'Collège',
-  LYCEE:      'Lycée',
-};
-
 function MyClassesPage() {
+  const { t } = useTranslation();
+
   const { data: classes = [], isLoading } = useQuery({
     queryKey: ['classes'],
     queryFn: () => classesService.list().then((r) => r.data),
   });
 
-  if (isLoading) return <AppShell title="Mes classes"><Loading /></AppShell>;
+  if (isLoading) return <AppShell title={t('myClasses.title')}><Loading /></AppShell>;
 
   return (
-    <AppShell title="Mes classes">
+    <AppShell title={t('myClasses.title')}>
       <PageHeader
-        title="Mes classes"
-        subtitle={`${classes.length} classe${classes.length !== 1 ? 's' : ''} assignée${classes.length !== 1 ? 's' : ''}`}
+        title={t('myClasses.title')}
+        subtitle={t('myClasses.subtitle', { count: classes.length })}
       />
 
       {classes.length === 0 ? (
-        <EmptyState message="Aucune classe ne vous est assignée pour le moment." />
+        <EmptyState message={t('myClasses.empty')} />
       ) : (
         <div className="my-classes__grid">
           {classes.map((cls) => (
@@ -46,17 +42,17 @@ function MyClassesPage() {
               <div className="class-card__header">
                 <span className="class-card__name">{cls.name}</span>
                 <Badge variant={LEVEL_VARIANT[cls.level] ?? 'default'}>
-                  {LEVEL_LABEL[cls.level] ?? cls.level}
+                  {t(`levels.${cls.level}`, cls.level)}
                 </Badge>
               </div>
               <div className="class-card__body">
                 <div className="class-card__stat">
                   <span className="class-card__stat-icon">🎒</span>
-                  <span>{cls._count?.students ?? cls.studentsCount ?? 0} élèves</span>
+                  <span>{cls._count?.students ?? cls.studentsCount ?? 0} {t('myClasses.students')}</span>
                 </div>
                 <div className="class-card__stat">
                   <span className="class-card__stat-icon">📚</span>
-                  <span>{cls._count?.subjects ?? cls.subjectsCount ?? 0} matières</span>
+                  <span>{cls._count?.subjects ?? cls.subjectsCount ?? 0} {t('myClasses.subjects')}</span>
                 </div>
                 {cls.academicYear && (
                   <div className="class-card__stat">
@@ -66,7 +62,7 @@ function MyClassesPage() {
                 )}
               </div>
               <div className="class-card__footer">
-                <span className="class-card__link">Voir le détail →</span>
+                <span className="class-card__link">{t('myClasses.seeDetail')}</span>
               </div>
             </Link>
           ))}

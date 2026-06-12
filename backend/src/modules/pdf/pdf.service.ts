@@ -190,6 +190,7 @@ export class PdfService {
         ...report,
         conductLabel: report.conductRating ? CONDUCT_LABELS[report.conductRating] : '—',
         isPassing: (report.overallAverage ?? 0) >= 10,
+        annualIsPassing: report.annualAverage != null ? report.annualAverage >= 10 : null,
         absences,
         attendanceRate,
         totalCoef,

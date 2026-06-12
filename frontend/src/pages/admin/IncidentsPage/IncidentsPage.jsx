@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { incidentReportsService } from '../../../services/incidentReportsService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
@@ -12,45 +13,30 @@ import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
 import Loading from '../../../components/common/Loading/Loading';
 import './IncidentsPage.css';
 
-const STATUS_OPTIONS = [
-  { value: '',             label: 'Tous les statuts' },
-  { value: 'PENDING',      label: 'En attente' },
-  { value: 'UNDER_REVIEW', label: 'En cours d\'examen' },
-  { value: 'RESOLVED',     label: 'Résolu' },
-  { value: 'DISMISSED',    label: 'Rejeté' },
-];
-
-const STATUS_META = {
-  PENDING:      { label: 'En attente',        cls: 'inc-status--pending' },
-  UNDER_REVIEW: { label: 'En cours',          cls: 'inc-status--review' },
-  RESOLVED:     { label: 'Résolu',            cls: 'inc-status--resolved' },
-  DISMISSED:    { label: 'Rejeté',            cls: 'inc-status--dismissed' },
+const STATUS_KEYS = ['PENDING', 'UNDER_REVIEW', 'RESOLVED', 'DISMISSED'];
+const STATUS_CLS  = {
+  PENDING:      'inc-status--pending',
+  UNDER_REVIEW: 'inc-status--review',
+  RESOLVED:     'inc-status--resolved',
+  DISMISSED:    'inc-status--dismissed',
 };
-
-const CAT_LABEL = {
-  BULLYING:            'Harcèlement / Intimidation',
-  HARASSMENT:          'Harcèlement sexuel ou moral',
-  DISCRIMINATION:      'Discrimination',
-  TEACHER_MISCONDUCT:  'Comportement — Enseignant',
-  STUDENT_MISCONDUCT:  'Comportement — Élève',
-  CHEATING:            'Triche / Fraude',
-  THEFT:               'Vol',
-  OTHER:               'Autre',
-};
-
-const NEW_STATUS_OPTIONS = [
-  { value: 'PENDING',      label: 'En attente' },
-  { value: 'UNDER_REVIEW', label: 'En cours d\'examen' },
-  { value: 'RESOLVED',     label: 'Résolu' },
-  { value: 'DISMISSED',    label: 'Rejeté' },
-];
 
 export default function IncidentsPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const [statusFilter, setStatusFilter] = useState('');
-  const [selected, setSelected] = useState(null);
-  const [newStatus, setNewStatus] = useState('');
-  const [adminNotes, setAdminNotes] = useState('');
+  const [selected, setSelected]         = useState(null);
+  const [newStatus, setNewStatus]       = useState('');
+  const [adminNotes, setAdminNotes]     = useState('');
+
+  const statusOptions = [
+    { value: '', label: t('incidents.allStatuses') },
+    ...STATUS_KEYS.map((k) => ({ value: k, label: t(`incidents.status.${k}`) })),
+  ];
+
+  const newStatusOptions = STATUS_KEYS.map((k) => ({
+    value: k, label: t(`incidents.status.${k}`),
+  }));
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ['incidents', statusFilter],
@@ -62,20 +48,20 @@ export default function IncidentsPage() {
     mutationFn: ({ id, data }) => incidentReportsService.updateStatus(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['incidents'] });
-      toast.success('Signalement mis à jour');
+      toast.success(t('incidents.toast.updated'));
       setSelected(null);
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur'),
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('incidents.toast.error')),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => incidentReportsService.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['incidents'] });
-      toast.success('Signalement supprimé');
+      toast.success(t('incidents.toast.deleted'));
       setSelected(null);
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur'),
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('incidents.toast.error')),
   });
 
   function openDetail(report) {
@@ -90,11 +76,14 @@ export default function IncidentsPage() {
 
   const pending = reports.filter((r) => r.status === 'PENDING').length;
 
+  const subtitle = t('incidents.subtitle', { count: reports.length })
+    + (pending > 0 ? t('incidents.pending', { count: pending }) : '');
+
   return (
-    <AppShell title="Signalements d'incidents">
+    <AppShell title={t('incidents.title')}>
       <PageHeader
-        title="Signalements d'incidents"
-        subtitle={`${reports.length} signalement${reports.length !== 1 ? 's' : ''}${pending > 0 ? ` · ${pending} en attente de traitement` : ''}`}
+        title={t('incidents.title')}
+        subtitle={subtitle}
       />
 
       <div className="inc-toolbar">
@@ -102,12 +91,14 @@ export default function IncidentsPage() {
           id="inc-status-filter"
           label=""
           value={statusFilter}
-          options={STATUS_OPTIONS}
+          options={statusOptions}
           onChange={(e) => setStatusFilter(e.target.value)}
         />
         <div className="inc-legend">
-          {Object.entries(STATUS_META).map(([k, v]) => (
-            <span key={k} className={`inc-status ${v.cls}`}>{v.label} ({reports.filter((r) => r.status === k).length})</span>
+          {STATUS_KEYS.map((k) => (
+            <span key={k} className={`inc-status ${STATUS_CLS[k]}`}>
+              {t(`incidents.status.${k}`)} ({reports.filter((r) => r.status === k).length})
+            </span>
           ))}
         </div>
       </div>
@@ -117,26 +108,28 @@ export default function IncidentsPage() {
       ) : reports.length === 0 ? (
         <div className="inc-empty">
           <div className="inc-empty__icon">🛡️</div>
-          <p>Aucun signalement{statusFilter ? ' pour ce statut' : ''}.</p>
+          <p>{statusFilter ? t('incidents.emptyStatus') : t('incidents.empty')}</p>
         </div>
       ) : (
         <div className="inc-list">
           {reports.map((r) => {
-            const s = STATUS_META[r.status] ?? STATUS_META.PENDING;
-            const reporter = r.anonymous ? 'Anonyme' : (r.reportedBy?.name ?? '—');
+            const reporter = r.anonymous ? t('incidents.anonymous') : (r.reportedBy?.name ?? '—');
+            const roleLabel = r.reportedBy?.role === 'TEACHER' ? t('incidents.teacher') : t('incidents.student');
             return (
               <Card key={r.id} className="inc-card" onClick={() => openDetail(r)}>
                 <div className="inc-card__header">
                   <div className="inc-card__meta">
-                    <span className="inc-card__cat">{CAT_LABEL[r.category] ?? r.category}</span>
-                    <span className={`inc-status ${s.cls}`}>{s.label}</span>
+                    <span className="inc-card__cat">{t(`incidents.category.${r.category}`, r.category)}</span>
+                    <span className={`inc-status ${STATUS_CLS[r.status] ?? STATUS_CLS.PENDING}`}>
+                      {t(`incidents.status.${r.status}`, r.status)}
+                    </span>
                   </div>
                   <span className="inc-card__date">{new Date(r.createdAt).toLocaleDateString('fr-FR')}</span>
                 </div>
                 <h4 className="inc-card__title">{r.title}</h4>
                 <div className="inc-card__info">
-                  <span>Concerné(e) : <strong>{r.accusedName}</strong> ({r.accusedRole})</span>
-                  <span>Signalé par : <strong>{reporter}</strong>{r.reportedBy?.role ? ` — ${r.reportedBy.role === 'TEACHER' ? 'Enseignant' : 'Élève'}` : ''}</span>
+                  <span>{t('incidents.concerning')} <strong>{r.accusedName}</strong> ({r.accusedRole})</span>
+                  <span>{t('incidents.reportedBy')} <strong>{reporter}</strong>{r.reportedBy?.role ? ` — ${roleLabel}` : ''}</span>
                 </div>
                 <p className="inc-card__desc">{r.description.length > 160 ? r.description.slice(0, 160) + '…' : r.description}</p>
               </Card>
@@ -149,57 +142,57 @@ export default function IncidentsPage() {
         <OffCanvas
           open
           onClose={() => setSelected(null)}
-          title="Détail du signalement"
+          title={t('incidents.detail.title')}
           size="md"
           footer={
             <>
               <Button
                 variant="danger"
                 size="sm"
-                onClick={() => { if (window.confirm('Supprimer ce signalement ?')) deleteMutation.mutate(selected.id); }}
+                onClick={() => { if (window.confirm(t('incidents.confirmDelete'))) deleteMutation.mutate(selected.id); }}
                 disabled={deleteMutation.isPending}
               >
-                Supprimer
+                {t('incidents.delete')}
               </Button>
-              <Button variant="ghost" onClick={() => setSelected(null)}>Fermer</Button>
+              <Button variant="ghost" onClick={() => setSelected(null)}>{t('action.close')}</Button>
               <Button onClick={handleUpdate} disabled={updateMutation.isPending}>
-                {updateMutation.isPending ? 'Enregistrement…' : 'Enregistrer'}
+                {updateMutation.isPending ? t('action.saving') : t('action.save')}
               </Button>
             </>
           }
         >
           <div className="inc-detail">
             <div className="inc-detail__row">
-              <span className="inc-detail__label">Catégorie</span>
-              <span className="inc-detail__value">{CAT_LABEL[selected.category] ?? selected.category}</span>
+              <span className="inc-detail__label">{t('incidents.detail.category')}</span>
+              <span className="inc-detail__value">{t(`incidents.category.${selected.category}`, selected.category)}</span>
             </div>
             <div className="inc-detail__row">
-              <span className="inc-detail__label">Concerné(e)</span>
+              <span className="inc-detail__label">{t('incidents.detail.concerning')}</span>
               <span className="inc-detail__value"><strong>{selected.accusedName}</strong> — {selected.accusedRole}</span>
             </div>
             <div className="inc-detail__row">
-              <span className="inc-detail__label">Signalé par</span>
+              <span className="inc-detail__label">{t('incidents.detail.reportedBy')}</span>
               <span className="inc-detail__value">
-                {selected.anonymous ? 'Anonyme' : selected.reportedBy?.name ?? '—'}
+                {selected.anonymous ? t('incidents.anonymous') : selected.reportedBy?.name ?? '—'}
                 {!selected.anonymous && selected.reportedBy?.role && (
                   <span style={{ color: '#9ca3af', marginLeft: 4 }}>
-                    ({selected.reportedBy.role === 'TEACHER' ? 'Enseignant' : 'Élève'})
+                    ({selected.reportedBy.role === 'TEACHER' ? t('incidents.teacher') : t('incidents.student')})
                   </span>
                 )}
               </span>
             </div>
             <div className="inc-detail__row">
-              <span className="inc-detail__label">Date</span>
+              <span className="inc-detail__label">{t('incidents.detail.date')}</span>
               <span className="inc-detail__value">{new Date(selected.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
             </div>
 
             <div className="inc-detail__section">
-              <div className="inc-detail__label">Objet</div>
+              <div className="inc-detail__label">{t('incidents.detail.subject')}</div>
               <p className="inc-detail__title">{selected.title}</p>
             </div>
 
             <div className="inc-detail__section">
-              <div className="inc-detail__label">Description</div>
+              <div className="inc-detail__label">{t('incidents.detail.description')}</div>
               <p className="inc-detail__desc">{selected.description}</p>
             </div>
 
@@ -207,19 +200,19 @@ export default function IncidentsPage() {
 
             <Select
               id="inc-new-status"
-              label="Changer le statut"
+              label={t('incidents.detail.changeStatus')}
               value={newStatus}
-              options={NEW_STATUS_OPTIONS}
+              options={newStatusOptions}
               onChange={(e) => setNewStatus(e.target.value)}
             />
 
             <Textarea
               id="inc-admin-notes"
-              label="Notes internes (admin uniquement)"
+              label={t('incidents.detail.adminNotes')}
               rows={4}
               value={adminNotes}
               onChange={(e) => setAdminNotes(e.target.value)}
-              placeholder="Observations, actions prises, décision finale…"
+              placeholder={t('incidents.detail.adminNotesPlaceholder')}
             />
           </div>
         </OffCanvas>

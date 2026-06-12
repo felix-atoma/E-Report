@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { downloadCSV } from '../../../utils/csvExport';
 import { exportService } from '../../../services/exportService';
 import { Link } from 'react-router-dom';
@@ -33,19 +34,13 @@ const EMPTY_FORM = {
   studentStatus: 'ACTIVE',
 };
 
-const STUDENT_STATUS_OPTIONS = [
-  { value: 'ACTIVE', label: 'Actif' },
-  { value: 'GRADUATED', label: 'Diplômé' },
-  { value: 'TRANSFERRED', label: 'Transféré' },
-  { value: 'WITHDRAWN', label: 'Retiré' },
-  { value: 'SUSPENDED', label: 'Suspendu' },
-];
+const STUDENT_STATUS_KEYS = ['ACTIVE', 'GRADUATED', 'TRANSFERRED', 'WITHDRAWN', 'SUSPENDED'];
 
-function validate(form) {
+function validate(form, t) {
   const errors = {};
-  if (!form.name.trim()) errors.name = 'Nom complet requis';
+  if (!form.name.trim()) errors.name = t('students.errors.nameRequired');
   if (form.parentEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.parentEmail)) {
-    errors.parentEmail = 'Email invalide';
+    errors.parentEmail = t('students.errors.emailInvalid');
   }
   return errors;
 }
@@ -88,14 +83,15 @@ function PhotoPicker({ preview, existingSrc, name, fileInputRef, onPhotoClick })
 }
 
 function StudentForm({ form, errors, onChange, classes, isCreate, existingAdmissionNumber,
-  photoPreview, existingPhotoSrc, fileInputRef, onPhotoClick, showExtended, onToggleExtended }) {
+  photoPreview, existingPhotoSrc, fileInputRef, onPhotoClick, showExtended, onToggleExtended, t }) {
   const classOptions = classes.map((c) => ({ value: c.id, label: c.name }));
+  const statusOptions = STUDENT_STATUS_KEYS.map((k) => ({ value: k, label: t(`students.status.${k}`) }));
 
   return (
     <div className="student-form">
       {/* Photo row */}
       <div className="oc-section">
-        <p className="oc-section__title"><span className="oc-section__title-dot" />Photo &amp; identité</p>
+        <p className="oc-section__title"><span className="oc-section__title-dot" />{t('students.photoId')}</p>
         <PhotoPicker
           preview={photoPreview}
           existingSrc={existingPhotoSrc}
@@ -107,10 +103,10 @@ function StudentForm({ form, errors, onChange, classes, isCreate, existingAdmiss
 
       {/* Basic info */}
       <div className="oc-section">
-        <p className="oc-section__title"><span className="oc-section__title-dot" />Informations de base</p>
+        <p className="oc-section__title"><span className="oc-section__title-dot" />{t('students.basicInfo')}</p>
         <div className="oc-fields">
           <Input
-            id="name" label="Nom complet" required
+            id="name" label={t('users.fullName')} required
             value={form.name} error={errors.name}
             placeholder="ex: Kofi Ama"
             onChange={(e) => onChange('name', e.target.value)}
@@ -120,39 +116,39 @@ function StudentForm({ form, errors, onChange, classes, isCreate, existingAdmiss
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
               </svg>
-              Le numéro matricule sera généré automatiquement à la création.
+              {t('students.admissionAuto')}
             </div>
           ) : (
             <div className="student-form__matricule-display">
-              <span className="student-form__matricule-label">Numéro matricule</span>
+              <span className="student-form__matricule-label">{t('students.admissionLabel')}</span>
               <span className="student-form__matricule-value">{existingAdmissionNumber}</span>
             </div>
           )}
           <div className="oc-fields oc-fields--row">
             <Input
-              id="dateOfBirth" label="Date de naissance" type="date"
+              id="dateOfBirth" label={t('students.dateOfBirth')} type="date"
               value={form.dateOfBirth} error={errors.dateOfBirth}
               onChange={(e) => onChange('dateOfBirth', e.target.value)}
             />
             <Select
-              id="sex" label="Sexe"
+              id="sex" label={t('students.gender')}
               value={form.sex}
-              placeholder="Sélectionner"
-              options={[{ value: 'M', label: 'Masculin' }, { value: 'F', label: 'Féminin' }]}
+              placeholder={t('action.search')}
+              options={[{ value: 'M', label: t('common.male') }, { value: 'F', label: t('common.female') }]}
               onChange={(e) => onChange('sex', e.target.value)}
             />
           </div>
           <Select
-            id="classId" label="Classe"
+            id="classId" label={t('students.class')}
             value={form.classId} error={errors.classId}
-            placeholder="Sélectionner une classe"
+            placeholder={t('students.allClasses')}
             options={classOptions}
             onChange={(e) => onChange('classId', e.target.value)}
           />
           <Input
-            id="parentEmail" label="Email du parent"
+            id="parentEmail" label={t('students.parentEmail')}
             value={form.parentEmail} error={errors.parentEmail}
-            placeholder="Optionnel — lie le compte parent"
+            placeholder={t('common.optional')}
             onChange={(e) => onChange('parentEmail', e.target.value)}
           />
         </div>
@@ -164,40 +160,40 @@ function StudentForm({ form, errors, onChange, classes, isCreate, existingAdmiss
         className="student-form__toggle-extended"
         onClick={onToggleExtended}
       >
-        {showExtended ? '▲ Moins d\'informations' : '▼ Plus d\'informations (adresse, famille, santé…)'}
+        {showExtended ? t('students.showLess') : t('students.showMore')}
       </button>
 
       {showExtended && (
         <>
           <div className="oc-section">
-            <p className="oc-section__title"><span className="oc-section__title-dot" />Statut &amp; Scolarité</p>
+            <p className="oc-section__title"><span className="oc-section__title-dot" />{t('students.statusSection')}</p>
             <div className="oc-fields">
               <div className="oc-fields oc-fields--row">
                 <Select
                   id="studentStatus"
-                  label="Statut"
+                  label={t('common.status')}
                   value={form.studentStatus}
-                  options={STUDENT_STATUS_OPTIONS}
+                  options={statusOptions}
                   onChange={(e) => onChange('studentStatus', e.target.value)}
                 />
                 <Input
                   id="previousSchool"
-                  label="École précédente"
+                  label={t('students.previousSchool')}
                   value={form.previousSchool}
-                  placeholder="Optionnel"
+                  placeholder={t('common.optional')}
                   onChange={(e) => onChange('previousSchool', e.target.value)}
                 />
               </div>
               <div className="oc-fields oc-fields--row">
                 <Input
                   id="birthPlace"
-                  label="Lieu de naissance"
+                  label={t('students.birthPlace')}
                   value={form.birthPlace}
                   onChange={(e) => onChange('birthPlace', e.target.value)}
                 />
                 <Input
                   id="bloodType"
-                  label="Groupe sanguin"
+                  label={t('students.bloodType')}
                   value={form.bloodType}
                   placeholder="ex: A+, O-, …"
                   onChange={(e) => onChange('bloodType', e.target.value)}
@@ -205,7 +201,7 @@ function StudentForm({ form, errors, onChange, classes, isCreate, existingAdmiss
               </div>
               <Input
                 id="medicalConditions"
-                label="Conditions médicales"
+                label={t('students.medicalCond')}
                 value={form.medicalConditions}
                 placeholder="Allergies, maladies chroniques…"
                 onChange={(e) => onChange('medicalConditions', e.target.value)}
@@ -214,17 +210,17 @@ function StudentForm({ form, errors, onChange, classes, isCreate, existingAdmiss
           </div>
 
           <div className="oc-section">
-            <p className="oc-section__title"><span className="oc-section__title-dot" />Adresse</p>
+            <p className="oc-section__title"><span className="oc-section__title-dot" />{t('students.address')}</p>
             <div className="oc-fields oc-fields--row">
               <Input
                 id="address"
-                label="Adresse"
+                label={t('students.address')}
                 value={form.address}
                 onChange={(e) => onChange('address', e.target.value)}
               />
               <Input
                 id="city"
-                label="Ville"
+                label={t('students.city')}
                 value={form.city}
                 onChange={(e) => onChange('city', e.target.value)}
               />
@@ -232,17 +228,17 @@ function StudentForm({ form, errors, onChange, classes, isCreate, existingAdmiss
           </div>
 
           <div className="oc-section">
-            <p className="oc-section__title"><span className="oc-section__title-dot" />Père</p>
+            <p className="oc-section__title"><span className="oc-section__title-dot" />{t('students.fatherSection')}</p>
             <div className="oc-fields oc-fields--row">
               <Input
                 id="fatherName"
-                label="Nom du père"
+                label={t('students.fatherName')}
                 value={form.fatherName}
                 onChange={(e) => onChange('fatherName', e.target.value)}
               />
               <Input
                 id="fatherPhone"
-                label="Téléphone père"
+                label={t('students.fatherPhone')}
                 value={form.fatherPhone}
                 onChange={(e) => onChange('fatherPhone', e.target.value)}
               />
@@ -250,17 +246,17 @@ function StudentForm({ form, errors, onChange, classes, isCreate, existingAdmiss
           </div>
 
           <div className="oc-section">
-            <p className="oc-section__title"><span className="oc-section__title-dot" />Mère</p>
+            <p className="oc-section__title"><span className="oc-section__title-dot" />{t('students.motherSection')}</p>
             <div className="oc-fields oc-fields--row">
               <Input
                 id="motherName"
-                label="Nom de la mère"
+                label={t('students.motherName')}
                 value={form.motherName}
                 onChange={(e) => onChange('motherName', e.target.value)}
               />
               <Input
                 id="motherPhone"
-                label="Téléphone mère"
+                label={t('students.motherPhone')}
                 value={form.motherPhone}
                 onChange={(e) => onChange('motherPhone', e.target.value)}
               />
@@ -268,25 +264,25 @@ function StudentForm({ form, errors, onChange, classes, isCreate, existingAdmiss
           </div>
 
           <div className="oc-section">
-            <p className="oc-section__title"><span className="oc-section__title-dot" />Contact d'urgence</p>
+            <p className="oc-section__title"><span className="oc-section__title-dot" />{t('students.emergencySection')}</p>
             <div className="oc-fields">
               <div className="oc-fields oc-fields--row">
                 <Input
                   id="emergencyContactName"
-                  label="Nom"
+                  label={t('students.emergencyName')}
                   value={form.emergencyContactName}
                   onChange={(e) => onChange('emergencyContactName', e.target.value)}
                 />
                 <Input
                   id="emergencyContactPhone"
-                  label="Téléphone"
+                  label={t('students.emergencyPhone')}
                   value={form.emergencyContactPhone}
                   onChange={(e) => onChange('emergencyContactPhone', e.target.value)}
                 />
               </div>
               <Input
                 id="emergencyContactRelation"
-                label="Relation"
+                label={t('students.emergencyRelation')}
                 value={form.emergencyContactRelation}
                 placeholder="ex: Oncle, Tuteur…"
                 onChange={(e) => onChange('emergencyContactRelation', e.target.value)}
@@ -300,6 +296,7 @@ function StudentForm({ form, errors, onChange, classes, isCreate, existingAdmiss
 }
 
 function StudentsPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const fileInputRef = useRef(null);
 
@@ -341,7 +338,7 @@ function StudentsPage() {
     try {
       await usersService.uploadAvatar(userId, photoFile);
     } catch {
-      toast.error('Élève créé, mais échec de l\'envoi de la photo.');
+      toast.error(t('students.toast.photoFail'));
     }
   }
 
@@ -351,27 +348,27 @@ function StudentsPage() {
       await uploadPhotoIfNeeded(res.data?.user?.id);
       qc.invalidateQueries({ queryKey: ['students'] });
       qc.invalidateQueries({ queryKey: ['analytics'] });
-      toast.success('Élève ajouté');
+      toast.success(t('students.toast.created'));
       closeModal();
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur de création'),
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('common.errorGeneric')),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => studentsService.delete(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['students'] }); qc.invalidateQueries({ queryKey: ['analytics'] }); toast.success('Élève supprimé'); setConfirm(null); },
-    onError:   (err) => toast.error(err?.response?.data?.message ?? 'Erreur de suppression'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['students'] }); qc.invalidateQueries({ queryKey: ['analytics'] }); toast.success(t('students.toast.deleted')); setConfirm(null); },
+    onError:   (err) => toast.error(err?.response?.data?.message ?? t('common.errorGeneric')),
   });
 
   const bulkDeleteMutation = useMutation({
     mutationFn: (ids) => studentsService.bulkDelete(ids),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['students'] });
-      toast.success(`${selectedIds.size} élève${selectedIds.size > 1 ? 's' : ''} supprimé${selectedIds.size > 1 ? 's' : ''}`);
+      toast.success(t('students.toast.bulkDeleted', { count: selectedIds.size }));
       setSelectedIds(new Set());
       setBulkConfirm(false);
     },
-    onError: () => { qc.invalidateQueries({ queryKey: ['students'] }); toast.error('Certaines suppressions ont échoué'); setBulkConfirm(false); setSelectedIds(new Set()); },
+    onError: () => { qc.invalidateQueries({ queryKey: ['students'] }); toast.error(t('common.errorGeneric')); setBulkConfirm(false); setSelectedIds(new Set()); },
   });
 
   const updateMutation = useMutation({
@@ -380,10 +377,10 @@ function StudentsPage() {
       const userId = res.data?.user?.id ?? selected?.user?.id;
       await uploadPhotoIfNeeded(userId);
       qc.invalidateQueries({ queryKey: ['students'] });
-      toast.success('Élève mis à jour');
+      toast.success(t('students.toast.updated'));
       closeModal();
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur de mise à jour'),
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('common.errorGeneric')),
   });
 
   function handlePhotoClick() {
@@ -464,7 +461,7 @@ function StudentsPage() {
   }
 
   function handleSubmit() {
-    const errs = validate(form);
+    const errs = validate(form, t);
     if (Object.keys(errs).length) { setErrors(errs); return; }
     const payload = {
       name:        form.name,
@@ -502,7 +499,7 @@ function StudentsPage() {
   const columns = [
     {
       key: 'name',
-      label: 'Élève',
+      label: t('students.title'),
       render: (s) => {
         const displayName = s.user?.name ?? s.admissionNumber ?? '—';
         return (
@@ -518,12 +515,12 @@ function StudentsPage() {
     },
     {
       key: 'class',
-      label: 'Classe',
+      label: t('students.class'),
       render: (s) => s.classes?.[0]?.class?.name ?? <span className="students-table__empty">—</span>,
     },
     {
       key: 'dateOfBirth',
-      label: 'Naissance',
+      label: t('students.dateOfBirth'),
       render: (s) =>
         s.dateOfBirth
           ? new Date(s.dateOfBirth).toLocaleDateString('fr-FR')
@@ -531,7 +528,7 @@ function StudentsPage() {
     },
     {
       key: 'parent',
-      label: 'Parent',
+      label: t('students.parent'),
       render: (s) =>
         s.parent ? s.parent.name : <span className="students-table__empty">—</span>,
     },
@@ -541,18 +538,18 @@ function StudentsPage() {
       style: { width: '160px', textAlign: 'right' },
       render: (s) => (
         <div className="students-table__actions">
-          <Button size="sm" variant="ghost" onClick={() => openEdit(s)}>Modifier</Button>
-          <Button size="sm" variant="ghost" onClick={() => setConfirm(s)}>Supprimer</Button>
+          <Button size="sm" variant="ghost" onClick={() => openEdit(s)}>{t('action.edit')}</Button>
+          <Button size="sm" variant="ghost" onClick={() => setConfirm(s)}>{t('action.delete')}</Button>
         </div>
       ),
     },
   ];
 
   return (
-    <AppShell title="Élèves">
+    <AppShell title={t('students.title')}>
       <PageHeader
-        title="Élèves"
-        subtitle={`${students.length} élève${students.length !== 1 ? 's' : ''}`}
+        title={t('students.title')}
+        subtitle={t('dash.studentsCount', { count: students.length })}
         actions={
           <div style={{ display: 'flex', gap: '.5rem' }}>
             <Button
@@ -583,7 +580,7 @@ function StudentsPage() {
             >
               ↓ Export officiel
             </Button>
-            <Button icon="+" onClick={openCreate}>Nouvel élève</Button>
+            <Button icon="+" onClick={openCreate}>{t('students.addStudent')}</Button>
           </div>
         }
       />
@@ -592,13 +589,13 @@ function StudentsPage() {
         <SearchBar
           value={search}
           onChange={setSearch}
-          placeholder="Rechercher par nom ou matricule…"
+          placeholder={t('students.searchPlaceholder')}
           className="students-page__search"
         />
         <Select
           id="class-filter"
           value={classFilter}
-          placeholder="Toutes les classes"
+          placeholder={t('students.allClasses')}
           options={classOptions}
           onChange={(e) => setClass(e.target.value)}
           className="students-page__class-filter"
@@ -616,7 +613,7 @@ function StudentsPage() {
         columns={columns}
         rows={filtered}
         loading={isLoading}
-        emptyMessage="Aucun élève trouvé"
+        emptyMessage={t('students.noFound')}
         selectable
         selectedIds={selectedIds}
         onSelectionChange={setSelectedIds}
@@ -634,14 +631,14 @@ function StudentsPage() {
       <OffCanvas
         open={!!modal}
         onClose={closeModal}
-        title={modal === 'create' ? 'Nouvel élève' : "Modifier l'élève"}
-        subtitle={modal === 'create' ? "Saisir les informations du nouvel inscrit" : `Mise à jour du dossier de ${selected?.user?.name ?? selected?.admissionNumber ?? ''}`}
+        title={modal === 'create' ? t('students.addStudent') : t('students.editStudent')}
+        subtitle={modal === 'create' ? undefined : `${t('action.edit')} — ${selected?.user?.name ?? selected?.admissionNumber ?? ''}`}
         size="md"
         footer={
           <>
-            <Button variant="ghost" onClick={closeModal} disabled={isSaving}>Annuler</Button>
+            <Button variant="ghost" onClick={closeModal} disabled={isSaving}>{t('action.cancel')}</Button>
             <Button onClick={handleSubmit} disabled={isSaving}>
-              {isSaving ? 'Enregistrement…' : 'Enregistrer'}
+              {isSaving ? t('action.saving') : t('action.save')}
             </Button>
           </>
         }
@@ -659,6 +656,7 @@ function StudentsPage() {
           onPhotoClick={handlePhotoClick}
           showExtended={showExtended}
           onToggleExtended={() => setShowExtended((v) => !v)}
+          t={t}
         />
       </OffCanvas>
 

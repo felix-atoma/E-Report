@@ -10,8 +10,12 @@
   --c-primary-text:  color-mix(in srgb, var(--c-primary) 85%, black);
 }
 * { margin:0; padding:0; box-sizing:border-box; }
-body { font-family: Arial, Helvetica, sans-serif; font-size:11px; color:#111; background:#fff; }
-.page { width:210mm; min-height:297mm; padding:10mm 10mm 20mm; position:relative; }
+body {
+  font-family: Arial, Helvetica, sans-serif; font-size:11px; color:#111; background:#fff;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.page { width:210mm; min-height:297mm; padding:10mm 12mm 20mm; position:relative; }
 
 /* ── Header ── */
 .header {
@@ -94,9 +98,11 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:11px; color:#111; ba
 .grades-table .col-appr   { text-align:left; min-width:70px; font-size:10px; }
 .grades-table .col-prof   { text-align:left; min-width:75px; font-size:9.5px; }
 .grades-table .col-sig-hbs { min-width:60px; }
+.grades-table tbody tr { page-break-inside: avoid; }
 .grades-table tbody tr:nth-child(even) { background:#f8fafb; }
 .grades-table tbody td.fail { color:#dc2626; font-weight:bold; }
 .grades-table tbody td.pass { color:#15803d; font-weight:600; }
+.grades-table tfoot { page-break-before: avoid; }
 .grades-table tfoot td {
   background:var(--c-primary); color:#fff;
   font-weight:bold; font-size:11px; padding:5px 4px;
@@ -169,7 +175,8 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:11px; color:#111; ba
 .att-cell .att-val   { font-size:15px; font-weight:bold; color:var(--c-primary); margin-top:2px; }
 
 /* ── Comment box ── */
-.box .content { padding:7px 10px; font-size:11px; min-height:36px; color:#222; line-height:1.5; }
+.box .content { padding:7px 10px; font-size:11px; min-height:48px; color:#222; line-height:1.5; }
+.box .content--empty { color:#9ca3af; font-style:italic; }
 .box .honor-badge {
   display:inline-block; background:#fef9c3;
   border:1px solid #fbbf24; color:#92400e;
@@ -203,7 +210,7 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:11px; color:#111; ba
 }
 .sig-box { flex:1; text-align:center; border-right:1px solid #d1d5db; padding:0 10px; }
 .sig-box:last-child { border-right:none; }
-.sig-box .sig-title { font-size:10px; font-weight:bold; text-transform:uppercase; color:var(--c-primary); margin-bottom:28px; }
+.sig-box .sig-title { font-size:10px; font-weight:bold; text-transform:uppercase; color:var(--c-primary); margin-bottom:4px; }
 .sig-box .sig-line  { border-bottom:1px solid #374151; margin:0 10px 4px; }
 .sig-box .sig-name  { font-size:9px; color:#6b7280; }
 
@@ -218,9 +225,9 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:11px; color:#111; ba
 }
 
 @media print {
-  @page { size:A4; margin:10mm; }
-  body { background:#fff; }
-  .page { width:100%; min-height:auto; padding:0; }
+  @page { size:A4; margin:0; }
+  body { background:#fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .page { width:100%; min-height:auto; padding:14mm 14mm 18mm; }
   .stamp-area { position:fixed; bottom:10mm; right:10mm; }
 }
 </style>
@@ -359,17 +366,19 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:11px; color:#111; ba
   <div class="annual-bar">
     <div class="ann-cell">
       <div class="ann-label">Moyenne Annuelle</div>
-      <div class="ann-value {{#if report.isPassing}}pass{{else}}fail{{/if}}">{{fmtScore report.annualAverage}}<small style="font-size:11px;">/20</small></div>
+      <div class="ann-value {{#if report.annualIsPassing}}pass{{else}}fail{{/if}}">{{fmtScore report.annualAverage}}<small style="font-size:11px;">/20</small></div>
     </div>
     <div class="decision-cell">
-      <div class="ann-label" style="margin-right:10px;">Décision du Conseil :</div>
-      <div class="decision-text {{#if report.isPassing}}pass{{else}}fail{{/if}}">{{report.councilDecision}}</div>
+      <div style="text-align:center;">
+        <div class="ann-label" style="margin-bottom:4px;">Décision du Conseil de Classe</div>
+        <div class="decision-text {{#if report.annualIsPassing}}pass{{else}}fail{{/if}}">{{report.councilDecision}}</div>
+      </div>
     </div>
   </div>
   {{/if}}
 
   <!-- Attendance + remarks -->
-  <div class="two-col">
+  <div class="two-col" style="{{#unless report.attendanceDays}}display:block;{{/unless}}">
     {{#if report.attendanceDays}}
     <div class="box">
       <div class="box-title">Assiduité</div>
@@ -384,7 +393,7 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:11px; color:#111; ba
     {{/if}}
     <div style="display:flex;flex-direction:column;gap:6px;justify-content:center;">
       {{#if report.honorCouncil}}
-      <div class="remark remark--honor">⭐ TABLEAU D'HONNEUR — Félicitations du Conseil des Professeurs</div>
+      <div class="remark remark--honor">&#11088; TABLEAU D&apos;HONNEUR &mdash; Félicitations du Conseil des Professeurs</div>
       {{/if}}
       {{#if report.commendations}}
       <div class="remark remark--commend">Félicitations : {{report.commendations}}</div>
@@ -399,11 +408,19 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:11px; color:#111; ba
   <div class="two-col">
     <div class="box">
       <div class="box-title">Observation du Professeur Principal</div>
+      {{#if report.teacherComment}}
       <div class="content">{{report.teacherComment}}</div>
+      {{else}}
+      <div class="content content--empty">Aucune observation</div>
+      {{/if}}
     </div>
     <div class="box">
       <div class="box-title">Observation Générale du Conseil des Professeurs</div>
+      {{#if report.principalComment}}
       <div class="content">{{report.principalComment}}</div>
+      {{else}}
+      <div class="content content--empty">Aucune observation</div>
+      {{/if}}
     </div>
   </div>
 
@@ -411,18 +428,21 @@ body { font-family: Arial, Helvetica, sans-serif; font-size:11px; color:#111; ba
   <div class="signatures">
     <div class="sig-box">
       <div class="sig-title">Signature du Parent / Tuteur</div>
+      <div style="font-size:8.5px;color:#9ca3af;margin-bottom:22px;">(Lu et approuvé)</div>
       <div class="sig-line"></div>
       <div class="sig-name">&nbsp;</div>
     </div>
     <div class="sig-box">
-      <div class="sig-title">Nom et Signature du Prof. Titulaire</div>
+      <div class="sig-title">Le Professeur Principal</div>
+      <div style="font-size:8.5px;color:#9ca3af;margin-bottom:22px;">(Nom et signature)</div>
       <div class="sig-line"></div>
       <div class="sig-name">&nbsp;</div>
     </div>
     <div class="sig-box">
-      <div class="sig-title">Cachet et Signature du Directeur</div>
+      <div class="sig-title">Le Directeur de l&apos;École</div>
+      <div style="font-size:8.5px;color:#9ca3af;margin-bottom:22px;">(Cachet et signature)</div>
       <div class="sig-line"></div>
-      <div class="sig-name">Le _____ / _____ / _____</div>
+      <div class="sig-name" style="font-size:8.5px;color:#374151;">Fait le &nbsp;_____ / _____ / _____</div>
     </div>
   </div>
 
