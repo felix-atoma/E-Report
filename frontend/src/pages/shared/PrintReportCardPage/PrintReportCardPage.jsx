@@ -348,7 +348,7 @@ export default function PrintReportCardPage() {
             <div className="pr-results__section-title">Statistiques de la classe</div>
             <div className="pr-results__cells">
               <div className="pr-results__cell">
-                <label>Moy. de classe</label>
+                <label>Moy. de la classe</label>
                 <strong>{fmt(report.classAverage)}</strong>
               </div>
               <div className="pr-results__cell pr-results__cell--high">
@@ -418,6 +418,12 @@ export default function PrintReportCardPage() {
             <div className="pr-sig__line" />
             <div className="pr-sig__name">{institution?.name ? `Direction — ${institution.name}` : 'Le Directeur'}</div>
             <div className="pr-sig__label">Le Directeur</div>
+          </div>
+          <div className="pr-sig pr-sig--visa">
+            <div className="pr-sig__area" />
+            <div className="pr-sig__line" />
+            <div className="pr-sig__date">Vu le : ___ / ___ / ______</div>
+            <div className="pr-sig__label">Visa des Parents</div>
           </div>
         </div>
 
