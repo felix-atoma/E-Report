@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
-import sgMail from '@sendgrid/mail';
 
 const OWNER_EMAIL_DEFAULT = 'felixatoma2@gmail.com';
 
@@ -27,25 +26,18 @@ interface SendParams {
 export class MailService {
   private readonly logger = new Logger(MailService.name);
   private readonly fromEmail: string;
-  private readonly from: { name: string; email: string };
   private readonly fromSmtp: string;
   private readonly ownerEmail: string;
-  private readonly provider: 'sendgrid' | 'smtp' | 'none';
+  private readonly provider: 'smtp' | 'none';
   private smtpTransport: nodemailer.Transporter | null = null;
 
   constructor(private readonly config: ConfigService) {
     this.fromEmail = config.get<string>('MAIL_FROM', 'noreply@novabulletin.local');
-    this.from = { name: 'NovaBulletin', email: this.fromEmail };
     this.fromSmtp = `NovaBulletin <${this.fromEmail}>`;
     this.ownerEmail = config.get<string>('OWNER_EMAIL', OWNER_EMAIL_DEFAULT);
-    const sendgridKey = config.get<string>('SENDGRID_API_KEY', '');
     const smtpHost = config.get<string>('SMTP_HOST', '');
 
-    if (sendgridKey && sendgridKey !== 'your_sendgrid_key') {
-      sgMail.setApiKey(sendgridKey);
-      this.provider = 'sendgrid';
-      this.logger.log('Mail provider: SendGrid');
-    } else if (smtpHost) {
+    if (smtpHost) {
       this.smtpTransport = nodemailer.createTransport({
         host: smtpHost,
         port: config.get<number>('SMTP_PORT', 587),
@@ -56,30 +48,17 @@ export class MailService {
         },
       });
       this.provider = 'smtp';
-      this.logger.log('Mail provider: SMTP');
+      this.logger.log(`Mail provider: SMTP (${smtpHost})`);
     } else {
       this.provider = 'none';
-      this.logger.warn('No mail provider configured — emails will be logged only');
+      this.logger.warn('No SMTP configured — emails will be logged only (set SMTP_HOST to enable)');
     }
   }
 
-  // ─── Central send helper — adds deliverability headers to every email ───────
+  // ─── Central send helper ────────────────────────────────────────────────────
   private async send({ to, subject, html, text }: SendParams): Promise<boolean> {
     try {
-      if (this.provider === 'sendgrid') {
-        await sgMail.send({
-          to,
-          from: this.from,
-          replyTo: this.fromEmail,
-          subject,
-          html,
-          text,
-          headers: {
-            'List-Unsubscribe': `<mailto:${this.fromEmail}?subject=unsubscribe>`,
-            'X-Entity-Ref-ID': `novabulletin-${Date.now()}`,
-          },
-        });
-      } else if (this.provider === 'smtp' && this.smtpTransport) {
+      if (this.provider === 'smtp' && this.smtpTransport) {
         await this.smtpTransport.sendMail({
           from: this.fromSmtp,
           to,

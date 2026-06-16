@@ -37,15 +37,17 @@ function LoginForm() {
     }
 
     // Step 1: try regular login first; if admin 2FA required, go to OTP step
+    const email = form.email.trim();
+    const password = form.password.trim();
     try {
-      await login(form.email, form.password);
+      await login(email, password);
     } catch (err) {
       const msg = err.response?.data?.message ?? '';
       // If backend signals 2FA is needed it will return 401 from regular login
       // Try admin-2fa-request to see if this is an admin user
       if (err.response?.status === 401) {
         try {
-          const res2fa = await authService.requestAdmin2fa(form.email, form.password);
+          const res2fa = await authService.requestAdmin2fa(email, password);
           if (res2fa.data?.requiresOtp) {
             setStep('otp');
             setLoading(false);
