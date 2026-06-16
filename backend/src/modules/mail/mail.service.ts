@@ -38,10 +38,13 @@ export class MailService {
     const smtpHost = config.get<string>('SMTP_HOST', '');
 
     if (smtpHost) {
+      // ConfigService returns raw env strings — "false" is truthy in JS, so parse explicitly
+      const smtpPort = Number(config.get<string>('SMTP_PORT', '587'));
+      const smtpSecure = config.get<string>('SMTP_SECURE', 'false') === 'true';
       this.smtpTransport = nodemailer.createTransport({
         host: smtpHost,
-        port: config.get<number>('SMTP_PORT', 587),
-        secure: config.get<boolean>('SMTP_SECURE', false),
+        port: smtpPort,
+        secure: smtpSecure,
         auth: {
           user: config.get<string>('SMTP_USER', ''),
           pass: config.get<string>('SMTP_PASS', ''),
