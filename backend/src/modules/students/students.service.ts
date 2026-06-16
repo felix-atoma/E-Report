@@ -5,8 +5,10 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PdfService } from '../pdf/pdf.service';
+import { MailService } from '../mail/mail.service';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 
@@ -21,6 +23,7 @@ export class StudentsService {
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
     private readonly pdf: PdfService,
+    private readonly mail: MailService,
   ) {}
 
   /** STUDENT: fetch their own profile via linked userId */
@@ -251,6 +254,12 @@ export class StudentsService {
       if (existingUser) throw new ConflictException('Email already in use by another user');
     }
 
+    // Real email provided → send a welcome OTP so the student can set their own password
+    const hasRealEmail = !!dto.email;
+    const otp = hasRealEmail ? crypto.randomUUID().replace(/-/g, '').toUpperCase() : null;
+    const otpHash = otp ? await bcrypt.hash(otp, 10) : null;
+    const otpExpiresAt = otp ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null;
+
     const userRecord = await this.prisma.user.create({
       data: {
         name: dto.name,
@@ -258,9 +267,19 @@ export class StudentsService {
         password: tempPassword,
         role: 'STUDENT',
         institutionId,
+        ...(hasRealEmail ? { mustChangePassword: true, otpHash, otpExpiresAt } : {}),
       },
-      select: { id: true },
+      select: { id: true, institution: { select: { name: true } } },
     });
+
+    if (hasRealEmail && otp) {
+      this.mail.sendWelcomeOtp(
+        dto.email!,
+        dto.name,
+        otp,
+        userRecord.institution?.name ?? 'NovaBulletin',
+      ).catch(() => {/* logged inside service */});
+    }
 
     const student = await this.prisma.student.create({
       data: {

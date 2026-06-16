@@ -215,18 +215,34 @@ export class UsersService {
           results.push({ success: false, name: row.name, error: 'Email déjà utilisé' });
           continue;
         }
-        const tempPass = `Teach@${Math.random().toString(36).slice(2, 8)}`;
-        const hashed = await bcrypt.hash(tempPass, Number(saltRounds));
-        await this.prisma.user.create({
+
+        const otp = crypto.randomUUID().replace(/-/g, '').toUpperCase();
+        const otpHash = await bcrypt.hash(otp, 10);
+        const otpExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        const tempPassword = await bcrypt.hash(crypto.randomUUID(), Number(saltRounds));
+
+        const user = await this.prisma.user.create({
           data: {
             name: row.name,
             email: row.email,
-            password: hashed,
+            password: tempPassword,
             role: Role.TEACHER,
             whatsappNumber: row.phone || null,
             institutionId,
+            mustChangePassword: true,
+            otpHash,
+            otpExpiresAt,
           },
+          select: { institution: { select: { name: true } } },
         });
+
+        this.mail.sendWelcomeOtp(
+          row.email,
+          row.name,
+          otp,
+          user.institution?.name ?? 'NovaBulletin',
+        ).catch(() => {/* logged inside service */});
+
         results.push({ success: true, name: row.name });
       } catch (e: any) {
         results.push({ success: false, name: row.name, error: e.message });

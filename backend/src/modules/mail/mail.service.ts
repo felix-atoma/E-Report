@@ -240,7 +240,7 @@ export class MailService {
 
   // ─── Welcome OTP ─────────────────────────────────────────────────────────────
   async sendWelcomeOtp(to: string, name: string, otp: string, institutionName: string): Promise<boolean> {
-    const subject = `Bienvenue sur NovaBulletin - Votre code d'acces`;
+    const subject = `Bienvenue sur NovaBulletin, ${name} — votre code d'accès`;
     const frontendUrl = this.config.get('FRONTEND_URL', 'http://localhost:3000');
     const loginUrl = `${frontendUrl}/login-otp`;
     const year = new Date().getFullYear();
@@ -271,15 +271,15 @@ export class MailService {
       <tr>
         <td style="background:#ffffff;padding:40px;border-left:1px solid #e5e7eb;border-right:1px solid #e5e7eb;">
 
-          <p style="color:#6b7280;font-size:13px;margin:0 0 24px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Activation du compte</p>
+          <p style="color:#6b7280;font-size:13px;margin:0 0 24px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Activation de votre compte</p>
 
-          <h2 style="color:#111827;font-size:22px;font-weight:700;margin:0 0 16px;">Bonjour, ${name}</h2>
+          <h2 style="color:#111827;font-size:22px;font-weight:700;margin:0 0 16px;">Bienvenue, ${name} 👋</h2>
 
           <p style="color:#4b5563;font-size:15px;line-height:1.7;margin:0 0 12px;">
-            Votre compte a ete cree sur <strong>NovaBulletin</strong> par l'administration de <strong>${institutionName}</strong>.
+            Nous sommes ravis de vous accueillir sur <strong>NovaBulletin</strong> ! Votre compte vient d'être créé par l'équipe de <strong>${institutionName}</strong>.
           </p>
           <p style="color:#4b5563;font-size:15px;line-height:1.7;margin:0 0 28px;">
-            Pour acceder a votre espace, utilisez le code OTP ci-dessous lors de votre premiere connexion :
+            Pour activer votre espace en toute sécurité, utilisez le code à usage unique ci-dessous lors de votre première connexion :
           </p>
 
           <!-- OTP Box -->
@@ -287,10 +287,10 @@ export class MailService {
             <tr>
               <td align="center" style="padding:0 0 28px;">
                 <div style="display:inline-block;background:#f8fafc;border:2px solid #e0e7ff;border-radius:16px;padding:24px 48px;text-align:center;">
-                  <p style="margin:0 0 6px;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:2px;font-weight:600;">Code OTP</p>
+                  <p style="margin:0 0 6px;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:2px;font-weight:600;">Votre code d'accès</p>
                   <p style="margin:0;font-size:20px;font-weight:900;letter-spacing:4px;color:#1e3a8a;font-family:'Courier New',Courier,monospace;word-break:break-all;">${otp}</p>
                   <p style="margin:10px 0 0;font-size:12px;color:#9ca3af;">
-                    Expire dans <strong style="color:#dc2626;">24 heures</strong>
+                    Valable pendant <strong style="color:#dc2626;">24 heures</strong>
                   </p>
                 </div>
               </td>
@@ -300,14 +300,14 @@ export class MailService {
           <!-- Steps -->
           <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:10px;margin-bottom:28px;">
             <tr><td style="padding:20px 24px;">
-              <p style="margin:0 0 14px;font-size:13px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.5px;">Comment se connecter</p>
+              <p style="margin:0 0 14px;font-size:13px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.5px;">Comment activer votre compte</p>
               <table cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="padding:6px 0;vertical-align:top;">
                     <span style="display:inline-block;width:22px;height:22px;background:#1e3a8a;color:#fff;border-radius:50%;font-size:11px;font-weight:700;text-align:center;line-height:22px;margin-right:10px;">1</span>
                   </td>
                   <td style="padding:6px 0;color:#4b5563;font-size:14px;line-height:1.5;">
-                    Cliquez sur le bouton ci-dessous ou rendez-vous sur <strong>NovaBulletin</strong>
+                    Cliquez sur le bouton ci-dessous pour ouvrir <strong>NovaBulletin</strong>
                   </td>
                 </tr>
                 <tr>
@@ -315,7 +315,7 @@ export class MailService {
                     <span style="display:inline-block;width:22px;height:22px;background:#1e3a8a;color:#fff;border-radius:50%;font-size:11px;font-weight:700;text-align:center;line-height:22px;margin-right:10px;">2</span>
                   </td>
                   <td style="padding:6px 0;color:#4b5563;font-size:14px;line-height:1.5;">
-                    Entrez votre adresse email <strong>${to}</strong> et le code OTP
+                    Saisissez votre adresse email <strong>${to}</strong> ainsi que le code ci-dessus
                   </td>
                 </tr>
                 <tr>
@@ -323,7 +323,7 @@ export class MailService {
                     <span style="display:inline-block;width:22px;height:22px;background:#1e3a8a;color:#fff;border-radius:50%;font-size:11px;font-weight:700;text-align:center;line-height:22px;margin-right:10px;">3</span>
                   </td>
                   <td style="padding:6px 0;color:#4b5563;font-size:14px;line-height:1.5;">
-                    Definissez votre mot de passe personnel
+                    Choisissez votre mot de passe personnel — c'est tout, vous êtes prêt !
                   </td>
                 </tr>
               </table>
@@ -335,16 +335,20 @@ export class MailService {
             <tr>
               <td align="center">
                 <a href="${loginUrl}" style="display:inline-block;background:linear-gradient(135deg,#1e3a8a,#1d4ed8);color:#ffffff;text-decoration:none;padding:14px 40px;border-radius:8px;font-size:15px;font-weight:700;letter-spacing:0.3px;">
-                  Se connecter avec mon OTP
+                  Activer mon compte
                 </a>
               </td>
             </tr>
           </table>
 
-          <hr style="border:none;border-top:1px solid #f3f4f6;margin:0 0 20px;">
+          <p style="color:#4b5563;font-size:14px;line-height:1.7;margin:0 0 4px;">
+            Une question ? L'équipe de <strong>${institutionName}</strong> est à votre disposition.
+          </p>
+
+          <hr style="border:none;border-top:1px solid #f3f4f6;margin:20px 0;">
           <p style="color:#9ca3af;font-size:12px;line-height:1.6;margin:0;">
-            Si vous n'etes pas a l'origine de cette inscription, ignorez cet email en toute securite.<br>
-            Ce message a ete envoye automatiquement — merci de ne pas y repondre.
+            Si vous n'êtes pas à l'origine de cette inscription, vous pouvez ignorer cet email en toute sécurité.<br>
+            Ce message a été envoyé automatiquement — merci de ne pas y répondre.
           </p>
         </td>
       </tr>
@@ -365,16 +369,17 @@ export class MailService {
 </html>`;
 
     const text =
-      `Bonjour ${name},\n\n` +
-      `Votre compte a ete cree sur NovaBulletin par ${institutionName}.\n\n` +
-      `Votre code OTP : ${otp}\n` +
-      `(expire dans 24 heures)\n\n` +
-      `Lien de connexion : ${loginUrl}\n\n` +
-      `Etapes :\n` +
-      `1. Allez sur NovaBulletin\n` +
-      `2. Entrez votre email ${to} et le code OTP\n` +
-      `3. Definissez votre mot de passe\n\n` +
-      `Si vous n'etes pas a l'origine de cette inscription, ignorez cet email.`;
+      `Bienvenue, ${name} !\n\n` +
+      `Nous sommes ravis de vous accueillir sur NovaBulletin. Votre compte vient d'être créé par l'équipe de ${institutionName}.\n\n` +
+      `Votre code d'accès : ${otp}\n` +
+      `(valable pendant 24 heures)\n\n` +
+      `Lien d'activation : ${loginUrl}\n\n` +
+      `Comment activer votre compte :\n` +
+      `1. Ouvrez NovaBulletin\n` +
+      `2. Saisissez votre email ${to} et le code ci-dessus\n` +
+      `3. Choisissez votre mot de passe personnel\n\n` +
+      `Une question ? L'équipe de ${institutionName} est à votre disposition.\n\n` +
+      `Si vous n'êtes pas à l'origine de cette inscription, vous pouvez ignorer cet email en toute sécurité.`;
 
     return this.send({ to, subject, html, text });
   }
