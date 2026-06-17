@@ -1,0 +1,185 @@
+.pay-fees-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.pay-fees-form__section-title {
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--color-text-muted, #6b7280);
+  margin-bottom: 1rem;
+}
+
+/* Balance summary */
+.pay-fees-form__summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 1.25rem;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-surface, #fff);
+}
+
+.pay-fees-form__balance-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--color-border, #f3f4f6);
+}
+
+.pay-fees-form__balance-row:last-of-type {
+  border-bottom: none;
+}
+
+.pay-fees-form__balance-row--total {
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 2px solid var(--color-border, #e5e7eb);
+  border-bottom: none;
+  font-size: 1.05rem;
+}
+
+.pay-fees-form__balance-label {
+  font-size: 0.9rem;
+  color: var(--color-text-muted, #6b7280);
+  font-weight: 500;
+}
+
+.pay-fees-form__balance-row--total .pay-fees-form__balance-label {
+  font-weight: 700;
+  color: var(--color-text, #1f2937);
+}
+
+.pay-fees-form__balance-value {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.pay-fees-form__balance-value--paid  { color: #16a34a; }
+.pay-fees-form__balance-value--due   { color: #dc2626; }
+.pay-fees-form__balance-value--clear { color: #16a34a; }
+
+.pay-fees-form__year {
+  font-size: 0.78rem;
+  color: var(--color-text-muted, #9ca3af);
+  margin-top: 0.75rem;
+  text-align: right;
+}
+
+/* Paid notice */
+.pay-fees-form__paid-notice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.pay-fees-form__paid-icon { font-size: 2.5rem; }
+
+.pay-fees-form__paid-text {
+  color: var(--color-text-muted, #6b7280);
+  font-size: 0.95rem;
+}
+
+/* Method selection */
+.pay-fees-form__methods-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.pay-fees-form__method-btn {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem 1.1rem;
+  background: var(--color-bg, #f9fafb);
+  border: 2px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-md, 8px);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.pay-fees-form__method-btn:hover {
+  border-color: var(--color-primary, #3b82f6);
+  background: var(--color-surface, #fff);
+}
+
+.pay-fees-form__method-btn--active {
+  border-color: var(--color-primary, #3b82f6);
+  background: #eff6ff;
+}
+
+.pay-fees-form__method-icon {
+  display: flex;
+  align-items: center;
+  color: var(--color-primary, #3b82f6);
+  flex-shrink: 0;
+}
+
+.pay-fees-form__method-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+}
+
+.pay-fees-form__method-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-text, #1f2937);
+}
+
+.pay-fees-form__method-desc {
+  font-size: 0.78rem;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.pay-fees-form__method-check {
+  color: var(--color-primary, #3b82f6);
+  width: 20px;
+  flex-shrink: 0;
+}
+
+/* CTA */
+.pay-fees-form__error {
+  color: #dc2626;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  padding: 0.6rem 0.8rem;
+  background: #fef2f2;
+  border-radius: 6px;
+  border: 1px solid #fecaca;
+}
+
+.pay-fees-form__cta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pay-fees-form__cta-amount {
+  font-size: 0.9rem;
+  color: var(--color-text-muted, #6b7280);
+  text-align: center;
+}
+
+.pay-fees-form__cta-amount strong {
+  color: var(--color-text, #1f2937);
+  font-size: 1.05rem;
+}
+
+.pay-fees-form__pay-btn {
+  width: 100%;
+  justify-content: center;
+}

@@ -1,8 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UpdateInstitutionDto } from './dto/update-institution.dto';
 import { UpdateBrandingDto } from './dto/update-branding.dto';
 import { UpdateAcademicSettingsDto } from './dto/update-academic-settings.dto';
+import { UpdatePaymentSettingsDto } from './dto/update-payment-settings.dto';
+import { encryptSecret } from '../../common/utils/crypto.util';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const createZip: (fmt: string, opts?: object) => NodeJS.ReadWriteStream & {
   append(src: string | Buffer, opts: { name: string }): void;
@@ -110,6 +113,35 @@ export class InstitutionsService {
       where: { id: institutionId },
       data: { academicSettings: merged },
     });
+  }
+
+  /** Redacted view — the hash key is write-only and never returned. */
+  async getPaymentSettings(institutionId: string) {
+    const institution = await this.prisma.institution.findUnique({
+      where: { id: institutionId },
+      select: { notchpayPublicKey: true, notchpayHashKeyEnc: true },
+    });
+    if (!institution) throw new NotFoundException('Institution not found');
+
+    return {
+      notchpayPublicKey: institution.notchpayPublicKey ?? '',
+      notchpayHashKeyConfigured: !!institution.notchpayHashKeyEnc,
+    };
+  }
+
+  async updatePaymentSettings(institutionId: string, dto: UpdatePaymentSettingsDto) {
+    const institution = await this.prisma.institution.findUnique({
+      where: { id: institutionId },
+      select: { id: true },
+    });
+    if (!institution) throw new NotFoundException('Institution not found');
+
+    const data: Prisma.InstitutionUpdateInput = {};
+    if (dto.notchpayPublicKey !== undefined) data.notchpayPublicKey = dto.notchpayPublicKey || null;
+    if (dto.notchpayHashKey)  data.notchpayHashKeyEnc = encryptSecret(dto.notchpayHashKey);
+
+    await this.prisma.institution.update({ where: { id: institutionId }, data });
+    return this.getPaymentSettings(institutionId);
   }
 
   async exportAllData(institutionId: string): Promise<Buffer> {

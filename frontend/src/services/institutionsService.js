@@ -5,6 +5,8 @@ export const institutionsService = {
   update: (data) => api.patch('/institutions/me', data),
   updateBranding: (data) => api.patch('/institutions/me/branding', data),
   updateAcademicSettings: (data) => api.patch('/institutions/me/academic-settings', data),
+  getPaymentSettings: () => api.get('/institutions/me/payment-settings'),
+  updatePaymentSettings: (data) => api.patch('/institutions/me/payment-settings', data),
   exportData: () => api.get('/institutions/me/export', { responseType: 'blob' }),
 
   // Super-admin endpoints

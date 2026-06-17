@@ -19,36 +19,21 @@ export interface InitiateMomoDto {
 
 const NOTCHPAY_API = 'https://api.notchpay.co';
 
+/**
+ * Stateless Notchpay client — each school supplies its own public/hash key
+ * (configured in Settings) so fee payments settle directly into that
+ * school's own Notchpay account, never a platform-wide one.
+ */
 @Injectable()
 export class NotchpayService {
   private readonly logger = new Logger(NotchpayService.name);
-  private readonly enabled: boolean;
-  private readonly publicKey: string;
-  private readonly hashKey: string;
   private readonly frontendUrl: string;
 
   constructor(private readonly config: ConfigService) {
-    this.publicKey  = config.get<string>('NOTCHPAY_PUBLIC_KEY', '');
-    this.hashKey    = config.get<string>('NOTCHPAY_HASH_KEY', '');
     this.frontendUrl = config.get<string>('FRONTEND_URL', 'http://localhost:3000');
-
-    this.enabled = !!(this.publicKey && this.publicKey.startsWith('pk_'));
-
-    if (this.enabled) {
-      const env = config.get<string>('NOTCHPAY_ENVIRONMENT', 'test');
-      this.logger.log(`Notchpay provider: ${env}`);
-    } else {
-      this.logger.warn('Notchpay not configured — set NOTCHPAY_PUBLIC_KEY to enable online payments');
-    }
   }
 
-  get isEnabled() { return this.enabled; }
-
-  async createTransaction(dto: InitiateMomoDto): Promise<{ url: string; reference: string }> {
-    if (!this.enabled) {
-      throw new BadRequestException('Le paiement en ligne n\'est pas encore configuré.');
-    }
-
+  async createTransaction(publicKey: string, dto: InitiateMomoDto): Promise<{ url: string; reference: string }> {
     const reference = `NVB-${uuidv4().replace(/-/g, '').slice(0, 16).toUpperCase()}`;
 
     const payload = {
@@ -70,7 +55,7 @@ export class NotchpayService {
     try {
       response = await axios.post(`${NOTCHPAY_API}/payments/initialize`, payload, {
         headers: {
-          Authorization: this.publicKey,
+          Authorization: publicKey,
           'Content-Type': 'application/json',
         },
       });
@@ -98,11 +83,9 @@ export class NotchpayService {
     return { url: authUrl, reference };
   }
 
-  async verifyTransaction(reference: string): Promise<{ complete: boolean; amount: number; metadata: any }> {
-    if (!this.enabled) throw new BadRequestException('Notchpay not configured');
-
+  async verifyTransaction(publicKey: string, reference: string): Promise<{ complete: boolean; amount: number; metadata: any }> {
     const response = await axios.get(`${NOTCHPAY_API}/payments/${reference}`, {
-      headers: { Authorization: this.publicKey },
+      headers: { Authorization: publicKey },
     });
 
     const txn = response.data?.transaction ?? response.data;
@@ -113,9 +96,9 @@ export class NotchpayService {
     };
   }
 
-  verifyWebhookSignature(rawBody: string, signature: string): boolean {
-    if (!this.hashKey) return true; // skip verification if hash key not set
-    const expected = crypto.createHmac('sha256', this.hashKey).update(rawBody).digest('hex');
+  verifyWebhookSignature(rawBody: string, signature: string, hashKey: string): boolean {
+    if (!hashKey) return true; // skip verification if school hasn't set a hash key
+    const expected = crypto.createHmac('sha256', hashKey).update(rawBody).digest('hex');
     return expected === signature;
   }
 }

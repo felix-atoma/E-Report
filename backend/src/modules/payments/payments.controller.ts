@@ -81,6 +81,20 @@ export class PaymentsController {
     return this.service.getStudentPaymentStatus(studentId, user.institutionId, academicYear, term);
   }
 
+  @Get('my-children/:studentId/status')
+  @Roles(Role.PARENT)
+  @ApiOperation({ summary: 'Parent: get aggregated payment status for own child' })
+  @ApiQuery({ name: 'academicYear', required: true })
+  @ApiQuery({ name: 'term', required: false })
+  getMyChildStatus(
+    @Param('studentId') studentId: string,
+    @CurrentUser() user: any,
+    @Query('academicYear') academicYear: string,
+    @Query('term') term?: string,
+  ) {
+    return this.service.getMyChildPaymentStatus(studentId, user.id, user.institutionId, academicYear, term);
+  }
+
   // ── Online MoMo payment (FedaPay) ────────────────────────────────────────
 
   @Post('initiate-momo')
@@ -119,31 +133,23 @@ export class PaymentsController {
     @Body() body: { studentId: string; academicYear: string; term?: string },
     @CurrentUser() user: any,
   ) {
-    return this.cinetpay.initiatePayment({
-      studentId:     body.studentId,
-      institutionId: user.institutionId,
-      academicYear:  body.academicYear,
-      term:          body.term,
-      amount:        0, // will be computed from outstanding balance in a real impl
-      parentName:    user.name ?? 'Parent',
-      parentEmail:   user.email,
-    });
+    return this.service.initiateOnlineCinetpayPayment(
+      body.studentId,
+      user.institutionId,
+      body.academicYear,
+      body.term,
+      user.id,
+      user.name ?? 'Parent',
+      user.email,
+    );
   }
 
   @Public()
   @Post('cinetpay/webhook')
   @HttpCode(200)
   @ApiOperation({ summary: 'CinetPay IPN webhook — do not call manually' })
-  async cinetpayWebhook(@Body() body: any) {
+  cinetpayWebhook(@Body() body: any) {
     const { cpm_trans_id, cpm_result } = body ?? {};
-    if (cpm_result === '00' && cpm_trans_id) {
-      const verified = await this.cinetpay.verifyPayment(cpm_trans_id);
-      if (verified.status === 'ACCEPTED') {
-        // Record payment — for a full impl, parse metadata from CinetPay dashboard
-        // For now, just acknowledge
-        return { received: true, status: verified.status };
-      }
-    }
-    return { received: true };
+    return this.service.handleCinetpayWebhook(cpm_trans_id ?? '', cpm_result ?? '');
   }
 }

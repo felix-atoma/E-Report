@@ -101,6 +101,68 @@ export class MailService {
     return this.send({ to: payload.to, subject, html, text });
   }
 
+  // ─── Fee reminder (friendly / urgent) ────────────────────────────────────────
+  async sendFeeReminder(payload: {
+    to: string;
+    parentName?: string;
+    studentName: string;
+    balance: string;
+    institutionName: string;
+    severity: 'FRIENDLY' | 'URGENT';
+    language?: 'FR' | 'EN';
+  }): Promise<boolean> {
+    const en = payload.language === 'EN';
+    const urgent = payload.severity === 'URGENT';
+    const greeting = payload.parentName ? `${en ? 'Hello' : 'Bonjour'} ${payload.parentName},` : (en ? 'Hello,' : 'Bonjour,');
+
+    const subject = urgent
+      ? (en ? `URGENT - Unpaid fees for ${payload.studentName}` : `URGENT - Frais impayes pour ${payload.studentName}`)
+      : (en ? `Reminder - School fees for ${payload.studentName}` : `Rappel - Frais scolaires de ${payload.studentName}`);
+
+    const bodyLines = urgent
+      ? en
+        ? [
+            `School fees for <strong>${payload.studentName}</strong> remain unpaid (<strong>${payload.balance}</strong>) for more than two months.`,
+            `Without prompt payment, the school reserves the right to exclude the student in accordance with its internal regulations.`,
+            `Please settle this matter urgently to avoid this measure.`,
+          ]
+        : [
+            `Les frais scolaires de <strong>${payload.studentName}</strong> restent impayes (<strong>${payload.balance}</strong>) depuis plus de deux mois.`,
+            `Sans regularisation rapide, l'etablissement se reserve le droit d'exclure l'eleve conformement a son reglement interieur.`,
+            `Merci de regulariser la situation dans les plus brefs delais pour eviter cette mesure.`,
+          ]
+      : en
+        ? [
+            `This is a friendly reminder that school fees for <strong>${payload.studentName}</strong> have not yet been settled (<strong>${payload.balance}</strong> outstanding).`,
+            `Please make payment as soon as possible so your child can continue to enjoy all school services.`,
+          ]
+        : [
+            `Nous vous rappelons amicalement que les frais scolaires de <strong>${payload.studentName}</strong> ne sont pas encore regles (<strong>${payload.balance}</strong> restant).`,
+            `Merci de proceder au paiement dans les meilleurs delais.`,
+          ];
+
+    const headerColor = urgent ? '#dc2626' : '#1e3a8a';
+    const headline = urgent ? (en ? 'Important notice' : 'Avis important') : (en ? 'Fee reminder' : 'Rappel de frais');
+
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;">
+        <div style="background:${headerColor};color:#fff;padding:16px 20px;">
+          <h2 style="margin:0;">${urgent ? '⚠️ ' : ''}${headline}</h2>
+          <p style="margin:4px 0 0;opacity:0.85;">${payload.institutionName}</p>
+        </div>
+        <div style="padding:20px;">
+          <p>${greeting}</p>
+          ${bodyLines.map((l) => `<p>${l}</p>`).join('')}
+          <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0;" />
+          <p style="color:#6b7280;font-size:11px;">NovaBulletin - ${en ? 'Automated notification' : 'Notification automatique'}</p>
+        </div>
+      </div>`;
+
+    const text = `${greeting}\n\n${bodyLines.map((l) => l.replace(/<\/?strong>/g, '')).join('\n\n')}\n\n${payload.institutionName}`;
+
+    return this.send({ to: payload.to, subject, html, text });
+  }
+
   // ─── Password reset ──────────────────────────────────────────────────────────
   async sendPasswordReset(to: string, resetUrl: string): Promise<boolean> {
     const subject = 'Reinitialisation de votre mot de passe - NovaBulletin';

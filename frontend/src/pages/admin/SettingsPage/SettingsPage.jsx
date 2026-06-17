@@ -24,6 +24,8 @@ const DEFAULT_ACADEMIC = {
   passMark: '10', maxScore: '20', feeGateEnabled: true,
 };
 
+const DEFAULT_PAYMENT = { notchpayPublicKey: '', notchpayHashKey: '' };
+
 function SummaryRow({ label, value }) {
   if (!value) return null;
   return (
@@ -47,8 +49,10 @@ function SettingsPage() {
 
   const [infoForm, setInfoForm]         = useState(DEFAULT_INFO);
   const [academicForm, setAcademicForm] = useState(DEFAULT_ACADEMIC);
+  const [paymentForm, setPaymentForm]   = useState(DEFAULT_PAYMENT);
   const [infoOpen, setInfoOpen]         = useState(false);
   const [academicOpen, setAcademicOpen] = useState(false);
+  const [paymentOpen, setPaymentOpen]   = useState(false);
   const [exporting, setExporting]       = useState(false);
   const [rolloverOpen, setRolloverOpen] = useState(false);
   const [rolloverForm, setRolloverForm] = useState({ fromYear: '', toYear: '' });
@@ -57,6 +61,11 @@ function SettingsPage() {
   const { data: institution, isLoading } = useQuery({
     queryKey: ['institution-me'],
     queryFn: () => institutionsService.me().then((r) => r.data),
+  });
+
+  const { data: paymentSettings } = useQuery({
+    queryKey: ['institution-payment-settings'],
+    queryFn: () => institutionsService.getPaymentSettings().then((r) => r.data),
   });
 
   useEffect(() => {
@@ -84,6 +93,14 @@ function SettingsPage() {
     });
   }, [institution]);
 
+  useEffect(() => {
+    if (!paymentSettings) return;
+    setPaymentForm({
+      notchpayPublicKey: paymentSettings.notchpayPublicKey ?? '',
+      notchpayHashKey:   '',
+    });
+  }, [paymentSettings]);
+
   const infoMutation = useMutation({
     mutationFn: (data) => institutionsService.update(data),
     onSuccess: (res) => {
@@ -105,8 +122,19 @@ function SettingsPage() {
     onError: (err) => toast.error(err?.response?.data?.message ?? t('settings.toast.saveError')),
   });
 
+  const paymentMutation = useMutation({
+    mutationFn: (data) => institutionsService.updatePaymentSettings(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['institution-payment-settings'] });
+      toast.success(t('settings.toast.paymentSaved'));
+      setPaymentOpen(false);
+    },
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('settings.toast.saveError')),
+  });
+
   function setInfo(field, value) { setInfoForm((f) => ({ ...f, [field]: value })); }
   function setAcademic(field, value) { setAcademicForm((f) => ({ ...f, [field]: value })); }
+  function setPayment(field, value) { setPaymentForm((f) => ({ ...f, [field]: value })); }
 
   function handleInfoSave() {
     infoMutation.mutate({
@@ -131,6 +159,13 @@ function SettingsPage() {
       passMark:       Number(academicForm.passMark),
       maxScore:       Number(academicForm.maxScore),
       feeGateEnabled: academicForm.feeGateEnabled,
+    });
+  }
+
+  function handlePaymentSave() {
+    paymentMutation.mutate({
+      notchpayPublicKey: paymentForm.notchpayPublicKey || undefined,
+      notchpayHashKey:   paymentForm.notchpayHashKey   || undefined,
     });
   }
 
@@ -226,6 +261,25 @@ function SettingsPage() {
               <span className="settings-summary__label">{t('settings.feeGateStatus')}</span>
               <span className={`settings-summary__badge ${ac.feeGateEnabled !== false ? 'settings-summary__badge--on' : 'settings-summary__badge--off'}`}>
                 {ac.feeGateEnabled !== false ? t('settings.on') : t('settings.off')}
+              </span>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="settings-section">
+          <div className="settings-section__header">
+            <div>
+              <h3 className="settings-section__title">{t('settings.paymentSection')}</h3>
+              <p className="settings-section__desc">{t('settings.paymentDesc')}</p>
+            </div>
+            <Button size="sm" onClick={() => setPaymentOpen(true)}>{t('action.edit')}</Button>
+          </div>
+          <div className="settings-summary">
+            <SummaryRow label={t('settings.notchpayPublicKey')} value={paymentSettings?.notchpayPublicKey || undefined} />
+            <div className="settings-summary__row">
+              <span className="settings-summary__label">{t('settings.notchpayHashKey')}</span>
+              <span className={`settings-summary__badge ${paymentSettings?.notchpayHashKeyConfigured ? 'settings-summary__badge--on' : 'settings-summary__badge--off'}`}>
+                {paymentSettings?.notchpayHashKeyConfigured ? t('settings.configured') : t('settings.notConfigured')}
               </span>
             </div>
           </div>
@@ -436,6 +490,41 @@ function SettingsPage() {
               </span>
             </label>
           </div>
+        </div>
+      </OffCanvas>
+
+      <OffCanvas
+        open={paymentOpen}
+        onClose={() => setPaymentOpen(false)}
+        title={t('settings.paymentSection')}
+        subtitle={t('settings.paymentOffCanvasSubtitle')}
+        size="md"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setPaymentOpen(false)} disabled={paymentMutation.isPending}>
+              {t('action.cancel')}
+            </Button>
+            <Button onClick={handlePaymentSave} disabled={paymentMutation.isPending}>
+              {paymentMutation.isPending ? t('action.saving') : t('action.save')}
+            </Button>
+          </>
+        }
+      >
+        <div className="settings-section__body">
+          <p className="settings-section__desc">{t('settings.paymentOffCanvasDesc')}</p>
+          <Input
+            id="notchpayPublicKey" label={t('settings.notchpayPublicKey')}
+            value={paymentForm.notchpayPublicKey} placeholder="pk_test_… ou pk_live_…"
+            onChange={(e) => setPayment('notchpayPublicKey', e.target.value)}
+            hint={t('settings.notchpayPublicKeyHint')}
+          />
+          <Input
+            id="notchpayHashKey" label={t('settings.notchpayHashKey')} type="password"
+            value={paymentForm.notchpayHashKey}
+            placeholder={paymentSettings?.notchpayHashKeyConfigured ? '••••••••••••' : ''}
+            onChange={(e) => setPayment('notchpayHashKey', e.target.value)}
+            hint={t('settings.notchpayHashKeyHint')}
+          />
         </div>
       </OffCanvas>
 

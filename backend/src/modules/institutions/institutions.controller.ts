@@ -5,6 +5,7 @@ import { InstitutionsService } from './institutions.service';
 import { UpdateInstitutionDto } from './dto/update-institution.dto';
 import { UpdateBrandingDto } from './dto/update-branding.dto';
 import { UpdateAcademicSettingsDto } from './dto/update-academic-settings.dto';
+import { UpdatePaymentSettingsDto } from './dto/update-payment-settings.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Role } from '../../common/enums/role.enum';
@@ -40,6 +41,20 @@ export class InstitutionsController {
   @ApiOperation({ summary: 'Update academic settings (Admin only)' })
   updateAcademicSettings(@Body() dto: UpdateAcademicSettingsDto, @CurrentUser() user: any) {
     return this.service.updateAcademicSettings(user.institutionId, dto);
+  }
+
+  @Get('me/payment-settings')
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: "Get the school's online payment provider settings (Admin only). Hash key is never returned." })
+  getPaymentSettings(@CurrentUser() user: any) {
+    return this.service.getPaymentSettings(user.institutionId);
+  }
+
+  @Patch('me/payment-settings')
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: "Update the school's own Notchpay credentials (Admin only) — fee payments settle directly into this account." })
+  updatePaymentSettings(@Body() dto: UpdatePaymentSettingsDto, @CurrentUser() user: any) {
+    return this.service.updatePaymentSettings(user.institutionId, dto);
   }
 
   @Get('me/export')

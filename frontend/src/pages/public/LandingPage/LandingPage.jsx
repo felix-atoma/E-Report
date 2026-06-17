@@ -386,7 +386,7 @@ const FEATURES_ROW1 = [
 ];
 const FEATURES_ROW2 = [
   { icon: '📝', color: '#fff3f0', iconColor: '#FF7A59', title: 'Fiches de notes numériques', desc: 'Chaque enseignant dispose d\'une fiche numérique sur son téléphone. Saisie mobile, calcul auto et signature électronique. Zéro papier, zéro perte.' },
-  { icon: '💰', color: '#eff6ff', iconColor: '#1E2A78', title: 'Frais scolaires', desc: 'Gestion intégrée des cotisations. Blocage automatique des bulletins si frais impayés.' },
+  { icon: '💰', color: '#eff6ff', iconColor: '#1E2A78', title: 'Frais scolaires', desc: 'Gestion intégrée des cotisations. Paiement Mobile Money en ligne versé directement sur le compte de l\'école. Blocage automatique des bulletins si frais impayés.' },
   { icon: '📊', color: '#fff3f0', iconColor: '#FF7A59', title: 'Analytics temps réel', desc: 'Taux de recouvrement, progression par classe, bulletins publiés vs en attente — en direct.' },
 ];
 
@@ -407,10 +407,10 @@ const STEPS = [
 ];
 
 const ROLES = [
-  { icon: '🏫', title: 'Administrateur', color: '#1E2A78', desc: 'Vision complète de votre établissement.', features: ['Tableau de bord analytique complet','Gestion classes, matières, enseignants','Bulletins PDF + publication en 1 clic','Paramétrage des frais scolaires','Registre présences, santé, bibliothèque','Inventaire, alumni, examens nationaux','Documents officiels & profils du personnel','Exportation CSV de toutes les données'] },
+  { icon: '🏫', title: 'Administrateur', color: '#1E2A78', desc: 'Vision complète de votre établissement.', features: ['Tableau de bord analytique complet','Gestion classes, matières, enseignants','Bulletins PDF + publication en 1 clic','Paramétrage des frais scolaires','Compte Mobile Money de l\'école pour les paiements','Registre présences, santé, bibliothèque','Inventaire, alumni, examens nationaux','Documents officiels & profils du personnel','Exportation CSV de toutes les données'] },
   { icon: '👨‍🏫', title: 'Enseignant', color: '#1E2A78', desc: 'Votre fiche de notes numérique toujours dans votre poche.', features: ['📝 Fiche numérique sur mobile','Saisie des notes en temps réel','Calcul automatique des moyennes','Appréciations par élève','Signature électronique de la fiche','Dépôt de cours et documents','Publication de devoirs et quiz','Correction examens blancs'] },
-  { icon: '💼', title: 'Économe', color: '#FF7A59', desc: 'Gérez les frais sans paperasse.', features: ['Enregistrement paiements (TMoney, Flooz, cash)','Vue impayés en temps réel','Génération de reçus PDF','Suivi par cotisation et période','Rapport financier exportable','Statistiques de recouvrement','Bulletins retenus automatiquement','Accès multi-établissement'] },
-  { icon: '👨‍👩‍👧', title: 'Parent', color: '#FF7A59', desc: 'Suivez la scolarité de vos enfants.', features: ['Bulletins sur WhatsApp & Email','Portail parent 24h/24','Progression trimestre par trimestre','Historique complet des bulletins','Paiement frais en ligne','Consulter cours et devoirs LMS','Annonces de l\'école','Notifications instantanées'] },
+  { icon: '💼', title: 'Économe', color: '#FF7A59', desc: 'Gérez les frais sans paperasse.', features: ['Enregistrement paiements (TMoney, Flooz, cash)','Paiement en ligne Mobile Money (Notchpay)','Vue impayés en temps réel','Génération de reçus PDF','Suivi par cotisation et période','Rapport financier exportable','Statistiques de recouvrement','Bulletins retenus automatiquement','Accès multi-établissement'] },
+  { icon: '👨‍👩‍👧', title: 'Parent', color: '#FF7A59', desc: 'Suivez la scolarité de vos enfants.', features: ['Bulletins sur WhatsApp & Email','Portail parent 24h/24','Progression trimestre par trimestre','Historique complet des bulletins','Paiement frais en ligne (Mobile Money)','Consulter cours et devoirs LMS','Annonces de l\'école','Notifications instantanées'] },
 ];
 
 const TESTIMONIALS = [
@@ -458,6 +458,7 @@ const COMPARISON = [
   { feature: 'Bulletins PDF avec logo école', excel: '❌ Mise en page manuelle', autres: '✅ Oui', nova: '✅ En 1 clic' },
   { feature: 'Envoi WhatsApp aux parents', excel: '❌ Non', autres: '❌ Non', nova: '✅ Automatique' },
   { feature: 'Gestion frais scolaires intégrée', excel: '❌ Fichier séparé', autres: '⚠️ Module payant', nova: '✅ Intégré + blocage auto' },
+  { feature: 'Paiement en ligne Mobile Money', excel: '❌ Non', autres: '⚠️ Compte tiers/commission', nova: '✅ Versé sur le compte de l\'école' },
   { feature: 'Registre des présences numérique', excel: '❌ Cahier papier', autres: '⚠️ Optionnel', nova: '✅ Par classe & matière' },
   { feature: 'Santé, bibliothèque, inventaire', excel: '❌ Non', autres: '❌ Non', nova: '✅ 11 modules intégrés' },
   { feature: 'Anciens élèves & transferts', excel: '❌ Non', autres: '❌ Non', nova: '✅ Inclus' },
@@ -466,7 +467,7 @@ const COMPARISON = [
   { feature: 'Analytics tableau de bord', excel: '⚠️ Tableaux manuels', autres: '✅ Oui', nova: '✅ Temps réel' },
   { feature: 'Appréciations IA (bulletins)', excel: '❌ Non', autres: '❌ Non', nova: '✅ 1 clic avec Claude AI' },
   { feature: 'Mode hors ligne (PWA)', excel: '❌ Non', autres: '❌ Non', nova: '✅ Cache + synchronisation auto' },
-  { feature: 'Rappels paiement WhatsApp', excel: '❌ Appels manuels', autres: '❌ Non', nova: '✅ 1 clic par parent' },
+  { feature: 'Relances frais impayés', excel: '❌ Appels manuels', autres: '❌ Non', nova: '✅ Auto : amical puis quotidien' },
   { feature: 'Exports CSV officiels', excel: '❌ Mise en forme manuelle', autres: '⚠️ Coût supplémentaire', nova: '✅ Auto, prêt pour l\'inspection' },
   { feature: 'Adapté Afrique francophone', excel: '❌ Non', autres: '❌ Non', nova: '✅ Conçu pour Togo+' },
   { feature: 'Prix', excel: '~0 (heures perdues)', autres: '50k–200k FCFA/mois', nova: '✅ Payez si satisfait' },
@@ -499,7 +500,7 @@ const FEATURES_ROW1_EN = [
 ];
 const FEATURES_ROW2_EN = [
   { icon: '📝', color: '#fff3f0', iconColor: '#FF7A59', title: 'Digital Grade Sheets', desc: 'Every teacher has a digital grade sheet on their phone. Mobile entry, auto-calculation and electronic signature. Zero paper, zero loss.' },
-  { icon: '💰', color: '#eff6ff', iconColor: '#1E2A78', title: 'School Fees', desc: 'Integrated fee management. Automatic blocking of report cards if fees are unpaid.' },
+  { icon: '💰', color: '#eff6ff', iconColor: '#1E2A78', title: 'School Fees', desc: 'Integrated fee management. Online Mobile Money payment deposited directly into the school\'s own account. Automatic blocking of report cards if fees are unpaid.' },
   { icon: '📊', color: '#fff3f0', iconColor: '#FF7A59', title: 'Real-time Analytics', desc: 'Collection rates, class progress, published vs pending reports — live.' },
 ];
 const LMS_FEATURES_EN = [
@@ -517,10 +518,10 @@ const STEPS_EN = [
   { num: '04', icon: '🚀', title: 'Publish & send', desc: 'Admin publishes. Every parent receives the report card on WhatsApp instantly.', tags: ['Auto PDF','WhatsApp','Email','Fee gate'] },
 ];
 const ROLES_EN = [
-  { icon: '🏫', title: 'Administrator', color: '#1E2A78', desc: 'Complete view of your institution.', features: ['Full analytics dashboard','Manage classes, subjects, teachers','PDF reports + publish in 1 click','School fee configuration','Attendance, health, library registers','Inventory, alumni, national exams','Official documents & staff profiles','CSV export of all data'] },
+  { icon: '🏫', title: 'Administrator', color: '#1E2A78', desc: 'Complete view of your institution.', features: ['Full analytics dashboard','Manage classes, subjects, teachers','PDF reports + publish in 1 click','School fee configuration','School\'s own Mobile Money account for payments','Attendance, health, library registers','Inventory, alumni, national exams','Official documents & staff profiles','CSV export of all data'] },
   { icon: '👨‍🏫', title: 'Teacher', color: '#1E2A78', desc: 'Your digital grade sheet always in your pocket.', features: ['📝 Digital grade sheet on mobile','Real-time grade entry','Automatic average calculation','Comments per student','Electronic signature of the sheet','Upload courses and documents','Publish homework and quizzes','Mark mock exams'] },
-  { icon: '💼', title: 'Bursar', color: '#FF7A59', desc: 'Manage fees without paperwork.', features: ['Record payments (TMoney, Flooz, cash)','Real-time unpaid view','Generate PDF receipts','Track by fee type and period','Exportable financial report','Collection statistics','Reports held automatically','Multi-school access'] },
-  { icon: '👨‍👩‍👧', title: 'Parent', color: '#FF7A59', desc: 'Track your children\'s schooling.', features: ['Report cards on WhatsApp & Email','Parent portal 24/7','Term-by-term progress','Full report history','Pay fees online','View LMS courses and homework','School announcements','Instant notifications'] },
+  { icon: '💼', title: 'Bursar', color: '#FF7A59', desc: 'Manage fees without paperwork.', features: ['Record payments (TMoney, Flooz, cash)','Online Mobile Money payment (Notchpay)','Real-time unpaid view','Generate PDF receipts','Track by fee type and period','Exportable financial report','Collection statistics','Reports held automatically','Multi-school access'] },
+  { icon: '👨‍👩‍👧', title: 'Parent', color: '#FF7A59', desc: 'Track your children\'s schooling.', features: ['Report cards on WhatsApp & Email','Parent portal 24/7','Term-by-term progress','Full report history','Pay fees online (Mobile Money)','View LMS courses and homework','School announcements','Instant notifications'] },
 ];
 const DATABASE_MODULES_EN = [
   { icon: '📋', color: '#eff6ff', iconColor: '#1E2A78', title: 'Daily Attendance', desc: 'Daily roll call by class and subject. Track absences, late arrivals and exclusions per student.' },
@@ -548,13 +549,13 @@ const FAQS_EN = [
 const FEATURES_ROW3 = [
   { icon: '✨', color: '#eff6ff', iconColor: '#1E2A78', title: 'Appréciations IA', desc: 'Générez en 1 clic des appréciations de bulletin personnalisées. L\'IA analyse la moyenne, la mention et les notes par matière pour rédiger un commentaire professionnel adapté à chaque élève.' },
   { icon: '📡', color: '#fff3f0', iconColor: '#FF7A59', title: 'Mode hors ligne', desc: 'NovaBulletin fonctionne même sans internet. Les données sont mises en cache, la consultation reste possible et tout se synchronise automatiquement dès la reconnexion.' },
-  { icon: '💸', color: '#eff6ff', iconColor: '#1E2A78', title: 'Rappels paiement WhatsApp', desc: 'D\'un clic, envoyez au parent le montant exact dû par WhatsApp. Relance ciblée avec le solde impayé — plus efficace qu\'un appel téléphonique.' },
+  { icon: '💸', color: '#eff6ff', iconColor: '#1E2A78', title: 'Relances automatiques des frais', desc: 'Rappel amical par WhatsApp et email après 1 mois d\'impayé, puis relance quotidienne avec avertissement de renvoi après 2 mois — sans aucune intervention manuelle.' },
   { icon: '📊', color: '#fff3f0', iconColor: '#FF7A59', title: 'Exports gouvernementaux', desc: 'Téléchargez en 1 clic les fichiers CSV prêts pour l\'inspection : effectifs élèves, résultats de classe, rapport des frais scolaires. Format Excel compatible.' },
 ];
 const FEATURES_ROW3_EN = [
   { icon: '✨', color: '#eff6ff', iconColor: '#1E2A78', title: 'AI-generated Comments', desc: 'Generate personalised report card comments in 1 click. AI analyses the average, grade and subject scores to write a professional, student-specific appreciation.' },
   { icon: '📡', color: '#fff3f0', iconColor: '#FF7A59', title: 'Offline Mode', desc: 'NovaBulletin works even without internet. Data is cached, browsing stays available and everything syncs automatically once reconnected.' },
-  { icon: '💸', color: '#eff6ff', iconColor: '#1E2A78', title: 'WhatsApp Payment Reminders', desc: 'One click sends the parent the exact outstanding balance via WhatsApp. Targeted follow-up — more effective than a phone call.' },
+  { icon: '💸', color: '#eff6ff', iconColor: '#1E2A78', title: 'Automatic Fee Reminders', desc: 'Friendly WhatsApp and email reminder after 1 month unpaid, then a daily follow-up with an exclusion warning after 2 months — fully automatic, no manual work.' },
   { icon: '📊', color: '#fff3f0', iconColor: '#FF7A59', title: 'Government Exports', desc: 'Download in 1 click inspection-ready CSV files: student census, class results, fee report. Excel-compatible format.' },
 ];
 
@@ -564,6 +565,7 @@ const COMPARISON_EN = [
   { feature: 'PDF reports with school logo', excel: '❌ Manual layout', autres: '✅ Yes', nova: '✅ In 1 click' },
   { feature: 'WhatsApp delivery to parents', excel: '❌ No', autres: '❌ No', nova: '✅ Automatic' },
   { feature: 'Integrated school fee management', excel: '❌ Separate file', autres: '⚠️ Paid module', nova: '✅ Built-in + auto block' },
+  { feature: 'Online Mobile Money payment', excel: '❌ No', autres: '⚠️ Third-party account/fee', nova: '✅ Paid into the school\'s own account' },
   { feature: 'Digital attendance register', excel: '❌ Paper roll book', autres: '⚠️ Optional', nova: '✅ By class & subject' },
   { feature: 'Health, library, inventory', excel: '❌ No', autres: '❌ No', nova: '✅ 11 built-in modules' },
   { feature: 'Alumni & transfers', excel: '❌ No', autres: '❌ No', nova: '✅ Included' },
@@ -572,7 +574,7 @@ const COMPARISON_EN = [
   { feature: 'Dashboard analytics', excel: '⚠️ Manual charts', autres: '✅ Yes', nova: '✅ Real-time' },
   { feature: 'AI report card comments', excel: '❌ No', autres: '❌ No', nova: '✅ 1 click with Claude AI' },
   { feature: 'Offline mode', excel: '❌ No', autres: '❌ No', nova: '✅ PWA with data cache' },
-  { feature: 'WhatsApp payment reminders', excel: '❌ Manual calls', autres: '❌ No', nova: '✅ 1 click per parent' },
+  { feature: 'Unpaid fee follow-ups', excel: '❌ Manual calls', autres: '❌ No', nova: '✅ Auto: friendly then daily' },
   { feature: 'Government CSV exports', excel: '❌ Manual formatting', autres: '⚠️ Extra cost', nova: '✅ Auto, inspection-ready' },
   { feature: 'Built for Francophone Africa', excel: '❌ No', autres: '❌ No', nova: '✅ Designed for Togo+' },
   { feature: 'Price', excel: '~0 (hours lost)', autres: '50k–200k FCFA/month', nova: '✅ Pay if satisfied' },

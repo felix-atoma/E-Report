@@ -3,9 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { studentsService } from '../../../services/studentsService';
-import { paymentsService } from '../../../services/paymentsService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
+import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
+import PayFeesForm from '../../../components/payments/PayFeesForm/PayFeesForm';
 import Avatar from '../../../components/common/Avatar/Avatar';
 import Badge from '../../../components/common/Badge/Badge';
 import Loading from '../../../components/common/Loading/Loading';
@@ -14,34 +15,19 @@ import './ChildrenPage.css';
 
 const PAYMENT_VARIANT = { PAID: 'success', PARTIAL: 'warning', UNPAID: 'danger', EXEMPT: 'default' };
 
-const CURRENT_YEAR = new Date().getFullYear();
-const ACADEMIC_YEAR = `${CURRENT_YEAR - 1}-${CURRENT_YEAR}`;
-
 function ChildrenPage() {
   const { t } = useTranslation();
-  const [paying, setPaying] = useState(null);
+  const [payingChild, setPayingChild] = useState(null);
 
   const { data: children = [], isLoading } = useQuery({
     queryKey: ['my-children'],
     queryFn: () => studentsService.myChildren().then((r) => r.data),
   });
 
-  const handlePayMomo = async (e, child) => {
+  const handlePayFees = (e, child) => {
     e.preventDefault();
     e.stopPropagation();
-    setPaying(child.id);
-    try {
-      const res = await paymentsService.initiateMomo({
-        studentId: child.id,
-        academicYear: ACADEMIC_YEAR,
-      });
-      window.location.href = res.data.url;
-    } catch (err) {
-      const msg = err?.response?.data?.message ?? t('common.errorGeneric');
-      alert(msg);
-    } finally {
-      setPaying(null);
-    }
+    setPayingChild(child);
   };
 
   if (isLoading) return <AppShell title={t('children.title')}><Loading /></AppShell>;
@@ -92,23 +78,34 @@ function ChildrenPage() {
               {(child.paymentStatus === 'UNPAID' || child.paymentStatus === 'PARTIAL') && (
                 <button
                   className="child-card__pay-btn"
-                  onClick={(e) => handlePayMomo(e, child)}
-                  disabled={paying === child.id}
+                  onClick={(e) => handlePayFees(e, child)}
                 >
-                  {paying === child.id ? (
-                    <span className="login-form__spinner" style={{ width: 14, height: 14 }} />
-                  ) : (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
-                    </svg>
-                  )}
-                  {t('children.payWithMomo')}
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+                  </svg>
+                  {t('children.payFees')}
                 </button>
               )}
             </Link>
           ))}
         </div>
       )}
+
+      <OffCanvas
+        open={!!payingChild}
+        onClose={() => setPayingChild(null)}
+        title={t('children.payFees')}
+        subtitle={payingChild?.user?.name ?? payingChild?.admissionNumber}
+        size="md"
+      >
+        {payingChild && (
+          <PayFeesForm
+            studentId={payingChild.id}
+            academicYear={payingChild.academicYear}
+            onClose={() => setPayingChild(null)}
+          />
+        )}
+      </OffCanvas>
     </AppShell>
   );
 }

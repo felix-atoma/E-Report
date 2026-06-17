@@ -39,6 +39,9 @@ export class SubscriptionService {
   private readonly ownerMomoOperator: string;
   private readonly trialDays: number;
   private readonly frontendUrl: string;
+  /** Platform's own Notchpay account — collects subscription fees FROM schools (distinct from a school's own account, used for fee collection FROM parents). */
+  private readonly platformNotchpayPublicKey: string;
+  private readonly platformNotchpayHashKey: string;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -69,6 +72,8 @@ export class SubscriptionService {
     this.ownerMomoOperator = config.get<string>('OWNER_MOMO_OPERATOR', 'TMoney');
     this.trialDays         = +config.get('SUBSCRIPTION_TRIAL_DAYS', 30);
     this.frontendUrl       = config.get<string>('FRONTEND_URL', 'http://localhost:3000');
+    this.platformNotchpayPublicKey = config.get<string>('PLATFORM_NOTCHPAY_PUBLIC_KEY', '');
+    this.platformNotchpayHashKey   = config.get<string>('PLATFORM_NOTCHPAY_HASH_KEY', '');
   }
 
   // ─── School-facing ────────────────────────────────────────────────────────
@@ -137,11 +142,15 @@ export class SubscriptionService {
 
   /** School initiates Notchpay payment → returns checkout URL */
   async initiateNotchpay(institutionId: string, dto: InitiateNotchpayDto, adminEmail: string, adminName: string) {
+    if (!this.platformNotchpayPublicKey) {
+      throw new BadRequestException("Le paiement en ligne de l'abonnement n'est pas configuré.");
+    }
+
     const studentCount = await this.prisma.student.count({ where: { institutionId } });
     const tier   = getTier(studentCount);
     const amount = dto.plan === 'ANNUAL' ? this.pricing[tier].annual : this.pricing[tier].monthly;
 
-    const { url, reference } = await this.notchpay.createTransaction({
+    const { url, reference } = await this.notchpay.createTransaction(this.platformNotchpayPublicKey, {
       studentId:    institutionId,
       institutionId,
       academicYear: new Date().getFullYear().toString(),
@@ -206,7 +215,7 @@ export class SubscriptionService {
   // ─── Notchpay webhook ─────────────────────────────────────────────────────
 
   async handleWebhook(rawBody: string, signature: string, payload: any) {
-    const valid = this.notchpay.verifyWebhookSignature(rawBody, signature);
+    const valid = this.notchpay.verifyWebhookSignature(rawBody, signature, this.platformNotchpayHashKey);
     if (!valid) throw new BadRequestException('Invalid webhook signature');
 
     const reference = payload?.transaction?.reference ?? payload?.reference;

@@ -3,7 +3,9 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RecordPaymentDto } from './dto/record-payment.dto';
 import { NotchpayService } from './notchpay.service';
+import { CinetpayService } from './cinetpay.service';
 import { PdfService } from '../pdf/pdf.service';
+import { decryptSecret } from '../../common/utils/crypto.util';
 
 @Injectable()
 export class PaymentsService {
@@ -12,6 +14,7 @@ export class PaymentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notchpay: NotchpayService,
+    private readonly cinetpay: CinetpayService,
     private readonly pdf: PdfService,
   ) {}
 
@@ -142,6 +145,21 @@ export class PaymentsService {
     return { studentId, academicYear, term, totalDue, totalPaid, balance, status };
   }
 
+  async getMyChildPaymentStatus(
+    studentId: string,
+    parentUserId: string,
+    institutionId: string,
+    academicYear: string,
+    term?: string,
+  ) {
+    const student = await this.prisma.student.findFirst({
+      where: { id: studentId, parentId: parentUserId, institutionId },
+    });
+    if (!student) throw new NotFoundException('Student not found');
+
+    return this.getStudentPaymentStatus(studentId, institutionId, academicYear, term);
+  }
+
   private async tryReleaseHeldNotifications(
     studentId: string,
     academicYear: string,
@@ -174,13 +192,23 @@ export class PaymentsService {
     });
     if (!student) throw new NotFoundException('Student not found');
 
+    const institution = await this.prisma.institution.findUnique({
+      where: { id: institutionId },
+      select: { notchpayPublicKey: true },
+    });
+    if (!institution?.notchpayPublicKey) {
+      throw new BadRequestException(
+        "Le paiement en ligne n'est pas encore configuré par votre école. Contactez l'administration.",
+      );
+    }
+
     const { status, balance } = await this.getStudentPaymentStatus(studentId, institutionId, academicYear, term);
     if (status === 'PAID' || status === 'EXEMPT') {
       throw new BadRequestException('Les frais sont déjà à jour pour cet élève.');
     }
     if (balance <= 0) throw new BadRequestException('Aucun solde impayé.');
 
-    const { url, reference } = await this.notchpay.createTransaction({
+    const { url, reference } = await this.notchpay.createTransaction(institution.notchpayPublicKey, {
       studentId,
       institutionId,
       academicYear,
@@ -206,13 +234,6 @@ export class PaymentsService {
   }
 
   async handleNotchpayWebhook(body: any, signature: string) {
-    // Verify signature
-    const rawBody = JSON.stringify(body);
-    if (!this.notchpay.verifyWebhookSignature(rawBody, signature)) {
-      this.logger.warn('Notchpay webhook signature mismatch — rejected');
-      return { received: false };
-    }
-
     const event: string = body?.event;
     if (event !== 'payment.complete') return { received: true };
 
@@ -223,15 +244,31 @@ export class PaymentsService {
     const existing = await this.prisma.payment.findFirst({ where: { notchpayReference: reference } });
     if (existing) return { received: true };
 
-    // Verify with Notchpay API
-    const { complete, amount, metadata } = await this.notchpay.verifyTransaction(reference);
-    if (!complete) return { received: true };
-
     const intent = await this.prisma.paymentIntent.findFirst({ where: { notchpayReference: reference } });
     if (!intent) {
       this.logger.warn(`No PaymentIntent for Notchpay reference ${reference}`);
       return { received: true };
     }
+
+    const institution = await this.prisma.institution.findUnique({
+      where: { id: intent.institutionId },
+      select: { notchpayPublicKey: true, notchpayHashKeyEnc: true },
+    });
+    if (!institution?.notchpayPublicKey) {
+      this.logger.warn(`Institution ${intent.institutionId} has no Notchpay key — rejecting webhook`);
+      return { received: true };
+    }
+
+    const hashKey = institution.notchpayHashKeyEnc ? decryptSecret(institution.notchpayHashKeyEnc) : '';
+    const rawBody = JSON.stringify(body);
+    if (!this.notchpay.verifyWebhookSignature(rawBody, signature, hashKey)) {
+      this.logger.warn('Notchpay webhook signature mismatch — rejected');
+      return { received: false };
+    }
+
+    // Verify with Notchpay API using the school's own key
+    const { complete, amount } = await this.notchpay.verifyTransaction(institution.notchpayPublicKey, reference);
+    if (!complete) return { received: true };
 
     await this.prisma.paymentIntent.update({ where: { id: intent.id }, data: { status: 'COMPLETED' } });
 
@@ -257,6 +294,95 @@ export class PaymentsService {
     );
 
     this.logger.log(`Notchpay webhook processed: payment ${payment.id} for student ${intent.studentId}`);
+    return { received: true };
+  }
+
+  async initiateOnlineCinetpayPayment(
+    studentId: string,
+    institutionId: string,
+    academicYear: string,
+    term: string | undefined,
+    parentUserId: string,
+    parentName: string,
+    parentEmail: string,
+  ) {
+    const student = await this.prisma.student.findFirst({ where: { id: studentId, institutionId } });
+    if (!student) throw new NotFoundException('Student not found');
+
+    const { status, balance } = await this.getStudentPaymentStatus(studentId, institutionId, academicYear, term);
+    if (status === 'PAID' || status === 'EXEMPT') {
+      throw new BadRequestException('Les frais sont déjà à jour pour cet élève.');
+    }
+    if (balance <= 0) throw new BadRequestException('Aucun solde impayé.');
+
+    const { url, transactionId } = await this.cinetpay.initiatePayment({
+      studentId,
+      institutionId,
+      academicYear,
+      term,
+      amount: balance,
+      parentName,
+      parentEmail,
+    });
+
+    await this.prisma.paymentIntent.create({
+      data: {
+        cinetpayTransactionId: transactionId,
+        studentId,
+        institutionId,
+        academicYear,
+        term,
+        amount: balance,
+        parentUserId,
+      },
+    });
+
+    return { url, amount: balance, transactionId };
+  }
+
+  async handleCinetpayWebhook(transactionId: string, result: string) {
+    if (result !== '00') return { received: true };
+
+    const existing = await this.prisma.payment.findFirst({
+      where: { notchpayReference: `CINETPAY-${transactionId}` },
+    });
+    if (existing) return { received: true };
+
+    const { status, amount } = await this.cinetpay.verifyPayment(transactionId);
+    if (status !== 'ACCEPTED') return { received: true };
+
+    const intent = await this.prisma.paymentIntent.findFirst({
+      where: { cinetpayTransactionId: transactionId },
+    });
+    if (!intent) {
+      this.logger.warn(`No PaymentIntent for CinetPay transaction ${transactionId}`);
+      return { received: true };
+    }
+
+    await this.prisma.paymentIntent.update({ where: { id: intent.id }, data: { status: 'COMPLETED' } });
+
+    const receiptNumber = await this.generateReceiptNumber(intent.institutionId);
+    const payment = await this.prisma.payment.create({
+      data: {
+        studentId: intent.studentId,
+        institutionId: intent.institutionId,
+        academicYear: intent.academicYear,
+        term: intent.term ?? undefined,
+        amount,
+        paymentMethod: 'MOBILE_MONEY_ONLINE',
+        receiptNumber,
+        paymentDate: new Date(),
+        notes: `Paiement en ligne CinetPay — ${transactionId}`,
+        recordedById: intent.parentUserId,
+        notchpayReference: `CINETPAY-${transactionId}`,
+      },
+    });
+
+    await this.tryReleaseHeldNotifications(
+      intent.studentId, intent.academicYear, intent.term ?? undefined, intent.institutionId,
+    );
+
+    this.logger.log(`CinetPay webhook processed: payment ${payment.id} for student ${intent.studentId}`);
     return { received: true };
   }
 
