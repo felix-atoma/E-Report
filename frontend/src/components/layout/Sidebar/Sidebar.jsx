@@ -30,6 +30,7 @@ const NAV = {
     { to: '/admin/fees',          icon: 'coins',     labelKey: 'nav.fees' },
     { to: '/admin/payments',       icon: 'card',      labelKey: 'nav.payments' },
     { to: '/admin/payment-plans',  icon: 'plan',      labelKey: 'nav.paymentPlans' },
+    { to: '/admin/purchases',      icon: 'shopping',  labelKey: 'nav.purchases' },
     { divider: true,               sectionKey: 'section.records' },
     { to: '/admin/attendance',       icon: 'attendance',  labelKey: 'nav.attendance' },
     { to: '/admin/staff',            icon: 'briefcase',   labelKey: 'nav.staff' },
@@ -312,6 +313,13 @@ const ICONS = {
       <circle cx="12" cy="12" r="10"/>
       <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
       <line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+  ),
+  shopping: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <path d="M16 10a4 4 0 0 1-8 0"/>
     </svg>
   ),
   exam_nat: (

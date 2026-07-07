@@ -23,14 +23,15 @@ function computeMoyInterros(row) {
   return vals.length > 0 ? Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 100) / 100 : null;
 }
 
-function computeMoy(row) {
+function computeMoy(row, maxScore = 20) {
   const moyI = computeMoyInterros(row);
   let ws = 0, wt = 0;
-  if (moyI !== null)              { ws += moyI * 1;                          wt += 1; }
-  if (!isBlank(row.noteDevoir))   { ws += Number(row.noteDevoir) * 2;        wt += 2; }
-  if (!isBlank(row.noteComposition)) { ws += Number(row.noteComposition) * 3; wt += 3; }
+  if (moyI !== null)                 { ws += moyI * 1;                          wt += 1; }
+  if (!isBlank(row.noteDevoir))      { ws += Number(row.noteDevoir) * 2;        wt += 2; }
+  if (!isBlank(row.noteComposition)) { ws += Number(row.noteComposition) * 3;   wt += 3; }
   if (wt === 0) return null;
-  return Math.round((ws / wt) * 100) / 100;
+  const rawMoy = ws / wt;
+  return Math.round((rawMoy * 20 / maxScore) * 100) / 100;
 }
 
 function computeRanks(rows) {
@@ -73,10 +74,12 @@ function fmtDate(iso) {
   return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
-function ScoreCell({ v }) {
+function ScoreCell({ v, maxScore = 20 }) {
   if (isBlank(v)) return <span className="fdnp__score fdnp__score--empty">—</span>;
   const n = Number(v);
-  const cls = n >= 14 ? 'fdnp__score--high' : n >= 10 ? 'fdnp__score--mid' : 'fdnp__score--low';
+  const mid = maxScore / 2;
+  const hi  = maxScore * 0.7;
+  const cls = n >= hi ? 'fdnp__score--high' : n >= mid ? 'fdnp__score--mid' : 'fdnp__score--low';
   return <span className={`fdnp__score ${cls}`}>{n.toFixed(2).replace('.', ',')}</span>;
 }
 
@@ -87,7 +90,6 @@ function readSnapshot(classId, subjectId, academicYear, termNumber) {
     const raw = localStorage.getItem(`fdnp:${classId}:${subjectId}:${academicYear}:${termNumber}`);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    // Accept snapshots up to 48 hours old
     if (Date.now() - parsed.ts > 48 * 3600 * 1000) return null;
     return parsed;
   } catch {
@@ -105,21 +107,17 @@ export default function FicheDeNotesPrintPage() {
   const termNumber   = parseInt(params.get('termNumber') ?? '1', 10);
   const termName     = params.get('termName') ?? `${termNumber}er Trimestre`;
 
-  // Try localStorage snapshot first — populated by GradeEntryPage when print is clicked.
-  // This works even when completely offline (no network, no service-worker API cache).
   const snapshot = readSnapshot(classId, subjectId, academicYear, termNumber);
 
   const { data: ficheData, isLoading: ficheLoading, isError: ficheError } = useQuery({
     queryKey: ['fiche-print', classId, subjectId, academicYear, termNumber],
     queryFn: () => gradesService.getForClassSubject(classId, subjectId, academicYear, termNumber).then((r) => r.data),
-    // Skip API call when we already have a fresh snapshot
     enabled: !snapshot && !!classId && !!subjectId && !!academicYear && !isNaN(termNumber),
   });
 
   const { data: institution } = useQuery({
     queryKey: ['institution-me'],
     queryFn: () => institutionsService.me().then((r) => r.data),
-    // Still try even with snapshot — institution data is cached by service worker on login
     staleTime: 24 * 3600 * 1000,
   });
 
@@ -129,33 +127,36 @@ export default function FicheDeNotesPrintPage() {
     enabled: !snapshot,
   });
 
-  // Resolve data source: snapshot wins over API
-  const source     = snapshot ?? ficheData;
-  const fromCache  = !!snapshot;
+  const source    = snapshot ?? ficheData;
+  const fromCache = !!snapshot;
 
   if (!source && ficheLoading) return <div className="fdnp__loading">Chargement de la fiche…</div>;
   if (!source && (ficheError || !ficheData)) return <div className="fdnp__error">Impossible de charger la fiche. Ouvrez la fiche en ligne avant de l'imprimer hors-ligne.</div>;
 
-  const cls        = snapshot ? null : classes.find((c) => c.id === classId);
-  const className  = cls?.name ?? params.get('className') ?? '—';
-  const subject    = source.subject;
-  const teacher    = source.teacher;
-  const fiche      = source.fiche;
-  const coef       = snapshot?.coef ?? source.students?.find((s) => s.coefficient)?.coefficient ?? 1;
-  const rows       = (source.students ?? []).map((s) => ({
+  const cls            = snapshot ? null : classes.find((c) => c.id === classId);
+  const className      = cls?.name ?? params.get('className') ?? '—';
+  const subject        = source.subject;
+  const teacher        = source.teacher;
+  const fiche          = source.fiche;
+  const maxScore       = subject?.maxScore       ?? 20;
+  const hasCoefficient = subject?.hasCoefficient ?? true;
+  const coef           = snapshot?.coef ?? source.students?.find((s) => s.coefficient)?.coefficient ?? 1;
+  const effectiveCoef  = hasCoefficient ? coef : 1;
+
+  const rows = (source.students ?? []).map((s) => ({
     ...s,
-    moyenneMatiere: s.moyenneMatiere ?? computeMoy(s),
+    moyenneMatiere: s.moyenneMatiere ?? computeMoy(s, maxScore),
   }));
-  const ranks      = computeRanks(rows);
+  const ranks = computeRanks(rows);
 
   const rowsWithMoy = rows.filter((r) => r.moyenneMatiere !== null);
   const moyClasse   = rowsWithMoy.length > 0
     ? Math.round((rowsWithMoy.reduce((s, r) => s + r.moyenneMatiere, 0) / rowsWithMoy.length) * 100) / 100
     : null;
-  const highest   = rowsWithMoy.length > 0 ? Math.max(...rowsWithMoy.map((r) => r.moyenneMatiere)) : null;
-  const lowest    = rowsWithMoy.length > 0 ? Math.min(...rowsWithMoy.map((r) => r.moyenneMatiere)) : null;
-  const passing   = rowsWithMoy.filter((r) => r.moyenneMatiere >= 10).length;
-  const passRate  = rowsWithMoy.length > 0 ? Math.round((passing / rowsWithMoy.length) * 100) : null;
+  const highest  = rowsWithMoy.length > 0 ? Math.max(...rowsWithMoy.map((r) => r.moyenneMatiere)) : null;
+  const lowest   = rowsWithMoy.length > 0 ? Math.min(...rowsWithMoy.map((r) => r.moyenneMatiere)) : null;
+  const passing  = rowsWithMoy.filter((r) => r.moyenneMatiere >= 10).length;
+  const passRate = rowsWithMoy.length > 0 ? Math.round((passing / rowsWithMoy.length) * 100) : null;
 
   const hasAnyGrade = rowsWithMoy.length > 0;
 
@@ -165,16 +166,30 @@ export default function FicheDeNotesPrintPage() {
       <div className="fdnp__toolbar no-print">
         <PrintFormatPicker defaultFormat="A4 paysage" />
         <button className="fdnp__btn fdnp__btn--print" onClick={() => window.print()}>
-          🖨 Imprimer / PDF
+          🖨 Imprimer
+        </button>
+        <button
+          className="fdnp__btn fdnp__btn--download"
+          onClick={() => {
+            // Trigger browser print dialog — user selects "Save as PDF"
+            const prev = document.title;
+            const subj = subject?.nameFr ?? 'fiche';
+            document.title = `Fiche_${subj}_${termName}_${academicYear}`.replace(/\s+/g, '_');
+            window.print();
+            document.title = prev;
+          }}
+        >
+          ⬇ Télécharger PDF
         </button>
         <button className="fdnp__btn fdnp__btn--close" onClick={() => window.close()}>
           ✕ Fermer
         </button>
         {fromCache && (
-          <span className="fdnp__offline-badge">
-            📶 Données hors-ligne
-          </span>
+          <span className="fdnp__offline-badge">📶 Données hors-ligne</span>
         )}
+        <span className="fdnp__pdf-hint no-print">
+          Pour télécharger : sélectionnez <strong>Enregistrer en PDF</strong> dans la boîte d'impression
+        </span>
       </div>
 
       <div className="fdnp__sheet">
@@ -215,7 +230,14 @@ export default function FicheDeNotesPrintPage() {
 
         {/* ── Status bar ── */}
         <div className="fdnp__status-bar">
-          <span className="fdnp__coef-badge">Coefficient&nbsp;: <strong>{coef}</strong></span>
+          {hasCoefficient ? (
+            <span className="fdnp__coef-badge">Coefficient&nbsp;: <strong>{coef}</strong></span>
+          ) : (
+            <span className="fdnp__nocoef-badge">Cours Primaire — Sans coefficient</span>
+          )}
+          <span className="fdnp__coef-badge" style={{ background: '#fdf4ff', color: '#7e22ce', borderColor: '#d8b4fe' }}>
+            Notes sur&nbsp;: <strong>/{maxScore}</strong>
+          </span>
           {fiche?.isSigned ? (
             <span className="fdnp__signed-badge">
               ✅ Fiche signée — {fiche.signedByName} · {fmtDate(fiche.signedAt)}
@@ -237,18 +259,20 @@ export default function FicheDeNotesPrintPage() {
                 <th className="fdnp__th fdnp__th--name" rowSpan={2}>Nom et Prénoms</th>
                 <th className="fdnp__th fdnp__th--mat" rowSpan={2}>Matricule</th>
                 <th className="fdnp__th fdnp__th--group" colSpan={5}>Interrogations</th>
-                <th className="fdnp__th fdnp__th--note" rowSpan={2}>Devoir<br /><span className="fdnp__th-sub">/20</span></th>
-                <th className="fdnp__th fdnp__th--note" rowSpan={2}>Examen<br /><span className="fdnp__th-sub">/20</span></th>
+                <th className="fdnp__th fdnp__th--note" rowSpan={2}>Devoir<br /><span className="fdnp__th-sub">/{maxScore}</span></th>
+                <th className="fdnp__th fdnp__th--note" rowSpan={2}>Examen<br /><span className="fdnp__th-sub">/{maxScore}</span></th>
                 <th className="fdnp__th fdnp__th--moy" rowSpan={2}>Moy.<br /><span className="fdnp__th-sub">/20</span></th>
-                <th className="fdnp__th fdnp__th--total" rowSpan={2}>Total<br /><span className="fdnp__th-sub">×{coef}</span></th>
+                {hasCoefficient && (
+                  <th className="fdnp__th fdnp__th--total" rowSpan={2}>Total<br /><span className="fdnp__th-sub">×{coef}</span></th>
+                )}
                 <th className="fdnp__th fdnp__th--rang" rowSpan={2}>Rang</th>
                 <th className="fdnp__th fdnp__th--appr" rowSpan={2}>Appréciation</th>
               </tr>
               <tr>
-                <th className="fdnp__th fdnp__th--note">Int.1<br /><span className="fdnp__th-sub">/20</span></th>
-                <th className="fdnp__th fdnp__th--note">Int.2<br /><span className="fdnp__th-sub">/20</span></th>
-                <th className="fdnp__th fdnp__th--note">Int.3<br /><span className="fdnp__th-sub">/20</span></th>
-                <th className="fdnp__th fdnp__th--note">Int.4<br /><span className="fdnp__th-sub">/20</span></th>
+                <th className="fdnp__th fdnp__th--note">Int.1<br /><span className="fdnp__th-sub">/{maxScore}</span></th>
+                <th className="fdnp__th fdnp__th--note">Int.2<br /><span className="fdnp__th-sub">/{maxScore}</span></th>
+                <th className="fdnp__th fdnp__th--note">Int.3<br /><span className="fdnp__th-sub">/{maxScore}</span></th>
+                <th className="fdnp__th fdnp__th--note">Int.4<br /><span className="fdnp__th-sub">/{maxScore}</span></th>
                 <th className="fdnp__th fdnp__th--moyi">Moy.<br /><span className="fdnp__th-sub">Int.</span></th>
               </tr>
             </thead>
@@ -256,7 +280,7 @@ export default function FicheDeNotesPrintPage() {
             <tbody>
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={15} className="fdnp__empty">Aucun élève inscrit.</td>
+                  <td colSpan={hasCoefficient ? 15 : 14} className="fdnp__empty">Aucun élève inscrit.</td>
                 </tr>
               )}
               {rows.map((row, idx) => {
@@ -270,19 +294,21 @@ export default function FicheDeNotesPrintPage() {
                       <div className="fdnp__student-name">{row.studentName}</div>
                     </td>
                     <td className="fdnp__td fdnp__td--mat">{row.admissionNumber}</td>
-                    <td className="fdnp__td fdnp__td--note"><ScoreCell v={row.noteInterro1} /></td>
-                    <td className="fdnp__td fdnp__td--note"><ScoreCell v={row.noteInterro2} /></td>
-                    <td className="fdnp__td fdnp__td--note"><ScoreCell v={row.noteInterro3} /></td>
-                    <td className="fdnp__td fdnp__td--note"><ScoreCell v={row.noteInterro4} /></td>
+                    <td className="fdnp__td fdnp__td--note"><ScoreCell v={row.noteInterro1} maxScore={maxScore} /></td>
+                    <td className="fdnp__td fdnp__td--note"><ScoreCell v={row.noteInterro2} maxScore={maxScore} /></td>
+                    <td className="fdnp__td fdnp__td--note"><ScoreCell v={row.noteInterro3} maxScore={maxScore} /></td>
+                    <td className="fdnp__td fdnp__td--note"><ScoreCell v={row.noteInterro4} maxScore={maxScore} /></td>
                     <td className="fdnp__td fdnp__td--moyi">{isBlank(moyI) ? '—' : fmt(moyI)}</td>
-                    <td className="fdnp__td fdnp__td--devoir"><ScoreCell v={row.noteDevoir} /></td>
-                    <td className="fdnp__td fdnp__td--compo"><ScoreCell v={row.noteComposition} /></td>
+                    <td className="fdnp__td fdnp__td--devoir"><ScoreCell v={row.noteDevoir} maxScore={maxScore} /></td>
+                    <td className="fdnp__td fdnp__td--compo"><ScoreCell v={row.noteComposition} maxScore={maxScore} /></td>
                     <td className={`fdnp__td fdnp__td--moy${moy !== null && moy < 10 ? ' fdnp__td--fail' : ''}`}>
                       {isBlank(moy) ? <span className="fdnp__blank-cell" /> : fmt(moy)}
                     </td>
-                    <td className="fdnp__td fdnp__td--total">
-                      {moy !== null ? fmt(moy * coef) : <span className="fdnp__blank-cell" />}
-                    </td>
+                    {hasCoefficient && (
+                      <td className="fdnp__td fdnp__td--total">
+                        {moy !== null ? fmt(moy * effectiveCoef) : <span className="fdnp__blank-cell" />}
+                      </td>
+                    )}
                     <td className="fdnp__td fdnp__td--rang">
                       {rank !== null ? `${rank}e` : <span className="fdnp__blank-cell" />}
                     </td>
@@ -294,15 +320,16 @@ export default function FicheDeNotesPrintPage() {
               })}
             </tbody>
 
-            {/* ── Totaux row ── */}
             {rows.length > 0 && (
               <tfoot>
                 <tr className="fdnp__totals">
                   <td className="fdnp__td fdnp__totals-label" colSpan={10}>Totaux / Moyennes</td>
                   <td className="fdnp__td fdnp__totals-val">{fmt(moyClasse)}</td>
-                  <td className="fdnp__td fdnp__totals-val">
-                    {moyClasse !== null ? fmt(moyClasse * coef) : '—'}
-                  </td>
+                  {hasCoefficient && (
+                    <td className="fdnp__td fdnp__totals-val">
+                      {moyClasse !== null ? fmt(moyClasse * effectiveCoef) : '—'}
+                    </td>
+                  )}
                   <td className="fdnp__td" colSpan={2}></td>
                 </tr>
               </tfoot>
@@ -366,7 +393,10 @@ export default function FicheDeNotesPrintPage() {
 
         {/* ── Formula footnote ── */}
         <div className="fdnp__footnote">
-          Formule&nbsp;: Moy = (moy.interros × 1 + devoir × 2 + examen × 3) ÷ 6 &nbsp;|&nbsp;
+          {maxScore !== 20
+            ? `Notes sur /${maxScore} — Moy. normalisée sur /20 : (moy.interros×1 + devoir×2 + examen×3)÷6 × 20/${maxScore}`
+            : 'Formule : Moy = (moy.interros × 1 + devoir × 2 + examen × 3) ÷ 6'}
+          &nbsp;|&nbsp;
           TB ≥ 16 &nbsp;·&nbsp; B ≥ 14 &nbsp;·&nbsp; AB ≥ 12 &nbsp;·&nbsp; P ≥ 10 &nbsp;·&nbsp; Insuf. &lt; 10
           &nbsp;|&nbsp; Imprimé le {new Date().toLocaleDateString('fr-FR')}
         </div>

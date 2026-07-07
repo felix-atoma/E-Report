@@ -46,6 +46,7 @@
     "schoolDocuments":  "Documents",
     "help":             "User Guide",
     "palmares":         "Rankings",
+    "purchases":        "Purchases",
     "timetable":        "Timetable",
     "mySchedule":       "My Schedule",
     "roadmap":          "Year Roadmap",
@@ -387,6 +388,10 @@
     "codePlaceholder": "e.g. MATH (auto if empty)",
     "category":     "Category",
     "description":  "Description",
+    "maxScore":       "Grade scale",
+    "hasCoefficient": "Coefficient",
+    "coefYes":        "With coefficient",
+    "coefNo":         "No coefficient (primary school)",
     "noSubjects":   "No subjects created",
     "noFound":      "No subjects found",
     "allCategories":"All categories",
@@ -1865,6 +1870,7 @@
     "title":        "Grade sheet — {{subject}}",
     "loading":      "Grade sheet",
     "coef":         "Coeff.",
+    "primaryNoCoeф": "Primary school — no coefficient",
     "back":         "Back",
     "printOffline": "🖨 Offline sheet",
     "save":         "Save",
@@ -2781,6 +2787,52 @@
       "quizSubmitted":     "Quiz submitted successfully!",
       "backToList":        "Back to list",
       "attachedDoc":       "📎 Attached document"
+    }
+  },
+
+  "purchases": {
+    "title":           "School Purchases",
+    "subtitle":        "{{count}} purchase(s) · Total: {{total}} FCFA",
+    "subtitleLoading": "Loading…",
+    "add":             "+ Record a purchase",
+    "loading":         "Loading…",
+    "empty":           "No purchases recorded.",
+    "addFirst":        "+ Record the first purchase",
+    "edit":            "Edit",
+    "confirmDelete":   "Delete this purchase?",
+    "searchPlaceholder": "Search by item name or model…",
+    "summaryCount":    "Purchase(s)",
+    "summaryTotal":    "Total spent",
+    "columns": {
+      "date":  "Date",
+      "item":  "Item",
+      "model": "Model",
+      "price": "Price"
+    },
+    "form": {
+      "newTitle":      "New purchase",
+      "editTitle":     "Edit purchase",
+      "newSubtitle":   "Fill in the purchase details",
+      "editSubtitle":  "Update the details of this purchase",
+      "date":          "Purchase date",
+      "itemName":      "Item name",
+      "itemNamePlaceholder": "e.g. Office chairs, Printer, Whiteboard…",
+      "model":         "Model / Reference",
+      "modelPlaceholder": "e.g. HP DeskJet 2700, Series 45X…",
+      "price":         "Price (FCFA)",
+      "notes":         "Notes / Observations",
+      "notesPlaceholder": "Supplier, purchase location, remarks…"
+    },
+    "toast": {
+      "created":     "Purchase recorded",
+      "updated":     "Purchase updated",
+      "deleted":     "Purchase deleted",
+      "error":       "An error occurred",
+      "deleteError": "Unable to delete this purchase"
+    },
+    "errors": {
+      "required":      "This field is required",
+      "pricePositive": "Price must be ≥ 0"
     }
   }
 }

@@ -54,6 +54,7 @@ import { HealthRecordsModule } from './modules/health-records/health-records.mod
 import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { ExportModule } from './modules/export/export.module';
 import { IncidentReportsModule } from './modules/incident-reports/incident-reports.module';
+import { PurchasesModule } from './modules/purchases/purchases.module';
 
 @Module({
   imports: [
@@ -116,6 +117,7 @@ import { IncidentReportsModule } from './modules/incident-reports/incident-repor
     SubscriptionModule,
     ExportModule,
     IncidentReportsModule,
+    PurchasesModule,
   ],
   providers: [
     // JWT guard applied globally — use @Public() to opt out

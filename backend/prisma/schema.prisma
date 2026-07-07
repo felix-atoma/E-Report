@@ -229,6 +229,7 @@ model Institution {
   healthRecords       HealthRecord[]
   paymentPlans        PaymentPlan[]
   incidentReports     IncidentReport[]
+  purchases           Purchase[]
 }
 
 model User {
@@ -324,7 +325,9 @@ model Subject {
   description String?
   category    String?
   department  String?
-  passMark    Float   @default(10)
+  passMark       Float   @default(10)
+  maxScore       Float   @default(20)   // scale: 10 or 20
+  hasCoefficient Boolean @default(true) // false = primary school (no weighting)
 
   institutionId String
   institution   Institution @relation(fields: [institutionId], references: [id])
@@ -1543,6 +1546,24 @@ model SubscriptionPayment {
   approvedAt    DateTime?
   rejectedReason String?
   monthsGranted Int              @default(1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─── Purchases ───────────────────────────────────────────────────────────────
+
+model Purchase {
+  id            String      @id @default(uuid())
+  institutionId String
+  institution   Institution @relation(fields: [institutionId], references: [id])
+
+  date          DateTime    @db.Date
+  itemName      String
+  model         String?
+  price         Decimal     @db.Decimal(12, 2)
+  notes         String?
+  recordedById  String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

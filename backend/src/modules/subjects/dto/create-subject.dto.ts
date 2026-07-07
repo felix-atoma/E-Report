@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class CreateSubjectDto {
   @ApiProperty({ example: 'Mathématiques' })
@@ -38,4 +38,16 @@ export class CreateSubjectDto {
   @Min(0)
   @Max(20)
   passMark?: number;
+
+  @ApiPropertyOptional({ example: 20, description: 'Max grade scale: 10 or 20' })
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(20)
+  maxScore?: number;
+
+  @ApiPropertyOptional({ example: true, description: 'false = primary school (no coefficient weighting)' })
+  @IsOptional()
+  @IsBoolean()
+  hasCoefficient?: boolean;
 }

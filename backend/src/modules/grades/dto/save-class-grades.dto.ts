@@ -22,7 +22,7 @@ export class StudentGradeRowDto {
   @IsOptional()
   @IsNumber()
   @Min(0)
-  @Max(20)
+  @Max(100)
   noteInterro1?: number;
 
   @ApiPropertyOptional({ minimum: 0, maximum: 20 })
@@ -65,7 +65,7 @@ export class StudentGradeRowDto {
   @IsNumber()
   @Min(0.5)
   @Max(20)
-  coefficient?: number;
+  coefficient?: number;  // ignored when subject.hasCoefficient === false
 
   @ApiPropertyOptional()
   @IsOptional()

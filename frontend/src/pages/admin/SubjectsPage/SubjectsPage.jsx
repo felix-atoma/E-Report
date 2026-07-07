@@ -25,13 +25,18 @@ const CATEGORY_VARIANT = {
   TECHNIQUES: 'warning', AUTRE: 'default',
 };
 
-const EMPTY_FORM = { nameFr: '', code: '', category: '', description: '' };
+const EMPTY_FORM = { nameFr: '', code: '', category: '', description: '', maxScore: 20, hasCoefficient: true };
 
 function validate(form, t) {
   const errors = {};
   if (!form.nameFr.trim()) errors.nameFr = t('subjects.errors.nameRequired');
   return errors;
 }
+
+const MAX_SCORE_OPTIONS = [
+  { value: 20, label: 'Sur 20  (/20)' },
+  { value: 10, label: 'Sur 10  (/10)' },
+];
 
 function SubjectForm({ form, errors, onChange, t }) {
   const categories = CATEGORY_KEYS.map((k) => ({ value: k, label: t(`subjects.categories.${k}`) }));
@@ -58,6 +63,26 @@ function SubjectForm({ form, errors, onChange, t }) {
         options={categories}
         onChange={(e) => onChange('category', e.target.value)}
       />
+      <div className="subject-form__row">
+        <Select
+          id="maxScore"
+          label={t('subjects.maxScore')}
+          value={form.maxScore}
+          options={MAX_SCORE_OPTIONS.map((o) => ({ value: String(o.value), label: o.label }))}
+          onChange={(e) => onChange('maxScore', Number(e.target.value))}
+        />
+        <div className="form-field">
+          <label className="form-field__label">{t('subjects.hasCoefficient')}</label>
+          <label className="subject-form__toggle">
+            <input
+              type="checkbox"
+              checked={form.hasCoefficient}
+              onChange={(e) => onChange('hasCoefficient', e.target.checked)}
+            />
+            <span>{form.hasCoefficient ? t('subjects.coefYes') : t('subjects.coefNo')}</span>
+          </label>
+        </div>
+      </div>
       <Input
         id="description" label={t('subjects.description')}
         value={form.description}
@@ -135,10 +160,12 @@ function SubjectsPage() {
   function openEdit(subject) {
     setSelected(subject);
     setForm({
-      nameFr:      subject.nameFr      ?? '',
-      code:        subject.code        ?? '',
-      category:    subject.category    ?? '',
-      description: subject.description ?? '',
+      nameFr:         subject.nameFr         ?? '',
+      code:           subject.code           ?? '',
+      category:       subject.category       ?? '',
+      description:    subject.description    ?? '',
+      maxScore:       subject.maxScore       ?? 20,
+      hasCoefficient: subject.hasCoefficient ?? true,
     });
     setErrors({});
     setModal('edit');
@@ -160,10 +187,12 @@ function SubjectsPage() {
     const errs = validate(form, t);
     if (Object.keys(errs).length) { setErrors(errs); return; }
     const payload = {
-      nameFr:      form.nameFr,
-      code:        form.code        || undefined,
-      category:    form.category    || undefined,
-      description: form.description || undefined,
+      nameFr:         form.nameFr,
+      code:           form.code        || undefined,
+      category:       form.category    || undefined,
+      description:    form.description || undefined,
+      maxScore:       form.maxScore,
+      hasCoefficient: form.hasCoefficient,
     };
     if (modal === 'create') {
       createMutation.mutate(payload);

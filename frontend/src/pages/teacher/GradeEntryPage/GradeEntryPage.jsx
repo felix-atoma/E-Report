@@ -26,15 +26,16 @@ function computeMoyInterros(row) {
   return vals.length > 0 ? Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 100) / 100 : null;
 }
 
-// Togolese formula: (moy_interros×1 + devoir×2 + compo×3) / (1+2+3)
-function computeMoy(row) {
+// Togolese formula: (moy_interros×1 + devoir×2 + compo×3) / (1+2+3), normalized to /20
+function computeMoy(row, maxScore = 20) {
   const moyI = computeMoyInterros(row);
   let ws = 0, wt = 0;
   if (moyI !== null)                   { ws += moyI * 1;           wt += 1; }
   if (!isBlank(row.noteDevoir))        { ws += Number(row.noteDevoir) * 2;      wt += 2; }
   if (!isBlank(row.noteComposition))   { ws += Number(row.noteComposition) * 3; wt += 3; }
   if (wt === 0) return null;
-  return Math.round((ws / wt) * 100) / 100;
+  const rawMoy = ws / wt;
+  return Math.round((rawMoy * 20 / maxScore) * 100) / 100;
 }
 
 function computeRanks(rows) {
@@ -91,12 +92,12 @@ function fmt(v, dec = 2) {
   return v !== null && v !== undefined ? Number(v).toFixed(dec) : '—';
 }
 
-function NoteInput({ value, onChange, disabled }) {
+function NoteInput({ value, onChange, disabled, maxScore = 20 }) {
   return (
     <input
       type="number"
       className={`fdn__note-input${disabled ? ' fdn__note-input--locked' : ''}`}
-      min={0} max={20} step={0.25}
+      min={0} max={maxScore} step={maxScore === 10 ? 0.5 : 0.25}
       value={value ?? ''}
       onChange={(e) => onChange(e.target.value === '' ? null : parseFloat(e.target.value))}
       placeholder="—"
@@ -122,6 +123,9 @@ export default function GradeEntryPage() {
   const [rows, setRows] = useState(null);
   const [coef, setCoef] = useState(1);
   const [saved, setSaved] = useState(false);
+
+  const maxScore       = data?.subject?.maxScore       ?? 20;
+  const hasCoefficient = data?.subject?.hasCoefficient ?? true;
   const [signModal, setSignModal] = useState(false);
   const [sigData, setSigData] = useState(null);
 
@@ -184,8 +188,10 @@ export default function GradeEntryPage() {
 
   if (data && rows === null) {
     setRows(data.students.map((s) => ({ ...s })));
-    const firstCoef = data.students.find((s) => s.coefficient)?.coefficient;
-    if (firstCoef) setCoef(firstCoef);
+    if (data.subject?.hasCoefficient !== false) {
+      const firstCoef = data.students.find((s) => s.coefficient)?.coefficient;
+      if (firstCoef) setCoef(firstCoef);
+    }
   }
 
   const isSigned = data?.fiche?.isSigned ?? false;
@@ -311,10 +317,13 @@ export default function GradeEntryPage() {
     onError: (err) => toast.error(err?.response?.data?.message ?? t('gradeEntry.toast.signError')),
   });
 
+  const maxScoreRef = useRef(20);
+  maxScoreRef.current = maxScore;
+
   const updateRow = useCallback((idx, field, value) => {
     setRows((prev) => {
       const next = prev.map((r, i) => i === idx ? { ...r, [field]: value } : r);
-      const moy = computeMoy(next[idx]);
+      const moy = computeMoy(next[idx], maxScoreRef.current);
       next[idx] = { ...next[idx], moyenneMatiere: moy };
       return next;
     });
@@ -322,6 +331,7 @@ export default function GradeEntryPage() {
 
   const handleSave = () => {
     if (!rows) return;
+    const effectiveCoef = hasCoefficient ? coef : 1;
     mutation.mutate({
       academicYear, termName, termNumber,
       grades: rows.map((r) => ({
@@ -332,7 +342,7 @@ export default function GradeEntryPage() {
         noteInterro4: r.noteInterro4,
         noteDevoir: r.noteDevoir,
         noteComposition: r.noteComposition,
-        coefficient: coef,
+        coefficient: effectiveCoef,
         teacherComment: r.teacherComment,
         teacherName: r.teacherName,
       })),
@@ -401,17 +411,22 @@ export default function GradeEntryPage() {
         subtitle={[termName, academicYear, teacherLabel].filter(Boolean).join(' · ')}
         actions={
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-            <label className="fdn__coef-label">
-              {t('gradeEntry.coef')}
-              <input
-                type="number"
-                className="fdn__coef-input"
-                min={0.5} max={20} step={0.5}
-                value={coef}
-                onChange={(e) => setCoef(parseFloat(e.target.value))}
-                disabled={isSigned}
-              />
-            </label>
+            {!hasCoefficient && (
+              <span className="fdn__primary-badge">{t('gradeEntry.primaryNoCoeф')}</span>
+            )}
+            {hasCoefficient && (
+              <label className="fdn__coef-label">
+                {t('gradeEntry.coef')}
+                <input
+                  type="number"
+                  className="fdn__coef-input"
+                  min={0.5} max={20} step={0.5}
+                  value={coef}
+                  onChange={(e) => setCoef(parseFloat(e.target.value))}
+                  disabled={isSigned}
+                />
+              </label>
+            )}
             <button className="fdn__btn fdn__btn--secondary" onClick={() => navigate(-1)}>{t('gradeEntry.back')}</button>
             <button
               className="fdn__btn fdn__btn--print"
@@ -541,20 +556,20 @@ export default function GradeEntryPage() {
             <tr>
               <th className="fdn__th fdn__th--name" rowSpan={2}>{t('gradeEntry.columns.student')}</th>
               <th className="fdn__th fdn__th--group" colSpan={5}>{t('gradeEntry.columns.classnotes')}</th>
-              <th className="fdn__th fdn__th--note fdn__th--devoir" rowSpan={2}>{t('gradeEntry.columns.devoir')}<span>/20</span></th>
-              <th className="fdn__th fdn__th--note fdn__th--compo" rowSpan={2}>{t('gradeEntry.columns.examen')}<span>/20</span></th>
+              <th className="fdn__th fdn__th--note fdn__th--devoir" rowSpan={2}>{t('gradeEntry.columns.devoir')}<span>/{maxScore}</span></th>
+              <th className="fdn__th fdn__th--note fdn__th--compo" rowSpan={2}>{t('gradeEntry.columns.examen')}<span>/{maxScore}</span></th>
               <th className="fdn__th fdn__th--moy" rowSpan={2}>{t('gradeEntry.columns.moy')}<span>/20</span></th>
-              <th className="fdn__th fdn__th--coef" rowSpan={2}>{t('gradeEntry.columns.coef')}</th>
-              <th className="fdn__th fdn__th--total" rowSpan={2}>{t('gradeEntry.columns.total')}</th>
+              {hasCoefficient && <th className="fdn__th fdn__th--coef" rowSpan={2}>{t('gradeEntry.columns.coef')}</th>}
+              {hasCoefficient && <th className="fdn__th fdn__th--total" rowSpan={2}>{t('gradeEntry.columns.total')}</th>}
               <th className="fdn__th fdn__th--rang" rowSpan={2}>{t('gradeEntry.columns.rang')}</th>
               <th className="fdn__th fdn__th--appr" rowSpan={2}>{t('gradeEntry.columns.appreciation')}<span>{t('gradeEntry.teacherProf')}</span></th>
               <th className="fdn__th fdn__th--teacher" rowSpan={2}>{t('gradeEntry.columns.teacher')}</th>
             </tr>
             <tr>
-              <th className="fdn__th fdn__th--note">{t('gradeEntry.columns.int1')}<span>/20</span></th>
-              <th className="fdn__th fdn__th--note">{t('gradeEntry.columns.int2')}<span>/20</span></th>
-              <th className="fdn__th fdn__th--note">{t('gradeEntry.columns.int3')}<span>/20</span></th>
-              <th className="fdn__th fdn__th--note">{t('gradeEntry.columns.int4')}<span>/20</span></th>
+              <th className="fdn__th fdn__th--note">{t('gradeEntry.columns.int1')}<span>/{maxScore}</span></th>
+              <th className="fdn__th fdn__th--note">{t('gradeEntry.columns.int2')}<span>/{maxScore}</span></th>
+              <th className="fdn__th fdn__th--note">{t('gradeEntry.columns.int3')}<span>/{maxScore}</span></th>
+              <th className="fdn__th fdn__th--note">{t('gradeEntry.columns.int4')}<span>/{maxScore}</span></th>
               <th className="fdn__th fdn__th--note fdn__th--moyinterro">{t('gradeEntry.columns.moyInterro')}</th>
             </tr>
           </thead>
@@ -572,16 +587,16 @@ export default function GradeEntryPage() {
                     <div className="fdn__student-name">{row.studentName}</div>
                     <div className="fdn__student-id">{row.admissionNumber}</div>
                   </td>
-                  <td className="fdn__td"><NoteInput value={row.noteInterro1} onChange={(v) => updateRow(idx, 'noteInterro1', v)} disabled={isSigned} /></td>
-                  <td className="fdn__td"><NoteInput value={row.noteInterro2} onChange={(v) => updateRow(idx, 'noteInterro2', v)} disabled={isSigned} /></td>
-                  <td className="fdn__td"><NoteInput value={row.noteInterro3} onChange={(v) => updateRow(idx, 'noteInterro3', v)} disabled={isSigned} /></td>
-                  <td className="fdn__td"><NoteInput value={row.noteInterro4} onChange={(v) => updateRow(idx, 'noteInterro4', v)} disabled={isSigned} /></td>
+                  <td className="fdn__td"><NoteInput value={row.noteInterro1} onChange={(v) => updateRow(idx, 'noteInterro1', v)} disabled={isSigned} maxScore={maxScore} /></td>
+                  <td className="fdn__td"><NoteInput value={row.noteInterro2} onChange={(v) => updateRow(idx, 'noteInterro2', v)} disabled={isSigned} maxScore={maxScore} /></td>
+                  <td className="fdn__td"><NoteInput value={row.noteInterro3} onChange={(v) => updateRow(idx, 'noteInterro3', v)} disabled={isSigned} maxScore={maxScore} /></td>
+                  <td className="fdn__td"><NoteInput value={row.noteInterro4} onChange={(v) => updateRow(idx, 'noteInterro4', v)} disabled={isSigned} maxScore={maxScore} /></td>
                   <td className="fdn__td fdn__td--computed">{fmt(moyI)}</td>
-                  <td className="fdn__td fdn__td--devoir"><NoteInput value={row.noteDevoir} onChange={(v) => updateRow(idx, 'noteDevoir', v)} disabled={isSigned} /></td>
-                  <td className="fdn__td fdn__td--compo"><NoteInput value={row.noteComposition} onChange={(v) => updateRow(idx, 'noteComposition', v)} disabled={isSigned} /></td>
+                  <td className="fdn__td fdn__td--devoir"><NoteInput value={row.noteDevoir} onChange={(v) => updateRow(idx, 'noteDevoir', v)} disabled={isSigned} maxScore={maxScore} /></td>
+                  <td className="fdn__td fdn__td--compo"><NoteInput value={row.noteComposition} onChange={(v) => updateRow(idx, 'noteComposition', v)} disabled={isSigned} maxScore={maxScore} /></td>
                   <td className={`fdn__td fdn__td--moy ${moy !== null && moy < 10 ? 'fdn__td--fail' : ''}`}>{fmt(moy)}</td>
-                  <td className="fdn__td fdn__td--coef">{coef}</td>
-                  <td className="fdn__td fdn__td--total">{moy !== null ? fmt(moy * coef) : '—'}</td>
+                  {hasCoefficient && <td className="fdn__td fdn__td--coef">{coef}</td>}
+                  {hasCoefficient && <td className="fdn__td fdn__td--total">{moy !== null ? fmt(moy * coef) : '—'}</td>}
                   <td className="fdn__td fdn__td--rang">{ranks[idx] !== null ? `${ranks[idx]}e` : '—'}</td>
                   <td className={`fdn__td fdn__td--appr ${apprCls(moy)}`}>
                     {appreciation(moy, data?.subject?.nameFr) || '—'}
@@ -606,9 +621,9 @@ export default function GradeEntryPage() {
             <tr className="fdn__totals">
               <td className="fdn__td fdn__td--name fdn__totals-label" colSpan={8}>{t('gradeEntry.totals')}</td>
               <td className="fdn__td fdn__td--moy fdn__totals-val">{fmt(moyClasse)}</td>
-              <td className="fdn__td fdn__td--coef fdn__totals-val">{coef}</td>
-              <td className="fdn__td fdn__td--total fdn__totals-val">{fmt(totalPoints)}</td>
-              <td className="fdn__td" colSpan={3}></td>
+              {hasCoefficient && <td className="fdn__td fdn__td--coef fdn__totals-val">{coef}</td>}
+              {hasCoefficient && <td className="fdn__td fdn__td--total fdn__totals-val">{fmt(totalPoints)}</td>}
+              <td className="fdn__td" colSpan={hasCoefficient ? 3 : 5}></td>
             </tr>
             <tr className="fdn__stats">
               <td colSpan={14} className="fdn__stats-row">

@@ -129,6 +129,18 @@
   color: #374151;
 }
 
+/* ── Primary school badge ────────────────────────────────────────────── */
+.fdn__primary-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.625rem;
+  border-radius: 99px;
+  background: #eff6ff;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+  white-space: nowrap;
+}
+
 /* ── Coefficient bar ─────────────────────────────────────────────────── */
 .fdn__coef-label {
   display: flex;

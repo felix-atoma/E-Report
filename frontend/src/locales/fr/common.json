@@ -46,6 +46,7 @@
     "schoolDocuments":  "Documents",
     "help":             "Guide d'utilisation",
     "palmares":         "Palmarès",
+    "purchases":        "Achats",
     "timetable":        "Emploi du temps",
     "mySchedule":       "Tableau de service",
     "roadmap":          "Feuille de route",
@@ -431,6 +432,10 @@
     "codePlaceholder": "ex: MATH (auto si vide)",
     "category":     "Catégorie",
     "description":  "Description",
+    "maxScore":       "Barème de notation",
+    "hasCoefficient": "Coefficient",
+    "coefYes":        "Avec coefficient",
+    "coefNo":         "Sans coefficient (cours primaire)",
     "noSubjects":   "Aucune matière créée",
     "noFound":      "Aucune matière trouvée",
     "allCategories":"Toutes les catégories",
@@ -1945,6 +1950,7 @@
     "title":        "Fiche de notes — {{subject}}",
     "loading":      "Fiche de notes",
     "coef":         "Coeff.",
+    "primaryNoCoeф": "Cours primaire — sans coefficient",
     "back":         "Retour",
     "printOffline": "🖨 Fiche hors-ligne",
     "save":         "Enregistrer",
@@ -2861,6 +2867,52 @@
       "quizSubmitted":     "Quiz soumis avec succès !",
       "backToList":        "Retour à la liste",
       "attachedDoc":       "📎 Document joint"
+    }
+  },
+
+  "purchases": {
+    "title":           "Achats de l'école",
+    "subtitle":        "{{count}} achat(s) · Total : {{total}} FCFA",
+    "subtitleLoading": "Chargement…",
+    "add":             "+ Enregistrer un achat",
+    "loading":         "Chargement…",
+    "empty":           "Aucun achat enregistré.",
+    "addFirst":        "+ Enregistrer le premier achat",
+    "edit":            "Modifier",
+    "confirmDelete":   "Supprimer cet achat ?",
+    "searchPlaceholder": "Rechercher par désignation ou modèle…",
+    "summaryCount":    "Achat(s)",
+    "summaryTotal":    "Total dépensé",
+    "columns": {
+      "date":  "Date",
+      "item":  "Désignation",
+      "model": "Modèle",
+      "price": "Prix"
+    },
+    "form": {
+      "newTitle":      "Nouvel achat",
+      "editTitle":     "Modifier l'achat",
+      "newSubtitle":   "Renseignez les informations de l'achat",
+      "editSubtitle":  "Mettez à jour les informations de cet achat",
+      "date":          "Date d'achat",
+      "itemName":      "Désignation de l'article",
+      "itemNamePlaceholder": "ex : Chaises de bureau, Imprimante, Tableau blanc…",
+      "model":         "Modèle / Référence",
+      "modelPlaceholder": "ex : HP DeskJet 2700, Série 45X…",
+      "price":         "Prix (FCFA)",
+      "notes":         "Notes / Observations",
+      "notesPlaceholder": "Fournisseur, lieu d'achat, remarques…"
+    },
+    "toast": {
+      "created":     "Achat enregistré",
+      "updated":     "Achat modifié",
+      "deleted":     "Achat supprimé",
+      "error":       "Une erreur est survenue",
+      "deleteError": "Impossible de supprimer cet achat"
+    },
+    "errors": {
+      "required":      "Ce champ est requis",
+      "pricePositive": "Le prix doit être ≥ 0"
     }
   }
 }

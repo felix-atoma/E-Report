@@ -41,6 +41,7 @@ function computeMoyenneMatiere(
   interro4: number | null,
   devoir: number | null,
   composition: number | null,
+  maxScore: number = 20,
 ): number | null {
   // Average of all filled interrogations (equally weighted among themselves)
   const interros = [interro1, interro2, interro3, interro4].filter((v) => v !== null && v !== undefined) as number[];
@@ -55,7 +56,9 @@ function computeMoyenneMatiere(
   if (composition !== null && composition !== undefined) { weightedSum += composition * 3; totalWeight += 3; }
 
   if (totalWeight === 0) return null;
-  return Math.round((weightedSum / totalWeight) * 100) / 100;
+  const rawMoy = weightedSum / totalWeight;
+  // Normalize to /20 so that moyenneMatiere is always on a /20 scale
+  return Math.round((rawMoy * 20 / maxScore) * 100) / 100;
 }
 
 @Injectable()
@@ -144,7 +147,7 @@ export class GradesService {
     // Get subject info
     const subject = await this.prisma.subject.findUnique({
       where: { id: subjectId },
-      select: { id: true, nameFr: true, code: true, passMark: true },
+      select: { id: true, nameFr: true, code: true, passMark: true, maxScore: true, hasCoefficient: true },
     });
     if (!subject) throw new NotFoundException('Subject not found');
 
@@ -232,8 +235,12 @@ export class GradesService {
   ) {
     await this.assertSubjectAccess(classId, subjectId, requestingUserId, requestingRole);
 
-    const subject = await this.prisma.subject.findUnique({ where: { id: subjectId } });
+    const subject = await this.prisma.subject.findUnique({
+      where: { id: subjectId },
+      select: { id: true, nameFr: true, maxScore: true, hasCoefficient: true },
+    });
     if (!subject) throw new NotFoundException('Subject not found');
+    const csvMaxScore = subject.maxScore ?? 20;
 
     const cls = await this.prisma.class.findUnique({ where: { id: classId } });
     if (!cls) throw new NotFoundException('Class not found');
@@ -242,10 +249,10 @@ export class GradesService {
 
     for (const row of rows) {
       try {
-        if (row.devoir !== undefined && (row.devoir < 0 || row.devoir > 20))
-          throw new Error('Devoir hors plage 0–20');
-        if (row.compo !== undefined && (row.compo < 0 || row.compo > 20))
-          throw new Error('Composition hors plage 0–20');
+        if (row.devoir !== undefined && (row.devoir < 0 || row.devoir > csvMaxScore))
+          throw new Error(`Devoir hors plage 0–${csvMaxScore}`);
+        if (row.compo !== undefined && (row.compo < 0 || row.compo > csvMaxScore))
+          throw new Error(`Composition hors plage 0–${csvMaxScore}`);
 
         // Find or create the student's report card for this term
         let reportCard = await this.prisma.reportCard.findUnique({
@@ -265,12 +272,12 @@ export class GradesService {
           });
         }
 
-        const moy = computeMoyenneMatiere(null, null, null, null, row.devoir ?? null, row.compo ?? null);
-        const coef = 1;
+        const moy = computeMoyenneMatiere(null, null, null, null, row.devoir ?? null, row.compo ?? null, csvMaxScore);
+        const coef = 1; // CSV import always uses coefficient 1
         const gradeData = {
           noteDevoir: row.devoir ?? null,
           noteComposition: row.compo ?? null,
-          moyenneMatiere: moy,
+          moyenneMatiere: moy,   // normalized /20
           coefficient: coef,
           weightedScore: moy !== null ? moy * coef : 0,
           score: moy ?? 0,
@@ -302,8 +309,12 @@ export class GradesService {
   ) {
     await this.assertSubjectAccess(classId, subjectId, requestingUserId, requestingRole);
 
-    const subject = await this.prisma.subject.findUnique({ where: { id: subjectId } });
+    const subject = await this.prisma.subject.findUnique({
+      where: { id: subjectId },
+      select: { id: true, nameFr: true, maxScore: true, hasCoefficient: true },
+    });
     if (!subject) throw new NotFoundException('Subject not found');
+    const maxScore = subject.maxScore ?? 20;
 
     const cls = await this.prisma.class.findUnique({ where: { id: classId } });
     if (!cls) throw new NotFoundException('Class not found');
@@ -346,6 +357,14 @@ export class GradesService {
           });
         }
 
+        // Validate raw note values against the subject's scale
+        const rawNotes = [row.noteInterro1, row.noteInterro2, row.noteInterro3, row.noteInterro4, row.noteDevoir, row.noteComposition];
+        for (const n of rawNotes) {
+          if (n !== undefined && n !== null && n > maxScore) {
+            throw new BadRequestException(`Une note dépasse le barème de la matière (/${maxScore})`);
+          }
+        }
+
         const moy = computeMoyenneMatiere(
           row.noteInterro1 ?? null,
           row.noteInterro2 ?? null,
@@ -353,9 +372,11 @@ export class GradesService {
           row.noteInterro4 ?? null,
           row.noteDevoir ?? null,
           row.noteComposition ?? null,
+          maxScore, // normalizes result to /20
         );
 
-        const coef = row.coefficient ?? 1;
+        // Primary school subjects have no coefficient weighting
+        const coef = subject.hasCoefficient === false ? 1 : (row.coefficient ?? 1);
 
         const gradeData = {
           noteInterro1: row.noteInterro1,
@@ -364,11 +385,11 @@ export class GradesService {
           noteInterro4: row.noteInterro4,
           noteDevoir: row.noteDevoir,
           noteComposition: row.noteComposition,
-          moyenneMatiere: moy,
+          moyenneMatiere: moy,    // always /20 (normalized)
           coefficient: coef,
           weightedScore: moy !== null ? moy * coef : 0,
           score: moy ?? 0,
-          appreciation: computeAppreciation(moy, subject.nameFr),
+          appreciation: computeAppreciation(moy, subject.nameFr), // moy already /20
           teacherComment: row.teacherComment,
           teacherName: row.teacherName,
         };
