@@ -89,6 +89,7 @@
     "publish":    "Publier",
     "download":   "Télécharger",
     "logout":     "Se déconnecter",
+    "loggingOut": "Déconnexion en cours…",
     "assign":     "Assigner",
     "assigning":  "Assignation…",
     "viewAll":    "Voir tout",

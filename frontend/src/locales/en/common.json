@@ -89,6 +89,7 @@
     "publish":    "Publish",
     "download":   "Download",
     "logout":     "Log out",
+    "loggingOut": "Logging out…",
     "assign":     "Assign",
     "assigning":  "Assigning…",
     "viewAll":    "View all",

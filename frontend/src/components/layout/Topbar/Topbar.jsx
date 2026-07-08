@@ -74,9 +74,14 @@ function Topbar({ title, onMenuClick }) {
     });
   };
 
+  const [loggingOut, setLoggingOut] = useState(false);
+
   const handleLogout = async () => {
+    userDrop.setOpen(false);
+    setLoggingOut(true);
     await logout();
-    navigate('/login');
+    // Let the fade-out animation finish before navigating
+    setTimeout(() => navigate('/login'), 700);
   };
 
   const handleSearch = (e) => {
@@ -275,6 +280,14 @@ function Topbar({ title, onMenuClick }) {
         )}
         </div>
       </div>
+      {loggingOut && (
+        <div className="topbar__logout-overlay" aria-live="polite">
+          <div className="topbar__logout-card">
+            <div className="topbar__logout-spinner" />
+            <p className="topbar__logout-text">{t('action.loggingOut')}</p>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
