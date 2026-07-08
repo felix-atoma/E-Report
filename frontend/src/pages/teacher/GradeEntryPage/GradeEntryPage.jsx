@@ -123,9 +123,6 @@ export default function GradeEntryPage() {
   const [rows, setRows] = useState(null);
   const [coef, setCoef] = useState(1);
   const [saved, setSaved] = useState(false);
-
-  const maxScore       = data?.subject?.maxScore       ?? 20;
-  const hasCoefficient = data?.subject?.hasCoefficient ?? true;
   const [signModal, setSignModal] = useState(false);
   const [sigData, setSigData] = useState(null);
 
@@ -154,6 +151,9 @@ export default function GradeEntryPage() {
     queryFn: () => subjectHoursService.list(subjectId).then((r) => r.data),
     enabled: !!subjectId,
   });
+
+  const maxScore       = data?.subject?.maxScore       ?? 20;
+  const hasCoefficient = data?.subject?.hasCoefficient ?? true;
 
   const existingHoursLog = hoursLogs.find(
     (h) => h.classId === classId && h.academicYear === academicYear && h.termNumber === termNumber,
