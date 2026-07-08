@@ -45,8 +45,8 @@ export class SuperAdminService {
       data: {
         name: dto.schoolName,
         address: dto.city,
-        isActive: false,
-        status: 'PENDING' as any,
+        isActive: true,
+        status: 'ACTIVE' as any,
         declaredStudentCount: dto.declaredStudentCount ?? null,
       },
     });
@@ -57,14 +57,22 @@ export class SuperAdminService {
         email,
         password: hashedPassword,
         role: Role.ADMIN as any,
-        isActive: false,
+        isActive: true,
         institutionId: institution.id,
       },
     });
 
+    // Start 30-day trial immediately (free if < 50 real students, trial applies above)
+    this.subscription.startTrial(institution.id).catch((e) =>
+      this.logger.error('startTrial failed', e),
+    );
+
+    // Send welcome email to the new admin
     this.mail
-      .sendSchoolRegistration(dto.schoolName, dto.city, email)
-      .catch((e) => this.logger.error('Mail notification failed', e));
+      .sendSchoolApproval(dto.adminName, email, dto.schoolName)
+      .catch((e) => this.logger.error('Welcome email failed', e));
+
+    // Notify platform owner (informational)
     this.whatsapp
       .sendSchoolRegistration(dto.schoolName, dto.city)
       .catch((e) => this.logger.error('WhatsApp notification failed', e));
@@ -81,8 +89,7 @@ export class SuperAdminService {
     });
 
     return {
-      message:
-        'Votre demande a été soumise. Vous recevrez vos identifiants une fois approuvé.',
+      message: 'Compte créé avec succès. Vous pouvez vous connecter dès maintenant.',
     };
   }
 
@@ -169,11 +176,6 @@ export class SuperAdminService {
         data: { isActive: true },
       }),
     ]);
-
-    // Start 30-day trial subscription
-    this.subscription.startTrial(id).catch((e) =>
-      this.logger.error('startTrial failed', e),
-    );
 
     // Send activation email to admin(s)
     const admins = await this.prisma.user.findMany({

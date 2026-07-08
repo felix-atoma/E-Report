@@ -14,6 +14,7 @@
   border-radius: 14px;
   flex-wrap: wrap;
 }
+.sub-status-card--free     { background: linear-gradient(135deg,#f0fdf4,#dcfce7); border: 1.5px solid #16a34a; }
 .sub-status-card--trial    { background: linear-gradient(135deg,#fffbeb,#fef3c7); border: 1.5px solid #f59e0b; }
 .sub-status-card--active   { background: linear-gradient(135deg,#f0fdf4,#dcfce7); border: 1.5px solid #22c55e; }
 .sub-status-card--expired  { background: linear-gradient(135deg,#fef2f2,#fee2e2); border: 1.5px solid #ef4444; }
@@ -70,12 +71,12 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--tier-color) 15%, transparent);
   transform: translateY(-2px);
 }
-.sub-tier-card__current-label {
+.sub-tier-card__current-label,
+.sub-tier-card__free-label {
   position: absolute;
   top: -11px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--tier-color);
   color: #fff;
   font-size: 0.6rem;
   font-weight: 800;
@@ -85,6 +86,10 @@
   letter-spacing: 0.08em;
   white-space: nowrap;
 }
+.sub-tier-card__current-label { background: var(--tier-color); }
+.sub-tier-card__free-label    { background: #16a34a; }
+.sub-tier-card--free { border-color: #16a34a; }
+.sub-tier-card__amount--free  { font-size: 1.25rem; font-weight: 800; color: #16a34a; }
 .sub-tier-card__top { margin-bottom: 0.75rem; }
 .sub-tier-card__name {
   display: block;

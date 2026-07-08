@@ -97,6 +97,31 @@ export class SubscriptionService {
     const now  = new Date();
     const tier = getTier(studentCount);
 
+    // Schools with fewer than 50 students are permanently free — no subscription needed
+    if (studentCount < 50) {
+      return {
+        status:       'FREE',
+        isFree:       true,
+        tier:         'STARTER',
+        studentCount,
+        billingPlan:  null,
+        expiry:       null,
+        trialEndsAt:  null,
+        daysLeft:     null,
+        currentPrice: { monthly: 0, annual: 0 },
+        pricing: Object.fromEntries(
+          (Object.keys(TIER_THRESHOLDS) as Tier[]).map((t) => [
+            t,
+            { ...this.pricing[t], ...TIER_THRESHOLDS[t] },
+          ]),
+        ),
+        momoInfo: {
+          number:   this.ownerMomoNumber,
+          operator: this.ownerMomoOperator,
+        },
+      };
+    }
+
     // Auto-expire if deadline passed
     if (institution.subscriptionStatus === 'TRIAL' && institution.trialEndsAt && institution.trialEndsAt < now) {
       await db(this.prisma).institution.update({

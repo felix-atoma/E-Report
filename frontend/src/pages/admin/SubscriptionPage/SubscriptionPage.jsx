@@ -64,6 +64,7 @@ export default function SubscriptionPage() {
   const locale = 'fr-FR';
 
   const STATUS_META = {
+    FREE:      { icon: '🎁', label: 'Gratuit',                          cls: 'free' },
     TRIAL:     { icon: '🕐', label: t('subscription.status.TRIAL'),     cls: 'trial' },
     ACTIVE:    { icon: '✅', label: t('subscription.status.ACTIVE'),    cls: 'active' },
     EXPIRED:   { icon: '🔴', label: t('subscription.status.EXPIRED'),   cls: 'expired' },
@@ -120,14 +121,16 @@ export default function SubscriptionPage() {
   const currentTier     = statusData?.tier ?? null;
   const studentCount    = statusData?.studentCount ?? null;
   const status          = statusData?.status ?? null;
+  const isFree          = status === 'FREE';
   const statusMeta      = STATUS_META[status] ?? null;
   const momoInfo        = statusData?.momoInfo ?? { number: '', operator: 'TMoney' };
 
   // Use API pricing if available, otherwise fall back to static TIERS
   const activeTierDef   = TIERS.find((t) => t.key === currentTier);
-  const currentPrice    = billing === 'ANNUAL'
-    ? (statusData?.currentPrice?.annual  ?? activeTierDef?.annual  ?? 0)
-    : (statusData?.currentPrice?.monthly ?? activeTierDef?.monthly ?? 0);
+  const currentPrice    = isFree ? 0
+    : billing === 'ANNUAL'
+      ? (statusData?.currentPrice?.annual  ?? activeTierDef?.annual  ?? 0)
+      : (statusData?.currentPrice?.monthly ?? activeTierDef?.monthly ?? 0);
 
   return (
     <AppShell title="Abonnement">
@@ -165,7 +168,12 @@ export default function SubscriptionPage() {
               <div>
                 <p className="sub-status-label">Statut de l'abonnement</p>
                 <p className="sub-status-value">{statusMeta.label}</p>
-                {(statusData.expiry || statusData.trialEndsAt) && (
+                {isFree ? (
+                  <p className="sub-status-expiry">
+                    Votre établissement a moins de 50 élèves — accès <strong>gratuit et illimité</strong>.
+                    Un abonnement sera requis dès que vous dépasserez 50 élèves inscrits.
+                  </p>
+                ) : (statusData.expiry || statusData.trialEndsAt) ? (
                   <p className="sub-status-expiry">
                     {status === 'TRIAL' ? "Essai jusqu'au" : 'Valide jusqu\'au'} :{' '}
                     <strong>
@@ -175,7 +183,7 @@ export default function SubscriptionPage() {
                     </strong>
                     {statusData.daysLeft != null && ` (${statusData.daysLeft} j restants)`}
                   </p>
-                )}
+                ) : null}
               </div>
             </div>
             <div className="sub-status-right">
@@ -189,12 +197,16 @@ export default function SubscriptionPage() {
                   </p>
                 </>
               )}
-              {currentPrice > 0 && (
+              {isFree ? (
+                <p className="sub-status-price" style={{ color: '#16a34a' }}>
+                  Gratuit <span>— &lt; 50 élèves</span>
+                </p>
+              ) : currentPrice > 0 ? (
                 <p className="sub-status-price">
                   {currentPrice.toLocaleString(locale)}{' '}
                   <span>FCFA/{billing === 'ANNUAL' ? 'an' : 'mois'}</span>
                 </p>
-              )}
+              ) : null}
             </div>
           </div>
         )}
@@ -209,28 +221,40 @@ export default function SubscriptionPage() {
           <div className="sub-tier-grid">
             {TIERS.map((tier) => {
               const isCurrent = tier.key === currentTier;
+              const isStarter = tier.key === 'STARTER';
               const price     = billing === 'ANNUAL' ? tier.annual : tier.monthly;
               return (
                 <div
                   key={tier.key}
-                  className={`sub-tier-card${isCurrent ? ' sub-tier-card--current' : ''}`}
+                  className={`sub-tier-card${isCurrent ? ' sub-tier-card--current' : ''}${isStarter ? ' sub-tier-card--free' : ''}`}
                   style={{ '--tier-color': tier.color }}
                 >
                   {isCurrent && (
                     <div className="sub-tier-card__current-label">Votre tier actuel</div>
                   )}
+                  {isStarter && !isCurrent && (
+                    <div className="sub-tier-card__free-label">Gratuit</div>
+                  )}
                   <div className="sub-tier-card__top">
                     <span className="sub-tier-card__name">{tier.label}</span>
                     <span className="sub-tier-card__range">{t(`subscription.tierRange.${tier.key}`)}</span>
                   </div>
-                  <div className="sub-tier-card__price">
-                    <span className="sub-tier-card__amount">{price.toLocaleString(locale)}</span>
-                    <span className="sub-tier-card__currency">FCFA/{billing === 'ANNUAL' ? 'an' : 'mois'}</span>
-                  </div>
-                  {billing === 'ANNUAL' && (
-                    <p className="sub-tier-card__saving">
-                      soit {Math.round(tier.annual / 12).toLocaleString(locale)} FCFA/mois · 2 mois offerts
-                    </p>
+                  {isStarter ? (
+                    <div className="sub-tier-card__price">
+                      <span className="sub-tier-card__amount sub-tier-card__amount--free">Gratuit</span>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="sub-tier-card__price">
+                        <span className="sub-tier-card__amount">{price.toLocaleString(locale)}</span>
+                        <span className="sub-tier-card__currency">FCFA/{billing === 'ANNUAL' ? 'an' : 'mois'}</span>
+                      </div>
+                      {billing === 'ANNUAL' && (
+                        <p className="sub-tier-card__saving">
+                          soit {Math.round(tier.annual / 12).toLocaleString(locale)} FCFA/mois · 2 mois offerts
+                        </p>
+                      )}
+                    </>
                   )}
                 </div>
               );
@@ -238,8 +262,8 @@ export default function SubscriptionPage() {
           </div>
         </Card>
 
-        {/* ── Billing period toggle ──────────────────────────────────────────── */}
-        <Card>
+        {/* ── Billing period toggle (hidden for free schools) ───────────────── */}
+        {!isFree && <Card>
           <h3 className="sub-section-title">Période de facturation</h3>
           <div className="sub-billing-toggle">
             <button
@@ -258,10 +282,10 @@ export default function SubscriptionPage() {
               <span className="sub-billing-desc">Renouvelé chaque année</span>
             </button>
           </div>
-        </Card>
+        </Card>}
 
-        {/* ── Payment methods ────────────────────────────────────────────────── */}
-        <Card>
+        {/* ── Payment methods (hidden for free schools) ─────────────────────── */}
+        {!isFree && <Card>
           <h3 className="sub-section-title">Mode de paiement</h3>
           {currentTier ? (
             <p className="sub-section-sub">
@@ -415,7 +439,7 @@ export default function SubscriptionPage() {
               </Button>
             </div>
           )}
-        </Card>
+        </Card>}
 
         {/* ── Payment history ────────────────────────────────────────────────── */}
         {history.length > 0 && (

@@ -145,13 +145,14 @@ function RegisterSchoolPage() {
                   <polyline points="22 4 12 14.01 9 11.01"/>
                 </svg>
               </div>
-              <h2 className="rsp-success__title">Demande envoyée !</h2>
+              <h2 className="rsp-success__title">Compte créé !</h2>
               <p className="rsp-success__body">
-                Votre demande d'inscription a bien été soumise.
-                Vous serez contacté sous <strong>24h</strong> pour activer votre compte.
+                Votre espace scolaire est prêt. Connectez-vous dès maintenant avec votre
+                email et mot de passe pour commencer.
               </p>
               <p className="rsp-success__hint">
-                Une fois approuvé, vous pourrez vous connecter avec votre email et mot de passe.
+                Les établissements de moins de 50 élèves bénéficient d'un accès <strong>gratuit</strong>.
+                Au-delà, un abonnement est requis.
               </p>
               <Link to="/login" className="rsp-btn rsp-btn--primary" style={{ marginTop: '0.5rem' }}>
                 Retour à la connexion
@@ -193,7 +194,7 @@ function RegisterSchoolPage() {
           </div>
 
           <h2 className="asl-heading">Créer votre espace scolaire</h2>
-          <p className="asl-subheading">Remplissez le formulaire ci-dessous pour soumettre votre demande.</p>
+          <p className="asl-subheading">Accès immédiat. Gratuit jusqu'à 50 élèves.</p>
 
           {error && (
             <div className="asl-alert asl-alert--error" role="alert">{error}</div>
@@ -332,7 +333,7 @@ function RegisterSchoolPage() {
               disabled={loading}
             >
               {loading && <span className="rsp-spinner" aria-hidden="true" />}
-              {loading ? 'Envoi en cours…' : "Soumettre la demande d'inscription"}
+              {loading ? 'Création en cours…' : 'Créer mon compte gratuitement'}
             </button>
           </form>
 

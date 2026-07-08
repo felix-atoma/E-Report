@@ -80,9 +80,9 @@ export class AuthService {
         where: { id: user.institutionId },
         select: { status: true },
       });
-      if (institution && ['PENDING', 'SUSPENDED', 'REJECTED'].includes(institution.status as string)) {
+      if (institution && ['SUSPENDED', 'REJECTED'].includes(institution.status as string)) {
         throw new UnauthorizedException(
-          "Votre établissement est en attente d'activation",
+          'Votre établissement a été suspendu ou désactivé. Contactez le support.',
         );
       }
     }
