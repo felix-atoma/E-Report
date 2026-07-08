@@ -529,35 +529,48 @@
 
 /* ══════════════════════════════════════════════════════════════
    PRINT STYLES  — File → Print → "Save as PDF"
+   body.guide-print-mode is set by handlePrint() before window.print()
    ══════════════════════════════════════════════════════════════ */
+
+/* Hide UI chrome during print */
 @media print {
-  /* Hide everything except the book */
-  body > *  { display: none !important; }
-  #root      { display: block !important; }
-  #root > *  { display: none !important; }
+  body.guide-print-mode .sidebar,
+  body.guide-print-mode .sidebar-backdrop,
+  body.guide-print-mode .topbar,
+  body.guide-print-mode .side-btn-wrapper,
+  body.guide-print-mode .app-shell__verify-banner,
+  body.guide-print-mode .help-screen-header,
+  body.guide-print-mode .page-header {
+    display: none !important;
+  }
 
-  .app-shell     { display: block !important; }
-  .app-shell > * { display: none !important; }
+  body.guide-print-mode .app-shell {
+    display: flex !important;
+    width: 100% !important;
+  }
 
-  .app-shell__content,
-  .page-content,
-  main {
+  body.guide-print-mode .app-shell__main {
+    display: block !important;
+    margin-left: 0 !important;
+    width: 100% !important;
+    padding: 0 !important;
+  }
+
+  body.guide-print-mode .app-shell__content,
+  body.guide-print-mode main {
     display: block !important;
     padding: 0 !important;
     margin: 0 !important;
   }
 
-  .help-screen-header,
-  .help-screen-actions { display: none !important; }
-
-  .help-book {
+  body.guide-print-mode .help-book {
     max-width: 100%;
     font-size: 10.5pt;
     color: #000;
   }
 
   /* Cover — full first page */
-  .help-cover {
+  body.guide-print-mode .help-cover {
     page-break-after: always;
     break-after: page;
     min-height: 92vh;
@@ -567,8 +580,8 @@
     print-color-adjust: exact;
   }
 
-  /* Foreword — second page */
-  .help-foreword {
+  /* Foreword — its own page */
+  body.guide-print-mode .help-foreword {
     page-break-after: always;
     break-after: page;
     border: none;
@@ -580,18 +593,20 @@
   }
 
   /* TOC — its own page */
-  .help-toc {
+  body.guide-print-mode .help-toc {
     page-break-after: always;
     break-after: page;
     border: none;
     border-radius: 0;
     padding: 2cm 0;
   }
-  .help-toc__link { cursor: default; pointer-events: none; }
-  .help-toc__link:hover { background: none; }
+  body.guide-print-mode .help-toc__link {
+    cursor: default;
+    pointer-events: none;
+  }
 
   /* Each chapter starts on a new page */
-  .help-chapter {
+  body.guide-print-mode .help-chapter {
     page-break-before: always;
     break-before: page;
     border: none;
@@ -599,7 +614,7 @@
     margin-bottom: 0;
   }
 
-  .help-chapter__header {
+  body.guide-print-mode .help-chapter__header {
     background: #1e2a78 !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
@@ -608,12 +623,12 @@
     break-after: avoid;
   }
 
-  .help-section-block {
+  body.guide-print-mode .help-section-block {
     page-break-inside: avoid;
     break-inside: avoid;
   }
 
-  .help-steps__item {
+  body.guide-print-mode .help-steps__item {
     background: #f9f9f9 !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
@@ -622,26 +637,26 @@
     break-inside: avoid;
   }
 
-  .help-steps__num {
+  body.guide-print-mode .help-steps__num {
     background: #f97316 !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 
-  /* Callout boxes in print */
-  .help-callout {
+  /* Callout boxes */
+  body.guide-print-mode .help-callout {
     page-break-inside: avoid;
     break-inside: avoid;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-  .help-callout--tip      { background: #f0fdf4 !important; border-left-color: #22c55e !important; }
-  .help-callout--warning  { background: #fffbeb !important; border-left-color: #f59e0b !important; }
-  .help-callout--note     { background: #eff6ff !important; border-left-color: #3b82f6 !important; }
-  .help-callout--important{ background: #fef2f2 !important; border-left-color: #ef4444 !important; }
+  body.guide-print-mode .help-callout--tip       { background: #f0fdf4 !important; border-left-color: #22c55e !important; }
+  body.guide-print-mode .help-callout--warning   { background: #fffbeb !important; border-left-color: #f59e0b !important; }
+  body.guide-print-mode .help-callout--note      { background: #eff6ff !important; border-left-color: #3b82f6 !important; }
+  body.guide-print-mode .help-callout--important { background: #fef2f2 !important; border-left-color: #ef4444 !important; }
 
   /* Back cover */
-  .help-back-cover {
+  body.guide-print-mode .help-back-cover {
     page-break-before: always;
     break-before: page;
     border-radius: 0;
@@ -652,14 +667,44 @@
   }
 
   /* Page setup */
-  @page {
-    size: A4;
-    margin: 1.5cm 2cm;
-  }
+  @page { size: A4; margin: 1.5cm 2cm; }
 
-  /* Don't print link decorations */
   a::after { content: none !important; }
+}
 
-  /* Floating side buttons — hide */
-  .side-btn-wrapper { display: none !important; }
+/* ── Scroll-to-top floating button ── */
+.help-scroll-top {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #1e2a78;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+  z-index: 200;
+  transition: background 0.15s, transform 0.15s, opacity 0.2s;
+}
+
+.help-scroll-top:hover {
+  background: #162060;
+  transform: translateY(-2px);
+}
+
+[data-theme="dark"] .help-scroll-top {
+  background: #3b4fd8;
+}
+
+[data-theme="dark"] .help-scroll-top:hover {
+  background: #2d3db8;
+}
+
+@media print {
+  body.guide-print-mode .help-scroll-top { display: none !important; }
 }

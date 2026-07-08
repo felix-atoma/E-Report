@@ -105,6 +105,18 @@
   font-weight: 500;
 }
 
+/* ── Print — remove texture background ──────────────────────────────────── */
+@media print {
+  body.guide-print-mode .app-shell__main {
+    background-color: #fff !important;
+    background-image: none !important;
+  }
+  body.guide-print-mode .app-shell__content {
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+}
+
 /* ── WhatsApp-style background — dark mode ──────────────────────────────── */
 [data-theme="dark"] .app-shell__main {
   background-color: #0d1418;

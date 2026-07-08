@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../context/AuthContext';
 import AppShell from '../../../components/layout/AppShell/AppShell';
@@ -14,14 +14,14 @@ const CHAPTERS_FR = [
     icon: '🚀',
     sections: [
       {
-        title: 'Présentation d\'E-Report',
-        content: `E-Report est une plateforme de gestion scolaire en ligne conçue pour les établissements du système éducatif togolais et africain. Elle centralise la gestion des élèves, des notes, des bulletins, des finances, de la discipline, des présences et de la communication avec les familles.
+        title: 'Présentation de NovaBulletin',
+        content: `NovaBulletin est une plateforme de gestion scolaire en ligne conçue pour les établissements du système éducatif togolais et africain. Elle centralise la gestion des élèves, des notes, des bulletins, des finances, de la discipline, des présences et de la communication avec les familles.
 
 La plateforme est accessible depuis n'importe quel navigateur web (Chrome, Firefox, Edge, Safari) sur ordinateur, tablette ou téléphone mobile. Aucune installation n'est nécessaire.`,
       },
       {
         title: 'Rôles disponibles',
-        content: `E-Report distingue cinq rôles principaux :
+        content: `NovaBulletin distingue cinq rôles principaux :
 
 • Administrateur (ADMIN) — Directeur ou gestionnaire de l'établissement. Accès complet à toutes les fonctionnalités.
 • Enseignant (TEACHER) — Saisie des notes, gestion des fiches, bulletins, présences, annonces.
@@ -191,7 +191,7 @@ Pour les cours primaires avec note sur 10, activez l'option « Cours primaire »
     sections: [
       {
         title: 'Plans disponibles',
-        content: `E-Report propose quatre niveaux d'abonnement selon la taille de votre établissement :
+        content: `NovaBulletin propose quatre niveaux d'abonnement selon la taille de votre établissement :
 
 • Starter — Moins de 50 élèves — GRATUIT (accès complet à toutes les fonctionnalités)
 • Basic — De 50 à 99 élèves — 10 000 FCFA/mois ou 100 000 FCFA/an
@@ -456,7 +456,7 @@ Cycle de vie d'une fiche :
     sections: [
       {
         title: 'Processus de création d\'un bulletin',
-        content: `Le bulletin scolaire est le document central d'E-Report :
+        content: `Le bulletin scolaire est le document central de NovaBulletin :
 
 1. L'administrateur configure la période dans les Paramètres.
 2. Les enseignants saisissent les notes dans leurs fiches.
@@ -503,7 +503,7 @@ Cycle de vie d'une fiche :
 • Le code QR s'affiche en bas de chaque bulletin imprimé.
 • En scannant ce code, le vérificateur accède à une page publique confirmant l'authenticité.
 • Cette fonctionnalité protège contre la falsification des bulletins.`,
-        callout: { type: 'tip', text: 'Encouragez les établissements et employeurs qui reçoivent des bulletins E-Report à utiliser la vérification QR.' },
+        callout: { type: 'tip', text: 'Encouragez les établissements et employeurs qui reçoivent des bulletins NovaBulletin à utiliser la vérification QR.' },
       },
       {
         title: 'Palmarès de classe',
@@ -687,7 +687,7 @@ Statuts possibles :
         steps: [
           'Allez dans le menu → Examens blancs.',
           'Cliquez sur « + Nouvel examen blanc ».',
-          'Saisissez le nom (ex : Examen blanc BEPC — Juin 2025), le type et la date.',
+          'Saisissez le nom (ex : Examen blanc BEPC — Juin 2026), le type et la date.',
           'Sélectionnez les classes participantes.',
           'Cliquez sur « Créer ».',
         ],
@@ -813,7 +813,7 @@ Statuts possibles :
       },
       {
         title: 'Notifications WhatsApp et Email',
-        content: `E-Report envoie automatiquement des notifications aux parents lors de :
+        content: `NovaBulletin envoie automatiquement des notifications aux parents lors de :
 • La publication d'un nouveau bulletin.
 • La confirmation d'un paiement.
 • Une annonce importante.
@@ -1128,7 +1128,7 @@ Types de ressources disponibles :
 • Déconnectez-vous après chaque session sur un ordinateur partagé.
 • Ne communiquez pas les données d'élèves par WhatsApp ou email non sécurisé.
 • En cas de compte compromis, changez immédiatement votre mot de passe.`,
-        callout: { type: 'warning', text: 'Le support E-Report ne demande jamais votre mot de passe. Ne communiquez vos identifiants à personne.' },
+        callout: { type: 'warning', text: 'Le support NovaBulletin ne demande jamais votre mot de passe. Ne communiquez vos identifiants à personne.' },
       },
       {
         title: 'Problèmes fréquents et solutions',
@@ -1142,7 +1142,7 @@ Types de ressources disponibles :
         title: 'Support technique',
         content: `Pour toute question ou problème :
 • Consultez l'assistant IA intégré (bouton flottant en bas à droite).
-• Contactez le support E-Report par email.
+• Contactez le support NovaBulletin par email.
 • Décrivez précisément le problème et joignez une capture d'écran.
 
 Heures de support : Lundi – Vendredi, 8h – 18h (heure de Lomé, GMT+0).`,
@@ -1159,14 +1159,14 @@ const CHAPTERS_EN = [
     icon: '🚀',
     sections: [
       {
-        title: 'What is E-Report?',
-        content: `E-Report is an online school management platform designed for educational institutions in Togo and across Africa. It centralises the management of students, grades, report cards, finances, discipline, attendance and family communication.
+        title: 'What is NovaBulletin?',
+        content: `NovaBulletin is an online school management platform designed for educational institutions in Togo and across Africa. It centralises the management of students, grades, report cards, finances, discipline, attendance and family communication.
 
 The platform is accessible from any web browser (Chrome, Firefox, Edge, Safari) on a computer, tablet or mobile phone. No installation is required.`,
       },
       {
         title: 'Available roles',
-        content: `E-Report has five main roles:
+        content: `NovaBulletin has five main roles:
 
 • Administrator (ADMIN) — School principal or manager. Full access to all features.
 • Teacher (TEACHER) — Grade entry, grade sheets, report cards, attendance, announcements.
@@ -1336,7 +1336,7 @@ For primary school subjects graded out of 10, enable the "Primary school" option
     sections: [
       {
         title: 'Available plans',
-        content: `E-Report offers four subscription tiers based on your school size:
+        content: `NovaBulletin offers four subscription tiers based on your school size:
 
 • Starter — Fewer than 50 students — FREE (full access to all features)
 • Basic — 50 to 99 students — 10,000 FCFA/month or 100,000 FCFA/year
@@ -1601,7 +1601,7 @@ Grade sheet lifecycle:
     sections: [
       {
         title: 'Report card creation process',
-        content: `The report card is the central document in E-Report:
+        content: `The report card is the central document in NovaBulletin:
 
 1. The administrator configures the term in Settings.
 2. Teachers enter grades in their grade sheets.
@@ -1648,7 +1648,7 @@ Grade sheet lifecycle:
 • The QR code appears at the bottom of each printed report card.
 • Scanning it opens a public page confirming the report card's authenticity.
 • This feature protects against forgery.`,
-        callout: { type: 'tip', text: 'Encourage schools and employers who receive E-Report cards to use QR verification to confirm authenticity.' },
+        callout: { type: 'tip', text: 'Encourage schools and employers who receive NovaBulletin cards to use QR verification to confirm authenticity.' },
       },
       {
         title: 'Class merit list',
@@ -1832,7 +1832,7 @@ Possible statuses:
         steps: [
           'Go to the menu → Mock exams.',
           'Click "+ New mock exam".',
-          'Enter the name (e.g. Mock BEPC — June 2025), type and date.',
+          'Enter the name (e.g. Mock BEPC — June 2026), type and date.',
           'Select the participating classes.',
           'Click "Create".',
         ],
@@ -1958,7 +1958,7 @@ Possible statuses:
       },
       {
         title: 'WhatsApp and email notifications',
-        content: `E-Report automatically sends notifications to parents when:
+        content: `NovaBulletin automatically sends notifications to parents when:
 • A new report card is published.
 • A payment is confirmed.
 • An important announcement is published.
@@ -2273,7 +2273,7 @@ Available resource types:
 • Log out after each session on a shared or public computer.
 • Do not share student data (grades, personal information) via WhatsApp or unsecured email.
 • If your account is compromised, change your password immediately.`,
-        callout: { type: 'warning', text: 'E-Report support will never ask for your password. Do not share your credentials with anyone.' },
+        callout: { type: 'warning', text: 'NovaBulletin support will never ask for your password. Do not share your credentials with anyone.' },
       },
       {
         title: 'Common issues and solutions',
@@ -2287,7 +2287,7 @@ Available resource types:
         title: 'Technical support',
         content: `For any question or technical issue:
 • Consult the built-in AI assistant (floating button at the bottom right).
-• Contact E-Report support by email.
+• Contact NovaBulletin support by email.
 • Describe the issue precisely and attach a screenshot.
 
 Support hours: Monday – Friday, 8am – 6pm (Lomé time, GMT+0).`,
@@ -2300,46 +2300,46 @@ Support hours: Monday – Friday, 8am – 6pm (Lomé time, GMT+0).`,
 const BOOK = {
   fr: {
     chapters: CHAPTERS_FR,
-    title: 'Guide d\'utilisation — E-Report',
+    title: 'Guide d\'utilisation — NovaBulletin',
     subtitle: 'Manuel complet de la plateforme de gestion scolaire',
-    version: 'Version 2.0 — 2025',
+    version: 'Version 2.0 — 2026',
     chaptersCount: 'chapitres · Guide complet',
     forewordTitle: 'Avant-propos',
     forewordBody: [
-      'Ce guide est le document de référence officiel de la plateforme E-Report. Il couvre l\'ensemble des fonctionnalités disponibles pour tous les rôles : administrateur, enseignant, économe, parent et élève.',
-      'Nous vous recommandons de lire le Chapitre 2 (Configuration initiale) avant toute autre chose si vous configurez E-Report pour la première fois. Les autres chapitres peuvent être consultés selon vos besoins.',
+      'Ce guide est le document de référence officiel de la plateforme NovaBulletin. Il couvre l\'ensemble des fonctionnalités disponibles pour tous les rôles : administrateur, enseignant, économe, parent et élève.',
+      'Nous vous recommandons de lire le Chapitre 2 (Configuration initiale) avant toute autre chose si vous configurez NovaBulletin pour la première fois. Les autres chapitres peuvent être consultés selon vos besoins.',
       'Ce guide est disponible en version imprimable : cliquez sur le bouton « Télécharger le guide (PDF) » en haut de la page, puis sélectionnez Enregistrer en PDF dans la fenêtre d\'impression.',
     ],
-    forewordSig: '— L\'équipe E-Report',
+    forewordSig: '— L\'équipe NovaBulletin',
     tocTitle: 'Table des matières',
     chapterLabel: 'Chapitre',
     downloadBtn: '⬇ Télécharger le guide (PDF)',
     pageTitle: 'Guide d\'utilisation',
-    pageSubtitle: 'Manuel complet — E-Report',
+    pageSubtitle: 'Manuel complet — NovaBulletin',
     tagline: 'La gestion scolaire simplifiée pour l\'Afrique',
-    rights: '© 2025 E-Report — Tous droits réservés',
+    rights: '© 2026 NovaBulletin — Tous droits réservés',
     calloutLabels: { tip: 'Conseil', warning: 'Attention', note: 'Remarque', important: 'Important' },
   },
   en: {
     chapters: CHAPTERS_EN,
-    title: 'User Guide — E-Report',
+    title: 'User Guide — NovaBulletin',
     subtitle: 'Complete school management platform manual',
-    version: 'Version 2.0 — 2025',
+    version: 'Version 2.0 — 2026',
     chaptersCount: 'chapters · Complete guide',
     forewordTitle: 'Foreword',
     forewordBody: [
-      'This guide is the official reference document for the E-Report platform. It covers all features available to every role: administrator, teacher, bursar, parent and student.',
-      'We recommend reading Chapter 2 (Initial setup) first if you are configuring E-Report for the first time. The other chapters can be consulted as needed.',
+      'This guide is the official reference document for the NovaBulletin platform. It covers all features available to every role: administrator, teacher, bursar, parent and student.',
+      'We recommend reading Chapter 2 (Initial setup) first if you are configuring NovaBulletin for the first time. The other chapters can be consulted as needed.',
       'This guide is available in a printable version: click the "Download guide (PDF)" button at the top of the page, then select Save as PDF in the print dialog.',
     ],
-    forewordSig: '— The E-Report team',
+    forewordSig: '— The NovaBulletin team',
     tocTitle: 'Table of contents',
     chapterLabel: 'Chapter',
     downloadBtn: '⬇ Download guide (PDF)',
     pageTitle: 'User Guide',
-    pageSubtitle: 'Complete manual — E-Report',
+    pageSubtitle: 'Complete manual — NovaBulletin',
     tagline: 'Simplified school management for Africa',
-    rights: '© 2025 E-Report — All rights reserved',
+    rights: '© 2026 NovaBulletin — All rights reserved',
     calloutLabels: { tip: 'Tip', warning: 'Warning', note: 'Note', important: 'Important' },
   },
 };
@@ -2352,7 +2352,18 @@ export default function HelpPage() {
   const { chapters, calloutLabels } = book;
 
   const [activeChapter, setActiveChapter] = useState(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const contentRef = useRef(null);
+
+  useEffect(() => {
+    const onScroll = () => setShowScrollTop(window.scrollY > 400);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
   function handlePrint() {
     document.body.classList.add('guide-print-mode');
@@ -2381,7 +2392,7 @@ export default function HelpPage() {
           <div className="help-cover__band" />
           <div className="help-cover__stripe" />
           <div className="help-cover__content">
-            <div className="help-cover__logo">E-Report</div>
+            <div className="help-cover__logo">NovaBulletin</div>
             <div className="help-cover__divider" />
             <h1 className="help-cover__title">{book.title}</h1>
             <p className="help-cover__subtitle">{book.subtitle}</p>
@@ -2488,13 +2499,28 @@ export default function HelpPage() {
 
         {/* ── Back cover ── */}
         <div className="help-back-cover">
-          <div className="help-back-cover__logo">E-Report</div>
+          <div className="help-back-cover__logo">NovaBulletin</div>
           <p className="help-back-cover__tagline">{book.tagline}</p>
           <div className="help-back-cover__line" />
           <p className="help-back-cover__contact">support@e-report.app</p>
           <p className="help-back-cover__copy">{book.rights}</p>
         </div>
       </div>
+
+      {/* ── Scroll to top ── */}
+      {showScrollTop && (
+        <button
+          className="help-scroll-top"
+          onClick={scrollToTop}
+          aria-label={lang === 'fr' ? 'Retour en haut' : 'Back to top'}
+          title={lang === 'fr' ? 'Retour en haut' : 'Back to top'}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="18 15 12 9 6 15" />
+          </svg>
+        </button>
+      )}
     </AppShell>
   );
 }
