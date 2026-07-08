@@ -69,4 +69,71 @@
 }
 .lib-dialog__input:focus { outline: none; border-color: #1e2a78; }
 
+/* ── Book picker in loan form ── */
+.lib-form__field   { display: flex; flex-direction: column; gap: .3rem; }
+.lib-form__label   { font-size: .82rem; font-weight: 600; color: var(--color-text, #374151); }
+.lib-form__input   { border: 1px solid var(--color-border, #e5e7eb); border-radius: 8px; padding: .5rem .75rem; font-size: .875rem; background: var(--color-surface, #fff); color: var(--color-text, #1f2937); width: 100%; box-sizing: border-box; }
+.lib-form__input:focus { outline: none; border-color: var(--color-primary, #1e2a78); }
+.lib-form__error   { font-size: .75rem; color: #dc2626; }
+
+.lib-form__book-search {
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px 8px 0 0;
+  padding: .5rem .75rem;
+  font-size: .875rem;
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--color-surface, #fff);
+  color: var(--color-text, #1f2937);
+}
+.lib-form__book-search:focus { outline: none; border-color: var(--color-primary, #1e2a78); }
+
+.lib-form__book-list {
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  background: var(--color-surface, #fff);
+}
+
+.lib-form__book-empty {
+  padding: .75rem 1rem;
+  font-size: .85rem;
+  color: var(--color-text-muted, #9ca3af);
+  text-align: center;
+}
+
+.lib-form__book-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: .5rem 1rem;
+  border: none;
+  border-bottom: 1px solid var(--color-border, #f3f4f6);
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: .875rem;
+  color: var(--color-text, #111827);
+  transition: background 0.1s;
+}
+.lib-form__book-option:last-child { border-bottom: none; }
+.lib-form__book-option:hover      { background: var(--color-bg-subtle, #f9fafb); }
+.lib-form__book-option--selected  { background: #eff6ff; color: #1d4ed8; font-weight: 600; }
+
+.lib-form__book-name { flex: 1; }
+.lib-form__book-qty  { font-size: .75rem; color: var(--color-text-muted, #6b7280); margin-left: .5rem; flex-shrink: 0; }
+
+/* ── Catalog condition dot ── */
+.lib-cond-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: .375rem;
+  vertical-align: middle;
+}
+
 @media (max-width: 600px) { .lib-form__row2 { grid-template-columns: 1fr; } }

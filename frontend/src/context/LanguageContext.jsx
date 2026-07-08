@@ -1,7 +1,12 @@
 import { createContext, useContext, useState } from 'react';
 import i18n from '../locales/i18n';
 
-export const LanguageContext = createContext(null);
+const defaultLang = (() => {
+  const stored = typeof localStorage !== 'undefined' ? localStorage.getItem('lang') : null;
+  return ['fr', 'en'].includes(stored) ? stored : 'fr';
+})();
+
+export const LanguageContext = createContext({ language: defaultLang, setLanguage: () => {} });
 
 export function LanguageProvider({ children }) {
   const stored = localStorage.getItem('lang');

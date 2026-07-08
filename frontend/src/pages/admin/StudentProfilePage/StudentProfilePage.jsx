@@ -355,7 +355,7 @@ function AdminStudentProfilePage() {
 
         {/* Financial status */}
         {feeSummary && (
-          <Card className="asp-section">
+          <Card className="asp-section asp-section--full">
             <h3 className="asp-section__title">{t('studentProfile.sections.finance')}</h3>
             <dl className="asp-details">
               <DetailRow label={t('studentProfile.finance.status')}>
@@ -373,6 +373,43 @@ function AdminStudentProfilePage() {
                 </span>
               </DetailRow>
             </dl>
+            {feeSummary.studentFees?.length > 0 && (
+              <div className="asp-fee-breakdown">
+                <h4 className="asp-fee-breakdown__title">{t('studentProfile.finance.breakdown')}</h4>
+                <div className="asp-fee-table-wrap">
+                  <table className="asp-fee-table">
+                    <thead>
+                      <tr>
+                        <th>{t('studentProfile.finance.feeName')}</th>
+                        <th>{t('studentProfile.finance.amountDue')}</th>
+                        <th>{t('studentProfile.finance.paidStatus')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {feeSummary.studentFees.map((sf) => (
+                        <tr key={sf.id}>
+                          <td>{sf.fee?.name ?? '—'}</td>
+                          <td className="asp-fee-table__amt">
+                            {Number(sf.amountDue ?? 0).toLocaleString('fr-FR')} XOF
+                          </td>
+                          <td>
+                            <Badge variant={sf.isExempt ? 'default' : sf.isPaid ? 'success' : sf.amountPaid > 0 ? 'warning' : 'danger'}>
+                              {sf.isExempt
+                                ? t('studentProfile.fee.EXEMPT')
+                                : sf.isPaid
+                                  ? t('studentProfile.fee.PAID')
+                                  : sf.amountPaid > 0
+                                    ? `${Number(sf.amountPaid ?? 0).toLocaleString('fr-FR')} / ${Number(sf.amountDue ?? 0).toLocaleString('fr-FR')}`
+                                    : t('studentProfile.fee.UNPAID')}
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </Card>
         )}
 

@@ -1,3 +1,106 @@
+/* ── Date filter bar ─────────────────────────────────────────────────────── */
+.bursar-dash__filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.bursar-dash__presets {
+  display: flex;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.bursar-dash__preset {
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  background: transparent;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-text-muted, #6b7280);
+  cursor: pointer;
+  transition: all 0.12s;
+  font-family: inherit;
+}
+.bursar-dash__preset:hover { background: var(--color-bg-subtle, #f3f4f6); color: var(--color-text, #1f2937); }
+.bursar-dash__preset--active {
+  background: var(--color-primary, #f97316);
+  border-color: var(--color-primary, #f97316);
+  color: #fff;
+}
+
+.bursar-dash__date-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.bursar-dash__date-input {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: var(--color-text, #1f2937);
+  background: var(--color-bg, #fff);
+  font-family: inherit;
+}
+
+.bursar-dash__date-sep {
+  color: var(--color-text-muted, #9ca3af);
+  font-size: 0.8rem;
+}
+
+.bursar-dash__stat-sub {
+  font-size: 0.7rem;
+  color: var(--color-primary, #f97316);
+  font-weight: 500;
+  margin-top: -2px;
+}
+
+.bursar-dash__side {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.bursar-dash__by-class { padding: 1.25rem; }
+
+.bursar-dash__class-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.bursar-dash__class-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+}
+
+.bursar-dash__class-name {
+  color: var(--color-text, #374151);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bursar-dash__class-amt {
+  color: #0f766e;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Stats grid ──────────────────────────────────────────────────────────── */
 .bursar-dash__stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

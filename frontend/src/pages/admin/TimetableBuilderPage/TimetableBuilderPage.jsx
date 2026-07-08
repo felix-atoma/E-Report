@@ -99,9 +99,40 @@ export default function TimetableBuilderPage() {
     return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
   }
 
+  function toMinutes(time) {
+    const [h, m] = time.split(':').map(Number);
+    return h * 60 + m;
+  }
+
   function applySlot() {
     if (!slotForm.subjectId) { toast.error(t('timetable.errors.subjectRequired')); return; }
     const endTime = addMinutes(slotForm.startTime, slotForm.duration);
+
+    // Conflict detection: same teacher, same day, overlapping time
+    if (slotForm.teacherId) {
+      const newStart = toMinutes(slotForm.startTime);
+      const newEnd   = toMinutes(endTime);
+      const current  = (localSlots ?? slots).filter(
+        (s) => !(s.dayOfWeek === editingSlot.dayOfWeek && s.startTime === editingSlot.startTime)
+      );
+      const conflict = current.find((s) => {
+        if (s.dayOfWeek !== editingSlot.dayOfWeek) return false;
+        if (s.teacherId !== slotForm.teacherId) return false;
+        const sStart = toMinutes(s.startTime);
+        const sEnd   = toMinutes(s.endTime);
+        return newStart < sEnd && newEnd > sStart;
+      });
+      if (conflict) {
+        const teacher = teachers.find((tc) => tc.id === slotForm.teacherId);
+        toast.error(t('timetable.errors.teacherConflict', {
+          teacher: teacher?.name ?? '',
+          time: conflict.startTime,
+          subject: conflict.subject?.nameFr ?? '',
+        }));
+        return;
+      }
+    }
+
     const updated = (localSlots ?? slots).filter(
       (s) => !(s.dayOfWeek === editingSlot.dayOfWeek && s.startTime === editingSlot.startTime)
     );

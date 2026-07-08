@@ -57,6 +57,7 @@ services:
       - key: STORAGE_LOCAL_PATH
         value: ./uploads
       - key: UPLOADS_DIR
+        value: uploads
 
       # ── Cloudinary ────────────────────────────────────────────────────────────
       - key: CLOUDINARY_CLOUD_NAME
@@ -65,14 +66,21 @@ services:
         sync: false
       - key: CLOUDINARY_API_SECRET
         sync: false
-        value: uploads
 
       # ── Email ─────────────────────────────────────────────────────────────────
       - key: EMAIL_PROVIDER
-        value: SENDGRID
+        value: SMTP
       - key: MAIL_FROM
         sync: false
-      - key: SENDGRID_API_KEY
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_SECURE
         sync: false
 
       # ── Google OAuth ──────────────────────────────────────────────────────────

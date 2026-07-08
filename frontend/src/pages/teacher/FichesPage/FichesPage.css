@@ -133,6 +133,36 @@
   color: var(--color-primary, #6366f1);
 }
 
+/* ── Progress bar ────────────────────────────────────────────────────────── */
+.fp__progress-bar-wrap {
+  padding: 0.5rem 1rem 0.625rem;
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
+  background: var(--color-surface-alt, #f9fafb);
+}
+
+.fp__progress-track {
+  height: 6px;
+  background: var(--color-border, #e5e7eb);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.fp__progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--color-primary, #6366f1);
+  transition: width 0.4s ease;
+}
+.fp__progress-fill--done { background: #16a34a; }
+
+.fp__progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--color-text-muted, #6b7280);
+  margin-top: 0.3rem;
+}
+
 .fp__row-placeholder {
   padding: 0.75rem 1rem;
   font-size: 0.82rem;

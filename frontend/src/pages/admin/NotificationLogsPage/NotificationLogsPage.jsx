@@ -155,6 +155,22 @@ function NotificationLogsPage() {
           ? new Date(n.createdAt).toLocaleDateString('fr-FR')
           : '—',
     },
+    {
+      key: 'actions',
+      label: '',
+      style: { width: '100px', textAlign: 'right' },
+      render: (n) =>
+        n.status === 'FAILED' ? (
+          <Button
+            size="sm"
+            variant="ghost"
+            disabled={forceSend.isPending}
+            onClick={() => setConfirm(n)}
+          >
+            {t('notifLog.retryBtn')}
+          </Button>
+        ) : null,
+    },
   ];
 
   const isLoading = tab === 'held' ? loadingHeld : loadingMine;

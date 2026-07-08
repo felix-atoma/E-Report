@@ -270,7 +270,7 @@ export class AuthService {
       });
       if (
         institution &&
-        ['PENDING', 'SUSPENDED', 'REJECTED'].includes(institution.status as string)
+        ['SUSPENDED', 'REJECTED'].includes(institution.status as string)
       ) {
         return { error: 'inactive' as const };
       }

@@ -222,6 +222,38 @@
   }
 }
 
+.students-page__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem 0 0.5rem;
+}
+
+.students-page__page-btn {
+  padding: 0.35rem 0.9rem;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 6px;
+  background: var(--color-bg, #fff);
+  color: var(--color-text, #374151);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.12s;
+  font-family: inherit;
+}
+.students-page__page-btn:hover:not(:disabled) {
+  background: var(--color-bg-subtle, #f3f4f6);
+  border-color: var(--color-primary, #f97316);
+  color: var(--color-primary, #f97316);
+}
+.students-page__page-btn:disabled { opacity: 0.4; cursor: default; }
+
+.students-page__page-info {
+  font-size: 0.82rem;
+  color: var(--color-text-muted, #6b7280);
+}
+
 @media (max-width: 640px) { .student-form__row { grid-template-columns: 1fr; } }
 @media (max-width: 520px) {
   .students-page__toolbar     { flex-direction: column; align-items: stretch; gap: 0.5rem; }

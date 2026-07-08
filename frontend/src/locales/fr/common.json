@@ -303,7 +303,9 @@
     "confirm":     "Confirmer",
     "close":       "Fermer",
     "back":        "Retour",
+    "prev":        "Précédent",
     "next":        "Suivant",
+    "pageOf":      "Page {{page}} / {{total}}",
     "yes":         "Oui",
     "no":          "Non",
     "actions":     "Actions",
@@ -624,6 +626,7 @@
     "paymentReminder": "💬 Rappel paiement",
     "forceBtn":       "Forcer l'envoi",
     "forceSendBtn":   "Envoyer",
+    "retryBtn":       "Réessayer",
     "defaultHeldReason": "Frais impayés",
     "heldEmpty":      "Aucune notification en attente — tous les bulletins ont été envoyés",
     "logEmpty":       "Aucune notification dans le journal",
@@ -726,7 +729,16 @@
     "quickActions":    "Actions rapides",
     "recordPayment":   "Enregistrer un paiement",
     "manageFees":      "Gérer les frais",
-    "heldReports":     "Bulletins retenus"
+    "heldReports":     "Bulletins retenus",
+    "byClass":         "Par classe",
+    "noClass":         "Sans classe",
+    "preset": {
+      "today":  "Aujourd'hui",
+      "week":   "Cette semaine",
+      "month":  "Ce mois",
+      "all":    "Tout",
+      "custom": "Personnalisé"
+    }
   },
 
   "error": {
@@ -1233,7 +1245,13 @@
       "AssezBien":   "Assez Bien",
       "Passable":    "Passable",
       "Insuffisant": "Insuffisant"
-    }
+    },
+    "subjectTitle":  "Résultats par matière",
+    "showSubjects":  "Voir par matière",
+    "hideSubjects":  "Masquer",
+    "noSubjectData": "Aucune donnée disponible pour cette année.",
+    "subjectCol":    "Matière",
+    "annualAvg":     "Moy. annuelle"
   },
 
   "reportCardsFull": {
@@ -1590,7 +1608,11 @@
       "status":    "Statut",
       "totalDue":  "Total dû",
       "totalPaid": "Total payé",
-      "balance":   "Solde restant"
+      "balance":   "Solde restant",
+      "breakdown": "Détail par rubrique",
+      "feeName":   "Rubrique",
+      "amountDue": "Montant dû",
+      "paidStatus":"Paiement"
     },
     "academic": {
       "noReports":    "Aucun bulletin créé pour cet élève.",
@@ -1830,6 +1852,43 @@
     },
     "errors": {
       "required": "Ce champ est requis"
+    },
+    "catalog": {
+      "tab":              "Catalogue",
+      "titlePlural":      "livres",
+      "addBook":          "+ Ajouter un livre",
+      "addTitle":         "Ajouter un livre",
+      "editTitle":        "Modifier le livre",
+      "formSubtitle":     "Enregistrez un livre dans le catalogue de la bibliothèque",
+      "addFirstBook":     "+ Ajouter un premier livre",
+      "empty":            "Aucun livre dans le catalogue.",
+      "searchPlaceholder":"Rechercher un livre…",
+      "noBooks":          "Aucun livre disponible",
+      "confirmDelete":    "Supprimer ce livre du catalogue ?",
+      "namePlaceholder":  "Titre du livre",
+      "locationPlaceholder":"Étagère / Salle",
+      "supplierPlaceholder":"Fournisseur ou éditeur",
+      "cols": {
+        "name":       "Titre",
+        "quantity":   "Qté",
+        "condition":  "État",
+        "location":   "Emplacement",
+        "supplier":   "Fournisseur",
+        "serialNumber":"ISBN / N° série"
+      },
+      "condition": {
+        "EXCELLENT": "Excellent",
+        "GOOD":      "Bon",
+        "FAIR":      "Correct",
+        "POOR":      "Mauvais",
+        "DAMAGED":   "Endommagé"
+      },
+      "toast": {
+        "created": "Livre ajouté au catalogue",
+        "updated": "Livre mis à jour",
+        "deleted": "Livre supprimé",
+        "error":   "Erreur"
+      }
     }
   },
 
@@ -2241,7 +2300,8 @@
       "error": "Impossible d'enregistrer"
     },
     "errors": {
-      "subjectRequired": "Choisissez une matière"
+      "subjectRequired": "Choisissez une matière",
+      "teacherConflict": "Conflit : {{teacher}} est déjà assigné à {{subject}} à {{time}} ce jour-là"
     }
   },
 

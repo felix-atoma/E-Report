@@ -102,12 +102,93 @@
 .progress-breakdown__mention--pass { background: #dcfce7; color: #15803d; }
 .progress-breakdown__mention--fail { background: #fee2e2; color: #dc2626; }
 
+/* ── Tooltip line ── */
+.progress-tooltip__line { display: flex; gap: 0.25rem; align-items: center; font-size: 0.85rem; }
+.progress-tooltip__name { color: var(--color-text-muted, #6b7280); }
+
+/* ── Subject breakdown card ── */
+.progress-subject-card {
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.progress-subject-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.progress-subject-card__toggle {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-border, #d1d5db);
+  background: none;
+  cursor: pointer;
+  color: var(--color-primary, #1e40af);
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.progress-subject-card__toggle:hover { background: var(--color-bg-subtle, #f9fafb); }
+
+.progress-subject-card__loading { font-size: 0.85rem; color: var(--color-text-muted, #9ca3af); padding: 1rem 0; text-align: center; }
+.progress-subject-card__empty   { font-size: 0.85rem; color: var(--color-text-muted, #9ca3af); text-align: center; padding: 1rem 0; margin: 0; }
+
+/* ── Subject table ── */
+.progress-subject-table-wrap { overflow-x: auto; margin-top: 1rem; }
+
+.progress-subject-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  min-width: 380px;
+}
+
+.progress-subject-table th {
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-text-muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.4rem 0.625rem;
+  border-bottom: 2px solid var(--color-border, #e5e7eb);
+  background: var(--color-bg-subtle, #f9fafb);
+  white-space: nowrap;
+}
+
+.progress-subject-table td {
+  padding: 0.5rem 0.625rem;
+  border-bottom: 1px solid var(--color-border, #f3f4f6);
+  color: var(--color-text, #111827);
+  vertical-align: middle;
+}
+.progress-subject-table tbody tr:last-child td { border-bottom: none; }
+.progress-subject-table tbody tr:hover          { background: var(--color-bg-subtle, #f9fafb); }
+
+.progress-subject-table__fail   { color: #dc2626; font-weight: 600; }
+.progress-subject-table__annual { font-weight: 700; color: var(--color-primary, #1e40af); }
+
+.progress-subject-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 0.375rem;
+  flex-shrink: 0;
+}
+
 @media (max-width: 500px) {
   .progress-kpis { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 640px) {
   .progress-kpis { grid-template-columns: 1fr 1fr; gap: 0.625rem; }
+  .progress-subject-card__head { flex-wrap: wrap; }
 }
 @media (max-width: 380px) {
   .progress-kpis { grid-template-columns: 1fr; }

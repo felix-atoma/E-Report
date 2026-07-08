@@ -30,7 +30,7 @@
 .fdn__th:last-child { border-right: none; }
 .fdn__th span { display: block; font-size: 0.72rem; font-weight: 400; color: #9ca3af; }
 
-.fdn__th--name       { text-align: left; min-width: 170px; background: #f8fafc; }
+.fdn__th--name       { text-align: left; min-width: 170px; background: #f8fafc; position: sticky; left: 0; z-index: 3; }
 .fdn__th--group      { background: #e8f0fe; color: #1e40af; font-size: 0.8rem; }
 .fdn__th--note       { min-width: 76px; }
 .fdn__th--moyinterro { background: #dbeafe; }
@@ -58,7 +58,7 @@
 }
 .fdn__td:last-child { border-right: none; }
 
-.fdn__td--name     { text-align: left; padding-left: 0.75rem; }
+.fdn__td--name     { text-align: left; padding-left: 0.75rem; position: sticky; left: 0; background: inherit; z-index: 2; }
 .fdn__td--computed { color: #6b7280; font-style: italic; background: #eff6ff; }
 .fdn__td--devoir   { background: rgba(254,252,193,0.25); }
 .fdn__td--compo    { background: rgba(250,232,255,0.25); }
@@ -441,6 +441,11 @@
   margin-bottom: 1rem;
 }
 .fdn__signature-banner__icon { font-size: 1.1rem; flex-shrink: 0; }
+
+/* Sticky name column shadow on scroll */
+.fdn__th--name, .fdn__td--name {
+  box-shadow: 2px 0 4px -2px rgba(0,0,0,0.08);
+}
 
 @media (max-width: 640px) {
   .fdn__th--name   { min-width: 120px; }

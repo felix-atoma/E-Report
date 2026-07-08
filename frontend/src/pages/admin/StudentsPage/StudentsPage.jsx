@@ -302,6 +302,7 @@ function StudentsPage() {
 
   const [search, setSearch]       = useState('');
   const [classFilter, setClass]   = useState('');
+  const [page, setPage]           = useState(1);
   const [modal, setModal]         = useState(null);
   const [selected, setSelected]   = useState(null);
   const [confirm, setConfirm]     = useState(null);
@@ -323,6 +324,8 @@ function StudentsPage() {
     queryFn: () => classesService.list().then((r) => r.data),
   });
 
+  const PAGE_SIZE = 25;
+
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     return students.filter((s) => {
@@ -332,6 +335,9 @@ function StudentsPage() {
       return matchSearch && matchClass;
     });
   }, [students, search, classFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pageRows   = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   async function uploadPhotoIfNeeded(userId) {
     if (!photoFile || !userId) return;
@@ -588,7 +594,7 @@ function StudentsPage() {
       <div className="students-page__toolbar">
         <SearchBar
           value={search}
-          onChange={setSearch}
+          onChange={(v) => { setSearch(v); setPage(1); }}
           placeholder={t('students.searchPlaceholder')}
           className="students-page__search"
         />
@@ -597,7 +603,7 @@ function StudentsPage() {
           value={classFilter}
           placeholder={t('students.allClasses')}
           options={classOptions}
-          onChange={(e) => setClass(e.target.value)}
+          onChange={(e) => { setClass(e.target.value); setPage(1); }}
           className="students-page__class-filter"
         />
       </div>
@@ -611,13 +617,35 @@ function StudentsPage() {
 
       <Table
         columns={columns}
-        rows={filtered}
+        rows={pageRows}
         loading={isLoading}
         emptyMessage={t('students.noFound')}
         selectable
         selectedIds={selectedIds}
         onSelectionChange={setSelectedIds}
       />
+
+      {totalPages > 1 && (
+        <div className="students-page__pagination">
+          <button
+            className="students-page__page-btn"
+            disabled={page === 1}
+            onClick={() => setPage((p) => p - 1)}
+          >
+            ← {t('common.prev')}
+          </button>
+          <span className="students-page__page-info">
+            {t('common.pageOf', { page, total: totalPages })} — {filtered.length} {t('students.title').toLowerCase()}
+          </span>
+          <button
+            className="students-page__page-btn"
+            disabled={page === totalPages}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            {t('common.next')} →
+          </button>
+        </div>
+      )}
 
       {/* Hidden file input — lives outside the modal so ref is always mounted */}
       <input

@@ -71,8 +71,7 @@ function AdminDashboardPage() {
   const { data: overview, isLoading: loadingOverview } = useQuery({
     queryKey: ['analytics', 'overview'],
     queryFn: () => analyticsService.overview().then((r) => r.data),
-    staleTime: 0,
-    refetchOnMount: 'always',
+    staleTime: 2 * 60 * 1000,
   });
 
   const academicYear = overview?.academicYear ?? null;
@@ -81,31 +80,27 @@ function AdminDashboardPage() {
     queryKey: ['analytics', 'payment-summary', academicYear],
     queryFn: () => analyticsService.paymentSummary({ academicYear }).then((r) => r.data),
     enabled: !!academicYear,
-    staleTime: 0,
-    refetchOnMount: 'always',
+    staleTime: 2 * 60 * 1000,
   });
 
   const { data: reports } = useQuery({
     queryKey: ['analytics', 'report-stats', academicYear],
     queryFn: () => analyticsService.reportStats({ academicYear }).then((r) => r.data),
     enabled: !!academicYear,
-    staleTime: 0,
-    refetchOnMount: 'always',
+    staleTime: 2 * 60 * 1000,
   });
 
   const { data: records } = useQuery({
     queryKey: ['analytics', 'records-summary'],
     queryFn: () => analyticsService.recordsSummary().then((r) => r.data),
-    staleTime: 0,
-    refetchOnMount: 'always',
+    staleTime: 2 * 60 * 1000,
   });
 
   const { data: atRisk } = useQuery({
     queryKey: ['analytics', 'at-risk', academicYear],
     queryFn: () => analyticsService.atRisk(academicYear).then((r) => r.data),
     enabled: !!academicYear,
-    staleTime: 0,
-    refetchOnMount: 'always',
+    staleTime: 2 * 60 * 1000,
   });
 
   if (loadingOverview) return <AppShell title={t('dash.title')}><Loading /></AppShell>;

@@ -37,6 +37,21 @@ function ClassFicheCard({ cls, term, termLabel }) {
         )}
       </div>
 
+      {!isLoading && fiches.length > 0 && (
+        <div className="fp__progress-bar-wrap">
+          <div className="fp__progress-track">
+            <div
+              className={`fp__progress-fill${allSigned ? ' fp__progress-fill--done' : ''}`}
+              style={{ width: `${Math.round((signedCount / fiches.length) * 100)}%` }}
+            />
+          </div>
+          <div className="fp__progress-label">
+            <span>{t('fiches.signed', { count: signedCount, total: fiches.length })}</span>
+            <span>{Math.round((signedCount / fiches.length) * 100)}%</span>
+          </div>
+        </div>
+      )}
+
       {isLoading ? (
         <div className="fp__row-placeholder">{t('action.loading')}</div>
       ) : fiches.length === 0 ? (

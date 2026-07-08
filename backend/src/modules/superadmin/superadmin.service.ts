@@ -27,7 +27,7 @@ export class SuperAdminService {
     private readonly subscription: SubscriptionService,
   ) {}
 
-  // ─── Public: Register a new school (PENDING) ────────────────────────────────
+  // ─── Public: Register a new school (immediately ACTIVE) ─────────────────────
   async registerInstitution(dto: RegisterInstitutionDto) {
     const email = dto.adminEmail.toLowerCase().trim();
 

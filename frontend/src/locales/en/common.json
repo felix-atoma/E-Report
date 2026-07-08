@@ -293,7 +293,7 @@
   "common": {
     "save":"Save","cancel":"Cancel","delete":"Delete","edit":"Edit","add":"Add",
     "create":"Create","search":"Search…","loading":"Loading…","noResults":"No results",
-    "confirm":"Confirm","close":"Close","back":"Back","next":"Next","yes":"Yes","no":"No",
+    "confirm":"Confirm","close":"Close","back":"Back","prev":"Previous","next":"Next","pageOf":"Page {{page}} / {{total}}","yes":"Yes","no":"No",
     "actions":"Actions","status":"Status","name":"Name","email":"Email",
     "required":"Required field","optional":"Optional","total":"Total","of":"of",
     "perPage":"per page","page":"Page","all":"All","active":"Active","inactive":"Inactive",
@@ -564,6 +564,7 @@
     "paymentReminder": "💬 Payment reminder",
     "forceBtn":       "Force send",
     "forceSendBtn":   "Send",
+    "retryBtn":       "Retry",
     "defaultHeldReason": "Unpaid fees",
     "heldEmpty":      "No held notifications — all reports have been sent",
     "logEmpty":       "No notifications in the log",
@@ -648,7 +649,16 @@
     "quickActions":    "Quick actions",
     "recordPayment":   "Record a payment",
     "manageFees":      "Manage fees",
-    "heldReports":     "Held reports"
+    "heldReports":     "Held reports",
+    "byClass":         "By class",
+    "noClass":         "No class",
+    "preset": {
+      "today":  "Today",
+      "week":   "This week",
+      "month":  "This month",
+      "all":    "All time",
+      "custom": "Custom"
+    }
   },
 
   "error": {
@@ -1153,7 +1163,13 @@
       "AssezBien":   "Fairly Good",
       "Passable":    "Satisfactory",
       "Insuffisant": "Insufficient"
-    }
+    },
+    "subjectTitle":  "Results by subject",
+    "showSubjects":  "View by subject",
+    "hideSubjects":  "Hide",
+    "noSubjectData": "No data available for this year.",
+    "subjectCol":    "Subject",
+    "annualAvg":     "Annual avg."
   },
 
   "reportCardsFull": {
@@ -1510,7 +1526,11 @@
       "status":    "Status",
       "totalDue":  "Total due",
       "totalPaid": "Total paid",
-      "balance":   "Remaining balance"
+      "balance":   "Remaining balance",
+      "breakdown": "Breakdown by fee item",
+      "feeName":   "Fee",
+      "amountDue": "Amount due",
+      "paidStatus":"Payment"
     },
     "academic": {
       "noReports":    "No report cards created for this student.",
@@ -1750,6 +1770,43 @@
     },
     "errors": {
       "required": "This field is required"
+    },
+    "catalog": {
+      "tab":              "Catalogue",
+      "titlePlural":      "books",
+      "addBook":          "+ Add book",
+      "addTitle":         "Add a book",
+      "editTitle":        "Edit book",
+      "formSubtitle":     "Register a book in the library catalogue",
+      "addFirstBook":     "+ Add the first book",
+      "empty":            "No books in the catalogue.",
+      "searchPlaceholder":"Search books…",
+      "noBooks":          "No books available",
+      "confirmDelete":    "Delete this book from the catalogue?",
+      "namePlaceholder":  "Book title",
+      "locationPlaceholder":"Shelf / Room",
+      "supplierPlaceholder":"Supplier or publisher",
+      "cols": {
+        "name":       "Title",
+        "quantity":   "Qty",
+        "condition":  "Condition",
+        "location":   "Location",
+        "supplier":   "Supplier",
+        "serialNumber":"ISBN / Serial"
+      },
+      "condition": {
+        "EXCELLENT": "Excellent",
+        "GOOD":      "Good",
+        "FAIR":      "Fair",
+        "POOR":      "Poor",
+        "DAMAGED":   "Damaged"
+      },
+      "toast": {
+        "created": "Book added to catalogue",
+        "updated": "Book updated",
+        "deleted": "Book deleted",
+        "error":   "Error"
+      }
     }
   },
 
@@ -2161,7 +2218,8 @@
       "error": "Unable to save"
     },
     "errors": {
-      "subjectRequired": "Please choose a subject"
+      "subjectRequired": "Please choose a subject",
+      "teacherConflict": "Conflict: {{teacher}} is already assigned to {{subject}} at {{time}} that day"
     }
   },
 
