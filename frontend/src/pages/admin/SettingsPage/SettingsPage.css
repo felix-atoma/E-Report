@@ -225,3 +225,34 @@
   width: 130px;
 }
 .settings-rollover__btns { display: flex; gap: .5rem; }
+
+/* ── Per-cycle term system grid ────────────────────────────────────────────── */
+.settings-cycle-grid {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 0.875rem 1rem;
+  background: var(--color-bg-subtle, #f8fafc);
+  border-radius: 8px;
+  border: 1px solid var(--color-border, #e5e7eb);
+}
+
+.settings-cycle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.settings-cycle-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-text, #1f2937);
+  min-width: 160px;
+}
+
+.settings-cycle-row select {
+  flex: 1;
+  max-width: 220px;
+}

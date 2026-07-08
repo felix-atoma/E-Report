@@ -485,6 +485,15 @@
       "SEMESTRE":  "Semester (2 terms)",
       "CUSTOM":    "Custom"
     },
+    "complexSchool":     "Complex school (multi-cycle)",
+    "complexSchoolDesc": "Enable if your school includes multiple cycles (primary, middle, high school) with different period systems — e.g. trimesters for primary and middle, semesters for high school.",
+    "complexOn":         "Multi-cycle enabled — per-cycle configuration",
+    "complexOff":        "Single cycle — same system for all classes",
+    "cycle": {
+      "PRIMAIRE": "Primary (CI → CM2)",
+      "COLLEGE":  "Middle school (6th → 3rd)",
+      "LYCEE":    "High school (2nde → Terminale)"
+    },
     "exporting":         "Exporting…",
     "exportBtn":         "⬇️ Export all my data",
     "paymentSection":          "Online payments",

@@ -1,5 +1,20 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsNumber, IsObject, IsOptional, IsString, Max, Min, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+
+class TermSystemByCycleDto {
+  @IsOptional()
+  @IsEnum(['TRIMESTRE', 'SEMESTRE', 'CUSTOM'])
+  PRIMAIRE?: string;
+
+  @IsOptional()
+  @IsEnum(['TRIMESTRE', 'SEMESTRE', 'CUSTOM'])
+  COLLEGE?: string;
+
+  @IsOptional()
+  @IsEnum(['TRIMESTRE', 'SEMESTRE', 'CUSTOM'])
+  LYCEE?: string;
+}
 
 export class UpdateAcademicSettingsDto {
   @ApiPropertyOptional({ example: '2024-2025' })
@@ -41,4 +56,11 @@ export class UpdateAcademicSettingsDto {
   @IsOptional()
   @IsBoolean()
   feeGateEnabled?: boolean;
+
+  @ApiPropertyOptional({ description: 'Per-cycle term system override for complex schools' })
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => TermSystemByCycleDto)
+  termSystemByCycle?: TermSystemByCycleDto;
 }

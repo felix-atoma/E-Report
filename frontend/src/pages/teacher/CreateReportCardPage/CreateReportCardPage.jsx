@@ -1,9 +1,21 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
+import { useInstitution } from '../../../context/InstitutionContext';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
+
+const PRIMAIRE_LEVELS = ['CI', 'CP', 'CE1', 'CE2', 'CM1', 'CM2'];
+const COLLEGE_LEVELS  = ['6eme', '5eme', '4eme', '3eme'];
+const LYCEE_LEVELS    = ['2nde', '1ere', 'Terminale'];
+
+function getCycleFromLevel(level) {
+  if (PRIMAIRE_LEVELS.includes(level)) return 'PRIMAIRE';
+  if (COLLEGE_LEVELS.includes(level))  return 'COLLEGE';
+  if (LYCEE_LEVELS.includes(level))    return 'LYCEE';
+  return null;
+}
 import { reportsService } from '../../../services/reportsService';
 import { classesService } from '../../../services/classesService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
@@ -18,6 +30,7 @@ function CreateReportCardPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { institution } = useInstitution();
   const [searchParams] = useSearchParams();
   const preselectedClass = searchParams.get('classId') ?? '';
 
@@ -65,6 +78,18 @@ function CreateReportCardPage() {
     if (errors[field]) setErrors((e) => ({ ...e, [field]: undefined }));
   }
 
+  function handleClassChange(classId) {
+    const cls = classes.find((c) => c.id === classId);
+    const byC = institution?.academicSettings?.termSystemByCycle;
+    let termType = institution?.academicSettings?.termType ?? 'TRIMESTRE';
+    if (cls?.level && byC) {
+      const cycle = getCycleFromLevel(cls.level);
+      if (cycle && byC[cycle]) termType = byC[cycle];
+    }
+    setForm((f) => ({ ...f, classId, termType, termNumber: '1' }));
+    if (errors.classId) setErrors((e) => ({ ...e, classId: undefined }));
+  }
+
   function validate(form) {
     const errors = {};
     if (!form.classId)             errors.classId     = t('createReport.errors.classRequired');
@@ -110,7 +135,7 @@ function CreateReportCardPage() {
             value={form.classId} error={errors.classId}
             placeholder={t('createReport.fields.classPlaceholder')}
             options={classOptions}
-            onChange={(e) => set('classId', e.target.value)}
+            onChange={(e) => handleClassChange(e.target.value)}
           />
 
           <Input

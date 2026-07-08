@@ -547,6 +547,15 @@
       "SEMESTRE":  "Semestriel (2 semestres)",
       "CUSTOM":    "Personnalisé"
     },
+    "complexSchool":     "Établissement complexe (multi-cycles)",
+    "complexSchoolDesc": "Activez si votre établissement regroupe plusieurs cycles (primaire, collège, lycée) avec des systèmes de périodes différents — par exemple trimestres au primaire et au collège, semestres au lycée.",
+    "complexOn":         "Complexe activé — paramétrage par cycle",
+    "complexOff":        "Monocycle — même système pour toutes les classes",
+    "cycle": {
+      "PRIMAIRE": "Primaire (CI → CM2)",
+      "COLLEGE":  "Collège (6ème → 3ème)",
+      "LYCEE":    "Lycée (2nde → Terminale)"
+    },
     "exporting":         "Export en cours…",
     "exportBtn":         "⬇️ Exporter toutes mes données",
     "paymentSection":          "Paiements en ligne",

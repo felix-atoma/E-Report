@@ -22,6 +22,8 @@ const DEFAULT_INFO = {
 const DEFAULT_ACADEMIC = {
   academicYear: '', termType: 'TRIMESTRE', currentTerm: '1',
   passMark: '10', maxScore: '20', feeGateEnabled: true,
+  isComplex: false,
+  termSystemByCycle: { PRIMAIRE: 'TRIMESTRE', COLLEGE: 'TRIMESTRE', LYCEE: 'TRIMESTRE' },
 };
 
 const DEFAULT_PAYMENT = { notchpayPublicKey: '', notchpayHashKey: '' };
@@ -84,12 +86,14 @@ function SettingsPage() {
     });
     const s = institution.academicSettings ?? {};
     setAcademicForm({
-      academicYear:   institution.academicYear ?? '',
-      termType:       s.termType      ?? 'TRIMESTRE',
-      currentTerm:    String(s.currentTerm ?? '1'),
-      passMark:       String(s.passMark  ?? '10'),
-      maxScore:       String(s.maxScore  ?? '20'),
-      feeGateEnabled: s.feeGateEnabled ?? true,
+      academicYear:      institution.academicYear ?? '',
+      termType:          s.termType      ?? 'TRIMESTRE',
+      currentTerm:       String(s.currentTerm ?? '1'),
+      passMark:          String(s.passMark  ?? '10'),
+      maxScore:          String(s.maxScore  ?? '20'),
+      feeGateEnabled:    s.feeGateEnabled ?? true,
+      isComplex:         !!(s.termSystemByCycle),
+      termSystemByCycle: s.termSystemByCycle ?? { PRIMAIRE: 'TRIMESTRE', COLLEGE: 'TRIMESTRE', LYCEE: 'TRIMESTRE' },
     });
   }, [institution]);
 
@@ -153,12 +157,13 @@ function SettingsPage() {
 
   function handleAcademicSave() {
     academicMutation.mutate({
-      academicYear:   academicForm.academicYear   || undefined,
-      termType:       academicForm.termType,
-      currentTerm:    Number(academicForm.currentTerm),
-      passMark:       Number(academicForm.passMark),
-      maxScore:       Number(academicForm.maxScore),
-      feeGateEnabled: academicForm.feeGateEnabled,
+      academicYear:      academicForm.academicYear || undefined,
+      termType:          academicForm.termType,
+      currentTerm:       Number(academicForm.currentTerm),
+      passMark:          Number(academicForm.passMark),
+      maxScore:          Number(academicForm.maxScore),
+      feeGateEnabled:    academicForm.feeGateEnabled,
+      termSystemByCycle: academicForm.isComplex ? academicForm.termSystemByCycle : undefined,
     });
   }
 
@@ -254,6 +259,18 @@ function SettingsPage() {
           <div className="settings-summary">
             <SummaryRow label={t('settings.academicYear')} value={institution?.academicYear} />
             <SummaryRow label={t('settings.termSystem')}   value={TERM_TYPES.find((opt) => opt.value === (ac.termType ?? 'TRIMESTRE'))?.label} />
+            {ac.termSystemByCycle && (
+              <div className="settings-summary__row">
+                <span className="settings-summary__label">{t('settings.complexSchool')}</span>
+                <span className="settings-summary__value" style={{ fontSize: '0.78rem' }}>
+                  {['PRIMAIRE', 'COLLEGE', 'LYCEE'].map((c) =>
+                    ac.termSystemByCycle[c]
+                      ? `${t(`settings.cycle.${c}`)}: ${TERM_TYPES.find((o) => o.value === ac.termSystemByCycle[c])?.label ?? ac.termSystemByCycle[c]}`
+                      : null
+                  ).filter(Boolean).join(' · ')}
+                </span>
+              </div>
+            )}
             <SummaryRow label={t('settings.currentPeriod')} value={`${t('fees.period')} ${ac.currentTerm ?? 1}`} />
             <SummaryRow label={t('settings.maxScore')}     value={ac.maxScore ? `${ac.maxScore}` : '20'} />
             <SummaryRow label={t('settings.passMark')}     value={ac.passMark ? `${ac.passMark}` : '10'} />
@@ -489,6 +506,45 @@ function SettingsPage() {
                 {academicForm.feeGateEnabled ? t('settings.feeGateOn') : t('settings.feeGateOff')}
               </span>
             </label>
+          </div>
+
+          <div className="settings-section__divider" />
+
+          <div>
+            <p className="settings-field__label" style={{ marginBottom: '0.25rem' }}>{t('settings.complexSchool')}</p>
+            <p className="settings-section__desc" style={{ marginBottom: '0.75rem' }}>
+              {t('settings.complexSchoolDesc')}
+            </p>
+            <label className="settings-toggle">
+              <input
+                type="checkbox" className="settings-toggle__input"
+                checked={academicForm.isComplex}
+                onChange={(e) => setAcademic('isComplex', e.target.checked)}
+              />
+              <span className="settings-toggle__track" />
+              <span className="settings-toggle__label">
+                {academicForm.isComplex ? t('settings.complexOn') : t('settings.complexOff')}
+              </span>
+            </label>
+
+            {academicForm.isComplex && (
+              <div className="settings-cycle-grid">
+                {['PRIMAIRE', 'COLLEGE', 'LYCEE'].map((cycle) => (
+                  <div key={cycle} className="settings-cycle-row">
+                    <span className="settings-cycle-label">{t(`settings.cycle.${cycle}`)}</span>
+                    <Select
+                      id={`cycle-${cycle}`}
+                      value={academicForm.termSystemByCycle?.[cycle] ?? 'TRIMESTRE'}
+                      options={TERM_TYPES.filter((o) => o.value !== 'CUSTOM')}
+                      onChange={(e) => setAcademic('termSystemByCycle', {
+                        ...academicForm.termSystemByCycle,
+                        [cycle]: e.target.value,
+                      })}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </OffCanvas>
