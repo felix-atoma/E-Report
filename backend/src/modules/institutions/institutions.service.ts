@@ -107,11 +107,11 @@ export class InstitutionsService {
     if (!institution) throw new NotFoundException('Institution not found');
 
     const current = (institution.academicSettings as Record<string, unknown>) ?? {};
-    const merged = { ...current, ...dto };
+    const merged = { ...current, ...dto } as Record<string, unknown>;
 
     return this.prisma.institution.update({
       where: { id: institutionId },
-      data: { academicSettings: merged },
+      data: { academicSettings: merged as object },
     });
   }
 
