@@ -211,18 +211,28 @@ export class SuperAdminService {
 
   // ─── Network-wide KPI stats ─────────────────────────────────────────────────
   async networkStats() {
-    const [totalInstitutions, active, pending, suspended] = await Promise.all([
+    const now   = new Date();
+    const in7d  = new Date(now.getTime() + 7 * 86_400_000);
+
+    const [
+      totalInstitutions, active, pending, suspended,
+      totalStudents, totalUsers, totalBulletins, totalPayments,
+      trialCount, activeSubCount, expiredCount, expiringCount,
+    ] = await Promise.all([
       this.prisma.institution.count(),
       this.prisma.institution.count({ where: { status: 'ACTIVE' as any } }),
       this.prisma.institution.count({ where: { status: 'PENDING' as any } }),
       this.prisma.institution.count({ where: { status: 'SUSPENDED' as any } }),
-    ]);
-
-    const [totalStudents, totalUsers, totalBulletins, totalPayments] = await Promise.all([
       this.prisma.student.count(),
       this.prisma.user.count({ where: { role: { not: 'SUPERADMIN' as any } } }),
       this.prisma.reportCard.count(),
       this.prisma.payment.count(),
+      (this.prisma as any).institution.count({ where: { subscriptionStatus: 'TRIAL' } }),
+      (this.prisma as any).institution.count({ where: { subscriptionStatus: 'ACTIVE' } }),
+      (this.prisma as any).institution.count({ where: { subscriptionStatus: 'EXPIRED' } }),
+      (this.prisma as any).institution.count({
+        where: { subscriptionStatus: 'TRIAL', trialEndsAt: { gte: now, lt: in7d } },
+      }),
     ]);
 
     const recentSchools = await this.prisma.institution.findMany({
@@ -233,7 +243,8 @@ export class SuperAdminService {
 
     return {
       institutions: { total: totalInstitutions, active, pending, suspended },
-      network: { students: totalStudents, users: totalUsers, bulletins: totalBulletins, payments: totalPayments },
+      network:       { students: totalStudents, users: totalUsers, bulletins: totalBulletins, payments: totalPayments },
+      subscription:  { trial: trialCount, active: activeSubCount, expired: expiredCount, expiringIn7: expiringCount },
       recentSchools,
     };
   }

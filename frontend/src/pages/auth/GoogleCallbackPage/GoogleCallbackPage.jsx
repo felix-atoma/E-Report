@@ -88,6 +88,28 @@ function GoogleCallbackPage() {
     );
   }
 
+  if (errorType === 'trial_expired') {
+    return (
+      <div className="gcb-box">
+        <div className="gcb-card">
+          <div className="gcb-icon gcb-icon--warn" aria-hidden="true">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </div>
+          <h2 className="gcb-title">Période d'essai expirée</h2>
+          <p className="gcb-body">
+            Votre période d'essai est terminée. Connectez-vous avec votre email et mot de passe
+            pour accéder à la page d'abonnement et renouveler votre accès.
+          </p>
+          <Link to="/login" className="gcb-btn">Se connecter</Link>
+        </div>
+      </div>
+    );
+  }
+
   if (errorType) {
     return (
       <div className="gcb-box">

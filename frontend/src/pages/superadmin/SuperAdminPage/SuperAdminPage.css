@@ -140,6 +140,17 @@
 .sa-stat--students  { background: #f5f3ff; border-color: #ddd6fe; color: #7c3aed; }
 .sa-stat--bulletins { background: #fff7ed; border-color: #fed7aa; color: #c2410c; }
 
+/* Subscription lifecycle row */
+.sa-stats-row--sub { grid-template-columns: repeat(4, 1fr); margin-top: -0.5rem; }
+
+.sa-stat--trial       { background: #f0f9ff; border-color: #bae6fd; color: #0369a1; }
+.sa-stat--sub-active  { background: #f0fdf4; border-color: #86efac; color: #15803d; }
+.sa-stat--expiring    { background: #fafaf0; border-color: #d9f99d; color: #4d7c0f; }
+.sa-stat--expired     { background: #f9fafb; border-color: #e5e7eb; color: #6b7280; }
+
+.sa-stat--warn   { background: #fffbeb !important; border-color: #fde68a !important; color: #92400e !important; }
+.sa-stat--danger { background: #fef2f2 !important; border-color: #fecaca !important; color: #b91c1c !important; }
+
 /* ── Toolbar (filters + search) ─────────────────────────────────────────────── */
 .sa-toolbar {
   display: flex;

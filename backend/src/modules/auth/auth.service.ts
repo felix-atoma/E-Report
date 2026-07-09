@@ -76,14 +76,34 @@ export class AuthService {
   async login(user: any) {
     // SUPERADMIN users have no institution — skip institution status check
     if (user.role !== 'SUPERADMIN' && user.institutionId) {
-      const institution = await this.prisma.institution.findUnique({
-        where: { id: user.institutionId },
-        select: { status: true },
-      });
+      const [institution, studentCount] = await Promise.all([
+        (this.prisma as any).institution.findUnique({
+          where: { id: user.institutionId },
+          select: { status: true, subscriptionStatus: true, trialEndsAt: true },
+        }),
+        this.prisma.student.count({ where: { institutionId: user.institutionId } }),
+      ]);
+
       if (institution && ['SUSPENDED', 'REJECTED'].includes(institution.status as string)) {
         throw new UnauthorizedException(
           'Votre établissement a été suspendu ou désactivé. Contactez le support.',
         );
+      }
+
+      // Block schools with ≥ 50 students whose trial or subscription has expired
+      if (institution && studentCount >= 50) {
+        const now = new Date();
+        const trialExpired =
+          institution.subscriptionStatus === 'TRIAL' &&
+          institution.trialEndsAt &&
+          new Date(institution.trialEndsAt) < now;
+        const subExpired = institution.subscriptionStatus === 'EXPIRED';
+
+        if (trialExpired || subExpired) {
+          throw new UnauthorizedException(
+            "Votre période d'essai est terminée. Souscrivez un abonnement pour continuer d'utiliser NovaBulletin.",
+          );
+        }
       }
     }
 
@@ -264,15 +284,29 @@ export class AuthService {
 
     // Block institution users whose institution is not ACTIVE
     if (user.role !== 'SUPERADMIN' && user.institutionId) {
-      const institution = await this.prisma.institution.findUnique({
-        where: { id: user.institutionId },
-        select: { status: true },
-      });
-      if (
-        institution &&
-        ['SUSPENDED', 'REJECTED'].includes(institution.status as string)
-      ) {
+      const [institution, studentCount] = await Promise.all([
+        (this.prisma as any).institution.findUnique({
+          where: { id: user.institutionId },
+          select: { status: true, subscriptionStatus: true, trialEndsAt: true },
+        }),
+        this.prisma.student.count({ where: { institutionId: user.institutionId } }),
+      ]);
+
+      if (institution && ['SUSPENDED', 'REJECTED'].includes(institution.status as string)) {
         return { error: 'inactive' as const };
+      }
+
+      if (institution && studentCount >= 50) {
+        const now = new Date();
+        const trialExpired =
+          institution.subscriptionStatus === 'TRIAL' &&
+          institution.trialEndsAt &&
+          new Date(institution.trialEndsAt) < now;
+        const subExpired = institution.subscriptionStatus === 'EXPIRED';
+
+        if (trialExpired || subExpired) {
+          return { error: 'trial_expired' as const };
+        }
       }
     }
 

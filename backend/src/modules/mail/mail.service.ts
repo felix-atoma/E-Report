@@ -511,6 +511,134 @@ export class MailService {
     return this.send({ to, subject, html, text });
   }
 
+  async sendTrialExpiryWarning(
+    adminName: string,
+    adminEmail: string,
+    schoolName: string,
+    daysLeft: number,
+  ): Promise<boolean> {
+    const subject = `NovaBulletin — Votre essai expire dans ${daysLeft} jour${daysLeft > 1 ? 's' : ''}`;
+    const frontendUrl = this.config.get('FRONTEND_URL', 'http://localhost:3000');
+    const urgentColor = daysLeft <= 1 ? '#dc2626' : '#d97706';
+
+    const html = `
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:40px 0;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+      <tr>
+        <td style="background:linear-gradient(135deg,${urgentColor} 0%,#f59e0b 100%);border-radius:12px 12px 0 0;padding:36px 40px;text-align:center;">
+          <h1 style="color:#fff;margin:0;font-size:26px;font-weight:800;">NovaBulletin</h1>
+          <p style="color:#fef3c7;margin:6px 0 0;font-size:14px;">⏳ Votre essai expire bientôt</p>
+        </td>
+      </tr>
+      <tr>
+        <td style="background:#fff;padding:40px;border:1px solid #e5e7eb;">
+          <h2 style="color:#111827;font-size:20px;margin:0 0 16px;">Bonjour ${adminName},</h2>
+          <p style="color:#4b5563;font-size:15px;line-height:1.7;margin:0 0 20px;">
+            Votre période d'essai gratuit pour <strong>${schoolName}</strong> expire dans
+            <strong style="color:${urgentColor};">${daysLeft} jour${daysLeft > 1 ? 's' : ''}</strong>.
+          </p>
+          <p style="color:#4b5563;font-size:15px;line-height:1.7;margin:0 0 28px;">
+            Après expiration, l'accès à la plateforme sera suspendu pour votre établissement.
+            Souscrivez dès maintenant pour continuer sans interruption.
+          </p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+            <tr><td align="center">
+              <a href="${frontendUrl}/admin/subscription"
+                style="display:inline-block;background:${urgentColor};color:#fff;text-decoration:none;padding:14px 40px;border-radius:8px;font-size:15px;font-weight:700;">
+                Souscrire un abonnement →
+              </a>
+            </td></tr>
+          </table>
+          <p style="color:#9ca3af;font-size:12px;">Si vous avez des questions, répondez à cet email ou contactez le support.</p>
+        </td>
+      </tr>
+      <tr>
+        <td style="background:#f9fafb;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 12px 12px;padding:16px 40px;text-align:center;">
+          <p style="margin:0;color:#9ca3af;font-size:12px;">&copy; ${new Date().getFullYear()} NovaBulletin</p>
+        </td>
+      </tr>
+    </table>
+  </td></tr>
+</table>
+</body></html>`;
+
+    const text =
+      `Bonjour ${adminName},\n\n` +
+      `Votre période d'essai pour ${schoolName} expire dans ${daysLeft} jour(s).\n` +
+      `Souscrivez dès maintenant : ${frontendUrl}/admin/subscription\n\n` +
+      `NovaBulletin`;
+
+    return this.send({ to: adminEmail, subject, html, text });
+  }
+
+  async sendTrialExpiredNotice(
+    adminName: string,
+    adminEmail: string,
+    schoolName: string,
+  ): Promise<boolean> {
+    const subject = 'NovaBulletin — Votre accès a expiré';
+    const frontendUrl = this.config.get('FRONTEND_URL', 'http://localhost:3000');
+
+    const html = `
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:40px 0;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+      <tr>
+        <td style="background:linear-gradient(135deg,#111827 0%,#374151 100%);border-radius:12px 12px 0 0;padding:36px 40px;text-align:center;">
+          <h1 style="color:#fff;margin:0;font-size:26px;font-weight:800;">NovaBulletin</h1>
+          <p style="color:#9ca3af;margin:6px 0 0;font-size:14px;">🔒 Accès suspendu</p>
+        </td>
+      </tr>
+      <tr>
+        <td style="background:#fff;padding:40px;border:1px solid #e5e7eb;">
+          <h2 style="color:#111827;font-size:20px;margin:0 0 16px;">Bonjour ${adminName},</h2>
+          <p style="color:#4b5563;font-size:15px;line-height:1.7;margin:0 0 20px;">
+            La période d'essai gratuite de <strong>${schoolName}</strong> est terminée.
+            L'accès à la plateforme a été suspendu.
+          </p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef2f2;border-radius:10px;margin-bottom:24px;">
+            <tr><td style="padding:16px 20px;">
+              <p style="margin:0;color:#dc2626;font-size:14px;">
+                ⚠️ Vos données sont conservées. Souscrivez un abonnement pour retrouver l'accès immédiatement.
+              </p>
+            </td></tr>
+          </table>
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+            <tr><td align="center">
+              <a href="${frontendUrl}/admin/subscription"
+                style="display:inline-block;background:#1e2a78;color:#fff;text-decoration:none;padding:14px 40px;border-radius:8px;font-size:15px;font-weight:700;">
+                Renouveler mon accès →
+              </a>
+            </td></tr>
+          </table>
+          <p style="color:#9ca3af;font-size:12px;">Vos données (élèves, bulletins, notes) sont préservées pendant 90 jours après l'expiration.</p>
+        </td>
+      </tr>
+      <tr>
+        <td style="background:#f9fafb;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 12px 12px;padding:16px 40px;text-align:center;">
+          <p style="margin:0;color:#9ca3af;font-size:12px;">&copy; ${new Date().getFullYear()} NovaBulletin</p>
+        </td>
+      </tr>
+    </table>
+  </td></tr>
+</table>
+</body></html>`;
+
+    const text =
+      `Bonjour ${adminName},\n\n` +
+      `La période d'essai de ${schoolName} est terminée et l'accès a été suspendu.\n` +
+      `Vos données sont conservées. Souscrivez pour retrouver l'accès :\n` +
+      `${frontendUrl}/admin/subscription\n\n` +
+      `NovaBulletin`;
+
+    return this.send({ to: adminEmail, subject, html, text });
+  }
+
   private buildBulletinEmail(p: MailPayload): string {
     const pdfSection = p.pdfUrl
       ? `<a href="${p.pdfUrl}" style="display:inline-block;background:#1e3a8a;color:#fff;padding:10px 20px;border-radius:4px;text-decoration:none;margin-top:12px;">

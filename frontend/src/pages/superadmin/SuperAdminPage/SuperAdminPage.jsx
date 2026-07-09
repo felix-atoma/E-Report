@@ -419,13 +419,15 @@ function SuperAdminPage() {
 
   // ── Stats ──────────────────────────────────────────────────────────────────
   const stats = useMemo(() => ({
-    total:        institutions.length,
-    pending:      institutions.filter((i) => i.status === 'PENDING').length,
-    active:       institutions.filter((i) => i.status === 'ACTIVE').length,
-    suspended:    institutions.filter((i) => i.status === 'SUSPENDED').length,
-    totalStudents: institutions.reduce((s, i) => s + (i.actualStudentCount ?? 0), 0),
+    total:          institutions.length,
+    pending:        institutions.filter((i) => i.status === 'PENDING').length,
+    active:         institutions.filter((i) => i.status === 'ACTIVE').length,
+    suspended:      institutions.filter((i) => i.status === 'SUSPENDED').length,
+    totalStudents:  institutions.reduce((s, i) => s + (i.actualStudentCount ?? 0), 0),
     totalBulletins: institutions.reduce((s, i) => s + (i.bulletinCount ?? 0), 0),
   }), [institutions]);
+
+  const subStats = networkStats?.subscription ?? {};
 
   // ── Filtered + searched list ────────────────────────────────────────────────
   const filtered = useMemo(() => {
@@ -557,7 +559,7 @@ function SuperAdminPage() {
           </div>
         )}
 
-        {/* Stats row */}
+        {/* Stats row — institution status */}
         <div className="sa-stats-row">
           <StatCard label="Total écoles"   value={stats.total}          cls="sa-stat--total" />
           <StatCard label="En attente"     value={stats.pending}        cls="sa-stat--pending" />
@@ -565,6 +567,34 @@ function SuperAdminPage() {
           <StatCard label="Suspendues"     value={stats.suspended}      cls="sa-stat--suspended" />
           <StatCard label="Élèves (total)" value={stats.totalStudents}  cls="sa-stat--students" />
           <StatCard label="Bulletins émis" value={stats.totalBulletins} cls="sa-stat--bulletins" />
+        </div>
+
+        {/* Stats row — subscription lifecycle */}
+        <div className="sa-stats-row sa-stats-row--sub">
+          <StatCard
+            label="En essai"
+            value={subStats.trial ?? '—'}
+            cls="sa-stat--trial"
+            sub="période d'essai active"
+          />
+          <StatCard
+            label="Abonnés actifs"
+            value={subStats.active ?? '—'}
+            cls="sa-stat--sub-active"
+            sub="abonnement payant"
+          />
+          <StatCard
+            label="Expirent dans 7 j"
+            value={subStats.expiringIn7 ?? '—'}
+            cls={`sa-stat--expiring${(subStats.expiringIn7 ?? 0) > 0 ? ' sa-stat--warn' : ''}`}
+            sub="à relancer"
+          />
+          <StatCard
+            label="Accès expiré"
+            value={subStats.expired ?? '—'}
+            cls={`sa-stat--expired${(subStats.expired ?? 0) > 0 ? ' sa-stat--danger' : ''}`}
+            sub="sans abonnement"
+          />
         </div>
 
         {/* Filters + search */}
