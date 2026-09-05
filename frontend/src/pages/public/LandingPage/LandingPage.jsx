@@ -7,7 +7,7 @@ import './LandingPage.css';
 
 const SITE_URL = import.meta.env.VITE_APP_URL ?? (typeof window !== 'undefined' ? window.location.origin : 'https://novabulletin.app');
 const SUPPORT_EMAIL = import.meta.env.VITE_SUPPORT_EMAIL ?? 'contact@novabulletin.app';
-const SUPPORT_WHATSAPP = import.meta.env.VITE_SUPPORT_WHATSAPP ?? '';
+const SUPPORT_WHATSAPP = import.meta.env.VITE_SUPPORT_WHATSAPP ?? '233244173068';
 const OG_IMAGE = `${SITE_URL}/og-image.svg`;
 
 /* ── SVG Illustrations ──────────────────────────────────────────────────── */
@@ -400,10 +400,10 @@ const LMS_FEATURES = [
 ];
 
 const STEPS = [
-  { num: '01', icon: '🏫', title: 'Inscrivez votre école', desc: 'Formulaire en 2 minutes. Validation sous 24h. Compte activé gratuitement.', tags: ['Nom école','Type','Niveau','Contact'] },
-  { num: '02', icon: '⚙️', title: 'Configurez en 30 min', desc: 'Ajoutez classes, matières, enseignants, élèves. Import CSV disponible.', tags: ['Classes','Matières','Coefficients','Import CSV'] },
-  { num: '03', icon: '✏️', title: 'Saisie des notes', desc: 'Les professeurs saisissent les notes sur leur téléphone. Signature numérique.', tags: ['Devoir','Composition','Appréciations','Signature'] },
-  { num: '04', icon: '🚀', title: 'Publiez & envoyez', desc: 'L\'admin publie. Chaque parent reçoit le bulletin sur WhatsApp instantanément.', tags: ['PDF auto','WhatsApp','Email','Blocage frais'] },
+  { num: '01', icon: '🏫', title: 'Inscrivez votre école', desc: 'Formulaire en 2 minutes. Accès immédiat, sans attente. Compte activé gratuitement — 30 jours d\'essai offerts.', tags: ['Nom école','Type','Niveau','Contact'] },
+  { num: '02', icon: '⚙️', title: 'Configurez en 30 min', desc: 'Ajoutez classes, matières, enseignants, élèves. Import CSV disponible. Paramétrez le système de périodes par cycle.', tags: ['Classes','Matières','Coefficients','Import CSV'] },
+  { num: '03', icon: '✏️', title: 'Saisie des notes', desc: 'Les professeurs saisissent les notes sur leur téléphone. Calcul automatique. Signature numérique de la fiche.', tags: ['Devoir','Composition','Appréciations','Signature'] },
+  { num: '04', icon: '🚀', title: 'Publiez & envoyez', desc: 'L\'admin publie. Chaque parent reçoit le bulletin PDF sur WhatsApp instantanément. Blocage auto si frais impayés.', tags: ['PDF auto','WhatsApp','Email','Blocage frais'] },
 ];
 
 const ROLES = [
@@ -411,6 +411,7 @@ const ROLES = [
   { icon: '👨‍🏫', title: 'Enseignant', color: '#1E2A78', desc: 'Votre fiche de notes numérique toujours dans votre poche.', features: ['📝 Fiche numérique sur mobile','Saisie des notes en temps réel','Calcul automatique des moyennes','Appréciations par élève','Signature électronique de la fiche','Dépôt de cours et documents','Publication de devoirs et quiz','Correction examens blancs'] },
   { icon: '💼', title: 'Économe', color: '#FF7A59', desc: 'Gérez les frais sans paperasse.', features: ['Enregistrement paiements (TMoney, Flooz, cash)','Paiement en ligne Mobile Money (Notchpay)','Vue impayés en temps réel','Génération de reçus PDF','Suivi par cotisation et période','Rapport financier exportable','Statistiques de recouvrement','Bulletins retenus automatiquement','Accès multi-établissement'] },
   { icon: '👨‍👩‍👧', title: 'Parent', color: '#FF7A59', desc: 'Suivez la scolarité de vos enfants.', features: ['Bulletins sur WhatsApp & Email','Portail parent 24h/24','Progression trimestre par trimestre','Historique complet des bulletins','Paiement frais en ligne (Mobile Money)','Consulter cours et devoirs LMS','Annonces de l\'école','Notifications instantanées'] },
+  { icon: '🎓', title: 'Élève', color: '#1E2A78', desc: 'Suivez vos résultats et progressez.', features: ['Consultation des bulletins PDF','Progression trimestre par trimestre','Classement, mention et appréciation','Accès aux cours et documents LMS','Devoirs et quiz en ligne','Emploi du temps de la classe','Annonces de l\'établissement','Notifications en temps réel'] },
 ];
 
 const TESTIMONIALS = [
@@ -442,7 +443,10 @@ const TEAM = [
 ];
 
 const FAQS = [
-  { q: 'Est-ce que je dois payer pour essayer ?', a: 'Non. Utilisez NovaBulletin pendant tout un trimestre complet. Si vous êtes satisfait à la fin du trimestre, vous payez. Sinon, vous revenez à votre ancien système. Aucun engagement, aucune carte bancaire requise dès le départ.' },
+  { q: 'Est-ce que je dois payer pour essayer ?', a: 'Non. Vous bénéficiez d\'un essai gratuit de 30 jours avec accès complet à toutes les fonctionnalités. Aucun engagement, aucune carte bancaire requise dès le départ. Si vous êtes satisfait à la fin des 30 jours, vous choisissez un abonnement. Sinon, vous revenez à votre ancien système.' },
+  { q: 'Est-ce gratuit pour les petites écoles ?', a: 'Oui. Toute école ayant moins de 50 élèves inscrits bénéficie d\'un accès gratuit permanent à toutes les fonctionnalités de NovaBulletin — sans limite de durée, sans abonnement et sans carte bancaire. Le modèle payant ne s\'applique qu\'à partir de 50 élèves.' },
+  { q: 'Combien coûte NovaBulletin après l\'essai gratuit ?', a: 'Le tarif dépend de votre effectif réel. STARTER (< 50 élèves) : GRATUIT ∞. BASIC (50–99 élèves) : 10 000 FCFA/mois ou 100 000 FCFA/an. PRO (100–199 élèves) : 20 000 FCFA/mois ou 200 000 FCFA/an. ENTERPRISE (200+ élèves) : 35 000 FCFA/mois ou 350 000 FCFA/an. Paiement par TMoney, Flooz ou virement.' },
+  { q: 'Mon école est un complexe (primaire + collège + lycée). Est-ce compatible ?', a: 'Oui. NovaBulletin est conçu pour les établissements complexes multi-cycles. Vous pouvez configurer des systèmes de périodes différents par cycle : par exemple, trimestriel pour le primaire et le collège, et semestriel pour le lycée. Chaque bulletin est généré automatiquement avec le bon système de périodes selon le cycle de la classe.' },
   { q: 'Comment fonctionnent les fiches numériques des enseignants ?', a: 'Chaque enseignant a accès à sa propre fiche de notes numérique depuis son téléphone. Il saisit les notes (interrogations, devoirs, compositions), les moyennes se calculent automatiquement, et il signe électroniquement la fiche. L\'administration voit tout en temps réel — aucune retranscription manuelle, aucune perte de fiche papier.' },
   { q: 'NovaBulletin remplace-t-il tous les registres papier ?', a: 'Oui. NovaBulletin centralise 11 registres : présences, santé, bibliothèque, inventaire, anciens élèves, transferts, dossiers disciplinaires, examens nationaux, calendrier, documents officiels et profils du personnel. Chaque donnée est sécurisée, consultable instantanément et exportable en CSV.' },
   { q: 'Combien de temps faut-il pour configurer l\'école ?', a: 'Environ 30 minutes pour une école de taille moyenne. Vous pouvez importer vos élèves depuis un fichier Excel ou CSV en quelques clics. Notre équipe vous accompagne à chaque étape via WhatsApp.' },
@@ -470,7 +474,7 @@ const COMPARISON = [
   { feature: 'Relances frais impayés', excel: '❌ Appels manuels', autres: '❌ Non', nova: '✅ Auto : amical puis quotidien' },
   { feature: 'Exports CSV officiels', excel: '❌ Mise en forme manuelle', autres: '⚠️ Coût supplémentaire', nova: '✅ Auto, prêt pour l\'inspection' },
   { feature: 'Adapté Afrique francophone', excel: '❌ Non', autres: '❌ Non', nova: '✅ Conçu pour Togo+' },
-  { feature: 'Prix', excel: '~0 (heures perdues)', autres: '50k–200k FCFA/mois', nova: '✅ Payez si satisfait' },
+  { feature: 'Prix', excel: '~0 (heures perdues)', autres: '50k–200k FCFA/mois', nova: '✅ Gratuit < 50 élèves • 10k–35k FCFA/mois' },
 ];
 
 /* ── Flag SVGs ──────────────────────────────────────────────────────────── */
@@ -512,16 +516,17 @@ const LMS_FEATURES_EN = [
   { icon: '🏆', title: 'Mock Exams', desc: 'Organize mock exams, enter grades and publish the complete school rankings.' },
 ];
 const STEPS_EN = [
-  { num: '01', icon: '🏫', title: 'Register your school', desc: '2-minute form. Validated within 24h. Account activated for free.', tags: ['School name','Type','Level','Contact'] },
-  { num: '02', icon: '⚙️', title: 'Set up in 30 min', desc: 'Add classes, subjects, teachers, students. CSV import available.', tags: ['Classes','Subjects','Coefficients','CSV Import'] },
-  { num: '03', icon: '✏️', title: 'Grade entry', desc: 'Teachers enter grades on their phone. Digital signature.', tags: ['Test','Exam','Comments','Signature'] },
-  { num: '04', icon: '🚀', title: 'Publish & send', desc: 'Admin publishes. Every parent receives the report card on WhatsApp instantly.', tags: ['Auto PDF','WhatsApp','Email','Fee gate'] },
+  { num: '01', icon: '🏫', title: 'Register your school', desc: '2-minute form. Immediate access, no waiting. Account activated for free — 30-day trial included.', tags: ['School name','Type','Level','Contact'] },
+  { num: '02', icon: '⚙️', title: 'Set up in 30 min', desc: 'Add classes, subjects, teachers, students. CSV import available. Configure term system per cycle.', tags: ['Classes','Subjects','Coefficients','CSV Import'] },
+  { num: '03', icon: '✏️', title: 'Grade entry', desc: 'Teachers enter grades on their phone. Automatic calculation. Digital signature on the sheet.', tags: ['Test','Exam','Comments','Signature'] },
+  { num: '04', icon: '🚀', title: 'Publish & send', desc: 'Admin publishes. Every parent receives the PDF report card on WhatsApp instantly. Auto block if fees unpaid.', tags: ['Auto PDF','WhatsApp','Email','Fee gate'] },
 ];
 const ROLES_EN = [
   { icon: '🏫', title: 'Administrator', color: '#1E2A78', desc: 'Complete view of your institution.', features: ['Full analytics dashboard','Manage classes, subjects, teachers','PDF reports + publish in 1 click','School fee configuration','School\'s own Mobile Money account for payments','Attendance, health, library registers','Inventory, alumni, national exams','Official documents & staff profiles','CSV export of all data'] },
   { icon: '👨‍🏫', title: 'Teacher', color: '#1E2A78', desc: 'Your digital grade sheet always in your pocket.', features: ['📝 Digital grade sheet on mobile','Real-time grade entry','Automatic average calculation','Comments per student','Electronic signature of the sheet','Upload courses and documents','Publish homework and quizzes','Mark mock exams'] },
   { icon: '💼', title: 'Bursar', color: '#FF7A59', desc: 'Manage fees without paperwork.', features: ['Record payments (TMoney, Flooz, cash)','Online Mobile Money payment (Notchpay)','Real-time unpaid view','Generate PDF receipts','Track by fee type and period','Exportable financial report','Collection statistics','Reports held automatically','Multi-school access'] },
   { icon: '👨‍👩‍👧', title: 'Parent', color: '#FF7A59', desc: 'Track your children\'s schooling.', features: ['Report cards on WhatsApp & Email','Parent portal 24/7','Term-by-term progress','Full report history','Pay fees online (Mobile Money)','View LMS courses and homework','School announcements','Instant notifications'] },
+  { icon: '🎓', title: 'Student', color: '#1E2A78', desc: 'Track your grades and progress.', features: ['View PDF report cards','Term-by-term progress','Class rank, grade and comments','Access LMS courses and documents','Online homework and quizzes','Class timetable','School announcements','Real-time notifications'] },
 ];
 const DATABASE_MODULES_EN = [
   { icon: '📋', color: '#eff6ff', iconColor: '#1E2A78', title: 'Daily Attendance', desc: 'Daily roll call by class and subject. Track absences, late arrivals and exclusions per student.' },
@@ -537,7 +542,10 @@ const DATABASE_MODULES_EN = [
   { icon: '👤', color: '#fff3f0', iconColor: '#FF7A59', title: 'Staff Profiles', desc: 'Complete HR files: qualifications, contract, experience, emergency contacts.' },
 ];
 const FAQS_EN = [
-  { q: 'Do I have to pay to try it?', a: 'No. Use NovaBulletin for an entire term. If you are satisfied at the end of the term, you pay. If not, you go back to your old system. No commitment, no credit card required upfront.' },
+  { q: 'Do I have to pay to try it?', a: 'No. You get a free 30-day trial with full access to all features. No commitment, no credit card required upfront. If you are satisfied after 30 days, you choose a plan. If not, you go back to your old system.' },
+  { q: 'Is it free for small schools?', a: 'Yes. Any school with fewer than 50 enrolled students gets permanent free access to all NovaBulletin features — no time limit, no subscription, no credit card. The paid model only applies from 50 students upwards.' },
+  { q: 'How much does NovaBulletin cost after the free trial?', a: 'Pricing depends on your actual enrolment. STARTER (< 50 students): FREE ∞. BASIC (50–99): 10,000 FCFA/month or 100,000 FCFA/year. PRO (100–199): 20,000 FCFA/month or 200,000 FCFA/year. ENTERPRISE (200+): 35,000 FCFA/month or 350,000 FCFA/year. Payment via TMoney, Flooz or bank transfer.' },
+  { q: 'My school is a complex (primary + middle + high school). Is it compatible?', a: 'Yes. NovaBulletin is built for multi-cycle complexes. You can configure different term systems per cycle — for example, trimester for primary and middle school, and semester for high school. Each report card is automatically generated with the correct term system for its cycle.' },
   { q: 'How do the teachers\' digital grade sheets work?', a: 'Each teacher accesses their own digital grade sheet from their phone. They enter grades (tests, homework, exams), averages calculate automatically, and they electronically sign the sheet. The administration sees everything in real time — no manual re-entry, no lost paper sheets.' },
   { q: 'Does NovaBulletin replace all paper registers?', a: 'Yes. NovaBulletin centralizes 11 registers: attendance, health, library, inventory, alumni, transfers, disciplinary files, national exams, calendar, official documents and staff profiles. Every record is secured, instantly searchable and exportable to CSV.' },
   { q: 'How long does it take to set up the school?', a: 'About 30 minutes for a medium-sized school. You can import your students from an Excel or CSV file in a few clicks. Our team supports you at every step via WhatsApp.' },
@@ -577,7 +585,7 @@ const COMPARISON_EN = [
   { feature: 'Unpaid fee follow-ups', excel: '❌ Manual calls', autres: '❌ No', nova: '✅ Auto: friendly then daily' },
   { feature: 'Government CSV exports', excel: '❌ Manual formatting', autres: '⚠️ Extra cost', nova: '✅ Auto, inspection-ready' },
   { feature: 'Built for Francophone Africa', excel: '❌ No', autres: '❌ No', nova: '✅ Designed for Togo+' },
-  { feature: 'Price', excel: '~0 (hours lost)', autres: '50k–200k FCFA/month', nova: '✅ Pay if satisfied' },
+  { feature: 'Price', excel: '~0 (hours lost)', autres: '50k–200k FCFA/month', nova: '✅ Free < 50 students • 10k–35k FCFA/month' },
 ];
 
 /* ── Hooks ──────────────────────────────────────────────────────────────── */
@@ -893,7 +901,7 @@ export default function LandingPage() {
             "@type": "Offer",
             "price": "0",
             "priceCurrency": "XOF",
-            "description": "Premier trimestre gratuit — payez seulement si satisfait"
+            "description": "30 jours d'essai gratuit — payez seulement si satisfait"
           },
           "aggregateRating": {
             "@type": "AggregateRating",
@@ -1058,7 +1066,7 @@ export default function LandingPage() {
               )}
             </p>
             <div className="lp-hero__btns">
-              <Link to="/register-school" className="lp-btn lp-btn--cta">{t('Essayer gratuitement ce trimestre →','Try free this term →')}</Link>
+              <Link to="/register-school" className="lp-btn lp-btn--cta">{t('Essayer gratuitement — 30 jours →','Try free for 30 days →')}</Link>
               <a href="#how" className="lp-btn lp-btn--ghost-white">{t('▶ Comment ça marche','▶ How it works')}</a>
             </div>
             <div className="lp-hero__badges">
@@ -1590,18 +1598,18 @@ export default function LandingPage() {
           <div className="lp-section-head">
             <span className="lp-tag">{t('💎 Tarif','💎 Pricing')}</span>
             <h2>{t('Simple, transparent, sans risque','Simple, transparent, risk-free')}</h2>
-            <p>{t('Un seul modèle : essayez un trimestre entier. Payez seulement si vous êtes satisfait.','One model: try a full term. Pay only if you are satisfied.')}</p>
+            <p>{t('30 jours d\'essai complet, gratuits, sans carte bancaire. Payez seulement si vous êtes satisfait.','30-day full trial, free, no credit card. Pay only if you are satisfied.')}</p>
           </div>
           <div className="lp-price-card">
             <div className="lp-price-card__badge">{t('🤝 Notre engagement unique','🤝 Our unique commitment')}</div>
-            <h3>{t('Essai complet — 1 trimestre entier','Full trial — 1 complete term')}</h3>
+            <h3>{t('Essai complet — 30 jours gratuits','Full trial — 30 days free')}</h3>
             <div className="lp-price-amount">
-              <strong>{t('Gratuit','Free')}</strong><span>{t('pendant tout votre premier trimestre','for your entire first term')}</span>
+              <strong>{t('Gratuit','Free')}</strong><span>{t('pendant 30 jours complets','for 30 full days')}</span>
             </div>
             <p className="lp-price-promise">
               {t(
-                <>{`Utilisez `}<strong>toutes</strong>{` les fonctionnalités pendant un trimestre complet. Si vous êtes satisfait à la fin, vous payez. Sinon, vous revenez à Excel.`}<strong> Aucun frais. Aucune carte bancaire requise.</strong></>,
-                <>{`Use `}<strong>all</strong>{` features for a full term. If you are satisfied at the end, you pay. If not, you go back to Excel.`}<strong> No charge. No credit card required.</strong></>
+                <>{`Utilisez `}<strong>toutes</strong>{` les fonctionnalités pendant 30 jours. Si vous êtes satisfait, vous choisissez un abonnement. Sinon, vous revenez à Excel.`}<strong> Aucun frais. Aucune carte bancaire requise.</strong></>,
+                <>{`Use `}<strong>all</strong>{` features for 30 days. If you are satisfied, you choose a plan. If not, you go back to Excel.`}<strong> No charge. No credit card required.</strong></>
               )}
             </p>
             <div className="lp-price-includes">
@@ -1615,11 +1623,33 @@ export default function LandingPage() {
               {t('Commencer maintenant — C\'est gratuit →','Start now — It\'s free →')}
             </Link>
             <div className="lp-price-range">
-              <p>{t('💡 Après le trimestre gratuit, le tarif est calculé selon l\'effectif :','💡 After the free term, pricing is based on enrolment:')}</p>
-              <div className="lp-price-range__grid">
-                <div><strong>{t('Petite école','Small school')}</strong><span>{t('< 200 élèves','< 200 students')}</span><span className="lp-price-range__amount">~15 000 FCFA/trim.</span></div>
-                <div><strong>{t('École moyenne','Medium school')}</strong><span>{t('200–500 élèves','200–500 students')}</span><span className="lp-price-range__amount">~30 000 FCFA/trim.</span></div>
-                <div><strong>{t('Grande école','Large school')}</strong><span>{t('500+ élèves','500+ students')}</span><span className="lp-price-range__amount">~50 000 FCFA/trim.</span></div>
+              <p>{t('💡 Après les 30 jours d\'essai, le tarif est calculé selon l\'effectif réel :','💡 After the 30-day trial, pricing is based on actual enrolment:')}</p>
+              <div className="lp-price-range__grid lp-price-range__grid--4">
+                <div className="lp-price-tier lp-price-tier--free">
+                  <strong>STARTER</strong>
+                  <span>{t('Moins de 50 élèves','Fewer than 50 students')}</span>
+                  <span className="lp-price-range__amount">{t('GRATUIT ∞','FREE ∞')}</span>
+                  <small>{t('Pour toujours','Forever')}</small>
+                </div>
+                <div className="lp-price-tier">
+                  <strong>BASIC</strong>
+                  <span>{t('50 – 99 élèves','50 – 99 students')}</span>
+                  <span className="lp-price-range__amount">10 000 FCFA/mois</span>
+                  <small>{t('ou 100 000/an (−17%)','or 100,000/year (−17%)')}</small>
+                </div>
+                <div className="lp-price-tier lp-price-tier--popular">
+                  <div className="lp-price-tier__badge">{t('Populaire','Popular')}</div>
+                  <strong>PRO</strong>
+                  <span>{t('100 – 199 élèves','100 – 199 students')}</span>
+                  <span className="lp-price-range__amount">20 000 FCFA/mois</span>
+                  <small>{t('ou 200 000/an (−17%)','or 200,000/year (−17%)')}</small>
+                </div>
+                <div className="lp-price-tier">
+                  <strong>ENTERPRISE</strong>
+                  <span>{t('200+ élèves','200+ students')}</span>
+                  <span className="lp-price-range__amount">35 000 FCFA/mois</span>
+                  <small>{t('ou 350 000/an (−17%)','or 350,000/year (−17%)')}</small>
+                </div>
               </div>
             </div>
             <p className="lp-price-note">{t('Paiement en FCFA · TMoney · Flooz · Virement bancaire','Payment in FCFA · TMoney · Flooz · Bank transfer')}</p>
@@ -1685,7 +1715,7 @@ export default function LandingPage() {
         <div className="lp-container lp-cta__inner">
           <div className="lp-cta__badge">{t('🚀 Rejoignez les écoles qui modernisent leur gestion','🚀 Join schools modernizing their management')}</div>
           <h2>{t('Prêt à dire adieu à Excel ?','Ready to say goodbye to Excel?')}</h2>
-          <p>{t('Inscrivez votre école dès aujourd\'hui. Premier trimestre entièrement gratuit.','Register your school today. First term entirely free.')}<br/>{t('Payez seulement si NovaBulletin vous convient.','Pay only if NovaBulletin works for you.')}</p>
+          <p>{t('Inscrivez votre école dès aujourd\'hui. 30 jours d\'essai entièrement gratuits.','Register your school today. 30-day free trial, no credit card.')}<br/>{t('Payez seulement si NovaBulletin vous convient.','Pay only if NovaBulletin works for you.')}</p>
           <div className="lp-cta__btns">
             <Link to="/register-school" className="lp-btn lp-btn--cta">{t('Inscrire mon école gratuitement →','Register my school for free →')}</Link>
             <Link to="/login" className="lp-btn lp-btn--ghost-white">{t('Déjà inscrit ? Se connecter','Already registered? Log in')}</Link>
@@ -1700,7 +1730,7 @@ export default function LandingPage() {
 
       {/* ─── FLOATING WHATSAPP ───────────────────────────────────────── */}
       <a
-        href={SUPPORT_WHATSAPP ? `https://wa.me/${SUPPORT_WHATSAPP.replace(/\D/g,'')}` : '#'}
+        href={SUPPORT_WHATSAPP ? `https://wa.me/${SUPPORT_WHATSAPP.replace(/\D/g,'')}?text=${encodeURIComponent(isFr ? 'Bonjour, je voudrais en savoir plus sur NovaBulletin.' : 'Hello, I would like to know more about NovaBulletin.')}` : '#'}
         target="_blank"
         rel="noopener noreferrer"
         className="lp-wa-float"

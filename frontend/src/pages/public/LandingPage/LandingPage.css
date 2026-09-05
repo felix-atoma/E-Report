@@ -333,11 +333,19 @@ section[id]{scroll-margin-top:110px}
 .lp-price-range{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:1.25rem;margin:1.25rem 0;text-align:left}
 .lp-price-range>p{font-size:.82rem;color:#6b7280;margin:0 0 .75rem;font-weight:600}
 .lp-price-range__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem}
-.lp-price-range__grid>div{display:flex;flex-direction:column;gap:.15rem;background:#fff;border-radius:8px;padding:.75rem;border:1px solid #f3f4f6}
-.lp-price-range__grid strong{font-size:.82rem;color:#1f2937}
-.lp-price-range__grid span{font-size:.75rem;color:#6b7280}
-.lp-price-range__amount{font-size:.9rem!important;font-weight:700;color:#1E2A78!important;margin-top:.25rem}
-@media(max-width:600px){.lp-price-range__grid{grid-template-columns:1fr}}
+.lp-price-range__grid--4{grid-template-columns:repeat(4,1fr)}
+.lp-price-range__grid>div,.lp-price-tier{display:flex;flex-direction:column;gap:.15rem;background:#fff;border-radius:10px;padding:.9rem;border:1px solid #e5e7eb;position:relative}
+.lp-price-range__grid strong,.lp-price-tier strong{font-size:.88rem;color:#1f2937;font-weight:800;letter-spacing:.02em}
+.lp-price-range__grid span,.lp-price-tier span{font-size:.75rem;color:#6b7280}
+.lp-price-tier small{font-size:.7rem;color:#9ca3af;margin-top:.1rem}
+.lp-price-range__amount{font-size:.95rem!important;font-weight:700;color:#1E2A78!important;margin-top:.3rem}
+.lp-price-tier--free{border-color:#d1fae5;background:#f0fdf4}
+.lp-price-tier--free strong{color:#059669}
+.lp-price-tier--free .lp-price-range__amount{color:#059669!important}
+.lp-price-tier--popular{border-color:#1E2A78;box-shadow:0 4px 16px rgba(30,42,120,.15)}
+.lp-price-tier__badge{position:absolute;top:-.55rem;left:50%;transform:translateX(-50%);background:#1E2A78;color:#fff;font-size:.62rem;font-weight:700;padding:.18rem .55rem;border-radius:20px;white-space:nowrap}
+@media(max-width:720px){.lp-price-range__grid--4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.lp-price-range__grid{grid-template-columns:1fr}.lp-price-range__grid--4{grid-template-columns:repeat(2,1fr)}}
 
 /* ── FAQ ────────────────────────────────────────────────────────────────── */
 .lp-faq{padding:6rem 0;background:#fff}
