@@ -15,6 +15,7 @@ import { Role } from '../../common/enums/role.enum';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { MailService } from '../mail/mail.service';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 const USER_SELECT = {
   id: true,
@@ -38,6 +39,7 @@ export class UsersService {
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
     private readonly mail: MailService,
+    private readonly cloudinary: CloudinaryService,
   ) {}
 
   async findAll(institutionId: string, role?: Role) {
@@ -161,20 +163,37 @@ export class UsersService {
       throw new ForbiddenException('You can only update your own avatar');
     }
 
-    const uploadsRoot = path.resolve(
-      process.cwd(),
-      this.config.get<string>('UPLOADS_DIR', 'uploads'),
-    );
-    const destDir = path.join(uploadsRoot, 'profile-photos');
-    fs.mkdirSync(destDir, { recursive: true });
+    let profileImage: string;
 
-    const ext = path.extname(file.originalname).toLowerCase();
-    const uniqueName = `${institutionId}-${targetId}-${Date.now()}${ext}`;
-    const destPath = path.join(destDir, uniqueName);
-    fs.renameSync(file.path, destPath);
+    if (this.cloudinary.enabled) {
+      // Uploads directly to Cloudinary — gives a permanent URL that survives
+      // redeploys/restarts, unlike Render's ephemeral local disk.
+      const folder = `novabulletin/${institutionId}/profile-photos`;
+      profileImage = await this.cloudinary.uploadFile(file.path, folder, 'image');
+      try { fs.unlinkSync(file.path); } catch {}
+    } else {
+      // Local fallback (dev only). Uses copyFileSync + unlinkSync instead of
+      // renameSync: rename() requires source and destination to be on the
+      // same filesystem/mount, and fails with EXDEV when they aren't (e.g.
+      // OS temp dir vs. the uploads dir on Render) — copy+delete works
+      // across mounts.
+      const uploadsRoot = path.resolve(
+        process.cwd(),
+        this.config.get<string>('UPLOADS_DIR', 'uploads'),
+      );
+      const destDir = path.join(uploadsRoot, 'profile-photos');
+      fs.mkdirSync(destDir, { recursive: true });
 
-    const baseUrl = this.config.get<string>('BASE_URL', 'http://localhost:4000');
-    const profileImage = `${baseUrl}/uploads/profile-photos/${uniqueName}`;
+      const ext = path.extname(file.originalname).toLowerCase();
+      const uniqueName = `${institutionId}-${targetId}-${Date.now()}${ext}`;
+      const destPath = path.join(destDir, uniqueName);
+
+      fs.copyFileSync(file.path, destPath);
+      try { fs.unlinkSync(file.path); } catch {}
+
+      const baseUrl = this.config.get<string>('BASE_URL', 'http://localhost:4000');
+      profileImage = `${baseUrl}/uploads/profile-photos/${uniqueName}`;
+    }
 
     return this.prisma.user.update({
       where: { id: targetId },

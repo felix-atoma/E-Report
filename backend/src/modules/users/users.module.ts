@@ -4,9 +4,10 @@ import { MulterModule } from '@nestjs/platform-express';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { MailModule } from '../mail/mail.module';
+import { CloudinaryModule } from '../cloudinary/cloudinary.module';
 
 @Module({
-  imports: [ConfigModule, MulterModule.register({}), MailModule],
+  imports: [ConfigModule, MulterModule.register({}), MailModule, CloudinaryModule],
   controllers: [UsersController],
   providers: [UsersService],
   exports: [UsersService],

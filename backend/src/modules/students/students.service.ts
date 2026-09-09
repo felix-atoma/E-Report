@@ -203,6 +203,20 @@ export class StudentsService {
     return `${prefix}-${year}-${sequence}`;
   }
 
+  /**
+   * Adds a small random suffix so a retried admission-number generation doesn't just
+   * recompute the exact same collided value (the underlying `count` won't have moved
+   * yet within the same request).
+   */
+  private async generateAdmissionNumberWithSuffix(
+    institutionId: string,
+    year: number,
+    attempt: number,
+  ): Promise<string> {
+    const base = await this.generateAdmissionNumber(institutionId, year);
+    return attempt === 0 ? base : `${base}-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
+  }
+
   async create(dto: CreateStudentDto, institutionId: string) {
     if (dto.admissionNumber) {
       const existing = await this.prisma.student.findUnique({
@@ -214,9 +228,6 @@ export class StudentsService {
     const enrollYear = dto.enrollmentDate
       ? new Date(dto.enrollmentDate).getFullYear()
       : new Date().getFullYear();
-
-    const admissionNumber = dto.admissionNumber
-      || await this.generateAdmissionNumber(institutionId, enrollYear);
 
     // Resolve parentId from parentEmail if provided
     let parentId = dto.parentId;
@@ -242,70 +253,112 @@ export class StudentsService {
       if (!classRecord) throw new NotFoundException('Class not found');
     }
 
-    // Create linked STUDENT user account when name is provided (always, since name is required)
+    // A real caller-provided email is checked up front — a genuine conflict here
+    // should fail fast and clearly, not get swallowed into the retry loop below.
+    if (dto.email) {
+      const existingUser = await this.prisma.user.findUnique({ where: { email: dto.email } });
+      if (existingUser) throw new ConflictException('Email already in use by another user');
+    }
+
     const saltRounds = this.config.get<number>('BCRYPT_SALT_ROUNDS', 12);
     const tempPassword = await bcrypt.hash(
       `Temp@${Math.random().toString(36).slice(2, 10)}`,
       Number(saltRounds),
     );
 
-    if (dto.email) {
-      const existingUser = await this.prisma.user.findUnique({ where: { email: dto.email } });
-      if (existingUser) throw new ConflictException('Email already in use by another user');
-    }
-
-    // Real email provided → send a welcome OTP so the student can set their own password
     const hasRealEmail = !!dto.email;
     const otp = hasRealEmail ? crypto.randomUUID().replace(/-/g, '').toUpperCase() : null;
     const otpHash = otp ? await bcrypt.hash(otp, 10) : null;
     const otpExpiresAt = otp ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null;
 
-    const userRecord = await this.prisma.user.create({
-      data: {
-        name: dto.name,
-        email: dto.email ?? `student-${admissionNumber}@noreply.local`,
-        password: tempPassword,
-        role: 'STUDENT',
-        institutionId,
-        ...(hasRealEmail ? { mustChangePassword: true, otpHash, otpExpiresAt } : {}),
-      },
-      select: { id: true, institution: { select: { name: true } } },
-    });
+    // User + student are created together in a transaction, retried on unique-constraint
+    // collisions (Prisma P2002). This is the actual fix for the original crash: when no
+    // admission number is supplied, it's auto-generated from a row count, which is not
+    // safe under concurrent requests or after a student was deleted — the same number
+    // (and therefore the same fallback placeholder email, "student-<number>@noreply.local")
+    // can be produced twice. Rather than trying to pre-check every possible collision,
+    // we let the DB's unique constraint be the source of truth and retry with a freshly
+    // generated number when it fires.
+    const MAX_ATTEMPTS = 5;
 
-    if (hasRealEmail && otp) {
-      this.mail.sendWelcomeOtp(
-        dto.email!,
-        dto.name,
-        otp,
-        userRecord.institution?.name ?? 'NovaBulletin',
-      ).catch(() => {/* logged inside service */});
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+      const admissionNumber = dto.admissionNumber
+        || await this.generateAdmissionNumberWithSuffix(institutionId, enrollYear, attempt);
+      const finalEmail = dto.email ?? `student-${admissionNumber}@noreply.local`;
+
+      try {
+        const result = await this.prisma.$transaction(async (tx) => {
+          const userRecord = await tx.user.create({
+            data: {
+              name: dto.name,
+              email: finalEmail,
+              password: tempPassword,
+              role: 'STUDENT',
+              institutionId,
+              ...(hasRealEmail ? { mustChangePassword: true, otpHash, otpExpiresAt } : {}),
+            },
+            select: { id: true, institution: { select: { name: true } } },
+          });
+
+          const student = await tx.student.create({
+            data: {
+              admissionNumber,
+              dateOfBirth: new Date(dto.dateOfBirth),
+              enrollmentDate: dto.enrollmentDate ? new Date(dto.enrollmentDate) : undefined,
+              sex: dto.sex,
+              parentId,
+              institutionId,
+              userId: userRecord.id,
+            },
+            include: STUDENT_INCLUDE,
+          });
+
+          if (classRecord) {
+            await tx.classStudent.create({
+              data: {
+                classId: classRecord.id,
+                studentId: student.id,
+                academicYear: classRecord.academicYear,
+              },
+            });
+          }
+
+          return { student, userRecord };
+        });
+
+        // Send the OTP only once the transaction has actually committed.
+        if (hasRealEmail && otp) {
+          this.mail.sendWelcomeOtp(
+            dto.email!,
+            dto.name,
+            otp,
+            result.userRecord.institution?.name ?? 'NovaBulletin',
+          ).catch(() => {/* logged inside service */});
+        }
+
+        return result.student;
+      } catch (e: any) {
+        const isUniqueConflict = e?.code === 'P2002';
+        const conflictField: string = e?.meta?.target?.join?.(',') ?? '';
+
+        if (isUniqueConflict && dto.admissionNumber && conflictField.includes('admissionNumber')) {
+          // Caller explicitly chose this admission number — don't silently retry with a new one.
+          throw new ConflictException('Admission number already in use');
+        }
+        if (isUniqueConflict && dto.email && conflictField.includes('email')) {
+          throw new ConflictException('Email already in use by another user');
+        }
+        if (isUniqueConflict && !dto.admissionNumber) {
+          // Auto-generated number (or its fallback email) collided — retry with a new one.
+          continue;
+        }
+        throw e;
+      }
     }
 
-    const student = await this.prisma.student.create({
-      data: {
-        admissionNumber,
-        dateOfBirth: new Date(dto.dateOfBirth),
-        enrollmentDate: dto.enrollmentDate ? new Date(dto.enrollmentDate) : undefined,
-        sex: dto.sex,
-        parentId,
-        institutionId,
-        userId: userRecord.id,
-      },
-      include: STUDENT_INCLUDE,
-    });
-
-    // Enroll in class if provided
-    if (classRecord) {
-      await this.prisma.classStudent.create({
-        data: {
-          classId: classRecord.id,
-          studentId: student.id,
-          academicYear: classRecord.academicYear,
-        },
-      });
-    }
-
-    return student;
+    throw new ConflictException(
+      `Could not generate a unique admission number after ${MAX_ATTEMPTS} attempts. Please try again or supply one explicitly.`,
+    );
   }
 
   async update(id: string, dto: UpdateStudentDto, institutionId: string) {

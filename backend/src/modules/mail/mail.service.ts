@@ -517,9 +517,9 @@ export class MailService {
     schoolName: string,
     daysLeft: number,
   ): Promise<boolean> {
-    const subject = `NovaBulletin — Votre essai expire dans ${daysLeft} jour${daysLeft > 1 ? 's' : ''}`;
+    const subject = `NovaBulletin — Votre essai expire dans ${daysLeft} jour${daysLeft > 2 ? 's' : ''}`;
     const frontendUrl = this.config.get('FRONTEND_URL', 'http://localhost:3000');
-    const urgentColor = daysLeft <= 1 ? '#dc2626' : '#d97706';
+    const urgentColor = daysLeft <= 2 ? '#dc2626' : '#d97706';
 
     const html = `
 <!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"></head>
@@ -538,7 +538,7 @@ export class MailService {
           <h2 style="color:#111827;font-size:20px;margin:0 0 16px;">Bonjour ${adminName},</h2>
           <p style="color:#4b5563;font-size:15px;line-height:1.7;margin:0 0 20px;">
             Votre période d'essai gratuit pour <strong>${schoolName}</strong> expire dans
-            <strong style="color:${urgentColor};">${daysLeft} jour${daysLeft > 1 ? 's' : ''}</strong>.
+            <strong style="color:${urgentColor};">${daysLeft} jour${daysLeft > 2 ? 's' : ''}</strong>.
           </p>
           <p style="color:#4b5563;font-size:15px;line-height:1.7;margin:0 0 28px;">
             Après expiration, l'accès à la plateforme sera suspendu pour votre établissement.
