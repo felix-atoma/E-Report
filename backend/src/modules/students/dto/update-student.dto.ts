@@ -3,6 +3,11 @@ import { IsDateString, IsEnum, IsInt, IsOptional, IsString, Min } from 'class-va
 import { Sex, StudentStatus } from '@prisma/client';
 
 export class UpdateStudentDto {
+  @ApiPropertyOptional({ example: 'Kofi Mensah' })
+  @IsOptional()
+  @IsString()
+  name?: string;
+
   @ApiPropertyOptional({ example: 'LYC-2024-001' })
   @IsOptional()
   @IsString()
@@ -22,6 +27,11 @@ export class UpdateStudentDto {
   @IsOptional()
   @IsString()
   parentId?: string;
+
+  @ApiPropertyOptional({ description: 'UUID of class to enroll the student in' })
+  @IsOptional()
+  @IsString()
+  classId?: string;
 
   // Extended profile fields
   @ApiPropertyOptional() @IsOptional() @IsString() address?: string;
