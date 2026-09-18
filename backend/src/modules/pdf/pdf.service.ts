@@ -1,8 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+﻿import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as Handlebars from 'handlebars';
+import * as QRCode from 'qrcode';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 let _browser: import('puppeteer').Browser | null = null;
@@ -27,14 +28,14 @@ async function getBrowser() {
 }
 
 const CONDUCT_LABELS: Record<string, string> = {
-  TRES_BIEN: 'Très Bien',
+  TRES_BIEN: 'TrÃ¨s Bien',
   BIEN: 'Bien',
   PASSABLE: 'Passable',
-  MEDIOCRE: 'Médiocre',
+  MEDIOCRE: 'MÃ©diocre',
 };
 
 function formatScore(value: number | null | undefined): string {
-  if (value == null) return '—';
+  if (value == null) return 'â€”';
   return value.toFixed(2).replace('.', ',');
 }
 
@@ -63,7 +64,7 @@ export class PdfService {
     Handlebars.registerHelper('formatScore', (val: number | null) => formatScore(val));
     Handlebars.registerHelper('fmtScore', (val: number | null) => formatScore(val));
     Handlebars.registerHelper('fmtNote', (val: number | null | undefined) =>
-      val == null ? '—' : Number(val).toFixed(0).replace('.', ','),
+      val == null ? 'â€”' : Number(val).toFixed(0).replace('.', ','),
     );
 
     this.template = Handlebars.compile(templateSrc);
@@ -83,7 +84,7 @@ export class PdfService {
   }
 
   async generateReportCardPdfBuffer(reportData: ReportCardData): Promise<Buffer> {
-    const html = this.buildHtml(reportData);
+    const html = await this.buildHtml(reportData);
     try {
       const browser = await getBrowser();
       const page = await browser.newPage();
@@ -102,7 +103,7 @@ export class PdfService {
   }
 
   async generateReportCardPdf(reportData: ReportCardData): Promise<string> {
-    const html = this.buildHtml(reportData);
+    const html = await this.buildHtml(reportData);
     const filename = `report-${reportData.report.id}-${Date.now()}.pdf`;
     const outputPath = path.join(this.outputDir, filename);
 
@@ -135,7 +136,7 @@ export class PdfService {
     return `${this.baseUrl}/uploads/report-card-pdfs/${filename}`;
   }
 
-  private buildHtml(data: ReportCardData): string {
+  private async buildHtml(data: ReportCardData): Promise<string> {
     const { report, student, grades, institution } = data;
 
     const branding = (institution.brandingSettings as Record<string, unknown>) ?? {};
@@ -173,22 +174,36 @@ export class PdfService {
         : null;
 
     const inst = institution as any;
-    const countryLine = [inst.country, inst.countryMotto].filter(Boolean).join(' — ') || null;
+    const countryLine = [inst.country, inst.countryMotto].filter(Boolean).join(' â€” ') || null;
+
+    let qrDataUri: string | null = null;
+    const securityCode = (report as any).securityCode;
+    if (securityCode) {
+      try {
+        qrDataUri = await QRCode.toDataURL(String(securityCode), {
+          margin: 0,
+          width: 220,
+          errorCorrectionLevel: 'M',
+        });
+      } catch (err) {
+        this.logger.warn(`QR generation failed: ${err}`);
+      }
+    }
 
     const ctx = {
       institution: { ...institution, primaryColor, secondaryColor, countryLine },
       student: {
-        name: student.user?.name ?? '—',
+        name: student.user?.name ?? 'â€”',
         admissionNumber: student.admissionNumber,
         dateOfBirth: student.dateOfBirth
           ? new Date(student.dateOfBirth).toLocaleDateString('fr-FR')
-          : '—',
+          : 'â€”',
         photo: student.user?.profileImage ?? null,
       },
       class: { name: data.className },
       report: {
         ...report,
-        conductLabel: report.conductRating ? CONDUCT_LABELS[report.conductRating] : '—',
+        conductLabel: report.conductRating ? CONDUCT_LABELS[report.conductRating] : 'â€”',
         isPassing: (report.overallAverage ?? 0) >= 10,
         annualIsPassing: report.annualAverage != null ? report.annualAverage >= 10 : null,
         absences,
@@ -200,6 +215,7 @@ export class PdfService {
       generatedAt: new Date().toLocaleDateString('fr-FR', {
         day: '2-digit', month: 'long', year: 'numeric',
       }),
+      qrDataUri,
     };
 
     return this.template(ctx);

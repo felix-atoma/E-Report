@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8" />
@@ -17,7 +17,7 @@ body {
 }
 .page { width:210mm; min-height:297mm; padding:10mm 12mm 20mm; position:relative; }
 
-/* ── Header ── */
+/* â”€â”€ Header â”€â”€ */
 .header {
   display:flex; align-items:center;
   border-bottom:3px solid var(--c-primary);
@@ -25,6 +25,9 @@ body {
 }
 .header .logo  { width:85px; height:85px; object-fit:contain; margin-right:14px; flex-shrink:0; }
 .header .crest { width:85px; height:85px; object-fit:contain; margin-left:14px;  flex-shrink:0; }
+.header .qr-box { margin-left:14px; flex-shrink:0; text-align:center; }
+.header .qr { width:70px; height:70px; display:block; }
+.header .qr-code-text { font-size:6px; color:#6b7280; margin-top:2px; letter-spacing:0.3px; }
 .header .center { flex:1; text-align:center; }
 .header .center .country { font-size:8.5px; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:3px; }
 .header .center h1 {
@@ -35,7 +38,7 @@ body {
 .header .center .subtitle { font-size:11px; color:#444; margin-top:3px; }
 .header .center .motto    { font-size:11px; font-style:italic; color:#374151; margin-top:3px; }
 
-/* ── Title bar ── */
+/* â”€â”€ Title bar â”€â”€ */
 .title-bar {
   background:var(--c-primary); color:#fff;
   text-align:center; padding:7px 10px;
@@ -43,7 +46,7 @@ body {
   margin-bottom:10px;
 }
 
-/* ── Student band ── */
+/* â”€â”€ Student band â”€â”€ */
 .student-band {
   display:flex; border:2px solid var(--c-primary);
   border-radius:4px; margin-bottom:10px; overflow:hidden;
@@ -69,7 +72,7 @@ body {
 }
 .student-band .field span { font-size:12px; font-weight:700; color:#111; }
 
-/* ── Grades table ── */
+/* â”€â”€ Grades table â”€â”€ */
 .grades-table { width:100%; border-collapse:collapse; margin-bottom:10px; font-size:10px; }
 .grades-table th, .grades-table td {
   border:1px solid #c4c9d4; padding:4px 4px;
@@ -108,7 +111,7 @@ body {
   font-weight:bold; font-size:11px; padding:5px 4px;
 }
 
-/* ── Summary strip ── */
+/* â”€â”€ Summary strip â”€â”€ */
 .summary {
   display:flex; border:2px solid var(--c-primary);
   border-radius:4px; margin-bottom:10px; overflow:hidden;
@@ -127,7 +130,7 @@ body {
 .sum-card .mention.fail  { color:#dc2626; }
 .sum-card .mention.pass  { color:#15803d; }
 
-/* ── Annual average + council decision ── */
+/* â”€â”€ Annual average + council decision â”€â”€ */
 .annual-bar {
   display:flex; align-items:stretch; border:2px solid var(--c-primary);
   border-radius:4px; margin-bottom:10px; overflow:hidden;
@@ -154,11 +157,11 @@ body {
 .annual-bar .decision-text.pass { color:#15803d; }
 .annual-bar .decision-text.fail { color:#dc2626; }
 
-/* ── Two-col section ── */
+/* â”€â”€ Two-col section â”€â”€ */
 .two-col { display:flex; gap:8px; margin-bottom:10px; }
 .two-col > * { flex:1; }
 
-/* ── Attendance box ── */
+/* â”€â”€ Attendance box â”€â”€ */
 .box {
   border:1px solid #d1d5db; border-radius:4px; overflow:hidden;
 }
@@ -174,7 +177,7 @@ body {
 .att-cell .att-label { font-size:8.5px; color:#6b7280; font-weight:600; }
 .att-cell .att-val   { font-size:15px; font-weight:bold; color:var(--c-primary); margin-top:2px; }
 
-/* ── Comment box ── */
+/* â”€â”€ Comment box â”€â”€ */
 .box .content { padding:7px 10px; font-size:11px; min-height:48px; color:#222; line-height:1.5; }
 .box .content--empty { color:#9ca3af; font-style:italic; }
 .box .honor-badge {
@@ -184,7 +187,7 @@ body {
   padding:2px 8px; border-radius:10px; margin-top:4px;
 }
 
-/* ── Class stats ── */
+/* â”€â”€ Class stats â”€â”€ */
 .class-stats-bar {
   display:flex; border:1px solid #d1d5db; border-radius:4px;
   margin-bottom:10px; overflow:hidden;
@@ -194,7 +197,7 @@ body {
 .stats-cell .stats-label { font-size:8.5px; color:#6b7280; font-weight:600; }
 .stats-cell .stats-val   { font-size:15px; font-weight:bold; color:var(--c-primary); margin-top:2px; }
 
-/* ── Honour / remarks ── */
+/* â”€â”€ Honour / remarks â”€â”€ */
 .remark {
   padding:5px 10px; border-radius:4px; font-size:10.5px; font-weight:700;
   margin-bottom:5px;
@@ -203,7 +206,7 @@ body {
 .remark--commend { background:#dcfce7; border:1px solid #86efac; color:#166534; }
 .remark--warn    { background:#fef2f2; border:1px solid #fca5a5; color:#991b1b; }
 
-/* ── Signatures ── */
+/* â”€â”€ Signatures â”€â”€ */
 .signatures {
   display:flex; border-top:2px solid var(--c-primary);
   padding-top:10px; margin-top:14px;
@@ -214,11 +217,11 @@ body {
 .sig-box .sig-line  { border-bottom:1px solid #374151; margin:0 10px 4px; }
 .sig-box .sig-name  { font-size:9px; color:#6b7280; }
 
-/* ── Stamp ── */
+/* â”€â”€ Stamp â”€â”€ */
 .stamp-area { position:absolute; bottom:22mm; right:12mm; opacity:0.5; }
 .stamp-area img { width:80px; height:80px; object-fit:contain; }
 
-/* ── Footer ── */
+/* â”€â”€ Footer â”€â”€ */
 .footer {
   border-top:1px solid #d1d5db; padding-top:5px;
   text-align:center; font-size:9px; color:#9ca3af; margin-top:10px;
@@ -230,6 +233,15 @@ body {
   .page { width:100%; min-height:auto; padding:14mm 14mm 18mm; }
   .stamp-area { position:fixed; bottom:10mm; right:10mm; }
 }
+/* Moyenne generale & Mention - rouge, gros et gras */
+.summary .sum-card .value,
+.summary .sum-card .mention {
+  color:#dc2626 !important;
+  font-weight:900 !important;
+  font-size:26px !important;
+}
+.summary .sum-card .mention { font-size:20px !important; }
+.summary .sum-card .label { font-weight:700; }
 </style>
 </head>
 <body>
@@ -241,14 +253,20 @@ body {
     <div class="center">
       {{#if institution.countryLine}}<div class="country">{{institution.countryLine}}</div>{{/if}}
       <h1>{{institution.name}}</h1>
-      {{#if institution.address}}<div class="subtitle">{{institution.address}}{{#if institution.phone}} &nbsp;|&nbsp; Tél : {{institution.phone}}{{/if}}</div>{{/if}}
-      {{#if institution.motto}}<div class="motto">« {{institution.motto}} »</div>{{/if}}
+      {{#if institution.address}}<div class="subtitle">{{institution.address}}{{#if institution.phone}} &nbsp;|&nbsp; TÃ©l : {{institution.phone}}{{/if}}</div>{{/if}}
+      {{#if institution.motto}}<div class="motto">Â« {{institution.motto}} Â»</div>{{/if}}
     </div>
     {{#if institution.crest}}<img class="crest" src="{{institution.crest}}" alt="Blason" />{{/if}}
+    {{#if qrDataUri}}
+    <div class="qr-box">
+      <img class="qr" src="{{qrDataUri}}" alt="Code de verification" />
+      {{#if report.securityCode}}<div class="qr-code-text">{{report.securityCode}}</div>{{/if}}
+    </div>
+    {{/if}}
   </div>
 
   <!-- Title -->
-  <div class="title-bar">BULLETIN DE NOTES &mdash; {{report.termName}} &mdash; Année Scolaire {{report.academicYear}}</div>
+  <div class="title-bar">BULLETIN DE NOTES &mdash; {{report.termName}} &mdash; AnnÃ©e Scolaire {{report.academicYear}}</div>
 
   <!-- Student band -->
   <div class="student-band">
@@ -258,11 +276,11 @@ body {
     </div>
     {{/if}}
     <div class="fields">
-      <div class="field"><label>Nom &amp; Prénom</label><span>{{student.name}}</span></div>
-      <div class="field"><label>N° Matricule</label><span>{{student.admissionNumber}}</span></div>
+      <div class="field"><label>Nom &amp; PrÃ©nom</label><span>{{student.name}}</span></div>
+      <div class="field"><label>NÂ° Matricule</label><span>{{student.admissionNumber}}</span></div>
       <div class="field"><label>Date de naissance</label><span>{{student.dateOfBirth}}</span></div>
       <div class="field"><label>Classe</label><span>{{class.name}}</span></div>
-      <div class="field"><label>Année scolaire</label><span>{{report.academicYear}}</span></div>
+      <div class="field"><label>AnnÃ©e scolaire</label><span>{{report.academicYear}}</span></div>
     </div>
   </div>
 
@@ -270,7 +288,7 @@ body {
   <table class="grades-table">
     <thead>
       <tr>
-        <th class="col-matiere" rowspan="2">Matières</th>
+        <th class="col-matiere" rowspan="2">MatiÃ¨res</th>
         <th colspan="5">Notes de classe</th>
         <th class="col-dev"  rowspan="2">Devoir<br>/20</th>
         <th class="col-cmp"  rowspan="2">Examen<br>/20</th>
@@ -278,7 +296,7 @@ body {
         <th class="col-coef" rowspan="2">Coef.</th>
         <th class="col-pts"  rowspan="2">Points</th>
         <th class="col-rang" rowspan="2">Rang</th>
-        <th class="col-appr" rowspan="2">Appréciation</th>
+        <th class="col-appr" rowspan="2">ApprÃ©ciation</th>
         <th class="col-prof" rowspan="2">Professeur</th>
         <th class="col-sig-hbs" rowspan="2">Signature</th>
       </tr>
@@ -310,7 +328,7 @@ body {
         <td class="col-sig-hbs" style="text-align:center;">
           {{#if this.signatureData}}
             <img src="{{this.signatureData}}" alt="sig" style="max-height:34px;max-width:85px;object-fit:contain;display:block;margin:3px auto 0;" />
-            {{#if this.ficheSignedAt}}<span style="font-size:7.5px;color:#0f766e;display:block;">✔ {{this.ficheSignedAt}}</span>{{/if}}
+            {{#if this.ficheSignedAt}}<span style="font-size:7.5px;color:#0f766e;display:block;">âœ” {{this.ficheSignedAt}}</span>{{/if}}
           {{else}}
             <div style="border-bottom:1px dotted #9ca3af;margin:8px 4px 0;"></div>
           {{/if}}
@@ -332,7 +350,7 @@ body {
   <!-- Summary strip -->
   <div class="summary">
     <div class="sum-card">
-      <div class="label">Moyenne générale</div>
+      <div class="label">Moyenne gÃ©nÃ©rale</div>
       <div class="value {{#if report.isPassing}}pass{{else}}fail{{/if}}">{{fmtScore report.overallAverage}}<small style="font-size:11px;">/20</small></div>
     </div>
     <div class="sum-card">
@@ -370,7 +388,7 @@ body {
     </div>
     <div class="decision-cell">
       <div style="text-align:center;">
-        <div class="ann-label" style="margin-bottom:4px;">Décision du Conseil de Classe</div>
+        <div class="ann-label" style="margin-bottom:4px;">DÃ©cision du Conseil de Classe</div>
         <div class="decision-text {{#if report.annualIsPassing}}pass{{else}}fail{{/if}}">{{report.councilDecision}}</div>
       </div>
     </div>
@@ -381,22 +399,22 @@ body {
   <div class="two-col" style="{{#unless report.attendanceDays}}display:block;{{/unless}}">
     {{#if report.attendanceDays}}
     <div class="box">
-      <div class="box-title">Assiduité</div>
+      <div class="box-title">AssiduitÃ©</div>
       <div class="att-row">
         <div class="att-cell"><div class="att-label">Jours de cours</div><div class="att-val">{{report.attendanceDays}}</div></div>
-        <div class="att-cell"><div class="att-label">Présences</div><div class="att-val">{{report.attendancePresent}}</div></div>
-        <div class="att-cell"><div class="att-label">H. d'absence</div><div class="att-val">{{#if report.attendanceAbsentHours}}{{report.attendanceAbsentHours}} h{{else}}—{{/if}}</div></div>
-        <div class="att-cell"><div class="att-label">Retards</div><div class="att-val">{{#if report.attendanceLate}}{{report.attendanceLate}}{{else}}—{{/if}}</div></div>
+        <div class="att-cell"><div class="att-label">PrÃ©sences</div><div class="att-val">{{report.attendancePresent}}</div></div>
+        <div class="att-cell"><div class="att-label">H. d'absence</div><div class="att-val">{{#if report.attendanceAbsentHours}}{{report.attendanceAbsentHours}} h{{else}}â€”{{/if}}</div></div>
+        <div class="att-cell"><div class="att-label">Retards</div><div class="att-val">{{#if report.attendanceLate}}{{report.attendanceLate}}{{else}}â€”{{/if}}</div></div>
         <div class="att-cell"><div class="att-label">Taux</div><div class="att-val">{{report.attendanceRate}}%</div></div>
       </div>
     </div>
     {{/if}}
     <div style="display:flex;flex-direction:column;gap:6px;justify-content:center;">
       {{#if report.honorCouncil}}
-      <div class="remark remark--honor">&#11088; TABLEAU D&apos;HONNEUR &mdash; Félicitations du Conseil des Professeurs</div>
+      <div class="remark remark--honor">&#11088; TABLEAU D&apos;HONNEUR &mdash; FÃ©licitations du Conseil des Professeurs</div>
       {{/if}}
       {{#if report.commendations}}
-      <div class="remark remark--commend">Félicitations : {{report.commendations}}</div>
+      <div class="remark remark--commend">FÃ©licitations : {{report.commendations}}</div>
       {{/if}}
       {{#if report.warnings}}
       <div class="remark remark--warn">Avertissement(s) : {{report.warnings}}</div>
@@ -415,7 +433,7 @@ body {
       {{/if}}
     </div>
     <div class="box">
-      <div class="box-title">Observation Générale du Conseil des Professeurs</div>
+      <div class="box-title">Observation GÃ©nÃ©rale du Conseil des Professeurs</div>
       {{#if report.principalComment}}
       <div class="content">{{report.principalComment}}</div>
       {{else}}
@@ -433,14 +451,14 @@ body {
       <div class="sig-name">&nbsp;</div>
     </div>
     <div class="sig-box">
-      <div class="sig-title">Le Directeur de l&apos;École</div>
+      <div class="sig-title">Le Directeur de l&apos;Ã‰cole</div>
       <div style="font-size:8.5px;color:#9ca3af;margin-bottom:22px;">(Cachet et signature)</div>
       <div class="sig-line"></div>
       <div class="sig-name" style="font-size:8.5px;color:#374151;">Fait le &nbsp;_____ / _____ / _____</div>
     </div>
     <div class="sig-box" style="border:1px solid #d1d5db;border-radius:4px;padding:6px 8px;background:#fafafa;">
       <div class="sig-title">Visa des Parents</div>
-      <div style="font-size:8.5px;color:#9ca3af;margin-bottom:18px;">(Lu et approuvé)</div>
+      <div style="font-size:8.5px;color:#9ca3af;margin-bottom:18px;">(Lu et approuvÃ©)</div>
       <div class="sig-line"></div>
       <div class="sig-name" style="font-size:8.5px;color:#374151;">Vu le : ___ / ___ / _______</div>
     </div>
@@ -451,7 +469,7 @@ body {
   {{/if}}
 
   <div class="footer">
-    Généré le {{generatedAt}} &nbsp;|&nbsp; {{institution.name}} &nbsp;|&nbsp; Powered by NovaBulletin
+    GÃ©nÃ©rÃ© le {{generatedAt}} &nbsp;|&nbsp; {{institution.name}} &nbsp;|&nbsp; Powered by NovaBulletin
   </div>
 
 </div>

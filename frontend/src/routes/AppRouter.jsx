@@ -1,9 +1,9 @@
-import { lazy, Suspense } from 'react';
+﻿import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import ProtectedRoute from '../components/auth/ProtectedRoute/ProtectedRoute';
 import Loading from '../components/common/Loading/Loading';
 
-// ── Public ────────────────────────────────────────────────────────────────────
+// â”€â”€ Public â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const HomePage               = lazy(() => import('../pages/HomePage/HomePage'));
 const LandingPage            = lazy(() => import('../pages/public/LandingPage/LandingPage'));
 const LoginPage              = lazy(() => import('../pages/auth/LoginPage/LoginPage'));
@@ -20,10 +20,10 @@ const NotFoundPage           = lazy(() => import('../pages/shared/NotFoundPage/N
 const UnauthorizedPage       = lazy(() => import('../pages/shared/UnauthorizedPage/UnauthorizedPage'));
 const ErrorPage              = lazy(() => import('../pages/shared/ErrorPage/ErrorPage'));
 
-// ── Super-Admin ───────────────────────────────────────────────────────────────
+// â”€â”€ Super-Admin â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const SuperAdminPage         = lazy(() => import('../pages/superadmin/SuperAdminPage/SuperAdminPage'));
 
-// ── Admin ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Admin â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const AdminDashboardPage     = lazy(() => import('../pages/admin/AdminDashboardPage/AdminDashboardPage'));
 const AdminAttendancePage    = lazy(() => import('../pages/admin/AttendancePage/AttendancePage'));
 const SchoolDocumentsPage    = lazy(() => import('../pages/admin/SchoolDocumentsPage/SchoolDocumentsPage'));
@@ -57,10 +57,10 @@ const TimetableBuilderPage   = lazy(() => import('../pages/admin/TimetableBuilde
 const SubscriptionPage       = lazy(() => import('../pages/admin/SubscriptionPage/SubscriptionPage'));
 const SubscriptionReturnPage = lazy(() => import('../pages/admin/SubscriptionReturnPage/SubscriptionReturnPage'));
 
-// ── Bursar ────────────────────────────────────────────────────────────────────
+// â”€â”€ Bursar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const BursarDashboardPage    = lazy(() => import('../pages/bursar/BursarDashboardPage/BursarDashboardPage'));
 
-// ── Teacher ───────────────────────────────────────────────────────────────────
+// â”€â”€ Teacher â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const TeacherDashboardPage   = lazy(() => import('../pages/teacher/TeacherDashboardPage/TeacherDashboardPage'));
 const TeacherAttendancePage  = lazy(() => import('../pages/teacher/AttendancePage/AttendancePage'));
 const LMSPage                = lazy(() => import('../pages/teacher/LMSPage/LMSPage'));
@@ -78,10 +78,11 @@ const TeacherSchedulePage    = lazy(() => import('../pages/teacher/TeacherSchedu
 const TeacherRoadmapPage     = lazy(() => import('../pages/teacher/TeacherRoadmapPage/TeacherRoadmapPage'));
 const ClassStatsPage         = lazy(() => import('../pages/teacher/ClassStatsPage/ClassStatsPage'));
 const TitulaireEntryPage     = lazy(() => import('../pages/teacher/TitulaireEntryPage/TitulaireEntryPage'));
+const PrincipalCommentPage   = lazy(() => import('../pages/admin/PrincipalCommentPage/PrincipalCommentPage'));
 const MockExamsPage          = lazy(() => import('../pages/teacher/MockExamsPage/MockExamsPage'));
 const MockExamGradePage      = lazy(() => import('../pages/teacher/MockExamGradePage/MockExamGradePage'));
 
-// ── Parent ────────────────────────────────────────────────────────────────────
+// â”€â”€ Parent â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const ParentDashboardPage    = lazy(() => import('../pages/parent/ParentDashboardPage/ParentDashboardPage'));
 const ParentAbsencesPage     = lazy(() => import('../pages/parent/ParentAbsencesPage/ParentAbsencesPage'));
 const ChildrenPage           = lazy(() => import('../pages/parent/ChildrenPage/ChildrenPage'));
@@ -92,7 +93,7 @@ const PaymentReturnPage      = lazy(() => import('../pages/parent/PaymentReturnP
 const NotificationPreferencesPage = lazy(() => import('../pages/parent/NotificationPreferencesPage/NotificationPreferencesPage'));
 const ParentLMSPage          = lazy(() => import('../pages/parent/ParentLMSPage/ParentLMSPage'));
 
-// ── Student ───────────────────────────────────────────────────────────────────
+// â”€â”€ Student â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const StudentDashboardPage   = lazy(() => import('../pages/student/StudentDashboardPage/StudentDashboardPage'));
 const MyReportCardsPage      = lazy(() => import('../pages/student/MyReportCardsPage/MyReportCardsPage'));
 const ProgressPage           = lazy(() => import('../pages/student/ProgressPage/ProgressPage'));
@@ -102,7 +103,7 @@ const StudentLMSPage         = lazy(() => import('../pages/student/StudentLMSPag
 const ReportIncidentPage     = lazy(() => import('../pages/shared/ReportIncidentPage/ReportIncidentPage'));
 const IncidentsPage          = lazy(() => import('../pages/admin/IncidentsPage/IncidentsPage'));
 
-// ── Shared (protected) ────────────────────────────────────────────────────────
+// â”€â”€ Shared (protected) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const ProfilePage            = lazy(() => import('../pages/shared/ProfilePage/ProfilePage'));
 const HelpPage               = lazy(() => import('../pages/shared/HelpPage/HelpPage'));
 const ClassPalmaresPage      = lazy(() => import('../pages/shared/ClassPalmaresPage/ClassPalmaresPage'));
@@ -198,6 +199,7 @@ function AppRouter() {
         <Route path="/teacher/classes/:classId/grades/:subjectId"  element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><GradeEntryPage /></ProtectedRoute>} />
         <Route path="/teacher/classes/:classId/grades/:subjectId/print" element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><FicheDeNotesPrintPage /></ProtectedRoute>} />
         <Route path="/teacher/classes/:classId/titulaire"          element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><TitulaireEntryPage /></ProtectedRoute>} />
+        <Route path="/admin/classes/:classId/appreciation-directeur" element={<ProtectedRoute roles={['ADMIN']}><PrincipalCommentPage /></ProtectedRoute>} />
         <Route path="/teacher/classes/:classId/subjects/:subjectId/program" element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><ProgramPage /></ProtectedRoute>} />
         <Route path="/teacher/students/:id"       element={<ProtectedRoute roles={['TEACHER']}><StudentProfilePage /></ProtectedRoute>} />
         <Route path="/teacher/reports"            element={<ProtectedRoute roles={['TEACHER']}><ReportCardsPage /></ProtectedRoute>} />
@@ -235,10 +237,10 @@ function AppRouter() {
         <Route path="/student/lms"              element={<ProtectedRoute roles={['STUDENT']}><StudentLMSPage /></ProtectedRoute>} />
         <Route path="/student/report-incident"  element={<ProtectedRoute roles={['STUDENT']}><ReportIncidentPage /></ProtectedRoute>} />
 
-        {/* Teacher — incident reporting */}
+        {/* Teacher â€” incident reporting */}
         <Route path="/teacher/report-incident"  element={<ProtectedRoute roles={['TEACHER']}><ReportIncidentPage /></ProtectedRoute>} />
 
-        {/* Admin — incident management */}
+        {/* Admin â€” incident management */}
         <Route path="/admin/incidents"          element={<ProtectedRoute roles={['ADMIN']}><IncidentsPage /></ProtectedRoute>} />
 
         {/* Shared */}

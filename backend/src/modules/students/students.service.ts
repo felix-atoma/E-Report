@@ -362,48 +362,94 @@ export class StudentsService {
   }
 
   async update(id: string, dto: UpdateStudentDto, institutionId: string) {
-    await this.ensureExists(id, institutionId);
+    const existing = await this.prisma.student.findFirst({
+      where: { id, institutionId },
+      select: { id: true, userId: true },
+    });
+    if (!existing) throw new NotFoundException('Student not found');
 
     if (dto.parentId) {
       const parent = await this.prisma.user.findFirst({ where: { id: dto.parentId, institutionId } });
       if (!parent) throw new NotFoundException('Parent user not found');
     }
 
-    return this.prisma.student.update({
-      where: { id },
-      data: {
-        ...(dto.admissionNumber && { admissionNumber: dto.admissionNumber }),
-        ...(dto.dateOfBirth && { dateOfBirth: new Date(dto.dateOfBirth) }),
-        ...(dto.sex !== undefined && { sex: dto.sex }),
-        ...(dto.parentId !== undefined && { parentId: dto.parentId }),
-        // Extended profile fields
-        ...(dto.address !== undefined && { address: dto.address }),
-        ...(dto.city !== undefined && { city: dto.city }),
-        ...(dto.region !== undefined && { region: dto.region }),
-        ...(dto.nationality !== undefined && { nationality: dto.nationality }),
-        ...(dto.religion !== undefined && { religion: dto.religion }),
-        ...(dto.bloodType !== undefined && { bloodType: dto.bloodType }),
-        ...(dto.medicalConditions !== undefined && { medicalConditions: dto.medicalConditions }),
-        ...(dto.allergies !== undefined && { allergies: dto.allergies }),
-        ...(dto.emergencyContactName !== undefined && { emergencyContactName: dto.emergencyContactName }),
-        ...(dto.emergencyContactPhone !== undefined && { emergencyContactPhone: dto.emergencyContactPhone }),
-        ...(dto.emergencyContactRelation !== undefined && { emergencyContactRelation: dto.emergencyContactRelation }),
-        ...(dto.fatherName !== undefined && { fatherName: dto.fatherName }),
-        ...(dto.fatherPhone !== undefined && { fatherPhone: dto.fatherPhone }),
-        ...(dto.fatherOccupation !== undefined && { fatherOccupation: dto.fatherOccupation }),
-        ...(dto.motherName !== undefined && { motherName: dto.motherName }),
-        ...(dto.motherPhone !== undefined && { motherPhone: dto.motherPhone }),
-        ...(dto.motherOccupation !== undefined && { motherOccupation: dto.motherOccupation }),
-        ...(dto.previousSchool !== undefined && { previousSchool: dto.previousSchool }),
-        ...(dto.birthPlace !== undefined && { birthPlace: dto.birthPlace }),
-        ...(dto.birthCertificateNumber !== undefined && { birthCertificateNumber: dto.birthCertificateNumber }),
-        ...(dto.photo !== undefined && { photo: dto.photo }),
-        ...(dto.studentStatus !== undefined && { studentStatus: dto.studentStatus }),
-      },
-      include: {
-        user: { select: { id: true, name: true } },
-        parent: { select: { id: true, name: true, whatsappNumber: true } },
-      },
+    // Validate the class if one was provided
+    let classRecord: { id: string; academicYear: string } | null = null;
+    if (dto.classId) {
+      classRecord = await this.prisma.class.findFirst({
+        where: { id: dto.classId, institutionId },
+        select: { id: true, academicYear: true },
+      });
+      if (!classRecord) throw new NotFoundException('Class not found');
+    }
+
+    // Name lives on the linked User record, not on Student itself — update both
+    // in a transaction so they can't drift out of sync.
+    return this.prisma.$transaction(async (tx) => {
+      if (dto.name !== undefined && existing.userId) {
+        await tx.user.update({
+          where: { id: existing.userId },
+          data: { name: dto.name },
+        });
+      }
+
+      // Enrolling/moving the student into a class is a separate ClassStudent
+      // row, not a field on Student — upsert so switching classes doesn't
+      // fail on the unique (classId, studentId, academicYear) constraint.
+      if (classRecord) {
+        await tx.classStudent.upsert({
+          where: {
+            classId_studentId_academicYear: {
+              classId: classRecord.id,
+              studentId: id,
+              academicYear: classRecord.academicYear,
+            },
+          },
+          create: {
+            classId: classRecord.id,
+            studentId: id,
+            academicYear: classRecord.academicYear,
+          },
+          update: {},
+        });
+      }
+
+      return tx.student.update({
+        where: { id },
+        data: {
+          ...(dto.admissionNumber && { admissionNumber: dto.admissionNumber }),
+          ...(dto.dateOfBirth && { dateOfBirth: new Date(dto.dateOfBirth) }),
+          ...(dto.sex !== undefined && { sex: dto.sex }),
+          ...(dto.parentId !== undefined && { parentId: dto.parentId }),
+          // Extended profile fields
+          ...(dto.address !== undefined && { address: dto.address }),
+          ...(dto.city !== undefined && { city: dto.city }),
+          ...(dto.region !== undefined && { region: dto.region }),
+          ...(dto.nationality !== undefined && { nationality: dto.nationality }),
+          ...(dto.religion !== undefined && { religion: dto.religion }),
+          ...(dto.bloodType !== undefined && { bloodType: dto.bloodType }),
+          ...(dto.medicalConditions !== undefined && { medicalConditions: dto.medicalConditions }),
+          ...(dto.allergies !== undefined && { allergies: dto.allergies }),
+          ...(dto.emergencyContactName !== undefined && { emergencyContactName: dto.emergencyContactName }),
+          ...(dto.emergencyContactPhone !== undefined && { emergencyContactPhone: dto.emergencyContactPhone }),
+          ...(dto.emergencyContactRelation !== undefined && { emergencyContactRelation: dto.emergencyContactRelation }),
+          ...(dto.fatherName !== undefined && { fatherName: dto.fatherName }),
+          ...(dto.fatherPhone !== undefined && { fatherPhone: dto.fatherPhone }),
+          ...(dto.fatherOccupation !== undefined && { fatherOccupation: dto.fatherOccupation }),
+          ...(dto.motherName !== undefined && { motherName: dto.motherName }),
+          ...(dto.motherPhone !== undefined && { motherPhone: dto.motherPhone }),
+          ...(dto.motherOccupation !== undefined && { motherOccupation: dto.motherOccupation }),
+          ...(dto.previousSchool !== undefined && { previousSchool: dto.previousSchool }),
+          ...(dto.birthPlace !== undefined && { birthPlace: dto.birthPlace }),
+          ...(dto.birthCertificateNumber !== undefined && { birthCertificateNumber: dto.birthCertificateNumber }),
+          ...(dto.photo !== undefined && { photo: dto.photo }),
+          ...(dto.studentStatus !== undefined && { studentStatus: dto.studentStatus }),
+        },
+        include: {
+          user: { select: { id: true, name: true } },
+          parent: { select: { id: true, name: true, whatsappNumber: true } },
+        },
+      });
     });
   }
 
@@ -421,18 +467,49 @@ export class StudentsService {
     });
     if (!student) throw new NotFoundException('Student not found');
 
-    await this.prisma.$transaction(async (tx) => {
-      await tx.notificationLog.deleteMany({ where: { studentId: id } });
-      await tx.payment.deleteMany({ where: { studentId: id } });
-      await tx.studentFee.deleteMany({ where: { studentId: id } });
-      await tx.classStudent.deleteMany({ where: { studentId: id } });
-      await tx.reportCard.deleteMany({ where: { studentId: id } });
-      await tx.student.delete({ where: { id } });
-      if (student.userId) {
-        await tx.notificationLog.deleteMany({ where: { recipientUserId: student.userId } });
-        await tx.user.delete({ where: { id: student.userId } });
-      }
-    });
+    await this.prisma.$transaction(
+      async (tx) => {
+        // Every table with a `studentId` foreign key must be cleared before the
+        // Student row itself can be deleted. Tables with their own dependents
+        // (QuizAttempt -> QuizAnswer, PaymentPlan -> PaymentPlanInstalment) cascade
+        // automatically via `onDelete: Cascade` in the schema, so only the parent
+        // row needs deleting here — not each grandchild table.
+        await tx.notificationLog.deleteMany({ where: { studentId: id } });
+        await tx.payment.deleteMany({ where: { studentId: id } });
+        await tx.paymentPlan.deleteMany({ where: { studentId: id } });
+        await tx.paymentIntent.deleteMany({ where: { studentId: id } });
+        await tx.studentFee.deleteMany({ where: { studentId: id } });
+        await tx.classStudent.deleteMany({ where: { studentId: id } });
+        await tx.assignmentSubmission.deleteMany({ where: { studentId: id } });
+        await tx.quizAttempt.deleteMany({ where: { studentId: id } });
+        await tx.mockExamGrade.deleteMany({ where: { studentId: id } });
+        await tx.attendance.deleteMany({ where: { studentId: id } });
+        await tx.disciplinaryRecord.deleteMany({ where: { studentId: id } });
+        await tx.alumniRecord.deleteMany({ where: { studentId: id } });
+        await tx.studentTransfer.deleteMany({ where: { studentId: id } });
+        await tx.nationalExamResult.deleteMany({ where: { studentId: id } });
+        await tx.libraryLoan.deleteMany({ where: { studentId: id } });
+        await tx.healthRecord.deleteMany({ where: { studentId: id } });
+        await tx.reportCard.deleteMany({ where: { studentId: id } });
+
+        await tx.student.delete({ where: { id } });
+
+        if (student.userId) {
+          await tx.notificationLog.deleteMany({ where: { recipientUserId: student.userId } });
+          await tx.user.delete({ where: { id: student.userId } });
+        }
+      },
+      {
+        // Default Prisma transaction timeout is 5s. With ~19 sequential round
+        // trips to a pooled Supabase connection (DATABASE_URL uses pgbouncer
+        // with connection_limit=1), that default is too short and the
+        // transaction gets closed mid-way, causing "Transaction not found" on
+        // the next call. Extend both the max wait to acquire the transaction
+        // and the overall execution timeout.
+        maxWait: 10_000,
+        timeout: 20_000,
+      },
+    );
 
     return { message: 'Student deleted' };
   }

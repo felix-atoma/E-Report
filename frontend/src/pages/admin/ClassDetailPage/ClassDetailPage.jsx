@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -35,10 +35,10 @@ function TimetableGrid({ slots, t }) {
           <div className="acd__tt-day-header">{DAY_LABELS[day]}</div>
           {byDay[day].map((slot) => (
             <div key={slot.id} className="acd__tt-slot">
-              <div className="acd__tt-time">{slot.startTime} – {slot.endTime}</div>
-              <div className="acd__tt-subject">{slot.subject?.nameFr ?? '—'}</div>
+              <div className="acd__tt-time">{slot.startTime} â€“ {slot.endTime}</div>
+              <div className="acd__tt-subject">{slot.subject?.nameFr ?? 'â€”'}</div>
               {slot.teacher && <div className="acd__tt-teacher">{slot.teacher.name}</div>}
-              {slot.room && <div className="acd__tt-room">🏫 {slot.room}</div>}
+              {slot.room && <div className="acd__tt-room">ðŸ« {slot.room}</div>}
             </div>
           ))}
         </div>
@@ -57,15 +57,15 @@ function SlotRow({ slot, index, subjects, teachers, onChange, onRemove, t }) {
       <input className="acd__tt-input" type="time" value={slot.startTime} onChange={set('startTime')} />
       <input className="acd__tt-input" type="time" value={slot.endTime} onChange={set('endTime')} />
       <select className="acd__tt-input acd__tt-input--wide" value={slot.subjectId} onChange={set('subjectId')}>
-        <option value="">— {t('classDetail.columns.subject')} —</option>
+        <option value="">â€” {t('classDetail.columns.subject')} â€”</option>
         {subjects.map((s) => <option key={s.subject?.id ?? s.id} value={s.subject?.id ?? s.id}>{s.subject?.nameFr ?? s.nameFr}</option>)}
       </select>
       <select className="acd__tt-input acd__tt-input--wide" value={slot.teacherId} onChange={set('teacherId')}>
-        <option value="">— {t('classDetail.columns.teacher')} —</option>
+        <option value="">â€” {t('classDetail.columns.teacher')} â€”</option>
         {teachers.map((tc) => <option key={tc.id} value={tc.id}>{tc.name}</option>)}
       </select>
       <input className="acd__tt-input" placeholder="Salle" value={slot.room} onChange={set('room')} />
-      <button type="button" className="acd__tt-remove" onClick={() => onRemove(index)} title={t('action.delete')}>✕</button>
+      <button type="button" className="acd__tt-remove" onClick={() => onRemove(index)} title={t('action.delete')}>âœ•</button>
     </div>
   );
 }
@@ -101,7 +101,7 @@ function TimetableEditor({ cls, academicYear, slots, onSaved, t }) {
     <div className="acd__tt-editor">
       <div className="acd__tt-header-row">
         <span className="acd__tt-col-label">{t('classDetail.columns.subject').slice(0, 4)}</span>
-        <span className="acd__tt-col-label">Début</span>
+        <span className="acd__tt-col-label">DÃ©but</span>
         <span className="acd__tt-col-label">Fin</span>
         <span className="acd__tt-col-label acd__tt-col-label--wide">{t('classDetail.columns.subject')}</span>
         <span className="acd__tt-col-label acd__tt-col-label--wide">{t('classDetail.columns.teacher')}</span>
@@ -214,15 +214,15 @@ function FichesPanel({ classId, academicYear, t }) {
           {fiches.map((f) => (
             <div key={f.subjectId} className={`acd__fiche-row${f.isSigned ? ' acd__fiche-row--signed' : ''}`}>
               <div className="acd__fiche-subject">
-                <span className="acd__fiche-name">{f.subject?.nameFr ?? '—'}</span>
+                <span className="acd__fiche-name">{f.subject?.nameFr ?? 'â€”'}</span>
                 {f.subject?.code && <span className="acd__fiche-code">{f.subject.code}</span>}
               </div>
               <div className="acd__fiche-status">
                 {f.isSigned ? (
                   <span className="acd__fiche-badge acd__fiche-badge--signed">
-                    ✅ {f.signedByName}
+                    âœ… {f.signedByName}
                     {f.signedAt && (
-                      <span className="acd__fiche-date"> · {new Date(f.signedAt).toLocaleDateString('fr-FR')}</span>
+                      <span className="acd__fiche-date"> Â· {new Date(f.signedAt).toLocaleDateString('fr-FR')}</span>
                     )}
                   </span>
                 ) : (
@@ -304,7 +304,7 @@ function ClassDetailPage() {
       label: t('classDetail.columns.student'),
       render: (cs) => {
         const s = cs.student;
-        const name = s?.user?.name ?? s?.admissionNumber ?? '—';
+        const name = s?.user?.name ?? s?.admissionNumber ?? 'â€”';
         return (
           <div className="acd__student-cell">
             <Avatar name={name} src={s?.user?.profileImage} size="sm" />
@@ -321,7 +321,7 @@ function ClassDetailPage() {
       label: t('classDetail.columns.sex'),
       render: (cs) => {
         const sex = cs.student?.sex;
-        if (!sex) return <span className="acd__empty">—</span>;
+        if (!sex) return <span className="acd__empty">â€”</span>;
         const variant = sex === 'M' ? 'info' : 'danger';
         return <Badge variant={variant}>{t(`classDetail.sex.${sex}`, sex)}</Badge>;
       },
@@ -332,7 +332,7 @@ function ClassDetailPage() {
       render: (cs) =>
         cs.student?.dateOfBirth
           ? new Date(cs.student.dateOfBirth).toLocaleDateString('fr-FR')
-          : <span className="acd__empty">—</span>,
+          : <span className="acd__empty">â€”</span>,
     },
   ];
 
@@ -342,7 +342,7 @@ function ClassDetailPage() {
       label: t('classDetail.columns.subject'),
       render: (cs) => (
         <div>
-          <div className="acd__subject-name">{cs.subject?.nameFr ?? '—'}</div>
+          <div className="acd__subject-name">{cs.subject?.nameFr ?? 'â€”'}</div>
           {cs.subject?.code && <div className="acd__subject-code">{cs.subject.code}</div>}
         </div>
       ),
@@ -361,11 +361,20 @@ function ClassDetailPage() {
     <AppShell title={cls.name}>
       <PageHeader
         title={cls.name}
-        subtitle={`${cls.level ?? ''} — ${cls.academicYear ?? ''}`}
+        subtitle={`${cls.level ?? ''} â€” ${cls.academicYear ?? ''}`}
         actions={
-          <Link to="/admin/classes" className="acd__back-btn">
-            {t('classDetail.back')}
-          </Link>
+          <>
+            <Link
+              to={`/admin/classes/${id}/appreciation-directeur`}
+              className="acd__back-btn"
+              style={{ marginRight: '8px' }}
+            >
+              Appreciation du Directeur
+            </Link>
+            <Link to="/admin/classes" className="acd__back-btn">
+              {t('classDetail.back')}
+            </Link>
+          </>
         }
       />
 
