@@ -248,6 +248,7 @@ export interface ReportCardData {
     warnings: number | null;
     annualAverage: number | null;
     councilDecision: string | null;
+    securityCode?: string | null;
   };
   student: {
     admissionNumber: string;

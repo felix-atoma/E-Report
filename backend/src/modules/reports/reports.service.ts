@@ -1,4 +1,4 @@
-import {
+﻿import {
   BadRequestException,
   ForbiddenException,
   Injectable,
@@ -17,7 +17,7 @@ import { BulkZipDto } from './dto/bulk-zip.dto';
 
 function computeMention(avg: number): string {
   if (avg >= 18) return 'Excellent';
-  if (avg >= 16) return 'Très Bien';
+  if (avg >= 16) return 'TrÃ¨s Bien';
   if (avg >= 14) return 'Bien';
   if (avg >= 12) return 'Assez Bien';
   if (avg >= 10) return 'Passable';
@@ -241,7 +241,7 @@ export class ReportsService {
     const unsigned = classSubjects.filter((cs) => !signedSubjectIds.has(cs.subjectId));
     if (unsigned.length > 0) {
       throw new BadRequestException(
-        `${unsigned.length} fiche(s) de notes non signée(s). Tous les professeurs doivent signer leur fiche avant la publication.`,
+        `${unsigned.length} fiche(s) de notes non signÃ©e(s). Tous les professeurs doivent signer leur fiche avant la publication.`,
       );
     }
 
@@ -311,7 +311,7 @@ export class ReportsService {
       });
       const allAvgs = [...priorTerms.map((t) => t.overallAverage ?? 0), overallAverage];
       annualAverage = Math.round((allAvgs.reduce((a, b) => a + b, 0) / allAvgs.length) * 100) / 100;
-      councilDecision = annualAverage >= 10 ? 'Admis(e) en classe supérieure' : 'Redoublant(e)';
+      councilDecision = annualAverage >= 10 ? 'Admis(e) en classe supÃ©rieure' : 'Redoublant(e)';
     }
 
     const published = await this.prisma.reportCard.update({
@@ -319,6 +319,10 @@ export class ReportsService {
       data: {
         status: 'PUBLISHED',
         publishedAt: new Date(),
+        // Backfill a security code at publish time if one wasn't already
+        // set at creation - covers reports created before this field existed,
+        // or via any path that skipped generating one.
+        securityCode: report.securityCode ?? generateSecurityCode(report.academicYear, report.termNumber),
         overallAverage,
         classRank: rankMap.get(id),
         classSize,
@@ -367,7 +371,7 @@ export class ReportsService {
       }));
     }
 
-    // Generate PDF in the background — don't block the response
+    // Generate PDF in the background â€” don't block the response
     this.generateAndSavePdf(published, reportWithFullGrades ?? report, institutionId).catch((err) =>
       this.logger.error(`PDF generation failed for report ${id}`, err),
     );
@@ -377,7 +381,7 @@ export class ReportsService {
     return published;
   }
 
-  // ─── PDF generation (called after publish) ───────────────────────────────
+  // â”€â”€â”€ PDF generation (called after publish) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   private async generateAndSavePdf(published: any, reportWithGrades: any, institutionId: string) {
     const institution = await this.prisma.institution.findUnique({
@@ -412,6 +416,7 @@ export class ReportsService {
         warnings: (published as any).warnings ?? null,
         annualAverage: (published as any).annualAverage ?? null,
         councilDecision: (published as any).councilDecision ?? null,
+        securityCode: (published as any).securityCode ?? null,
       },
       student: {
         admissionNumber: reportWithGrades.student.admissionNumber,
@@ -473,11 +478,11 @@ export class ReportsService {
       },
     });
     if (!report) {
-      return { valid: false, message: 'Code invalide ou bulletin non publié' };
+      return { valid: false, message: 'Code invalide ou bulletin non publiÃ©' };
     }
     return {
       valid: true,
-      studentName: report.student?.user?.name ?? report.student?.admissionNumber ?? '—',
+      studentName: report.student?.user?.name ?? report.student?.admissionNumber ?? 'â€”',
       admissionNumber: report.student?.admissionNumber,
       className: report.class?.name,
       academicYear: report.academicYear,
@@ -604,7 +609,7 @@ export class ReportsService {
       select: { name: true, country: true, countryMotto: true, address: true, phone: true, motto: true, logo: true, crest: true, stamp: true, brandingSettings: true },
     });
 
-    // Build subject map: subjectId → { name, coef, termAverages }
+    // Build subject map: subjectId â†’ { name, coef, termAverages }
     const subjectMap = new Map<string, { nameFr: string; coefficient: number; passMark: number; termAverages: (number | null)[] }>();
     const termCount = reports.length;
 
@@ -696,7 +701,7 @@ export class ReportsService {
         await this.publish(id, institutionId, '', Role.ADMIN);
         published++;
       } catch (err) {
-        this.logger.warn(`bulkPublish: skipped report ${id} — ${err?.message}`);
+        this.logger.warn(`bulkPublish: skipped report ${id} â€” ${err?.message}`);
         skipped++;
       }
     }
@@ -721,7 +726,7 @@ export class ReportsService {
       orderBy: [{ class: { name: 'asc' } }, { student: { admissionNumber: 'asc' } }],
     });
 
-    if (!reports.length) throw new NotFoundException('Aucun bulletin publié trouvé pour ces critères');
+    if (!reports.length) throw new NotFoundException('Aucun bulletin publiÃ© trouvÃ© pour ces critÃ¨res');
 
     const institution = await this.prisma.institution.findUnique({
       where: { id: institutionId },
@@ -781,7 +786,7 @@ export class ReportsService {
             })),
             institution,
           });
-          const safeName = (r.student.user?.name ?? r.student.admissionNumber).replace(/[^a-zA-ZÀ-ÿ0-9\s\-]/g, '').trim();
+          const safeName = (r.student.user?.name ?? r.student.admissionNumber).replace(/[^a-zA-Z0-9\s\-\u00C0-\u00FF]/g, '').trim();
           const folder = dto.classId ? '' : `${r.class.name}/`;
           zip.append(buf, { name: `${folder}${safeName}.pdf` });
         } catch (err) {
