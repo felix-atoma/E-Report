@@ -12,7 +12,7 @@ import Input from '../../../components/common/Input/Input';
 import Select from '../../../components/common/Select/Select';
 import Button from '../../../components/common/Button/Button';
 import { fmtSessionDates } from '../../../utils/fmtSessionDates';
-import { DS_TYPE_CFG, CM_TYPE_CFG, KIND_TEXT, isNonExamType, isCmType, isPrimaryLevel, typesForKind } from '../../../utils/examKinds';
+import { DS_TYPE_CFG, CM_TYPE_CFG, KIND_TEXT, isNonExamType, isCmType, isDsType, isPrimaryLevel, isSecondaryLevel, typesForKind } from '../../../utils/examKinds';
 import './MockExamsPage.css';
 
 /* ── Config per exam type (proper nouns — not translated) ─────────────────── */
@@ -68,8 +68,10 @@ function fmtDate(iso) {
 function CreateForm({ examType, classes, onClose, onCreate }) {
   const { t } = useTranslation();
   const type = [...EXAM_TYPES, DS_TYPE_CFG, CM_TYPE_CFG].find((et) => et.value === examType);
-  // Compositions mensuelles : uniquement les classes du primaire (CI → CM2)
-  const eligibleClasses = isCmType(examType) ? classes.filter((c) => isPrimaryLevel(c.level)) : classes;
+  // Compositions mensuelles : primaire (CI → CM2) ; devoirs surveillés : secondaire (6ème → Terminale)
+  const eligibleClasses = isCmType(examType) ? classes.filter((c) => isPrimaryLevel(c.level))
+    : isDsType(examType) ? classes.filter((c) => isSecondaryLevel(c.level))
+    : classes;
   const CURRENT_YEAR = new Date().getFullYear();
   const DEFAULT_YEAR = `${CURRENT_YEAR - 1}-${CURRENT_YEAR}`;
 

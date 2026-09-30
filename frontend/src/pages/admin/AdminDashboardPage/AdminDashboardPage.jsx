@@ -72,7 +72,7 @@ function StatCard({ label, value, icon, sub, color = 'primary' }) {
 const EVALUATION_KINDS = [
   {
     key: 'DS', title: 'Devoirs surveillés', icon: '🖊️', color: '#0f766e', bg: '#f0fdfa', border: '#5eead4',
-    desc: 'Toutes classes · notes sur 20',
+    desc: 'Secondaire (6ème à Terminale) · notes sur 20',
     base: '/admin/devoirs-surveilles', match: (t) => isDsType(t), directCreate: true,
   },
   {

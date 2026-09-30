@@ -84,6 +84,11 @@ export function isPrimaryLevel(level: string | null | undefined): boolean {
   return /^\s*(CI|CP\s*[12]?|CE\s*[12]|CM\s*[12])\s*$/i.test(level ?? '');
 }
 
+/** Classes du secondaire : 6ème → Terminale (devoirs surveillés). */
+export function isSecondaryLevel(level: string | null | undefined): boolean {
+  return /^\s*([3-6]\s*(e|è|eme|ème)|2\s*nde|seconde|1\s*(re|ere|ère)|premi[eè]re|tle|terminale)\s*$/i.test(level ?? '');
+}
+
 @Injectable()
 export class PdfService {
   private readonly logger = new Logger(PdfService.name);

@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
 import archiver = require('archiver');
 import { PrismaService } from '../../prisma/prisma.service';
-import { PdfService, ReleveData, isPrimaryLevel } from '../pdf/pdf.service';
+import { PdfService, ReleveData, isPrimaryLevel, isSecondaryLevel } from '../pdf/pdf.service';
 import { CreateMockExamDto } from './dto/create-mock-exam.dto';
 import { SaveMockExamGradesDto } from './dto/save-grades.dto';
 
@@ -72,6 +72,10 @@ export class MockExamsService {
     // Les compositions mensuelles sont propres au primaire (notes sur 10)
     if (dto.examType === ('COMPOSITION_MENSUELLE' as any) && !isPrimaryLevel(cls.level)) {
       throw new BadRequestException('Les compositions mensuelles concernent uniquement les classes du CI au CM2');
+    }
+    // Les devoirs surveillés sont propres au secondaire (6ème → Terminale)
+    if (dto.examType === ('DEVOIR_SURVEILLE' as any) && !isSecondaryLevel(cls.level)) {
+      throw new BadRequestException('Les devoirs surveillés concernent uniquement les classes de la 6ème à la Terminale');
     }
 
     return this.prisma.mockExam.create({
