@@ -34,8 +34,6 @@
   transition: background 0.15s;
 }
 .class-detail__titulaire-btn:hover { background: #1d4ed8; }
-.class-detail__att-btn { background: #ea580c; }
-.class-detail__att-btn:hover { background: #c2410c; }
 
 .class-detail__student {
   display: flex;
