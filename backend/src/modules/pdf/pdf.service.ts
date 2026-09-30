@@ -157,11 +157,15 @@ export class PdfService {
         new Promise((resolve) => setTimeout(resolve, 15000)),
       ]));
 
-      const contentH: number = await page.evaluate(() =>
-        Math.ceil(Math.max(document.documentElement.scrollHeight, document.body.scrollHeight)),
-      );
-      let scale = Math.min(1, (printableH / contentH) * 0.98);
-      scale = Math.max(0.5, Math.round(scale * 100) / 100);
+      // Hauteur réelle du bulletin (.page), pas celle du document : celui-ci fait toujours au moins
+      // la hauteur de la fenêtre, ce qui faisait croire à un dépassement pour chaque bulletin.
+      const contentH: number = await page.evaluate(() => {
+        const el = document.querySelector('.page') ?? document.body;
+        return Math.ceil(el.getBoundingClientRect().height);
+      });
+      // On ne réduit que si le bulletin dépasse vraiment une page (marge de sécurité de 2 % dans ce cas)
+      let scale = contentH > printableH ? (printableH / contentH) * 0.98 : 1;
+      scale = Math.max(0.5, Math.floor(scale * 100) / 100);
 
       let buf = Buffer.alloc(0);
       for (let attempt = 0; attempt < 6; attempt++) {
