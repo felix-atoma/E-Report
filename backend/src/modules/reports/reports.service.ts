@@ -620,7 +620,7 @@ export class ReportsService {
         status: 'PUBLISHED',
         ...(options.institutionId ? { class: { institutionId: options.institutionId } } : {}),
       },
-      select: { id: true, class: { select: { institutionId: true } } },
+      select: { id: true, pdfUrl: true, class: { select: { institutionId: true } } },
       orderBy: { publishedAt: 'desc' },
     });
 
@@ -628,7 +628,13 @@ export class ReportsService {
     let failed = 0;
     for (const [i, r] of reports.entries()) {
       try {
-        await this.regeneratePdf(r.id, r.class.institutionId);
+        const { pdfUrl } = await this.regeneratePdf(r.id, r.class.institutionId);
+        // Échec d'envoi vers Cloudinary → le service retombe sur un lien local (localhost) que les
+        // parents ne peuvent pas ouvrir : on garde alors l'ancien lien.
+        if (!pdfUrl || /^https?:\/\/(localhost|127\.0\.0\.1)/i.test(pdfUrl)) {
+          await this.prisma.reportCard.update({ where: { id: r.id }, data: { pdfUrl: r.pdfUrl } });
+          throw new Error(`upload failed, kept previous link (got ${pdfUrl ?? 'no url'})`);
+        }
         regenerated++;
       } catch (err: any) {
         failed++;
