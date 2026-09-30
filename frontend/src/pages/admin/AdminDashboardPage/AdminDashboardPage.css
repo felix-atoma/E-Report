@@ -96,3 +96,12 @@
 .eval-card__btn:hover { background: var(--eval-bg); }
 .eval-card__btn--main { background: var(--eval-color); color: #fff; border-color: var(--eval-color); }
 .eval-card__btn--main:hover { filter: brightness(.92); background: var(--eval-color); }
+.eval-card__sessions { list-style: none; margin: 0; padding: .5rem 0 0; border-top: 1px dashed var(--eval-border);
+  display: flex; flex-direction: column; gap: .4rem; }
+.eval-card__session { display: flex; align-items: center; justify-content: space-between; gap: .5rem; font-size: .8rem; }
+.eval-card__session-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.eval-card__session-name small { font-weight: 400; color: var(--color-text-muted, #6b7280); }
+.eval-card__session-links { display: flex; gap: .3rem; flex-shrink: 0; }
+.eval-card__mini { padding: .2rem .5rem; border-radius: 6px; font-size: .75rem; font-weight: 700; text-decoration: none;
+  color: var(--eval-color); background: var(--eval-bg); border: 1px solid var(--eval-border); white-space: nowrap; }
+.eval-card__mini:hover { filter: brightness(.95); }

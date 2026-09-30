@@ -93,6 +93,10 @@ function EvaluationCard({ kind, exams }) {
   const drafts = sessions.filter((e) => e.status !== 'PUBLISHED').length;
   const fiches = kind.fiches ?? `${kind.base}/fiches`;
   const results = kind.results ?? `${kind.base}/resultats`;
+  // Les 3 sessions les plus récentes (date de l'épreuve, sinon date de création)
+  const recent = [...sessions]
+    .sort((a, b) => new Date(b.examDate ?? b.createdAt ?? 0) - new Date(a.examDate ?? a.createdAt ?? 0))
+    .slice(0, 3);
   return (
     <Card className="eval-card" style={{ '--eval-color': kind.color, '--eval-bg': kind.bg, '--eval-border': kind.border }}>
       <div className="eval-card__head">
@@ -110,8 +114,25 @@ function EvaluationCard({ kind, exams }) {
         {/* Examens blancs : plusieurs types (CEPE, BEPC…) → choix du type sur la page */}
         <Link to={kind.directCreate ? `${kind.base}?create=1` : kind.base} className="eval-card__btn eval-card__btn--main">＋ Créer</Link>
         <Link to={fiches} className="eval-card__btn">Fiches</Link>
-        <Link to={results} className="eval-card__btn">Résultats</Link>
+        <Link to={results} className="eval-card__btn">Résultats et relevés</Link>
       </div>
+
+      {/* Accès direct aux relevés de notes et aux résultats des dernières sessions */}
+      {recent.length > 0 && (
+        <ul className="eval-card__sessions">
+          {recent.map((e) => (
+            <li key={e.id} className="eval-card__session">
+              <span className="eval-card__session-name" title={e.label}>
+                {e.label}{e.class?.name ? <small> · {e.class.name}</small> : null}
+              </span>
+              <span className="eval-card__session-links">
+                <Link to={`/mock-exams/${e.id}/releve`} className="eval-card__mini">📄 Relevés</Link>
+                <Link to={`/mock-exams/${e.id}/palmares`} className="eval-card__mini">🏆 Résultats</Link>
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
     </Card>
   );
 }
