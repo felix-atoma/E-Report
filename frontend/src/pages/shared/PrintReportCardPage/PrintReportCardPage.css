@@ -453,3 +453,7 @@
 .prh__val { font-weight: 700; color: var(--bulletin-primary, #1e3a8a); width: 31%; }
 .prh__val--strong { color: var(--bulletin-secondary, #b91c1c); font-size: 1.1em; }
 .prh__val--fail { color: #dc2626; }
+
+/* Primaire : 5 colonnes seulement, texte plus grand */
+.pr-grades--primary td, .pr-grades--primary th { font-size: 1.1em; padding-top: 5px; padding-bottom: 5px; }
+.pr-grades--primary .pr-grades__col-moy { font-size: 1.2em; }

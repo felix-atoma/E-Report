@@ -100,6 +100,14 @@ body {
 .grades tfoot .t-label { text-align:right; padding-right:8px; letter-spacing:0.5px; }
 .grades tfoot .t-val { color:var(--c-fail); }
 
+/* Primaire : 5 colonnes seulement → texte plus grand, lignes plus aérées */
+.grades--primary { font-size:11px; }
+.grades--primary th, .grades--primary td { padding:5px 6px; }
+.grades--primary thead th { font-size:9px; }
+.grades--primary .c-moy { font-size:12px; }
+.grades--primary .c-appr { font-size:10.5px; }
+.grades--primary tfoot td { font-size:11px; }
+
 /* ── Bas de page : observations | résultats ── */
 .bottom { display:flex; border-top:2px solid var(--c-line); }
 .bottom-left { flex:1.45; padding:6px 10px; border-right:2px solid var(--c-line); }
@@ -233,7 +241,7 @@ body {
       <td class="lbl">Année scolaire</td><td class="sep">:</td><td class="val">{{report.academicYear}}</td>
     </tr>
     <tr>
-      <td class="lbl">Moyenne générale</td><td class="sep">:</td><td class="val val--strong{{#unless report.isPassing}} val--fail{{/unless}}">{{#if report.averageLabel}}{{report.averageLabel}} / 20{{else}}&mdash;{{/if}}</td>
+      <td class="lbl">Moyenne générale</td><td class="sep">:</td><td class="val val--strong{{#unless report.isPassing}} val--fail{{/unless}}">{{#if report.averageLabel}}{{report.averageLabel}} / {{scale.denom}}{{else}}&mdash;{{/if}}</td>
       <td class="lbl">Période</td><td class="sep">:</td><td class="val">{{report.termName}}</td>
     </tr>
     <tr>
@@ -243,6 +251,46 @@ body {
   </table>
 
   <!-- Tableau des notes -->
+  {{#if isPrimary}}
+  <!-- Primaire (CI → CM2) : une note sur 10 par matière, sans coefficient -->
+  <table class="grades grades--primary">
+    <colgroup>
+      <col style="width:5%" />   <!-- N° -->
+      <col style="width:40%" />  <!-- Matières -->
+      <col style="width:15%" />  <!-- Note /10 -->
+      <col style="width:12%" />  <!-- Rang -->
+      <col style="width:28%" />  <!-- Appréciation -->
+    </colgroup>
+    <thead>
+      <tr>
+        <th class="c-num">N°</th>
+        <th class="c-mat">Matières</th>
+        <th>Note<small>/10</small></th>
+        <th>Rang</th>
+        <th>Appréciation</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each grades}}
+      <tr>
+        <td class="c-num">{{inc @index}}</td>
+        <td class="c-mat">{{subject.nameFr}}</td>
+        <td class="c-moy{{#unless this.passed}} fail{{/unless}}">{{this.noteLabel}}</td>
+        <td class="c-rang">{{#if this.rangLabel}}{{this.rangLabel}}{{else}}&mdash;{{/if}}</td>
+        <td class="c-appr {{this.levelClass}}">{{this.appreciation}}</td>
+      </tr>
+      {{/each}}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td class="t-label" colspan="2">TOTAL DES POINTS</td>
+        <td class="t-val">{{scale.primaryTotal}} / {{scale.primaryTotalMax}}</td>
+        <td class="t-label">MOYENNE</td>
+        <td class="t-val">{{scale.overallAverage}} / 10</td>
+      </tr>
+    </tfoot>
+  </table>
+  {{else}}
   <table class="grades">
     <colgroup>
       <col style="width:3%" />   <!-- N° -->
@@ -321,6 +369,7 @@ body {
       </tr>
     </tfoot>
   </table>
+  {{/if}}
 
   <!-- Observations | Résultats -->
   <div class="bottom">
@@ -349,11 +398,11 @@ body {
         </tr>
         {{/if}}
         <tr>
-          <td class="k">Obs. du Prof. principal</td>
+          <td class="k">{{#if isPrimary}}Obs. du maître / de la maîtresse{{else}}Obs. du Prof. principal{{/if}}</td>
           <td class="v{{#unless report.teacherComment}} v--muted{{/unless}}">{{#if report.teacherComment}}{{report.teacherComment}}{{else}}Aucune observation{{/if}}</td>
         </tr>
         <tr>
-          <td class="k">Obs. du Conseil des prof.</td>
+          <td class="k">{{#if isPrimary}}Obs. du Directeur{{else}}Obs. du Conseil des prof.{{/if}}</td>
           <td class="v{{#unless report.principalComment}} v--muted{{/unless}}">{{#if report.principalComment}}{{report.principalComment}}{{else}}Aucune observation{{/if}}</td>
         </tr>
         {{#if report.councilDecision}}
@@ -373,8 +422,13 @@ body {
         {{/if}}
         <div class="scale">
           <div class="scale-title">Barème des mentions</div>
+          {{#if isPrimary}}
+          9 à 10 : Excellent &nbsp;·&nbsp; 8 à 8,99 : Très Bien &nbsp;·&nbsp; 7 à 7,99 : Bien &nbsp;·&nbsp;
+          6 à 6,99 : Assez Bien &nbsp;·&nbsp; 5 à 5,99 : Passable &nbsp;·&nbsp; 0 à 4,99 : Insuffisant
+          {{else}}
           18 à 20 : Excellent &nbsp;·&nbsp; 16 à 17,99 : Très Bien &nbsp;·&nbsp; 14 à 15,99 : Bien &nbsp;·&nbsp;
           12 à 13,99 : Assez Bien &nbsp;·&nbsp; 10 à 11,99 : Passable &nbsp;·&nbsp; 0 à 9,99 : Insuffisant
+          {{/if}}
         </div>
       </div>
     </div>
@@ -382,14 +436,17 @@ body {
     <div class="bottom-right">
       <div class="res-title">Résultats</div>
       <table class="res">
-        <tr><td>Moy. la plus forte</td><td>{{fmtScore report.classHighest}}</td></tr>
-        <tr><td>Moy. la plus faible</td><td>{{fmtScore report.classLowest}}</td></tr>
-        <tr><td>Moy. de la classe</td><td>{{fmtScore report.classAverage}}</td></tr>
+        {{#if isPrimary}}
+        <tr><td>Total des points</td><td>{{scale.primaryTotal}} / {{scale.primaryTotalMax}}</td></tr>
+        {{/if}}
+        <tr><td>Moy. la plus forte</td><td>{{scale.classHighest}}</td></tr>
+        <tr><td>Moy. la plus faible</td><td>{{scale.classLowest}}</td></tr>
+        <tr><td>Moy. de la classe</td><td>{{scale.classAverage}}</td></tr>
         <tr><td>Mention</td><td>{{#if report.mention}}{{report.mention}}{{else}}&mdash;{{/if}}</td></tr>
         <tr class="sub"><td>Rang</td><td>{{#if report.rankLabel}}{{report.rankLabel}}{{#if report.classSize}} / {{report.classSize}}{{/if}}{{else}}&mdash;{{/if}}</td></tr>
-        <tr class="grand"><td>Moyenne générale</td><td class="{{#unless report.isPassing}}fail{{/unless}}">{{fmtScore report.overallAverage}} / 20</td></tr>
+        <tr class="grand"><td>Moyenne générale</td><td class="{{#unless report.isPassing}}fail{{/unless}}">{{scale.overallAverage}} / {{scale.denom}}</td></tr>
         {{#if report.annualAverage}}
-        <tr class="grand"><td>Moyenne annuelle</td><td class="{{#unless report.annualIsPassing}}fail{{/unless}}">{{fmtScore report.annualAverage}} / 20</td></tr>
+        <tr class="grand"><td>Moyenne annuelle</td><td class="{{#unless report.annualIsPassing}}fail{{/unless}}">{{scale.annualAverage}} / {{scale.denom}}</td></tr>
         {{/if}}
       </table>
     </div>
@@ -398,7 +455,7 @@ body {
   <!-- Signatures -->
   <div class="signatures">
     <div class="sig-box">
-      <div class="sig-title">Le Professeur Principal</div>
+      <div class="sig-title">{{#if isPrimary}}Le Maître / La Maîtresse{{else}}Le Professeur Principal{{/if}}</div>
       <div class="sig-hint">(Nom et signature)</div>
       <div class="sig-line"></div>
       <div class="sig-name">&nbsp;</div>

@@ -173,6 +173,15 @@ export default function PrintReportCardPage() {
   const grades = [...(report.grades ?? [])].sort((a, b) => (b.coefficient ?? 0) - (a.coefficient ?? 0));
   const totalCoef   = grades.reduce((s, g) => s + (g.coefficient ?? 0), 0);
   const totalPoints = grades.reduce((s, g) => s + (g.weightedScore ?? 0), 0);
+
+  // Primaire (CI → CM2) : notes et moyennes affichées sur 10 (stockées sur 20), sans coefficients.
+  // Même règle que isPrimaryLevel() côté PDF (backend/src/modules/pdf/pdf.service.ts).
+  const isPrimary = /^\s*(CI|CP\s*[12]?|CE\s*[12]|CM\s*[12])\s*$/i.test(report.class?.level ?? '');
+  const denom = isPrimary ? 10 : 20;
+  const fmtS = (v) => (v == null ? '—' : fmt(isPrimary ? v / 2 : v));
+  const gradedMoys = grades.map((g) => g.moyenneMatiere ?? g.score).filter((m) => m != null);
+  const primaryTotal = gradedMoys.reduce((s, m) => s + m / 2, 0);
+  const primaryTotalMax = gradedMoys.length * 10;
   const absences = report.attendanceDays != null && report.attendancePresent != null
     ? report.attendanceDays - report.attendancePresent
     : null;
@@ -284,7 +293,7 @@ export default function PrintReportCardPage() {
             <tr>
               <td className="prh__lbl">Moyenne générale</td><td className="prh__sep">:</td>
               <td className={`prh__val prh__val--strong${report.overallAverage != null && report.overallAverage < 10 ? ' prh__val--fail' : ''}`}>
-                {report.overallAverage != null ? `${fmt(report.overallAverage)} / 20` : '—'}
+                {report.overallAverage != null ? `${fmtS(report.overallAverage)} / ${denom}` : '—'}
               </td>
               <td className="prh__lbl">Période</td><td className="prh__sep">:</td><td className="prh__val">{termLabel}</td>
             </tr>
@@ -298,6 +307,42 @@ export default function PrintReportCardPage() {
 
         {/* ── Grades table ───────────────────────────────────────────────── */}
         <div className="pr-grades-wrap">
+          {isPrimary ? (
+          <table className="pr-grades pr-grades--primary">
+            <thead>
+              <tr className="pr-grades__head-top">
+                <th className="pr-grades__col-num">N°</th>
+                <th className="pr-grades__col-matiere">Matière</th>
+                <th className="pr-grades__col-moy">Note / 10</th>
+                <th className="pr-grades__col-rang">Rang</th>
+                <th className="pr-grades__col-appr">Appréciation</th>
+              </tr>
+            </thead>
+            <tbody>
+              {grades.map((g, i) => {
+                const moy = g.moyenneMatiere ?? g.score;
+                const fail = moy != null && moy < (g.subject?.passMark ?? 10);
+                return (
+                  <tr key={g.subjectId ?? g.id}>
+                    <td className="pr-grades__col-num">{i + 1}</td>
+                    <td className="pr-grades__col-matiere">{g.subject?.nameFr ?? '—'}</td>
+                    <td className={`pr-grades__col-moy${fail ? ' pr-grades__fail' : ' pr-grades__pass'}`}>{fmtS(moy)}</td>
+                    <td className="pr-grades__col-rang">{g.rangMatiere ?? '—'}</td>
+                    <td className="pr-grades__col-appr">{g.appreciation ?? '—'}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+            <tfoot>
+              <tr className="pr-grades__foot">
+                <td colSpan={2} className="pr-grades__foot-label">TOTAL DES POINTS</td>
+                <td>{fmt(primaryTotal)} / {primaryTotalMax}</td>
+                <td className="pr-grades__foot-label">MOYENNE</td>
+                <td>{fmtS(report.overallAverage)} / 10</td>
+              </tr>
+            </tfoot>
+          </table>
+          ) : (
           <table className="pr-grades">
             <thead>
               <tr className="pr-grades__head-top">
@@ -361,6 +406,7 @@ export default function PrintReportCardPage() {
               </tr>
             </tfoot>
           </table>
+          )}
         </div>
 
         {/* ── Results band ───────────────────────────────────────────────── */}
@@ -372,9 +418,15 @@ export default function PrintReportCardPage() {
               <div className="pr-results__cell pr-results__cell--big">
                 <label>Moyenne Générale</label>
                 <strong className={report.overallAverage >= 10 ? 'pr-val--pass' : 'pr-val--fail'}>
-                  {fmt(report.overallAverage)}<span className="pr-val-denom"> / 20</span>
+                  {fmtS(report.overallAverage)}<span className="pr-val-denom"> / {denom}</span>
                 </strong>
               </div>
+              {isPrimary && (
+                <div className="pr-results__cell">
+                  <label>Total des points</label>
+                  <strong>{fmt(primaryTotal)}<span className="pr-val-denom"> / {primaryTotalMax}</span></strong>
+                </div>
+              )}
               <div className="pr-results__cell">
                 <label>Mention</label>
                 <strong>{report.mention ?? '—'}</strong>
@@ -416,15 +468,15 @@ export default function PrintReportCardPage() {
             <div className="pr-results__cells">
               <div className="pr-results__cell">
                 <label>Moy. de la classe</label>
-                <strong>{fmt(report.classAverage)}</strong>
+                <strong>{fmtS(report.classAverage)}</strong>
               </div>
               <div className="pr-results__cell pr-results__cell--high">
                 <label>Plus forte moy.</label>
-                <strong>{fmt(report.classHighest)}</strong>
+                <strong>{fmtS(report.classHighest)}</strong>
               </div>
               <div className="pr-results__cell pr-results__cell--low">
                 <label>Plus faible moy.</label>
-                <strong>{fmt(report.classLowest)}</strong>
+                <strong>{fmtS(report.classLowest)}</strong>
               </div>
               <div className="pr-results__cell">
                 <label>Effectif</label>
@@ -440,7 +492,7 @@ export default function PrintReportCardPage() {
             <div className="pr-annual-bar__cell">
               <label>Moyenne Annuelle</label>
               <strong className={report.annualAverage >= 10 ? 'pr-val--pass' : 'pr-val--fail'}>
-                {fmt(report.annualAverage)}<span className="pr-val-denom"> / 20</span>
+                {fmtS(report.annualAverage)}<span className="pr-val-denom"> / {denom}</span>
               </strong>
             </div>
             <div className="pr-annual-bar__decision">

@@ -74,6 +74,11 @@ function formatScore(value: number | null | undefined): string {
   return value.toFixed(2).replace('.', ',');
 }
 
+/** Primaire (CI → CM2) : notes sur 10, sans coefficients. Les moyennes restent stockées sur 20. */
+export function isPrimaryLevel(level: string | null | undefined): boolean {
+  return /^\s*(CI|CP\s*[12]?|CE\s*[12]|CM\s*[12])\s*$/i.test(level ?? '');
+}
+
 @Injectable()
 export class PdfService {
   private readonly logger = new Logger(PdfService.name);
@@ -174,6 +179,11 @@ export class PdfService {
 
   private async buildHtml(data: ReportCardData): Promise<string> {
     const { report, student, grades, institution } = data;
+    const isPrimary = isPrimaryLevel(data.classLevel);
+    // Toutes les moyennes sont stockées sur 20 ; au primaire on les affiche sur 10.
+    const denom = isPrimary ? 10 : 20;
+    const toScale = (v: number | null | undefined) => (v == null ? null : isPrimary ? v / 2 : v);
+    const fmtScaled = (v: number | null | undefined) => formatScore(toScale(v));
 
     const branding = (institution.brandingSettings as Record<string, unknown>) ?? {};
     const primaryColor   = (branding.primaryColor   as string) || '#1e3a8a';
@@ -193,6 +203,7 @@ export class PdfService {
         // Couleur de l'appréciation selon le niveau (vert ≥ 14, orange ≥ 10, rouge < 10)
         levelClass: moy == null ? '' : moy >= 14 ? 'lvl-good' : moy >= 10 ? 'lvl-pass' : 'lvl-fail',
         rangLabel: g.rangMatiere ? (g.rangMatiere === 1 ? '1er' : `${g.rangMatiere}e`) : null,
+        noteLabel: fmtScaled(moy), // note de la matière sur l'échelle du bulletin (/10 au primaire)
         ficheSignedAt: g.ficheSignedAt
           ? new Date(g.ficheSignedAt).toLocaleDateString('fr-FR')
           : null,
@@ -202,6 +213,11 @@ export class PdfService {
 
     const totalCoef   = enrichedGrades.reduce((s, g) => s + g.coefficient, 0);
     const totalPoints = enrichedGrades.reduce((s, g) => s + (g.weightedScore ?? 0), 0);
+
+    // Primaire : total des notes sur 10 de chaque matière notée (ex. 78,50 / 100 pour 10 matières)
+    const graded = enrichedGrades.filter((g) => (g.moyenneMatiere ?? g.score) != null);
+    const primaryTotal = graded.reduce((s, g) => s + ((g.moyenneMatiere ?? g.score) as number) / 2, 0);
+    const primaryTotalMax = graded.length * 10;
 
     const absences =
       report.attendanceDays != null && report.attendancePresent != null
@@ -262,12 +278,25 @@ export class PdfService {
         photo: student.user?.profileImage ?? null,
       },
       class: { name: data.className },
+      isPrimary,
+      // Valeurs prêtes à imprimer, sur l'échelle du bulletin (/10 au primaire, /20 sinon)
+      scale: {
+        denom,
+        passLabel: isPrimary ? '5' : '10',
+        classHighest: fmtScaled(report.classHighest),
+        classLowest: fmtScaled(report.classLowest),
+        classAverage: fmtScaled(report.classAverage),
+        overallAverage: fmtScaled(report.overallAverage),
+        annualAverage: report.annualAverage != null ? fmtScaled(report.annualAverage) : null,
+        primaryTotal: formatScore(Math.round(primaryTotal * 100) / 100),
+        primaryTotalMax,
+      },
       report: {
         ...report,
         conductLabel: report.conductRating ? CONDUCT_LABELS[report.conductRating] : '—',
         isPassing: (report.overallAverage ?? 0) >= 10,
         rankLabel,
-        averageLabel: report.overallAverage != null ? formatScore(report.overallAverage) : null,
+        averageLabel: report.overallAverage != null ? fmtScaled(report.overallAverage) : null,
         hasDistinctions: !!(report.honorCouncil || report.commendations || report.warnings),
         annualIsPassing: report.annualAverage != null ? report.annualAverage >= 10 : null,
         absences,
@@ -326,6 +355,8 @@ export interface ReportCardData {
     user: { name: string; profileImage?: string | null } | null;
   };
   className: string;
+  /** Niveau de la classe (CI, CP1…CM2, 6ème…) — détermine le modèle primaire ou secondaire. */
+  classLevel?: string | null;
   grades: Array<{
     score: number;
     moyenneMatiere: number | null;
