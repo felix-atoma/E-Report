@@ -368,10 +368,26 @@ export class StudentsService {
     });
     if (!existing) throw new NotFoundException('Student not found');
 
+    // Parent : par id, ou par e-mail (comme à la création). E-mail vide = délier le parent.
+    let parentId: string | null | undefined = dto.parentId;
     if (dto.parentId) {
       const parent = await this.prisma.user.findFirst({ where: { id: dto.parentId, institutionId } });
       if (!parent) throw new NotFoundException('Parent user not found');
+    } else if (dto.parentEmail !== undefined) {
+      if (dto.parentEmail === '') {
+        parentId = null;
+      } else {
+        const parent = await this.prisma.user.findFirst({
+          where: { email: { equals: dto.parentEmail.trim(), mode: 'insensitive' }, institutionId },
+          select: { id: true },
+        });
+        if (!parent) throw new NotFoundException(`Aucun compte parent trouvé pour l'e-mail : ${dto.parentEmail}`);
+        parentId = parent.id;
+      }
     }
+
+    // Champ vidé dans le formulaire (chaîne vide) → valeur effacée (null)
+    const text = (v: string | undefined) => (v === undefined ? undefined : v.trim() === '' ? null : v.trim());
 
     // Validate the class if one was provided
     let classRecord: { id: string; academicYear: string } | null = null;
@@ -386,10 +402,10 @@ export class StudentsService {
     // Name lives on the linked User record, not on Student itself — update both
     // in a transaction so they can't drift out of sync.
     return this.prisma.$transaction(async (tx) => {
-      if (dto.name !== undefined && existing.userId) {
+      if (dto.name !== undefined && dto.name.trim() !== '' && existing.userId) {
         await tx.user.update({
           where: { id: existing.userId },
-          data: { name: dto.name },
+          data: { name: dto.name.trim() },
         });
       }
 
@@ -397,6 +413,15 @@ export class StudentsService {
       // row, not a field on Student — upsert so switching classes doesn't
       // fail on the unique (classId, studentId, academicYear) constraint.
       if (classRecord) {
+        // Changer de classe = déplacer : on retire l'élève de ses autres classes de la même
+        // année scolaire, sinon il apparaîtrait dans deux classes à la fois.
+        await tx.classStudent.deleteMany({
+          where: {
+            studentId: id,
+            academicYear: classRecord.academicYear,
+            classId: { not: classRecord.id },
+          },
+        });
         await tx.classStudent.upsert({
           where: {
             classId_studentId_academicYear: {
@@ -420,28 +445,28 @@ export class StudentsService {
           ...(dto.admissionNumber && { admissionNumber: dto.admissionNumber }),
           ...(dto.dateOfBirth && { dateOfBirth: new Date(dto.dateOfBirth) }),
           ...(dto.sex !== undefined && { sex: dto.sex }),
-          ...(dto.parentId !== undefined && { parentId: dto.parentId }),
+          ...(parentId !== undefined && { parentId }),
           // Extended profile fields
-          ...(dto.address !== undefined && { address: dto.address }),
-          ...(dto.city !== undefined && { city: dto.city }),
-          ...(dto.region !== undefined && { region: dto.region }),
-          ...(dto.nationality !== undefined && { nationality: dto.nationality }),
-          ...(dto.religion !== undefined && { religion: dto.religion }),
-          ...(dto.bloodType !== undefined && { bloodType: dto.bloodType }),
-          ...(dto.medicalConditions !== undefined && { medicalConditions: dto.medicalConditions }),
-          ...(dto.allergies !== undefined && { allergies: dto.allergies }),
-          ...(dto.emergencyContactName !== undefined && { emergencyContactName: dto.emergencyContactName }),
-          ...(dto.emergencyContactPhone !== undefined && { emergencyContactPhone: dto.emergencyContactPhone }),
-          ...(dto.emergencyContactRelation !== undefined && { emergencyContactRelation: dto.emergencyContactRelation }),
-          ...(dto.fatherName !== undefined && { fatherName: dto.fatherName }),
-          ...(dto.fatherPhone !== undefined && { fatherPhone: dto.fatherPhone }),
-          ...(dto.fatherOccupation !== undefined && { fatherOccupation: dto.fatherOccupation }),
-          ...(dto.motherName !== undefined && { motherName: dto.motherName }),
-          ...(dto.motherPhone !== undefined && { motherPhone: dto.motherPhone }),
-          ...(dto.motherOccupation !== undefined && { motherOccupation: dto.motherOccupation }),
-          ...(dto.previousSchool !== undefined && { previousSchool: dto.previousSchool }),
-          ...(dto.birthPlace !== undefined && { birthPlace: dto.birthPlace }),
-          ...(dto.birthCertificateNumber !== undefined && { birthCertificateNumber: dto.birthCertificateNumber }),
+          ...(dto.address !== undefined && { address: text(dto.address) }),
+          ...(dto.city !== undefined && { city: text(dto.city) }),
+          ...(dto.region !== undefined && { region: text(dto.region) }),
+          ...(dto.nationality !== undefined && { nationality: text(dto.nationality) }),
+          ...(dto.religion !== undefined && { religion: text(dto.religion) }),
+          ...(dto.bloodType !== undefined && { bloodType: text(dto.bloodType) }),
+          ...(dto.medicalConditions !== undefined && { medicalConditions: text(dto.medicalConditions) }),
+          ...(dto.allergies !== undefined && { allergies: text(dto.allergies) }),
+          ...(dto.emergencyContactName !== undefined && { emergencyContactName: text(dto.emergencyContactName) }),
+          ...(dto.emergencyContactPhone !== undefined && { emergencyContactPhone: text(dto.emergencyContactPhone) }),
+          ...(dto.emergencyContactRelation !== undefined && { emergencyContactRelation: text(dto.emergencyContactRelation) }),
+          ...(dto.fatherName !== undefined && { fatherName: text(dto.fatherName) }),
+          ...(dto.fatherPhone !== undefined && { fatherPhone: text(dto.fatherPhone) }),
+          ...(dto.fatherOccupation !== undefined && { fatherOccupation: text(dto.fatherOccupation) }),
+          ...(dto.motherName !== undefined && { motherName: text(dto.motherName) }),
+          ...(dto.motherPhone !== undefined && { motherPhone: text(dto.motherPhone) }),
+          ...(dto.motherOccupation !== undefined && { motherOccupation: text(dto.motherOccupation) }),
+          ...(dto.previousSchool !== undefined && { previousSchool: text(dto.previousSchool) }),
+          ...(dto.birthPlace !== undefined && { birthPlace: text(dto.birthPlace) }),
+          ...(dto.birthCertificateNumber !== undefined && { birthCertificateNumber: text(dto.birthCertificateNumber) }),
           ...(dto.photo !== undefined && { photo: dto.photo }),
           ...(dto.studentStatus !== undefined && { studentStatus: dto.studentStatus }),
         },

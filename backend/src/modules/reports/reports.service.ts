@@ -404,7 +404,7 @@ export class ReportsService {
   private async generateAndSavePdf(published: any, reportWithGrades: any, institutionId: string) {
     const institution = await this.prisma.institution.findUnique({
       where: { id: institutionId },
-      select: { name: true, country: true, countryMotto: true, address: true, phone: true, email: true, motto: true, logo: true, crest: true, stamp: true, brandingSettings: true },
+      select: { name: true, country: true, countryMotto: true, address: true, phone: true, email: true, website: true, motto: true, logo: true, crest: true, stamp: true, brandingSettings: true },
     });
     if (!institution) return;
 
@@ -681,7 +681,7 @@ export class ReportsService {
 
     const institution = await this.prisma.institution.findUnique({
       where: { id: institutionId },
-      select: { name: true, country: true, countryMotto: true, address: true, phone: true, email: true, motto: true, logo: true, crest: true, stamp: true, brandingSettings: true },
+      select: { name: true, country: true, countryMotto: true, address: true, phone: true, email: true, website: true, motto: true, logo: true, crest: true, stamp: true, brandingSettings: true },
     });
 
     // Build subject map: subjectId → { name, coef, termAverages }
@@ -805,7 +805,7 @@ export class ReportsService {
 
     const institution = await this.prisma.institution.findUnique({
       where: { id: institutionId },
-      select: { name: true, country: true, countryMotto: true, address: true, phone: true, email: true, motto: true, logo: true, crest: true, stamp: true, brandingSettings: true },
+      select: { name: true, country: true, countryMotto: true, address: true, phone: true, email: true, website: true, motto: true, logo: true, crest: true, stamp: true, brandingSettings: true },
     });
     if (!institution) throw new NotFoundException('Institution introuvable');
 
@@ -903,7 +903,7 @@ export class ReportsService {
 
     const institution = await this.prisma.institution.findUnique({
       where: { id: institutionId },
-      select: { name: true, country: true, countryMotto: true, address: true, phone: true, email: true, motto: true, logo: true, crest: true, stamp: true, brandingSettings: true },
+      select: { name: true, country: true, countryMotto: true, address: true, phone: true, email: true, website: true, motto: true, logo: true, crest: true, stamp: true, brandingSettings: true },
     });
     if (!institution) throw new NotFoundException('Institution not found');
 

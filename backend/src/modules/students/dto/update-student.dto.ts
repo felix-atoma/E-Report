@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsEnum, IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { IsDateString, IsEmail, IsEnum, IsInt, IsOptional, IsString, Min, ValidateIf } from 'class-validator';
 import { Sex, StudentStatus } from '@prisma/client';
 
 export class UpdateStudentDto {
@@ -27,6 +27,12 @@ export class UpdateStudentDto {
   @IsOptional()
   @IsString()
   parentId?: string;
+
+  @ApiPropertyOptional({ example: 'parent@example.tg', description: 'Parent email — linked automatically; empty string unlinks the parent' })
+  @IsOptional()
+  @ValidateIf((o) => o.parentEmail !== '')
+  @IsEmail()
+  parentEmail?: string;
 
   @ApiPropertyOptional({ description: 'UUID of class to enroll the student in' })
   @IsOptional()

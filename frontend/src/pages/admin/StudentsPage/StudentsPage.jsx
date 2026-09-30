@@ -469,26 +469,30 @@ function StudentsPage() {
   function handleSubmit() {
     const errs = validate(form, t);
     if (Object.keys(errs).length) { setErrors(errs); return; }
+    // En modification, un champ texte vidé est envoyé vide ('') pour être effacé côté serveur ;
+    // à la création, on n'envoie pas les champs vides.
+    const isEdit = modal === 'edit';
+    const txt = (v) => (isEdit ? (v ?? '').trim() : (v?.trim() || undefined));
     const payload = {
-      name:        form.name,
+      name:        form.name.trim(),
       dateOfBirth: form.dateOfBirth || undefined,
       sex:         form.sex         || undefined,
       classId:     form.classId     || undefined,
-      parentEmail: form.parentEmail || undefined,
+      parentEmail: txt(form.parentEmail),
       // Extended profile
-      address:                  form.address                  || undefined,
-      city:                     form.city                     || undefined,
-      fatherName:               form.fatherName               || undefined,
-      fatherPhone:              form.fatherPhone              || undefined,
-      motherName:               form.motherName               || undefined,
-      motherPhone:              form.motherPhone              || undefined,
-      emergencyContactName:     form.emergencyContactName     || undefined,
-      emergencyContactPhone:    form.emergencyContactPhone    || undefined,
-      emergencyContactRelation: form.emergencyContactRelation || undefined,
-      bloodType:                form.bloodType                || undefined,
-      medicalConditions:        form.medicalConditions        || undefined,
-      previousSchool:           form.previousSchool           || undefined,
-      birthPlace:               form.birthPlace               || undefined,
+      address:                  txt(form.address),
+      city:                     txt(form.city),
+      fatherName:               txt(form.fatherName),
+      fatherPhone:              txt(form.fatherPhone),
+      motherName:               txt(form.motherName),
+      motherPhone:              txt(form.motherPhone),
+      emergencyContactName:     txt(form.emergencyContactName),
+      emergencyContactPhone:    txt(form.emergencyContactPhone),
+      emergencyContactRelation: txt(form.emergencyContactRelation),
+      bloodType:                txt(form.bloodType),
+      medicalConditions:        txt(form.medicalConditions),
+      previousSchool:           txt(form.previousSchool),
+      birthPlace:               txt(form.birthPlace),
       studentStatus:            form.studentStatus            || undefined,
     };
     if (modal === 'create') {
