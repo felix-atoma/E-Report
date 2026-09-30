@@ -146,6 +146,16 @@ export class PdfService {
       await page.emulateMediaType('print');
       await page.setViewport({ width: printableW, height: printableH });
       await page.setContent(html, { waitUntil: 'domcontentloaded' });
+      // Logo, photo et signatures sont des images distantes (Cloudinary) : on attend qu'elles soient
+      // chargées (ou en erreur), sinon le PDF est capturé sans elles. Plafond de 15 s.
+      await page.evaluate(() => Promise.race([
+        Promise.all(Array.from(document.images).map((img) =>
+          img.complete ? Promise.resolve() : new Promise((resolve) => {
+            img.addEventListener('load', resolve, { once: true });
+            img.addEventListener('error', resolve, { once: true });
+          }))),
+        new Promise((resolve) => setTimeout(resolve, 15000)),
+      ]));
 
       const contentH: number = await page.evaluate(() =>
         Math.ceil(Math.max(document.documentElement.scrollHeight, document.body.scrollHeight)),

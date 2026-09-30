@@ -574,6 +574,14 @@ export class ReportsService {
     return { count: results.length };
   }
 
+  /** Bulletins publiés avant l'ajout du code de sécurité : on en génère un (nécessaire au QR code). */
+  private async ensureSecurityCode(report: { id: string; academicYear: string; termNumber: number; securityCode?: string | null }) {
+    if (report.securityCode) return;
+    const securityCode = generateSecurityCode(report.academicYear, report.termNumber);
+    await this.prisma.reportCard.update({ where: { id: report.id }, data: { securityCode } });
+    report.securityCode = securityCode;
+  }
+
   async regeneratePdf(id: string, institutionId: string) {
     const report = await this.prisma.reportCard.findFirst({
       where: { id, class: { institutionId }, status: 'PUBLISHED' },
@@ -591,6 +599,7 @@ export class ReportsService {
       },
     });
     if (!report) throw new NotFoundException('Published report card not found');
+    await this.ensureSecurityCode(report);
 
     const fiches = await this.prisma.gradeFiche.findMany({
       where: { classId: report.classId, academicYear: report.academicYear, termNumber: report.termNumber },
@@ -839,6 +848,7 @@ export class ReportsService {
               honorCouncil: (r as any).honorCouncil ?? null, commendations: (r as any).commendations ?? null,
               warnings: (r as any).warnings ?? null, annualAverage: (r as any).annualAverage ?? null,
               councilDecision: (r as any).councilDecision ?? null,
+              securityCode: (r as any).securityCode ?? null,
             },
             student: { admissionNumber: r.student.admissionNumber, dateOfBirth: (r.student as any).dateOfBirth, sex: (r.student as any).sex ?? null, user: r.student.user },
             className: r.class.name,
@@ -880,6 +890,7 @@ export class ReportsService {
       },
     });
     if (!report) throw new NotFoundException('Published report card not found');
+    await this.ensureSecurityCode(report);
 
     if (role === Role.PARENT) {
       const child = await this.prisma.student.findFirst({ where: { id: report.studentId, parentId: userId } });
@@ -914,6 +925,7 @@ export class ReportsService {
         attendanceExcused: r.attendanceExcused ?? null, attendanceLateMinutes: r.attendanceLateMinutes ?? null,
         commendations: r.commendations ?? null, warnings: r.warnings ?? null,
         annualAverage: r.annualAverage ?? null, councilDecision: r.councilDecision ?? null,
+        securityCode: r.securityCode ?? null,
       },
       student: { admissionNumber: r.student.admissionNumber, dateOfBirth: r.student.dateOfBirth, sex: r.student.sex ?? null, user: r.student.user },
       className: r.class.name,
