@@ -6,6 +6,7 @@ import { mockExamsService } from '../../../services/mockExamsService';
 import { useAuth } from '../../../context/AuthContext';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import Loading from '../../../components/common/Loading/Loading';
+import { examScale } from '../../../utils/examKinds';
 import './MockExamGradePage.css';
 
 const APPRE_COLOR = {
@@ -13,10 +14,12 @@ const APPRE_COLOR = {
   'Assez Bien': '#7c3aed', 'Passable': '#d97706', 'Insuffisant': '#dc2626',
 };
 
-function apprec(score) {
+/** Appréciation d'une note sur `scale` (seuils définis sur 20). */
+function apprec(score, scale = 20) {
   if (score == null || score === '') return '';
-  const v = parseFloat(score);
-  if (isNaN(v)) return '';
+  const raw = parseFloat(score);
+  if (isNaN(raw)) return '';
+  const v = (raw * 20) / scale;
   if (v >= 16) return 'Très Bien';
   if (v >= 14) return 'Bien';
   if (v >= 12) return 'Assez Bien';
@@ -142,6 +145,7 @@ function MockExamGradePage() {
 
   const { exam, subjects, students, editableSubjectIds } = data;
   const isPublished = exam.status === 'PUBLISHED';
+  const scale = examScale(exam.examType); // 10 pour les compositions mensuelles
   // null = admin (all editable); array = teacher (only assigned subjects)
   const canEditSubject = (subjId) =>
     !isPublished && (editableSubjectIds === null || editableSubjectIds.includes(subjId));
@@ -224,7 +228,7 @@ function MockExamGradePage() {
               </tr>
               <tr>
                 {subjects.map((subj) => (
-                  <th key={`max-${subj.id}`} className="meg-th meg-th--max">/20</th>
+                  <th key={`max-${subj.id}`} className="meg-th meg-th--max">/{scale}</th>
                 ))}
               </tr>
             </thead>
@@ -232,7 +236,7 @@ function MockExamGradePage() {
               {students.map((student) => {
                 const avg = computeAvg(grades[student.studentId] ?? {}, subjects);
                 const rank = ranks[student.studentId];
-                const app = apprec(avg);
+                const app = apprec(avg, scale);
 
                 return (
                   <tr key={student.studentId} className="meg-row">
@@ -244,14 +248,14 @@ function MockExamGradePage() {
                     {subjects.map((subj) => {
                       const val = grades[student.studentId]?.[subj.id] ?? '';
                       const numVal = val !== '' ? parseFloat(val) : null;
-                      const isErr = numVal != null && (numVal < 0 || numVal > 20);
+                      const isErr = numVal != null && (numVal < 0 || numVal > scale);
                       return (
                         <td key={subj.id} className="meg-cell meg-cell--score">
                           {canEditSubject(subj.id) ? (
                             <input
                               type="number"
                               className={`meg-input${isErr ? ' meg-input--err' : ''}`}
-                              min="0" max="20" step="0.25"
+                              min="0" max={scale} step="0.25"
                               value={val}
                               onChange={(e) => setScore(student.studentId, subj.id, e.target.value)}
                               placeholder="—"

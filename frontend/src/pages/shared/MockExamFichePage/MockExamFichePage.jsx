@@ -7,6 +7,7 @@ import AppShell from '../../../components/layout/AppShell/AppShell';
 import Loading from '../../../components/common/Loading/Loading';
 import { subjectApprec } from '../../../utils/subjectApprec';
 import { fmtSessionDates } from '../../../utils/fmtSessionDates';
+import { examScale } from '../../../utils/examKinds';
 import './MockExamFichePage.css';
 
 const TYPE_LABELS = {
@@ -16,12 +17,15 @@ const TYPE_LABELS = {
   BAC1:  'Baccalauréat — Première Partie',
   BAC2:  'Baccalauréat — Deuxième Partie',
   DEVOIR_SURVEILLE: 'Devoir surveillé',
+  COMPOSITION_MENSUELLE: 'Composition mensuelle',
 };
 
 
-function apprColor(score) {
-  const v = parseFloat(score);
-  if (isNaN(v)) return undefined;
+/** Couleur selon le niveau ; `scale` = barème de la session (seuils définis sur 20). */
+function apprColor(score, scale = 20) {
+  const raw = parseFloat(score);
+  if (isNaN(raw)) return undefined;
+  const v = (raw * 20) / scale;
   if (v >= 14) return '#15803d';
   if (v >= 10) return '#1d4ed8';
   return '#dc2626';
@@ -39,6 +43,9 @@ function fmtSignDate(iso) {
 
 /* ── Single subject fiche ─────────────────────────────────────────────────── */
 function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished, isAdmin, currentUser }) {
+  // Compositions mensuelles (primaire) sur 10, le reste sur 20
+  const scale = examScale(exam?.examType);
+  const pass = scale / 2;
   const qc = useQueryClient();
 
   const [scores, setScores] = useState(() => {
@@ -164,7 +171,7 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
   const avg     = filled.length > 0 ? Math.round((filled.reduce((a, x) => a + x.v, 0) / filled.length) * 100) / 100 : null;
   const best    = filled.length > 0 ? Math.max(...filled.map((x) => x.v)) : null;
   const worst   = filled.length > 0 ? Math.min(...filled.map((x) => x.v)) : null;
-  const passing = filled.filter((x) => x.v >= 10).length;
+  const passing = filled.filter((x) => x.v >= pass).length;
   const variance = avg != null && filled.length > 1
     ? filled.reduce((sum, x) => sum + Math.pow(x.v - avg, 2), 0) / filled.length
     : null;
@@ -261,7 +268,7 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
             <th className="mfiche-th mfiche-th--num">N°</th>
             <th className="mfiche-th mfiche-th--name">Nom et Prénoms</th>
             <th className="mfiche-th mfiche-th--mat">Matricule</th>
-            <th className="mfiche-th mfiche-th--score">Note /20</th>
+            <th className="mfiche-th mfiche-th--score">Note /{scale}</th>
             <th className="mfiche-th mfiche-th--rank">Rang</th>
             <th className="mfiche-th mfiche-th--appre">Appréciation</th>
           </tr>
@@ -270,8 +277,8 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
           {students.map((student, i) => {
             const val    = scores[student.studentId] ?? '';
             const numVal = val !== '' ? parseFloat(val) : null;
-            const isErr  = numVal != null && (numVal < 0 || numVal > 20);
-            const app    = subjectApprec(val, subject);
+            const isErr  = numVal != null && (numVal < 0 || numVal > scale);
+            const app    = subjectApprec(numVal != null ? (numVal * 20) / scale : val, subject);
             const rank   = rankMap.get(student.studentId) ?? null;
             return (
               <tr key={student.studentId} className={i % 2 === 0 ? 'mfiche-row' : 'mfiche-row mfiche-row--alt'}>
@@ -283,13 +290,13 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
                     <input
                       type="number"
                       className={`mfiche-input${isErr ? ' mfiche-input--err' : ''}`}
-                      min="0" max="20" step="0.25"
+                      min="0" max={scale} step="0.25"
                       value={val}
                       onChange={(e) => setScore(student.studentId, e.target.value)}
                       placeholder="—"
                     />
                   ) : (
-                    <span className={`mfiche-score-ro${numVal != null && numVal < 10 ? ' mfiche-score-ro--fail' : ''}`}>
+                    <span className={`mfiche-score-ro${numVal != null && numVal < pass ? ' mfiche-score-ro--fail' : ''}`}>
                       {numVal != null ? numVal.toFixed(2).replace('.', ',') : '—'}
                     </span>
                   )}
@@ -301,7 +308,7 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
                 </td>
                 <td className="mfiche-td mfiche-td--appre">
                   {app
-                    ? <span style={{ color: apprColor(val), fontWeight: 600, fontSize: '10px' }}>{app}</span>
+                    ? <span style={{ color: apprColor(val, scale), fontWeight: 600, fontSize: '10px' }}>{app}</span>
                     : '—'}
                 </td>
               </tr>
@@ -313,7 +320,7 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
             <td colSpan={6} className="mfiche-td mfiche-stats-cell">
               <span><strong>Effectif :</strong> {filled.length}/{students.length}</span>
               <span className="mfiche-sep">|</span>
-              <span><strong>Moy. :</strong> {avg != null ? avg.toFixed(2).replace('.', ',') : '—'}/20</span>
+              <span><strong>Moy. :</strong> {avg != null ? avg.toFixed(2).replace('.', ',') : '—'}/{scale}</span>
               <span className="mfiche-sep">|</span>
               <span><strong>Écart-type :</strong> {stddev != null ? stddev.toFixed(2).replace('.', ',') : '—'}</span>
               <span className="mfiche-sep">|</span>

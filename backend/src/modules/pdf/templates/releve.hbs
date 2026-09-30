@@ -197,7 +197,7 @@ body {
       <td class="lbl">Date</td><td class="sep">:</td><td class="val">{{exam.dates}}</td>
     </tr>
     <tr>
-      <td class="lbl">Moyenne</td><td class="sep">:</td><td class="val val--strong{{#unless isPassing}} val--fail{{/unless}}">{{#if averageLabel}}{{averageLabel}} / 20{{else}}&mdash;{{/if}}</td>
+      <td class="lbl">Moyenne</td><td class="sep">:</td><td class="val val--strong{{#unless isPassing}} val--fail{{/unless}}">{{#if averageLabel}}{{averageLabel}} / {{scale}}{{else}}&mdash;{{/if}}</td>
       <td class="lbl">Rang</td><td class="sep">:</td><td class="val val--strong">{{#if rankLabel}}{{rankLabel}}{{#if classSize}} / {{classSize}}{{/if}}{{else}}&mdash;{{/if}}</td>
     </tr>
   </table>
@@ -211,7 +211,7 @@ body {
       <tr>
         <th class="c-num">N°</th>
         <th class="c-mat">Matières</th>
-        <th>Note<small>/20</small></th>
+        <th>Note<small>/{{scale}}</small></th>
         <th>Coef.</th>
         <th>Points</th>
         <th>Appréciation</th>
@@ -234,7 +234,7 @@ body {
         <td class="t-label" colspan="3">TOTAUX</td>
         <td>{{totalCoef}}</td>
         <td class="t-val">{{totalPointsLabel}}</td>
-        <td class="t-val">{{#if averageLabel}}{{averageLabel}} / 20{{else}}&mdash;{{/if}}</td>
+        <td class="t-val">{{#if averageLabel}}{{averageLabel}} / {{scale}}{{else}}&mdash;{{/if}}</td>
       </tr>
     </tfoot>
   </table>
@@ -242,13 +242,18 @@ body {
   <div class="bottom">
     <div class="bottom-left">
       <div class="result-box">
-        <div class="lbl">{{#if isDs}}Résultat du devoir{{else}}Résultat{{/if}}</div>
+        <div class="lbl">{{#if isCm}}Résultat de la composition{{else}}{{#if isDs}}Résultat du devoir{{else}}Résultat{{/if}}{{/if}}</div>
         <div class="val {{result.cls}}">{{result.text}}</div>
       </div>
       <div class="scale">
         <div class="scale-title">Barème des appréciations</div>
+        {{#if isPrimaryScale}}
+        8 à 10 : Très Bien &nbsp;·&nbsp; 7 à 7,99 : Bien &nbsp;·&nbsp; 6 à 6,99 : Assez Bien &nbsp;·&nbsp;
+        5 à 5,99 : Passable &nbsp;·&nbsp; 0 à 4,99 : Insuffisant
+        {{else}}
         16 à 20 : Très Bien &nbsp;·&nbsp; 14 à 15,99 : Bien &nbsp;·&nbsp; 12 à 13,99 : Assez Bien &nbsp;·&nbsp;
         10 à 11,99 : Passable &nbsp;·&nbsp; 0 à 9,99 : Insuffisant
+        {{/if}}
       </div>
     </div>
     <div class="bottom-right">
@@ -257,14 +262,14 @@ body {
         <tr><td>Matières notées</td><td>{{gradedCount}} / {{rows.length}}</td></tr>
         <tr><td>Appréciation</td><td>{{#if appreciation}}{{appreciation}}{{else}}&mdash;{{/if}}</td></tr>
         <tr><td>Rang</td><td>{{#if rankLabel}}{{rankLabel}}{{#if classSize}} / {{classSize}}{{/if}}{{else}}&mdash;{{/if}}</td></tr>
-        <tr class="grand"><td>Moyenne</td><td class="{{#unless isPassing}}fail{{/unless}}">{{#if averageLabel}}{{averageLabel}} / 20{{else}}&mdash;{{/if}}</td></tr>
+        <tr class="grand"><td>Moyenne</td><td class="{{#unless isPassing}}fail{{/unless}}">{{#if averageLabel}}{{averageLabel}} / {{scale}}{{else}}&mdash;{{/if}}</td></tr>
       </table>
     </div>
   </div>
 
   <div class="signatures">
     <div class="sig-box">
-      <div class="sig-title">Le Professeur Principal</div>
+      <div class="sig-title">{{#if isCm}}Le Maître / La Maîtresse{{else}}Le Professeur Principal{{/if}}</div>
       <div class="sig-hint">(Nom et signature)</div>
       <div class="sig-line"></div>
       <div class="sig-name">&nbsp;</div>

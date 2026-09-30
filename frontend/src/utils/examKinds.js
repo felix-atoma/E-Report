@@ -14,9 +14,37 @@ export const DS_TYPE_CFG = {
 
 export const isDsType = (examType) => examType === DS_TYPE;
 
-/** Filtre une liste de sessions selon la famille demandée par la page. */
-export function filterByKind(exams, kind) {
-  return (exams ?? []).filter((e) => (kind === 'DS' ? isDsType(e.examType) : !isDsType(e.examType)));
+// Compositions mensuelles : primaire (CI → CM2), notes sur 10, même procédure que les DS
+export const CM_TYPE = 'COMPOSITION_MENSUELLE';
+
+export const CM_TYPE_CFG = {
+  value: CM_TYPE,
+  label: 'Composition mensuelle',
+  full: 'Composition mensuelle — primaire (CI au CM2), notes sur 10',
+  color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd',
+  icon: '📒',
+  desc: 'Compositions mensuelles',
+};
+
+export const isCmType = (examType) => examType === CM_TYPE;
+
+/** Séances qui ne sont pas des examens : pas d'« admis / ajourné ». */
+export const isNonExamType = (examType) => isDsType(examType) || isCmType(examType);
+
+/** Barème des notes de la session : 10 pour les compositions mensuelles, 20 sinon. */
+export const examScale = (examType) => (isCmType(examType) ? 10 : 20);
+
+/** Note ramenée sur 20 (les seuils d'appréciation sont définis sur 20). */
+export const to20 = (value, examType) => (value == null ? null : (value * 20) / examScale(examType));
+
+/** Classes du primaire (CI → CM2) — même règle que le serveur. */
+export const isPrimaryLevel = (level) => /^\s*(CI|CP\s*[12]?|CE\s*[12]|CM\s*[12])\s*$/i.test(level ?? '');
+
+/** Types de sessions affichés par une page selon sa famille. */
+export function typesForKind(kind, examTypes) {
+  if (kind === 'DS') return [DS_TYPE_CFG];
+  if (kind === 'CM') return [CM_TYPE_CFG];
+  return examTypes;
 }
 
 /** Textes des pages selon la famille. */
@@ -39,5 +67,15 @@ export const KIND_TEXT = {
     resultsSubtitle: 'Palmarès et relevés de notes des devoirs surveillés',
     empty: 'Aucun devoir surveillé créé.',
     listPath: '/teacher/devoirs-surveilles',
+  },
+  CM: {
+    listTitle: 'Compositions mensuelles',
+    listSubtitle: 'Primaire (CI au CM2) : créez une composition mensuelle par classe, puis chaque maître saisit et signe les notes sur 10',
+    fichesTitle: 'Fiches de notes — Compositions mensuelles',
+    fichesSubtitle: 'Saisie des notes des compositions mensuelles (sur 10) par matière',
+    resultsTitle: 'Résultats des compositions mensuelles',
+    resultsSubtitle: 'Palmarès et relevés de notes des compositions mensuelles (sur 10)',
+    empty: 'Aucune composition mensuelle créée.',
+    listPath: '/teacher/compositions-mensuelles',
   },
 };

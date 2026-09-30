@@ -317,3 +317,21 @@
 @media (max-width: 360px) {
   .teacher-dash__stats { grid-template-columns: 1fr; }
 }
+
+/* Compositions mensuelles — maîtres du primaire (CI → CM2) */
+.teacher-dash__cm {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+  margin-bottom: 1.25rem; border-left: 4px solid #7c3aed; background: #faf5ff;
+}
+.teacher-dash__cm-head { display: flex; align-items: center; gap: .8rem; flex: 1 1 280px; }
+.teacher-dash__cm-icon { font-size: 1.8rem; }
+.teacher-dash__cm-title { margin: 0; font-size: 1.05rem; font-weight: 800; color: #4c1d95; }
+.teacher-dash__cm-sub { margin: .15rem 0 0; font-size: .82rem; color: #5b21b6; }
+.teacher-dash__cm-links { display: flex; gap: .5rem; flex-wrap: wrap; }
+.teacher-dash__cm-link {
+  padding: .5rem .85rem; border-radius: 8px; font-size: .85rem; font-weight: 700; text-decoration: none;
+  background: #fff; color: #6d28d9; border: 1.5px solid #c4b5fd; white-space: nowrap;
+}
+.teacher-dash__cm-link:hover { background: #ede9fe; }
+.teacher-dash__cm-link--main { background: #7c3aed; color: #fff; border-color: #7c3aed; }
+.teacher-dash__cm-link--main:hover { background: #6d28d9; }

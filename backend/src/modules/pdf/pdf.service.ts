@@ -200,16 +200,20 @@ export class PdfService {
     const { institution, exam, student } = data;
     const branding = (institution.brandingSettings as Record<string, unknown>) ?? {};
     const inst = institution as any;
-    const isDs = exam.examType === 'DEVOIR_SURVEILLE';
+    // Devoir surveillé et composition mensuelle : pas d'« admis / ajourné » (ce ne sont pas des examens)
+    const isDs = exam.examType === 'DEVOIR_SURVEILLE' || exam.examType === 'COMPOSITION_MENSUELLE';
     const isBac = exam.examType === 'BAC1' || exam.examType === 'BAC2';
     const female = student.sex === 'F';
+    const scale = exam.scale ?? 20;          // 10 pour les compositions mensuelles (primaire)
+    const to20 = (v: number) => (v * 20) / scale;
+    const pass = scale / 2;
 
     const rows = data.rows.map((r) => ({
       ...r,
       scoreLabel: formatScore(r.score),
       pointsLabel: r.score != null ? formatScore(r.score * r.coefficient) : '—',
-      passed: r.score == null || r.score >= 10,
-      levelClass: r.score == null ? '' : r.score >= 14 ? 'lvl-good' : r.score >= 10 ? 'lvl-pass' : 'lvl-fail',
+      passed: r.score == null || r.score >= pass,
+      levelClass: r.score == null ? '' : to20(r.score) >= 14 ? 'lvl-good' : to20(r.score) >= 10 ? 'lvl-pass' : 'lvl-fail',
     }));
     const graded = rows.filter((r) => r.score != null);
     const totalCoef = graded.reduce((s, r) => s + r.coefficient, 0);
@@ -218,8 +222,8 @@ export class PdfService {
     // Examen : admis / admissible (BAC ≥ 9) / ajourné — Devoir surveillé : moyenne atteinte ou non
     const avg = data.average;
     const result = avg == null ? { text: '—', cls: '' }
-      : isDs ? (avg >= 10 ? { text: 'MOYENNE ATTEINTE', cls: 'pass' } : { text: 'SOUS LA MOYENNE', cls: 'fail' })
-      : avg >= 10 ? { text: female ? 'ADMISE' : 'ADMIS', cls: 'pass' }
+      : isDs ? (avg >= pass ? { text: 'MOYENNE ATTEINTE', cls: 'pass' } : { text: 'SOUS LA MOYENNE', cls: 'fail' })
+      : avg >= pass ? { text: female ? 'ADMISE' : 'ADMIS', cls: 'pass' }
       : isBac && avg >= 9 ? { text: 'ADMISSIBLE', cls: 'admissible' }
       : { text: female ? 'AJOURNÉE' : 'AJOURNÉ', cls: 'fail' };
 
@@ -247,7 +251,10 @@ export class PdfService {
       totalCoef,
       totalPointsLabel: formatScore(Math.round(totalPoints * 100) / 100),
       averageLabel: avg != null ? formatScore(avg) : null,
-      isPassing: (avg ?? 0) >= 10,
+      isPassing: (avg ?? 0) >= pass,
+      scale,
+      isPrimaryScale: scale === 10,
+      isCm: exam.examType === 'COMPOSITION_MENSUELLE',
       appreciation: data.appreciation,
       rankLabel,
       classSize: data.classSize,
@@ -514,6 +521,8 @@ export interface ReleveData {
   };
   exam: {
     label: string; examType: string; typeLabel: string; className: string; academicYear: string;
+    /** Barème des notes : 20 (par défaut) ou 10 (compositions mensuelles du primaire). */
+    scale?: number;
     examDate?: Date | string | null; examEndDate?: Date | string | null;
   };
   student: {

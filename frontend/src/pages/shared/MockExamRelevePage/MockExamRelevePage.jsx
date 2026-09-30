@@ -5,6 +5,7 @@ import { mockExamsService } from '../../../services/mockExamsService';
 import PrintFormatPicker from '../../../components/common/PrintFormatPicker/PrintFormatPicker';
 import { fmtSessionDates } from '../../../utils/fmtSessionDates';
 import './MockExamRelevePage.css';
+import { examScale, isNonExamType } from '../../../utils/examKinds';
 
 const TYPE_LABELS = {
   BLANC: 'Examen Blanc',
@@ -13,10 +14,13 @@ const TYPE_LABELS = {
   BAC1:  'Baccalauréat — Première Partie',
   BAC2:  'Baccalauréat — Deuxième Partie',
   DEVOIR_SURVEILLE: 'Devoir surveillé',
+  COMPOSITION_MENSUELLE: 'Composition mensuelle',
 };
 
-function apprec(avg) {
-  if (avg == null) return '';
+/** Appréciation d'une note sur `scale` (seuils définis sur 20). */
+function apprec(raw, scale = 20) {
+  if (raw == null) return '';
+  const avg = (raw * 20) / scale;
   if (avg >= 16) return 'Très Bien';
   if (avg >= 14) return 'Bien';
   if (avg >= 12) return 'Assez Bien';
@@ -32,11 +36,12 @@ function fmtDate(iso) {
 function getResult(avg, examType, sex) {
   const f = sex === 'F';
   if (avg == null) return { text: '—', cls: '' };
-  // Devoir surveillé : pas d'« admis / ajourné » (ce n'est pas un examen)
-  if (examType === 'DEVOIR_SURVEILLE') {
-    return avg >= 10 ? { text: 'MOYENNE ATTEINTE', cls: 'pass' } : { text: 'SOUS LA MOYENNE', cls: 'fail' };
+  const pass = examScale(examType) / 2;
+  // Devoir surveillé / composition mensuelle : pas d'« admis / ajourné » (ce ne sont pas des examens)
+  if (isNonExamType(examType)) {
+    return avg >= pass ? { text: 'MOYENNE ATTEINTE', cls: 'pass' } : { text: 'SOUS LA MOYENNE', cls: 'fail' };
   }
-  if (avg >= 10) return { text: f ? 'ADMISE' : 'ADMIS', cls: 'pass' };
+  if (avg >= pass) return { text: f ? 'ADMISE' : 'ADMIS', cls: 'pass' };
   if ((examType === 'BAC1' || examType === 'BAC2') && avg >= 9)
     return { text: 'ADMISSIBLE', cls: 'admissible' };
   return { text: f ? 'AJOURNÉE' : 'AJOURNÉ', cls: 'fail' };
@@ -44,6 +49,7 @@ function getResult(avg, examType, sex) {
 
 // Single student card (one per print page)
 function StudentCard({ student, subjects, exam, institution }) {
+  const scale = examScale(exam?.examType); // 10 pour les compositions mensuelles
   const totalCoeff = subjects.reduce((s, subj) => s + subj.coefficient, 0);
   const gradeMap = new Map(student.grades.map((g) => [g.subjectId, g]));
 
@@ -57,7 +63,7 @@ function StudentCard({ student, subjects, exam, institution }) {
     }
   });
   const avg = filledCoeff > 0 ? Math.round((totalPts / filledCoeff) * 100) / 100 : null;
-  const mention = apprec(avg);
+  const mention = apprec(avg, scale);
   const result = getResult(avg, exam.examType, student.sex);
 
   return (
@@ -117,7 +123,7 @@ function StudentCard({ student, subjects, exam, institution }) {
           <tr>
             <th className="mrel-th mrel-th--subject">Matière / Discipline</th>
             <th className="mrel-th mrel-th--coeff">Coeff.</th>
-            <th className="mrel-th mrel-th--score">Note /20</th>
+            <th className="mrel-th mrel-th--score">Note /{scale}</th>
             <th className="mrel-th mrel-th--pts">Pts × Coeff</th>
             <th className="mrel-th mrel-th--appre">Appréciation</th>
           </tr>
@@ -137,7 +143,7 @@ function StudentCard({ student, subjects, exam, institution }) {
                 <td className="mrel-td mrel-td--center">
                   {pts != null ? pts.toFixed(2).replace('.', ',') : '—'}
                 </td>
-                <td className="mrel-td mrel-td--appre">{apprec(score)}</td>
+                <td className="mrel-td mrel-td--appre">{apprec(score, scale)}</td>
               </tr>
             );
           })}
@@ -160,7 +166,7 @@ function StudentCard({ student, subjects, exam, institution }) {
         <div className="mrel-result__item">
           <span className="mrel-result__label">Moyenne générale</span>
           <span className="mrel-result__value mrel-result__value--avg">
-            {avg != null ? avg.toFixed(2).replace('.', ',') + ' / 20' : '—'}
+            {avg != null ? avg.toFixed(2).replace('.', ',') + ` / ${scale}` : '—'}
           </span>
         </div>
         <div className="mrel-result__item">

@@ -12,7 +12,7 @@ import Input from '../../../components/common/Input/Input';
 import Select from '../../../components/common/Select/Select';
 import Button from '../../../components/common/Button/Button';
 import { fmtSessionDates } from '../../../utils/fmtSessionDates';
-import { DS_TYPE_CFG, KIND_TEXT, isDsType } from '../../../utils/examKinds';
+import { DS_TYPE_CFG, CM_TYPE_CFG, KIND_TEXT, isNonExamType, isCmType, isPrimaryLevel, typesForKind } from '../../../utils/examKinds';
 import './MockExamsPage.css';
 
 /* ── Config per exam type (proper nouns — not translated) ─────────────────── */
@@ -67,11 +67,13 @@ function fmtDate(iso) {
 /* ── Create form ──────────────────────────────────────────────────────────── */
 function CreateForm({ examType, classes, onClose, onCreate }) {
   const { t } = useTranslation();
-  const type = [...EXAM_TYPES, DS_TYPE_CFG].find((et) => et.value === examType);
+  const type = [...EXAM_TYPES, DS_TYPE_CFG, CM_TYPE_CFG].find((et) => et.value === examType);
+  // Compositions mensuelles : uniquement les classes du primaire (CI → CM2)
+  const eligibleClasses = isCmType(examType) ? classes.filter((c) => isPrimaryLevel(c.level)) : classes;
   const CURRENT_YEAR = new Date().getFullYear();
   const DEFAULT_YEAR = `${CURRENT_YEAR - 1}-${CURRENT_YEAR}`;
 
-  const classOptions = classes.map((c) => ({ value: c.id, label: `${c.name} (${c.academicYear})` }));
+  const classOptions = eligibleClasses.map((c) => ({ value: c.id, label: `${c.name} (${c.academicYear})` }));
 
   const [form, setForm] = useState({
     classId: '', academicYear: DEFAULT_YEAR,
@@ -187,7 +189,7 @@ function ExamRow({ exam, isAdmin, canManage = true, onDelete, color, onDatesUpda
         <div className="mex-exam-row__title">
           {exam.label}
           {/* Un devoir surveillé reste un devoir surveillé : pas de changement de type */}
-          {canManage && !isDsType(exam.examType) && (
+          {canManage && !isNonExamType(exam.examType) && (
             <select
               className={`mex-type-select${savingType ? ' mex-type-select--saving' : ''}`}
               value={exam.examType}
@@ -360,11 +362,12 @@ function MockExamsPage({ kind = 'ESSAI' }) {
   const { user } = useAuth();
   const qc = useQueryClient();
   const isAdmin = user?.role === 'ADMIN';
-  const isDs = kind === 'DS';
-  const types = isDs ? [DS_TYPE_CFG] : EXAM_TYPES;
+  const isDs = kind === 'DS' || kind === 'CM';   // séances hors examen (DS, compositions mensuelles)
+  const text = KIND_TEXT[kind] ?? KIND_TEXT.ESSAI;
+  const types = typesForKind(kind, EXAM_TYPES);
   // L'administrateur crée et gère toutes les sessions ; les professeurs saisissent et signent leurs notes
   const canManage = isAdmin;
-  const pageTitle = isDs ? KIND_TEXT.DS.listTitle : t('mockExams.title');
+  const pageTitle = isDs ? text.listTitle : t('mockExams.title');
 
   const [createType, setCreateType] = useState(null);
 
@@ -396,7 +399,9 @@ function MockExamsPage({ kind = 'ESSAI' }) {
         title={pageTitle}
         subtitle={
           isAdmin
-            ? (isDs ? KIND_TEXT.DS.listSubtitle : t('mockExams.subtitle'))
+            ? (isDs ? text.listSubtitle : t('mockExams.subtitle'))
+            : kind === 'CM'
+              ? "Les compositions mensuelles sont créées par l'administration. Saisissez et signez les notes (sur 10) dans « Fiches »."
             : isDs
               ? "Les devoirs surveillés sont créés par l'administration. Saisissez et signez les notes de votre matière dans « Fiches des DS »."
               : "Les examens blancs sont créés par l'administration. Saisissez et signez les notes de votre matière dans « Fiches d'examen »."

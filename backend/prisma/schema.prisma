@@ -1064,6 +1064,7 @@ enum MockExamType {
   BAC1
   BAC2
   DEVOIR_SURVEILLE // Devoirs surveillés : même procédure que les examens blancs (fiches, relevés, palmarès)
+  COMPOSITION_MENSUELLE // Primaire (CI → CM2) : même procédure, notes sur 10
 }
 
 enum MockExamStatus {

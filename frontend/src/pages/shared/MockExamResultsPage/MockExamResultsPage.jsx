@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { mockExamsService } from '../../../services/mockExamsService';
-import { DS_TYPE_CFG, KIND_TEXT } from '../../../utils/examKinds';
+import { KIND_TEXT, typesForKind } from '../../../utils/examKinds';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import './MockExamResultsPage.css';
@@ -87,7 +87,7 @@ function TypeSection({ typeCfg, exams }) {
 /** kind = 'ESSAI' (examens blancs) ou 'DS' (devoirs surveillés). */
 function MockExamResultsPage({ kind = 'ESSAI' }) {
   const text = KIND_TEXT[kind] ?? KIND_TEXT.ESSAI;
-  const types = kind === 'DS' ? [DS_TYPE_CFG] : EXAM_TYPES;
+  const types = typesForKind(kind, EXAM_TYPES);
   const { data: exams = [], isLoading, isError } = useQuery({
     queryKey: ['mock-exams'],
     queryFn: () => mockExamsService.list({}).then((r) => r.data),

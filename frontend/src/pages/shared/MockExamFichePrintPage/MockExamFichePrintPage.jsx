@@ -5,6 +5,7 @@ import PrintFormatPicker from '../../../components/common/PrintFormatPicker/Prin
 import { subjectApprec } from '../../../utils/subjectApprec';
 import { fmtSessionDates } from '../../../utils/fmtSessionDates';
 import './MockExamFichePrintPage.css';
+import { examScale } from '../../../utils/examKinds';
 
 const TYPE_LABELS = {
   BLANC: 'Examen Blanc',
@@ -13,6 +14,7 @@ const TYPE_LABELS = {
   BAC1:  'Baccalauréat — Première Partie',
   BAC2:  'Baccalauréat — Deuxième Partie',
   DEVOIR_SURVEILLE: 'Devoir surveillé',
+  COMPOSITION_MENSUELLE: 'Composition mensuelle',
 };
 
 function fmtDate(iso) {
@@ -20,9 +22,10 @@ function fmtDate(iso) {
   return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
-function ScorePill({ score }) {
+function ScorePill({ score, scale = 20 }) {
   if (score == null) return <span className="mfp-score mfp-score--empty">—</span>;
-  const cls = score >= 14 ? 'mfp-score--high' : score >= 10 ? 'mfp-score--mid' : 'mfp-score--low';
+  const v20 = (score * 20) / scale; // seuils définis sur 20
+  const cls = v20 >= 14 ? 'mfp-score--high' : v20 >= 10 ? 'mfp-score--mid' : 'mfp-score--low';
   return <span className={`mfp-score ${cls}`}>{score.toFixed(2).replace('.', ',')}</span>;
 }
 
@@ -33,6 +36,8 @@ function RankBadge({ rank }) {
 }
 
 function SubjectPrintFiche({ subject, students, institution, exam }) {
+  // Compositions mensuelles (primaire) sur 10, le reste sur 20
+  const scale = examScale(exam?.examType);
   const gradeMap = new Map();
   students.forEach((s) => {
     const g = s.grades.find((g) => g.subjectId === subject.id);
@@ -48,7 +53,7 @@ function SubjectPrintFiche({ subject, students, institution, exam }) {
   const avg      = filled.length > 0 ? Math.round((filled.reduce((a, x) => a + x.v, 0) / filled.length) * 100) / 100 : null;
   const best     = filled.length > 0 ? Math.max(...filled.map((x) => x.v)) : null;
   const worst    = filled.length > 0 ? Math.min(...filled.map((x) => x.v)) : null;
-  const passing  = filled.filter((x) => x.v >= 10).length;
+  const passing  = filled.filter((x) => x.v >= scale / 2).length;
   const variance = avg != null && filled.length > 1
     ? filled.reduce((sum, x) => sum + Math.pow(x.v - avg, 2), 0) / filled.length : null;
   const stddev   = variance != null ? Math.round(Math.sqrt(variance) * 100) / 100 : null;
@@ -116,7 +121,7 @@ function SubjectPrintFiche({ subject, students, institution, exam }) {
             <th className="mfp-th mfp-th--n">N°</th>
             <th className="mfp-th mfp-th--name">Nom et Prénoms</th>
             <th className="mfp-th mfp-th--mat">Matricule</th>
-            <th className="mfp-th mfp-th--note">Note /20</th>
+            <th className="mfp-th mfp-th--note">Note /{scale}</th>
             <th className="mfp-th mfp-th--rang">Rang</th>
             <th className="mfp-th mfp-th--appr">Appréciation</th>
           </tr>
@@ -127,13 +132,14 @@ function SubjectPrintFiche({ subject, students, institution, exam }) {
             const score = g?.score ?? null;
             const rank  = rankMap.get(student.studentId) ?? null;
             const appr  = score != null ? subjectApprec(score, subject) : '';
-            const apprCls = score == null ? '' : score >= 14 ? 'appr--high' : score >= 10 ? 'appr--mid' : 'appr--low';
+            const v20 = score == null ? null : (score * 20) / scale;
+            const apprCls = v20 == null ? '' : v20 >= 14 ? 'appr--high' : v20 >= 10 ? 'appr--mid' : 'appr--low';
             return (
               <tr key={student.studentId} className={`mfp-row${i % 2 !== 0 ? ' mfp-row--alt' : ''}`}>
                 <td className="mfp-td mfp-td--n">{i + 1}</td>
                 <td className="mfp-td mfp-td--name">{student.studentName}</td>
                 <td className="mfp-td mfp-td--mat">{student.admissionNumber}</td>
-                <td className="mfp-td mfp-td--note"><ScorePill score={score} /></td>
+                <td className="mfp-td mfp-td--note"><ScorePill scale={scale} score={score} /></td>
                 <td className="mfp-td mfp-td--rang"><RankBadge rank={rank} /></td>
                 <td className={`mfp-td mfp-td--appr ${apprCls}`}>{appr || '—'}</td>
               </tr>
@@ -150,7 +156,7 @@ function SubjectPrintFiche({ subject, students, institution, exam }) {
         </div>
         <div className="mfp-stat-chip mfp-stat-chip--blue">
           <span className="mfp-stat-chip__label">Moyenne</span>
-          <span className="mfp-stat-chip__val">{avg != null ? avg.toFixed(2).replace('.', ',') : '—'}<small>/20</small></span>
+          <span className="mfp-stat-chip__val">{avg != null ? avg.toFixed(2).replace('.', ',') : '—'}<small>/{scale}</small></span>
         </div>
         <div className="mfp-stat-chip mfp-stat-chip--slate">
           <span className="mfp-stat-chip__label">Écart-type</span>

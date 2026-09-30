@@ -6,6 +6,7 @@ import { reportsService } from '../../../services/reportsService';
 import { timetablesService } from '../../../services/timetablesService';
 import { programsService } from '../../../services/programsService';
 import { useAuth } from '../../../context/AuthContext';
+import { isPrimaryLevel } from '../../../utils/examKinds';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Card from '../../../components/common/Card/Card';
@@ -32,6 +33,9 @@ function TeacherDashboardPage() {
     queryKey: ['classes'],
     queryFn: () => classesService.list().then((r) => r.data),
   });
+
+  // Classes du primaire (CI → CM2) du maître : lien vers les compositions mensuelles
+  const primaryClasses = classes.filter((c) => isPrimaryLevel(c.level));
 
   const { data: reports = [], isLoading: l2 } = useQuery({
     queryKey: ['reports'],
@@ -116,6 +120,26 @@ function TeacherDashboardPage() {
           <span className="teacher-dash__stat-label">Programme couvert</span>
         </Card>
       </div>
+
+      {/* Maîtres du primaire (CI → CM2) : compositions mensuelles, notes sur 10 */}
+      {primaryClasses.length > 0 && (
+        <Card className="teacher-dash__cm">
+          <div className="teacher-dash__cm-head">
+            <span className="teacher-dash__cm-icon" aria-hidden="true">📒</span>
+            <div>
+              <h3 className="teacher-dash__cm-title">Compositions mensuelles</h3>
+              <p className="teacher-dash__cm-sub">
+                {primaryClasses.map((c) => c.name).join(' · ')} — saisissez et signez les notes (sur 10), puis consultez palmarès et relevés.
+              </p>
+            </div>
+          </div>
+          <div className="teacher-dash__cm-links">
+            <Link to="/teacher/compositions-mensuelles/fiches" className="teacher-dash__cm-link teacher-dash__cm-link--main">📝 Saisir les notes</Link>
+            <Link to="/teacher/compositions-mensuelles" className="teacher-dash__cm-link">📋 Compositions</Link>
+            <Link to="/teacher/compositions-mensuelles/resultats" className="teacher-dash__cm-link">🏆 Résultats et relevés</Link>
+          </div>
+        </Card>
+      )}
 
       <div className="teacher-dash__grid">
         <Card className="teacher-dash__card">

@@ -1,12 +1,19 @@
-import { Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
 import archiver = require('archiver');
 import { PrismaService } from '../../prisma/prisma.service';
-import { PdfService, ReleveData } from '../pdf/pdf.service';
+import { PdfService, ReleveData, isPrimaryLevel } from '../pdf/pdf.service';
 import { CreateMockExamDto } from './dto/create-mock-exam.dto';
 import { SaveMockExamGradesDto } from './dto/save-grades.dto';
 
-function appreciation(score: number | null): string {
-  if (score == null) return '';
+/** Barème de la session : compositions mensuelles (primaire) sur 10, le reste sur 20. */
+export function examScale(examType: string | null | undefined): number {
+  return examType === 'COMPOSITION_MENSUELLE' ? 10 : 20;
+}
+
+/** Appréciation d'une note exprimée sur `scale` (seuils définis sur 20). */
+function appreciation(raw: number | null, scale = 20): string {
+  if (raw == null) return '';
+  const score = (raw * 20) / scale;
   if (score >= 16) return 'Très Bien';
   if (score >= 14) return 'Bien';
   if (score >= 12) return 'Assez Bien';
@@ -62,6 +69,10 @@ export class MockExamsService {
       where: { id: dto.classId, institutionId },
     });
     if (!cls) throw new NotFoundException('Classe introuvable');
+    // Les compositions mensuelles sont propres au primaire (notes sur 10)
+    if (dto.examType === ('COMPOSITION_MENSUELLE' as any) && !isPrimaryLevel(cls.level)) {
+      throw new BadRequestException('Les compositions mensuelles concernent uniquement les classes du CI au CM2');
+    }
 
     return this.prisma.mockExam.create({
       data: {
@@ -130,6 +141,7 @@ export class MockExamsService {
       coefficient: subjectCoeffMap.get(cs.subject.id) ?? 1,
     }));
 
+    const scale = examScale(exam.examType);
     const students = classStudents.map((cs) => {
       const student = cs.student;
       const gradesForStudent = subjects.map((subj) => {
@@ -138,7 +150,7 @@ export class MockExamsService {
           subjectId: subj.id,
           coefficient: g?.coefficient ?? subj.coefficient,
           score: g?.score ?? null,
-          appreciation: appreciation(g?.score ?? null),
+          appreciation: appreciation(g?.score ?? null, scale),
         };
       });
 
@@ -155,7 +167,7 @@ export class MockExamsService {
         sex: student.sex ?? null,
         grades: gradesForStudent,
         average,
-        appreciation: appreciation(average),
+        appreciation: appreciation(average, scale),
       };
     });
 
@@ -185,6 +197,7 @@ export class MockExamsService {
         id: exam.id,
         label: exam.label,
         examType: exam.examType,
+        scale,
         examDate:    exam.examDate,
         examEndDate: exam.examEndDate,
         academicYear: exam.academicYear,
@@ -330,7 +343,8 @@ export class MockExamsService {
 
     const isBac = sheet.exam.examType === 'BAC1' || sheet.exam.examType === 'BAC2';
     const withGrades  = students.filter((s) => s.average != null).length;
-    const admitted    = students.filter((s) => s.average != null && s.average >= 10).length;
+    const pass = examScale(sheet.exam.examType) / 2; // 10/20, ou 5/10 pour les compositions mensuelles
+    const admitted    = students.filter((s) => s.average != null && s.average >= pass).length;
     const admissible  = isBac
       ? students.filter((s) => s.average != null && s.average >= 9 && s.average < 10).length
       : 0;
@@ -475,6 +489,7 @@ export class MockExamsService {
   private static readonly TYPE_LABELS: Record<string, string> = {
     BLANC: 'Examen blanc', CEPE: 'CEPE blanc', BEPC: 'BEPC blanc',
     BAC1: 'BAC 1re partie blanc', BAC2: 'BAC 2e partie blanc', DEVOIR_SURVEILLE: 'Devoir surveillé',
+    COMPOSITION_MENSUELLE: 'Composition mensuelle',
   };
 
   /** Données prêtes pour le gabarit PDF, pour un élève ou pour toute la classe. */
@@ -505,6 +520,7 @@ export class MockExamsService {
       exam: {
         label: sheet.exam.label,
         examType: sheet.exam.examType,
+        scale: examScale(sheet.exam.examType),
         typeLabel: MockExamsService.TYPE_LABELS[sheet.exam.examType] ?? sheet.exam.examType,
         className: sheet.exam.class?.name ?? '',
         academicYear: sheet.exam.academicYear,
