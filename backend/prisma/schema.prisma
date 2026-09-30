@@ -1063,6 +1063,7 @@ enum MockExamType {
   BEPC
   BAC1
   BAC2
+  DEVOIR_SURVEILLE // Devoirs surveillés : même procédure que les examens blancs (fiches, relevés, palmarès)
 }
 
 enum MockExamStatus {

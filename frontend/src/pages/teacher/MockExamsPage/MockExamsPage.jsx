@@ -12,6 +12,7 @@ import Input from '../../../components/common/Input/Input';
 import Select from '../../../components/common/Select/Select';
 import Button from '../../../components/common/Button/Button';
 import { fmtSessionDates } from '../../../utils/fmtSessionDates';
+import { DS_TYPE_CFG, KIND_TEXT, isDsType } from '../../../utils/examKinds';
 import './MockExamsPage.css';
 
 /* ── Config per exam type (proper nouns — not translated) ─────────────────── */
@@ -66,7 +67,7 @@ function fmtDate(iso) {
 /* ── Create form ──────────────────────────────────────────────────────────── */
 function CreateForm({ examType, classes, onClose, onCreate }) {
   const { t } = useTranslation();
-  const type = EXAM_TYPES.find((et) => et.value === examType);
+  const type = [...EXAM_TYPES, DS_TYPE_CFG].find((et) => et.value === examType);
   const CURRENT_YEAR = new Date().getFullYear();
   const DEFAULT_YEAR = `${CURRENT_YEAR - 1}-${CURRENT_YEAR}`;
 
@@ -185,18 +186,21 @@ function ExamRow({ exam, isAdmin, onDelete, color, onDatesUpdated }) {
       <div className="mex-exam-row__info">
         <div className="mex-exam-row__title">
           {exam.label}
-          <select
-            className={`mex-type-select${savingType ? ' mex-type-select--saving' : ''}`}
-            value={exam.examType}
-            onChange={handleTypeChange}
-            disabled={savingType}
-          >
-            <option value="BLANC">Examen Blanc</option>
-            <option value="CEPE">CEPE Blanc</option>
-            <option value="BEPC">BEPC Blanc</option>
-            <option value="BAC1">BAC Première Partie</option>
-            <option value="BAC2">BAC Deuxième Partie</option>
-          </select>
+          {/* Un devoir surveillé reste un devoir surveillé : pas de changement de type */}
+          {!isDsType(exam.examType) && (
+            <select
+              className={`mex-type-select${savingType ? ' mex-type-select--saving' : ''}`}
+              value={exam.examType}
+              onChange={handleTypeChange}
+              disabled={savingType}
+            >
+              <option value="BLANC">Examen Blanc</option>
+              <option value="CEPE">CEPE Blanc</option>
+              <option value="BEPC">BEPC Blanc</option>
+              <option value="BAC1">BAC Première Partie</option>
+              <option value="BAC2">BAC Deuxième Partie</option>
+            </select>
+          )}
         </div>
         <div className="mex-exam-row__meta">
           <span>🏫 {exam.class?.name}</span>
@@ -346,11 +350,15 @@ function TypeSection({ typeCfg, exams, classes, isAdmin, onDelete, onCreateClick
 }
 
 /* ── Page ─────────────────────────────────────────────────────────────────── */
-function MockExamsPage() {
+/** kind = 'ESSAI' (examens blancs) ou 'DS' (devoirs surveillés) : même page, même procédure. */
+function MockExamsPage({ kind = 'ESSAI' }) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const qc = useQueryClient();
   const isAdmin = user?.role === 'ADMIN';
+  const isDs = kind === 'DS';
+  const types = isDs ? [DS_TYPE_CFG] : EXAM_TYPES;
+  const pageTitle = isDs ? KIND_TEXT.DS.listTitle : t('mockExams.title');
 
   const [createType, setCreateType] = useState(null);
 
@@ -374,13 +382,13 @@ function MockExamsPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['mock-exams'] }),
   });
 
-  const activeType = createType ? EXAM_TYPES.find((et) => et.value === createType) : null;
+  const activeType = createType ? types.find((et) => et.value === createType) : null;
 
   return (
-    <AppShell title={t('mockExams.title')}>
+    <AppShell title={pageTitle}>
       <PageHeader
-        title={t('mockExams.title')}
-        subtitle={t('mockExams.subtitle')}
+        title={pageTitle}
+        subtitle={isDs ? KIND_TEXT.DS.listSubtitle : t('mockExams.subtitle')}
       />
 
       {isLoading && (
@@ -392,7 +400,7 @@ function MockExamsPage() {
 
       {!isLoading && (
         <div className="mex-levels">
-          {EXAM_TYPES.map((typeCfg) => (
+          {types.map((typeCfg) => (
             <TypeSection
               key={typeCfg.value}
               typeCfg={typeCfg}

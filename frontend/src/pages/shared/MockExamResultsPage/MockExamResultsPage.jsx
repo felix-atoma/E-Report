@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { mockExamsService } from '../../../services/mockExamsService';
+import { DS_TYPE_CFG, KIND_TEXT } from '../../../utils/examKinds';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import './MockExamResultsPage.css';
@@ -83,19 +84,22 @@ function TypeSection({ typeCfg, exams }) {
   );
 }
 
-function MockExamResultsPage() {
+/** kind = 'ESSAI' (examens blancs) ou 'DS' (devoirs surveillés). */
+function MockExamResultsPage({ kind = 'ESSAI' }) {
+  const text = KIND_TEXT[kind] ?? KIND_TEXT.ESSAI;
+  const types = kind === 'DS' ? [DS_TYPE_CFG] : EXAM_TYPES;
   const { data: exams = [], isLoading, isError } = useQuery({
     queryKey: ['mock-exams'],
     queryFn: () => mockExamsService.list({}).then((r) => r.data),
   });
 
-  const hasAny = exams.length > 0;
+  const hasAny = exams.some((e) => types.some((t) => t.value === e.examType));
 
   return (
-    <AppShell title="Résultats des examens blancs">
+    <AppShell title={text.resultsTitle}>
       <PageHeader
-        title="Résultats des examens blancs"
-        subtitle="Palmarès et relevés de notes par niveau · CEPE · BEPC · BAC 1 · BAC 2"
+        title={text.resultsTitle}
+        subtitle={text.resultsSubtitle}
       />
 
       {isLoading && (
@@ -107,12 +111,12 @@ function MockExamResultsPage() {
 
       {!isLoading && (
         <div className="mres-levels">
-          {EXAM_TYPES.map((typeCfg) => (
+          {types.map((typeCfg) => (
             <TypeSection key={typeCfg.value} typeCfg={typeCfg} exams={exams} />
           ))}
           {!hasAny && !isError && (
             <div className="mres-empty">
-              Aucune session d'examen blanc créée.
+              {text.empty}
             </div>
           )}
         </div>

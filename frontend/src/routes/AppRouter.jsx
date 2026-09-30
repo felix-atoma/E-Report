@@ -181,6 +181,10 @@ function AppRouter() {
         <Route path="/admin/mock-exams/:id/grades"   element={<ProtectedRoute roles={['ADMIN']}><MockExamGradePage /></ProtectedRoute>} />
         <Route path="/admin/mock-exam-fiches"        element={<ProtectedRoute roles={['ADMIN']}><MockExamFichesListPage /></ProtectedRoute>} />
         <Route path="/admin/mock-exam-results"       element={<ProtectedRoute roles={['ADMIN']}><MockExamResultsPage /></ProtectedRoute>} />
+        {/* Devoirs surveillés : même procédure que les examens blancs */}
+        <Route path="/admin/devoirs-surveilles"           element={<ProtectedRoute roles={['ADMIN']}><MockExamsPage kind="DS" /></ProtectedRoute>} />
+        <Route path="/admin/devoirs-surveilles/fiches"    element={<ProtectedRoute roles={['ADMIN']}><MockExamFichesListPage kind="DS" /></ProtectedRoute>} />
+        <Route path="/admin/devoirs-surveilles/resultats" element={<ProtectedRoute roles={['ADMIN']}><MockExamResultsPage kind="DS" /></ProtectedRoute>} />
         <Route path="/admin/subscription"            element={<ProtectedRoute roles={['ADMIN']}><SubscriptionPage /></ProtectedRoute>} />
         <Route path="/subscription-return"           element={<SubscriptionReturnPage />} />
 
@@ -213,6 +217,9 @@ function AppRouter() {
         <Route path="/teacher/mock-exams/:id/grades" element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamGradePage /></ProtectedRoute>} />
         <Route path="/teacher/mock-exam-fiches"      element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamFichesListPage /></ProtectedRoute>} />
         <Route path="/teacher/mock-exam-results"     element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamResultsPage /></ProtectedRoute>} />
+        <Route path="/teacher/devoirs-surveilles"           element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamsPage kind="DS" /></ProtectedRoute>} />
+        <Route path="/teacher/devoirs-surveilles/fiches"    element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamFichesListPage kind="DS" /></ProtectedRoute>} />
+        <Route path="/teacher/devoirs-surveilles/resultats" element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamResultsPage kind="DS" /></ProtectedRoute>} />
         <Route path="/teacher/schedule"      element={<ProtectedRoute roles={['TEACHER']}><TeacherSchedulePage /></ProtectedRoute>} />
         <Route path="/teacher/roadmap"       element={<ProtectedRoute roles={['TEACHER']}><TeacherRoadmapPage /></ProtectedRoute>} />
         <Route path="/teacher/calendar"    element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><CalendarPage /></ProtectedRoute>} />

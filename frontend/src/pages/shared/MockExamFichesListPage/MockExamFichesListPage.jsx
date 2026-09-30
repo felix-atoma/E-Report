@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { mockExamsService } from '../../../services/mockExamsService';
+import { DS_TYPE_CFG, KIND_TEXT } from '../../../utils/examKinds';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import './MockExamFichesListPage.css';
@@ -70,19 +71,22 @@ function TypeSection({ typeCfg, exams }) {
   );
 }
 
-function MockExamFichesListPage() {
+/** kind = 'ESSAI' (examens blancs) ou 'DS' (devoirs surveillés). */
+function MockExamFichesListPage({ kind = 'ESSAI' }) {
+  const text = KIND_TEXT[kind] ?? KIND_TEXT.ESSAI;
+  const types = kind === 'DS' ? [DS_TYPE_CFG] : EXAM_TYPES;
   const { data: exams = [], isLoading, isError } = useQuery({
     queryKey: ['mock-exams'],
     queryFn: () => mockExamsService.list({}).then((r) => r.data),
   });
 
-  const hasAny = exams.length > 0;
+  const hasAny = exams.some((e) => types.some((t) => t.value === e.examType));
 
   return (
-    <AppShell title="Fiches de notes — Examens blancs">
+    <AppShell title={text.fichesTitle}>
       <PageHeader
-        title="Fiches de notes — Examens blancs"
-        subtitle="Saisie des notes par matière et par professeur · CEPE · BEPC · BAC 1 · BAC 2"
+        title={text.fichesTitle}
+        subtitle={text.fichesSubtitle}
       />
 
       {isLoading && (
@@ -94,13 +98,13 @@ function MockExamFichesListPage() {
 
       {!isLoading && (
         <div className="mfl-levels">
-          {EXAM_TYPES.map((typeCfg) => (
+          {types.map((typeCfg) => (
             <TypeSection key={typeCfg.value} typeCfg={typeCfg} exams={exams} />
           ))}
           {!hasAny && !isError && (
             <div className="mfl-empty">
-              Aucune session d'examen blanc créée.
-              <Link to="/teacher/mock-exams" className="mfl-empty__link">
+              {text.empty}
+              <Link to={text.listPath} className="mfl-empty__link">
                 Créer une session
               </Link>
             </div>

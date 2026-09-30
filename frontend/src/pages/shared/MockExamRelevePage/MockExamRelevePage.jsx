@@ -12,6 +12,7 @@ const TYPE_LABELS = {
   BEPC:  'B.E.P.C Blanc',
   BAC1:  'Baccalauréat — Première Partie',
   BAC2:  'Baccalauréat — Deuxième Partie',
+  DEVOIR_SURVEILLE: 'Devoir surveillé',
 };
 
 function apprec(avg) {
@@ -31,6 +32,10 @@ function fmtDate(iso) {
 function getResult(avg, examType, sex) {
   const f = sex === 'F';
   if (avg == null) return { text: '—', cls: '' };
+  // Devoir surveillé : pas d'« admis / ajourné » (ce n'est pas un examen)
+  if (examType === 'DEVOIR_SURVEILLE') {
+    return avg >= 10 ? { text: 'MOYENNE ATTEINTE', cls: 'pass' } : { text: 'SOUS LA MOYENNE', cls: 'fail' };
+  }
   if (avg >= 10) return { text: f ? 'ADMISE' : 'ADMIS', cls: 'pass' };
   if ((examType === 'BAC1' || examType === 'BAC2') && avg >= 9)
     return { text: 'ADMISSIBLE', cls: 'admissible' };

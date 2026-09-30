@@ -11,6 +11,7 @@ const TYPE_LABELS = {
   BEPC:  'B.E.P.C Blanc',
   BAC1:  'Baccalauréat — Première Partie',
   BAC2:  'Baccalauréat — Deuxième Partie',
+  DEVOIR_SURVEILLE: 'Devoir surveillé',
 };
 
 function fmtDate(iso) {
@@ -34,10 +35,17 @@ function MockExamPalmaresPage() {
   const { institution, exam, subjects, students, summary } = data;
   const totalCoeff = subjects.reduce((s, subj) => s + subj.coefficient, 0);
   const isBac = exam.examType === 'BAC1' || exam.examType === 'BAC2';
+  // Devoir surveillé : pas d'« admis / ajourné » (ce n'est pas un examen)
+  const isDs = exam.examType === 'DEVOIR_SURVEILLE';
 
   function getResult(avg, sex) {
     const f = sex === 'F';
     if (avg == null) return { label: '—', cls: '' };
+    if (isDs) {
+      return avg >= 10
+        ? { label: 'MOYENNE ATTEINTE', cls: 'mpal-td--pass' }
+        : { label: 'SOUS LA MOYENNE', cls: 'mpal-td--fail' };
+    }
     if (avg >= 10) return { label: f ? 'ADMISE' : 'ADMIS', cls: 'mpal-td--pass' };
     if (isBac && avg >= 9) return { label: 'ADMISSIBLE', cls: 'mpal-td--admis' };
     return { label: f ? 'AJOURNÉE' : 'AJOURNÉ', cls: 'mpal-td--fail' };
@@ -187,7 +195,7 @@ function MockExamPalmaresPage() {
             <span className="mpal-summary__value">{summary.total}</span>
           </div>
           <div className="mpal-summary__item">
-            <span className="mpal-summary__label">Admis(e)s ≥10</span>
+            <span className="mpal-summary__label">{isDs ? 'Moyenne ≥ 10' : 'Admis(e)s ≥10'}</span>
             <span className="mpal-summary__value mpal-summary__value--pass">{summary.admitted}</span>
           </div>
           {summary.isBac && (
@@ -197,7 +205,7 @@ function MockExamPalmaresPage() {
             </div>
           )}
           <div className="mpal-summary__item">
-            <span className="mpal-summary__label">Ajournés</span>
+            <span className="mpal-summary__label">{isDs ? 'Sous la moyenne' : 'Ajournés'}</span>
             <span className="mpal-summary__value mpal-summary__value--fail">{summary.ajourne ?? (summary.withGrades - summary.admitted)}</span>
           </div>
           <div className="mpal-summary__item">

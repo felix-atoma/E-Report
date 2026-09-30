@@ -15,6 +15,7 @@ const TYPE_LABELS = {
   BEPC:  'B.E.P.C Blanc',
   BAC1:  'Baccalauréat — Première Partie',
   BAC2:  'Baccalauréat — Deuxième Partie',
+  DEVOIR_SURVEILLE: 'Devoir surveillé',
 };
 
 
