@@ -11,6 +11,11 @@ export const mockExamsService = {
   getReleve: (id, studentId) =>
     api.get(`/mock-exams/${id}/releve`, { params: studentId ? { studentId } : {} }),
   getPalmares: (id) => api.get(`/mock-exams/${id}/palmares`),
+  // Relevés en PDF (même charte que les bulletins) : un élève, ou toute la classe en ZIP
+  downloadRelevePdf: (id, studentId) =>
+    api.get(`/mock-exams/${id}/releve/pdf`, { params: { studentId }, responseType: 'blob' }),
+  downloadReleveZip: (id) =>
+    api.get(`/mock-exams/${id}/releve/zip`, { responseType: 'blob', timeout: 10 * 60 * 1000 }),
   getFicheData: (id) => api.get(`/mock-exams/${id}/fiche`),
   saveSubjectGrades: (id, subjectId, grades, coefficient) =>
     api.patch(`/mock-exams/${id}/fiche/${subjectId}`, { grades, coefficient }),

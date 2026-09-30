@@ -90,6 +90,7 @@ export class PdfService {
   private readonly outputDir: string;
   private readonly baseUrl: string;
   private readonly template: HandlebarsTemplateDelegate;
+  private readonly releveTemplate: HandlebarsTemplateDelegate;
 
   constructor(
     config: ConfigService,
@@ -114,6 +115,9 @@ export class PdfService {
     );
 
     this.template = Handlebars.compile(templateSrc);
+    this.releveTemplate = Handlebars.compile(
+      fs.readFileSync(path.join(__dirname, 'templates', 'releve.hbs'), 'utf8'),
+    );
   }
 
   async generateFromHtml(html: string): Promise<Buffer> {
@@ -186,6 +190,73 @@ export class PdfService {
     } finally {
       await page.close();
     }
+  }
+
+  /**
+   * Relevé de notes d'un examen blanc ou d'un devoir surveillé : même charte, même filigrane
+   * et même mise sur une page que le bulletin.
+   */
+  async generateRelevePdfBuffer(data: ReleveData): Promise<Buffer> {
+    const { institution, exam, student } = data;
+    const branding = (institution.brandingSettings as Record<string, unknown>) ?? {};
+    const inst = institution as any;
+    const isDs = exam.examType === 'DEVOIR_SURVEILLE';
+    const isBac = exam.examType === 'BAC1' || exam.examType === 'BAC2';
+    const female = student.sex === 'F';
+
+    const rows = data.rows.map((r) => ({
+      ...r,
+      scoreLabel: formatScore(r.score),
+      pointsLabel: r.score != null ? formatScore(r.score * r.coefficient) : '—',
+      passed: r.score == null || r.score >= 10,
+      levelClass: r.score == null ? '' : r.score >= 14 ? 'lvl-good' : r.score >= 10 ? 'lvl-pass' : 'lvl-fail',
+    }));
+    const graded = rows.filter((r) => r.score != null);
+    const totalCoef = graded.reduce((s, r) => s + r.coefficient, 0);
+    const totalPoints = graded.reduce((s, r) => s + (r.score as number) * r.coefficient, 0);
+
+    // Examen : admis / admissible (BAC ≥ 9) / ajourné — Devoir surveillé : moyenne atteinte ou non
+    const avg = data.average;
+    const result = avg == null ? { text: '—', cls: '' }
+      : isDs ? (avg >= 10 ? { text: 'MOYENNE ATTEINTE', cls: 'pass' } : { text: 'SOUS LA MOYENNE', cls: 'fail' })
+      : avg >= 10 ? { text: female ? 'ADMISE' : 'ADMIS', cls: 'pass' }
+      : isBac && avg >= 9 ? { text: 'ADMISSIBLE', cls: 'admissible' }
+      : { text: female ? 'AJOURNÉE' : 'AJOURNÉ', cls: 'fail' };
+
+    const fmtDate = (d?: Date | string | null) => (d ? new Date(d).toLocaleDateString('fr-FR') : null);
+    const dates = [fmtDate(exam.examDate), fmtDate(exam.examEndDate)].filter(Boolean).join(' → ') || '—';
+    const rankLabel = data.rank != null ? (data.rank === 1 ? (female ? '1ère' : '1er') : `${data.rank}e`) : null;
+
+    const html = this.releveTemplate({
+      institution: {
+        ...institution,
+        primaryColor: (branding.primaryColor as string) || '#1e3a8a',
+        secondaryColor: (branding.secondaryColor as string) || '#f59e0b',
+        countryLine: [inst.country, inst.countryMotto].filter(Boolean).join(' — ') || null,
+        circonscription: (branding.circonscription as string) || null,
+        headerLogo: inst.logo || inst.crest || null,
+      },
+      exam: { ...exam, dates, typeLabel: exam.typeLabel },
+      student: {
+        ...student,
+        sexLabel: student.sex === 'F' ? 'Féminin' : student.sex === 'M' ? 'Masculin' : '—',
+        dateOfBirth: fmtDate(student.dateOfBirth) ?? '—',
+      },
+      rows,
+      gradedCount: graded.length,
+      totalCoef,
+      totalPointsLabel: formatScore(Math.round(totalPoints * 100) / 100),
+      averageLabel: avg != null ? formatScore(avg) : null,
+      isPassing: (avg ?? 0) >= 10,
+      appreciation: data.appreciation,
+      rankLabel,
+      classSize: data.classSize,
+      result,
+      isDs,
+      watermark: buildWatermark(institution.name),
+      generatedAt: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }),
+    });
+    return this.renderOnePagePdf(html);
   }
 
   async generateReportCardPdfBuffer(reportData: ReportCardData): Promise<Buffer> {
@@ -432,4 +503,26 @@ export interface ReportCardData {
     stamp: string | null;
     brandingSettings?: unknown;
   };
+}
+
+/** Données d'un relevé de notes (examen blanc ou devoir surveillé) pour un élève. */
+export interface ReleveData {
+  institution: {
+    name: string; country?: string | null; countryMotto?: string | null; address?: string | null;
+    phone?: string | null; email?: string | null; website?: string | null; motto?: string | null;
+    logo?: string | null; crest?: string | null; stamp?: string | null; brandingSettings?: unknown;
+  };
+  exam: {
+    label: string; examType: string; typeLabel: string; className: string; academicYear: string;
+    examDate?: Date | string | null; examEndDate?: Date | string | null;
+  };
+  student: {
+    name: string; admissionNumber: string; sex?: string | null;
+    dateOfBirth?: Date | string | null; photo?: string | null;
+  };
+  rows: Array<{ subject: string; score: number | null; coefficient: number; appreciation: string }>;
+  average: number | null;
+  appreciation: string;
+  rank: number | null;
+  classSize: number | null;
 }

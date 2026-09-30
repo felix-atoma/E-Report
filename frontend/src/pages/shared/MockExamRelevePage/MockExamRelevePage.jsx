@@ -213,6 +213,29 @@ function MockExamRelevePage() {
     queryFn: () => mockExamsService.getReleve(id, selected || undefined).then((r) => r.data),
   });
 
+  // Téléchargement en PDF (même charte que les bulletins) : l'élève choisi, ou tous en ZIP
+  const [downloading, setDownloading] = useState(false);
+  async function handleDownload() {
+    setDownloading(true);
+    try {
+      const res = selected
+        ? await mockExamsService.downloadRelevePdf(id, selected)
+        : await mockExamsService.downloadReleveZip(id);
+      const disposition = res.headers?.['content-disposition'] ?? '';
+      const filename = /filename="([^"]+)"/.exec(disposition)?.[1] ?? (selected ? 'releve.pdf' : 'releves.zip');
+      const url = URL.createObjectURL(res.data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert('Le téléchargement a échoué. Réessayez.');
+    } finally {
+      setDownloading(false);
+    }
+  }
+
   if (isLoading) return <div className="mrel-loading">Chargement...</div>;
   if (isError || !data) return (
     <div className="mrel-screen-error">Impossible de charger le relevé. Vérifiez l'identifiant.</div>
@@ -238,6 +261,11 @@ function MockExamRelevePage() {
           </select>
         </div>
         <PrintFormatPicker defaultFormat="A4 portrait" />
+        <button className="mrel-print-btn mrel-download-btn" onClick={handleDownload} disabled={downloading}>
+          {downloading
+            ? (selected ? 'Préparation du PDF…' : 'Préparation des relevés…')
+            : (selected ? '⬇ Télécharger le PDF' : `⬇ Tous les relevés (ZIP, ${students.length})`)}
+        </button>
         <button className="mrel-print-btn" onClick={() => window.print()}>
           🖨 Imprimer
         </button>

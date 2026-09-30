@@ -155,3 +155,8 @@
 }
 
 @page { margin: 0; }
+
+/* Téléchargement des relevés en PDF (même charte que les bulletins) */
+.mrel-download-btn { background: #15803d; }
+.mrel-download-btn:hover:not(:disabled) { background: #166534; }
+.mrel-download-btn:disabled { opacity: .65; cursor: wait; }

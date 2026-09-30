@@ -1,5 +1,7 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
+import archiver = require('archiver');
 import { PrismaService } from '../../prisma/prisma.service';
+import { PdfService, ReleveData } from '../pdf/pdf.service';
 import { CreateMockExamDto } from './dto/create-mock-exam.dto';
 import { SaveMockExamGradesDto } from './dto/save-grades.dto';
 
@@ -16,7 +18,12 @@ function round2(v: number) { return Math.round(v * 100) / 100; }
 
 @Injectable()
 export class MockExamsService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(MockExamsService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly pdf: PdfService,
+  ) {}
 
   // ─── List exams for a class (or all for institution) ────────────────────────
   async list(institutionId: string, classId?: string, academicYear?: string) {
@@ -461,6 +468,103 @@ export class MockExamsService {
       subjects: sheet.subjects,
       students,
     };
+  }
+
+  // ─── Relevés en PDF (même charte que les bulletins) ──────────────────────────
+
+  private static readonly TYPE_LABELS: Record<string, string> = {
+    BLANC: 'Examen blanc', CEPE: 'CEPE blanc', BEPC: 'BEPC blanc',
+    BAC1: 'BAC 1re partie blanc', BAC2: 'BAC 2e partie blanc', DEVOIR_SURVEILLE: 'Devoir surveillé',
+  };
+
+  /** Données prêtes pour le gabarit PDF, pour un élève ou pour toute la classe. */
+  private async buildReleveData(examId: string, institutionId: string, studentId?: string): Promise<ReleveData[]> {
+    const sheet = await this.getGradeSheet(examId, institutionId);
+    const institution = await this.prisma.institution.findUnique({
+      where: { id: institutionId },
+      select: {
+        name: true, country: true, countryMotto: true, address: true, phone: true, email: true,
+        website: true, motto: true, logo: true, crest: true, stamp: true, brandingSettings: true,
+      },
+    });
+    if (!institution) throw new NotFoundException('Établissement introuvable');
+
+    const students = studentId ? sheet.students.filter((s) => s.studentId === studentId) : sheet.students;
+    if (!students.length) throw new NotFoundException('Élève introuvable dans cette session');
+
+    // Photo et date de naissance : absentes de la feuille de notes
+    const details = await this.prisma.student.findMany({
+      where: { id: { in: students.map((s) => s.studentId) } },
+      select: { id: true, dateOfBirth: true, user: { select: { profileImage: true } } },
+    });
+    const detailById = new Map(details.map((d) => [d.id, d]));
+    const subjectName = new Map(sheet.subjects.map((s: any) => [s.id, s.nameFr]));
+
+    return students.map((s) => ({
+      institution,
+      exam: {
+        label: sheet.exam.label,
+        examType: sheet.exam.examType,
+        typeLabel: MockExamsService.TYPE_LABELS[sheet.exam.examType] ?? sheet.exam.examType,
+        className: sheet.exam.class?.name ?? '',
+        academicYear: sheet.exam.academicYear,
+        examDate: sheet.exam.examDate,
+        examEndDate: sheet.exam.examEndDate,
+      },
+      student: {
+        name: s.studentName,
+        admissionNumber: s.admissionNumber,
+        sex: s.sex,
+        dateOfBirth: detailById.get(s.studentId)?.dateOfBirth ?? null,
+        photo: detailById.get(s.studentId)?.user?.profileImage ?? null,
+      },
+      rows: s.grades.map((g) => ({
+        subject: subjectName.get(g.subjectId) ?? '—',
+        score: g.score,
+        coefficient: g.coefficient,
+        appreciation: g.appreciation,
+      })),
+      average: s.average,
+      appreciation: s.appreciation,
+      rank: s.rank,
+      classSize: s.classSize,
+    }));
+  }
+
+  private releveFilename(d: ReleveData) {
+    const safe = (v: string) => v.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '');
+    return `releve-${safe(d.student.name)}-${safe(d.exam.label)}.pdf`;
+  }
+
+  async relevePdf(examId: string, institutionId: string, studentId: string) {
+    const [data] = await this.buildReleveData(examId, institutionId, studentId);
+    const buffer = await this.pdf.generateRelevePdfBuffer(data);
+    return { buffer, filename: this.releveFilename(data) };
+  }
+
+  /** Tous les relevés de la session dans un ZIP (un PDF par élève), comme l'export des bulletins. */
+  async releveZip(examId: string, institutionId: string): Promise<{ buffer: Buffer; filename: string }> {
+    const all = await this.buildReleveData(examId, institutionId);
+    const zip = archiver('zip', { zlib: { level: 6 } });
+    const chunks: Buffer[] = [];
+    const done = new Promise<Buffer>((resolve, reject) => {
+      zip.on('data', (c: Buffer) => chunks.push(c));
+      zip.on('end', () => resolve(Buffer.concat(chunks)));
+      zip.on('error', reject);
+    });
+    // Séquentiel : un seul navigateur Puppeteer, mémoire maîtrisée
+    for (const d of all) {
+      try {
+        zip.append(await this.pdf.generateRelevePdfBuffer(d), { name: this.releveFilename(d) });
+      } catch (err: any) {
+        this.logger.error(`Relevé ZIP: élève ${d.student.admissionNumber} ignoré — ${err?.message ?? err}`);
+      }
+    }
+    await zip.finalize();
+    const buffer = await done;
+    const exam = all[0].exam;
+    const safe = (v: string) => v.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '');
+    return { buffer, filename: `releves-${safe(exam.className)}-${safe(exam.label)}.zip` };
   }
 
   // ─── Private ─────────────────────────────────────────────────────────────────

@@ -1,7 +1,8 @@
 import {
   Controller, Get, Post, Patch, Delete,
-  Param, Body, Query, Req, UseGuards,
+  Param, Body, Query, Req, Res, UseGuards, BadRequestException,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
 import { MockExamsService } from './mock-exams.service';
@@ -131,6 +132,38 @@ export class MockExamsController {
   async delete(@Param('id') id: string, @Req() req: any) {
     await this.service.assertCanManage(id, req.user.role, req.user.institutionId);
     return this.service.delete(id, req.user.institutionId);
+  }
+
+  // Relevé d'un élève en PDF — même charte que le bulletin (filigrane, une page)
+  @Roles(Role.ADMIN, Role.TEACHER)
+  @Get(':id/releve/pdf')
+  async relevePdf(
+    @Param('id') id: string,
+    @Query('studentId') studentId: string,
+    @Req() req: any,
+    @Res() res: Response,
+  ) {
+    if (!studentId) throw new BadRequestException('studentId requis');
+    const { buffer, filename } = await this.service.relevePdf(id, req.user.institutionId, studentId);
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+      'Content-Length': buffer.length,
+    });
+    res.end(buffer);
+  }
+
+  // Tous les relevés de la session dans un ZIP (un PDF par élève)
+  @Roles(Role.ADMIN, Role.TEACHER)
+  @Get(':id/releve/zip')
+  async releveZip(@Param('id') id: string, @Req() req: any, @Res() res: Response) {
+    const { buffer, filename } = await this.service.releveZip(id, req.user.institutionId);
+    res.set({
+      'Content-Type': 'application/zip',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+      'Content-Length': buffer.length,
+    });
+    res.end(buffer);
   }
 
   @Roles(Role.ADMIN, Role.TEACHER)
