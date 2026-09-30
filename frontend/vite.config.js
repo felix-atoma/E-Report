@@ -8,6 +8,8 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // Enregistrement fait dans src/index.jsx (mise à jour immédiate + vérification horaire)
+      injectRegister: false,
       includeAssets: ['offline.html', 'pwa-192.svg', 'pwa-512.svg'],
       manifest: {
         name: 'NovaBulletin',
@@ -16,7 +18,8 @@ export default defineConfig({
         theme_color: '#1E2A78',
         background_color: '#f8fafc',
         display: 'standalone',
-        orientation: 'portrait',
+        // « any » : l'application installée suit la rotation du téléphone (fiche de notes en paysage)
+        orientation: 'any',
         scope: '/',
         start_url: '/',
         icons: [
@@ -36,6 +39,9 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
+        skipWaiting: true,
         runtimeCaching: [
           {
             // PDF / ZIP generation — long-running, bypass service worker entirely

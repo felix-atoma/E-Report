@@ -18,6 +18,19 @@ if (import.meta.env.DEV && 'serviceWorker' in navigator) {
   });
 }
 
+// Application installée (PWA) : prend la nouvelle version dès qu'elle est déployée
+// (rechargement automatique) et vérifie toutes les heures si l'app reste ouverte.
+if (import.meta.env.PROD) {
+  import('virtual:pwa-register').then(({ registerSW }) => {
+    registerSW({
+      immediate: true,
+      onRegisteredSW(_url, registration) {
+        if (registration) setInterval(() => registration.update(), 60 * 60 * 1000);
+      },
+    });
+  }).catch(() => { /* navigateur sans service worker */ });
+}
+
 Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN,
   environment: import.meta.env.MODE,
