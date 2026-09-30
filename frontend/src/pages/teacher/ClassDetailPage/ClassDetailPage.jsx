@@ -287,6 +287,12 @@ function ClassDetailPage() {
             📋 Saisie titulaire
           </Link>
         )}
+        <Link
+          to={`/teacher/attendance?classId=${cls.id}`}
+          className="class-detail__titulaire-btn class-detail__att-btn"
+        >
+          🕒 Absences &amp; retards
+        </Link>
         {cls.room && (
           <span className="class-detail__meta-item">🏫 Salle : <strong>{cls.room}</strong></span>
         )}

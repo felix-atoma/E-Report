@@ -34,6 +34,7 @@
     "mockExamResults":  "Résultats exam. blancs",
     "bulkImport":       "Importation CSV",
     "attendance":       "Présences",
+    "absencesLate":     "Absences & retards",
     "staff":            "Personnel",
     "calendar":         "Calendrier",
     "disciplinary":     "Discipline",

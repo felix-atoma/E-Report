@@ -64,9 +64,14 @@ function TeacherDashboardPage() {
         title={t('dash.hello', { name: user?.name ?? t('role.TEACHER') })}
         subtitle={t('dash.activities')}
         actions={
-          <Button icon="+" onClick={() => {}}>
-            <Link to="/teacher/reports/new" className="teacher-dash__link">{t('dash.newBulletin')}</Link>
-          </Button>
+          <div className="teacher-dash__actions">
+            <Link to="/teacher/attendance" className="teacher-dash__att-btn">
+              📋 {t('nav.absencesLate')}
+            </Link>
+            <Button icon="+" onClick={() => {}}>
+              <Link to="/teacher/reports/new" className="teacher-dash__link">{t('dash.newBulletin')}</Link>
+            </Button>
+          </div>
         }
       />
 

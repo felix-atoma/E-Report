@@ -58,7 +58,7 @@ const NAV = {
     { divider: true,              sectionKey: 'section.classes' },
     { to: '/teacher/classes',     icon: 'school',    labelKey: 'nav.myClasses' },
     { to: '/teacher/schedule',    icon: 'timetable', labelKey: 'nav.mySchedule' },
-    { to: '/teacher/attendance',  icon: 'attendance',labelKey: 'nav.attendance' },
+    { to: '/teacher/attendance',  icon: 'attendance',labelKey: 'nav.absencesLate' },
     { to: '/teacher/roadmap',    icon: 'roadmap',   labelKey: 'nav.roadmap' },
     { divider: true,              sectionKey: 'section.pedagogy' },
     { to: '/teacher/fiches',      icon: 'notes',     labelKey: 'nav.gradeSheets' },

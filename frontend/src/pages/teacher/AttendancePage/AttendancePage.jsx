@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
@@ -24,7 +25,9 @@ export default function AttendancePage() {
   const qc = useQueryClient();
   const { t } = useTranslation();
   const { user } = useAuth();
-  const [selectedClassId, setSelectedClassId] = useState('');
+  const [searchParams] = useSearchParams();
+  // Arrivée depuis la page d'une classe : ?classId=… présélectionne la classe
+  const [selectedClassId, setSelectedClassId] = useState(searchParams.get('classId') ?? '');
   const [date, setDate] = useState(today());
   const [subjectId, setSubjectId] = useState('');
   const [startTime, setStartTime] = useState('');
@@ -157,16 +160,16 @@ export default function AttendancePage() {
 
   const resetSession = () => { setEntries({}); setLateMinutes({}); };
 
-  if (loadingClasses) return <AppShell title="Présences"><Loading /></AppShell>;
+  if (loadingClasses) return <AppShell title="Absences & retards"><Loading /></AppShell>;
 
   const presentCount = students.filter((s) => (entries[s.id] ?? 'PRESENT') === 'PRESENT').length;
   const absentCount  = students.filter((s) => (entries[s.id] ?? 'PRESENT') === 'ABSENT').length;
 
   return (
-    <AppShell title="Présences">
+    <AppShell title="Absences & retards">
       <PageHeader
-        title="Feuille de présences"
-        subtitle="Marquez les présences de votre classe pour chaque séance"
+        title="Absences & retards"
+        subtitle="Choisissez la classe, la matière et la séance, puis marquez les absents et les retards (en minutes)"
       />
 
       <Card className="att-controls">

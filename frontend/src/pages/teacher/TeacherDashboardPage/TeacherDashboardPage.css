@@ -3,6 +3,17 @@
   text-decoration: none;
 }
 
+.teacher-dash__actions { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+/* Accès direct à la feuille d'absences et retards */
+.teacher-dash__att-btn {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  padding: 0.55rem 1rem; border-radius: 8px;
+  background: #fff7ed; color: #9a3412; border: 1.5px solid #fdba74;
+  font-size: 0.875rem; font-weight: 700; text-decoration: none; white-space: nowrap;
+  transition: background 0.15s;
+}
+.teacher-dash__att-btn:hover { background: #ffedd5; }
+
 .teacher-dash__stats {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
