@@ -76,3 +76,23 @@
 
 @media (max-width: 640px) { .dashboard-records__grid { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 360px) { .dashboard-records__grid { grid-template-columns: repeat(2, 1fr); } }
+
+/* ── Évaluations (devoirs surveillés, compositions mensuelles, examens blancs) ── */
+.dashboard-evals { margin: 1.25rem 0; }
+.dashboard-evals__title { font-size: 1rem; font-weight: 800; margin: 0 0 .75rem; color: var(--color-text, #111827); }
+.dashboard-evals__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
+.eval-card { border-top: 4px solid var(--eval-color); display: flex; flex-direction: column; gap: .7rem; }
+.eval-card__head { display: flex; align-items: center; gap: .7rem; }
+.eval-card__icon { font-size: 1.6rem; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center;
+  justify-content: center; background: var(--eval-bg); border: 1px solid var(--eval-border); }
+.eval-card__title { margin: 0; font-size: .98rem; font-weight: 800; color: var(--eval-color); }
+.eval-card__desc { font-size: .78rem; color: var(--color-text-muted, #6b7280); }
+.eval-card__count { font-size: .85rem; color: var(--color-text, #374151); }
+.eval-card__count strong { font-size: 1.15rem; }
+.eval-card__drafts { color: #b45309; font-weight: 600; }
+.eval-card__actions { display: flex; gap: .45rem; flex-wrap: wrap; margin-top: auto; }
+.eval-card__btn { padding: .45rem .8rem; border-radius: 8px; font-size: .82rem; font-weight: 700; text-decoration: none;
+  background: #fff; color: var(--eval-color); border: 1.5px solid var(--eval-border); white-space: nowrap; }
+.eval-card__btn:hover { background: var(--eval-bg); }
+.eval-card__btn--main { background: var(--eval-color); color: #fff; border-color: var(--eval-color); }
+.eval-card__btn--main:hover { filter: brightness(.92); background: var(--eval-color); }

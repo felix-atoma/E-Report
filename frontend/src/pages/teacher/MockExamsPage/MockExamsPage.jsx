@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { mockExamsService } from '../../../services/mockExamsService';
@@ -370,6 +370,17 @@ function MockExamsPage({ kind = 'ESSAI' }) {
   const pageTitle = isDs ? text.listTitle : t('mockExams.title');
 
   const [createType, setCreateType] = useState(null);
+
+  // Arrivée depuis le tableau de bord admin (?create=1) : ouvre directement le formulaire de création
+  // pour une famille à type unique (devoirs surveillés, compositions mensuelles).
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get('create') === '1' && canManage && types.length === 1) {
+      setCreateType(types[0].value);
+      searchParams.delete('create');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const { data: classes = [] } = useQuery({
     queryKey: ['classes'],

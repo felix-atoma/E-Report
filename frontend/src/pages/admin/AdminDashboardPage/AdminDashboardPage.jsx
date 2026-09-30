@@ -2,6 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { analyticsService } from '../../../services/analyticsService';
+import { mockExamsService } from '../../../services/mockExamsService';
+import { isDsType, isCmType } from '../../../utils/examKinds';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Card from '../../../components/common/Card/Card';
@@ -66,8 +68,61 @@ function StatCard({ label, value, icon, sub, color = 'primary' }) {
   );
 }
 
+/* ── Évaluations créées par l'administration ; les professeurs saisissent et signent les notes ── */
+const EVALUATION_KINDS = [
+  {
+    key: 'DS', title: 'Devoirs surveillés', icon: '🖊️', color: '#0f766e', bg: '#f0fdfa', border: '#5eead4',
+    desc: 'Toutes classes · notes sur 20',
+    base: '/admin/devoirs-surveilles', match: (t) => isDsType(t), directCreate: true,
+  },
+  {
+    key: 'CM', title: 'Compositions mensuelles', icon: '📒', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd',
+    desc: 'Primaire (CI au CM2) · notes sur 10',
+    base: '/admin/compositions-mensuelles', match: (t) => isCmType(t), directCreate: true,
+  },
+  {
+    key: 'ESSAI', title: 'Examens blancs', icon: '📝', color: '#1d4ed8', bg: '#eff6ff', border: '#93c5fd',
+    desc: 'CEPE · BEPC · BAC 1 · BAC 2',
+    base: '/admin/mock-exams', fiches: '/admin/mock-exam-fiches', results: '/admin/mock-exam-results',
+    match: (t) => !isDsType(t) && !isCmType(t), directCreate: false,
+  },
+];
+
+function EvaluationCard({ kind, exams }) {
+  const sessions = exams.filter((e) => kind.match(e.examType));
+  const drafts = sessions.filter((e) => e.status !== 'PUBLISHED').length;
+  const fiches = kind.fiches ?? `${kind.base}/fiches`;
+  const results = kind.results ?? `${kind.base}/resultats`;
+  return (
+    <Card className="eval-card" style={{ '--eval-color': kind.color, '--eval-bg': kind.bg, '--eval-border': kind.border }}>
+      <div className="eval-card__head">
+        <span className="eval-card__icon" aria-hidden="true">{kind.icon}</span>
+        <div>
+          <h4 className="eval-card__title">{kind.title}</h4>
+          <span className="eval-card__desc">{kind.desc}</span>
+        </div>
+      </div>
+      <div className="eval-card__count">
+        <strong>{sessions.length}</strong> session{sessions.length > 1 ? 's' : ''}
+        {drafts > 0 && <span className="eval-card__drafts"> · {drafts} en cours</span>}
+      </div>
+      <div className="eval-card__actions">
+        {/* Examens blancs : plusieurs types (CEPE, BEPC…) → choix du type sur la page */}
+        <Link to={kind.directCreate ? `${kind.base}?create=1` : kind.base} className="eval-card__btn eval-card__btn--main">＋ Créer</Link>
+        <Link to={fiches} className="eval-card__btn">Fiches</Link>
+        <Link to={results} className="eval-card__btn">Résultats</Link>
+      </div>
+    </Card>
+  );
+}
+
 function AdminDashboardPage() {
   const { t } = useTranslation();
+
+  const { data: exams = [] } = useQuery({
+    queryKey: ['mock-exams'],
+    queryFn: () => mockExamsService.list({}).then((r) => r.data),
+  });
   const { data: overview, isLoading: loadingOverview } = useQuery({
     queryKey: ['analytics', 'overview'],
     queryFn: () => analyticsService.overview().then((r) => r.data),
@@ -138,6 +193,14 @@ function AdminDashboardPage() {
           icon="pending"
           color="orange"
         />
+      </div>
+
+      {/* ── Évaluations : l'administration crée, les professeurs saisissent et signent ── */}
+      <div className="dashboard-evals">
+        <h3 className="dashboard-evals__title">Évaluations</h3>
+        <div className="dashboard-evals__grid">
+          {EVALUATION_KINDS.map((kind) => <EvaluationCard key={kind.key} kind={kind} exams={exams} />)}
+        </div>
       </div>
 
       <div className="dashboard-grid">
