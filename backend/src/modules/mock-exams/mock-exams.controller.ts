@@ -24,7 +24,8 @@ export class MockExamsController {
 
   @Roles(Role.ADMIN, Role.TEACHER)
   @Post()
-  create(@Body() dto: CreateMockExamDto, @Req() req: any) {
+  async create(@Body() dto: CreateMockExamDto, @Req() req: any) {
+    await this.service.assertCanManage({ examType: dto.examType }, req.user.role, req.user.institutionId);
     return this.service.create(dto, req.user.id, req.user.institutionId);
   }
 
@@ -89,39 +90,46 @@ export class MockExamsController {
 
   @Roles(Role.ADMIN, Role.TEACHER)
   @Patch(':id/type')
-  updateType(
+  async updateType(
     @Param('id') id: string,
     @Body() body: { examType: string },
     @Req() req: any,
   ) {
+    // Ni transformer un devoir surveillé, ni en créer un en changeant le type
+    await this.service.assertCanManage(id, req.user.role, req.user.institutionId);
+    await this.service.assertCanManage({ examType: body.examType }, req.user.role, req.user.institutionId);
     return this.service.updateType(id, req.user.institutionId, body.examType);
   }
 
   @Roles(Role.ADMIN, Role.TEACHER)
   @Patch(':id/dates')
-  updateDates(
+  async updateDates(
     @Param('id') id: string,
     @Body() body: { examDate?: string | null; examEndDate?: string | null },
     @Req() req: any,
   ) {
+    await this.service.assertCanManage(id, req.user.role, req.user.institutionId);
     return this.service.updateDates(id, req.user.institutionId, body.examDate, body.examEndDate);
   }
 
   @Roles(Role.ADMIN, Role.TEACHER)
   @Patch(':id/publish')
-  publish(@Param('id') id: string, @Req() req: any) {
+  async publish(@Param('id') id: string, @Req() req: any) {
+    await this.service.assertCanManage(id, req.user.role, req.user.institutionId);
     return this.service.publish(id, req.user.institutionId);
   }
 
   @Roles(Role.ADMIN, Role.TEACHER)
   @Patch(':id/unpublish')
-  unpublish(@Param('id') id: string, @Req() req: any) {
+  async unpublish(@Param('id') id: string, @Req() req: any) {
+    await this.service.assertCanManage(id, req.user.role, req.user.institutionId);
     return this.service.unpublish(id, req.user.institutionId);
   }
 
   @Roles(Role.ADMIN, Role.TEACHER)
   @Delete(':id')
-  delete(@Param('id') id: string, @Req() req: any) {
+  async delete(@Param('id') id: string, @Req() req: any) {
+    await this.service.assertCanManage(id, req.user.role, req.user.institutionId);
     return this.service.delete(id, req.user.institutionId);
   }
 

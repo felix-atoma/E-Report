@@ -144,7 +144,7 @@ function CreateForm({ examType, classes, onClose, onCreate }) {
 }
 
 /* ── Single exam row ──────────────────────────────────────────────────────── */
-function ExamRow({ exam, isAdmin, onDelete, color, onDatesUpdated }) {
+function ExamRow({ exam, isAdmin, canManage = true, onDelete, color, onDatesUpdated }) {
   const { t } = useTranslation();
   const [editingDates, setEditingDates] = useState(false);
   const [dateStart, setDateStart] = useState(exam.examDate ? exam.examDate.slice(0, 10) : '');
@@ -227,9 +227,10 @@ function ExamRow({ exam, isAdmin, onDelete, color, onDatesUpdated }) {
           ) : (
             <span
               className="mex-date-display"
-              onClick={() => setEditingDates(true)}
+              onClick={() => canManage && setEditingDates(true)}
+              style={canManage ? undefined : { cursor: 'default' }}
             >
-              📅 {fmtSessionDates(exam.examDate, exam.examEndDate) ?? '—'} ✏️
+              📅 {fmtSessionDates(exam.examDate, exam.examEndDate) ?? '—'}{canManage ? ' ✏️' : ''}
             </span>
           )}
 
@@ -280,7 +281,7 @@ function ExamRow({ exam, isAdmin, onDelete, color, onDatesUpdated }) {
         )}
       </div>
 
-      {exam.status === 'DRAFT' && (isAdmin || exam.createdBy?.id) && (
+      {canManage && exam.status === 'DRAFT' && (isAdmin || exam.createdBy?.id) && (
         <button
           className="mex-exam-row__del"
           onClick={() => {
@@ -295,7 +296,7 @@ function ExamRow({ exam, isAdmin, onDelete, color, onDatesUpdated }) {
 }
 
 /* ── Type section ─────────────────────────────────────────────────────────── */
-function TypeSection({ typeCfg, exams, classes, isAdmin, onDelete, onCreateClick, onDatesUpdated }) {
+function TypeSection({ typeCfg, exams, classes, isAdmin, canManage = true, onDelete, onCreateClick, onDatesUpdated }) {
   const { t } = useTranslation();
   const typeExams = exams.filter((e) => e.examType === typeCfg.value);
   const [open, setOpen] = useState(true);
@@ -314,12 +315,14 @@ function TypeSection({ typeCfg, exams, classes, isAdmin, onDelete, onCreateClick
           </span>
         </div>
         <div className="mex-section__header-right">
+          {canManage && (
           <button
             className="mex-section__create-btn"
             onClick={(e) => { e.stopPropagation(); onCreateClick(typeCfg.value); }}
           >
             {t('mockExams.newSession')}
           </button>
+          )}
           <span className="mex-section__toggle">{open ? '▲' : '▼'}</span>
         </div>
       </div>
@@ -337,6 +340,7 @@ function TypeSection({ typeCfg, exams, classes, isAdmin, onDelete, onCreateClick
                 key={exam.id}
                 exam={exam}
                 isAdmin={isAdmin}
+                canManage={canManage}
                 onDelete={onDelete}
                 color={typeCfg.color}
                 onDatesUpdated={onDatesUpdated}
@@ -358,6 +362,8 @@ function MockExamsPage({ kind = 'ESSAI' }) {
   const isAdmin = user?.role === 'ADMIN';
   const isDs = kind === 'DS';
   const types = isDs ? [DS_TYPE_CFG] : EXAM_TYPES;
+  // Devoirs surveillés : seul l'administrateur crée et gère les sessions ; les professeurs saisissent leurs notes
+  const canManage = !isDs || isAdmin;
   const pageTitle = isDs ? KIND_TEXT.DS.listTitle : t('mockExams.title');
 
   const [createType, setCreateType] = useState(null);
@@ -388,7 +394,11 @@ function MockExamsPage({ kind = 'ESSAI' }) {
     <AppShell title={pageTitle}>
       <PageHeader
         title={pageTitle}
-        subtitle={isDs ? KIND_TEXT.DS.listSubtitle : t('mockExams.subtitle')}
+        subtitle={
+          !isDs ? t('mockExams.subtitle')
+            : isAdmin ? KIND_TEXT.DS.listSubtitle
+              : "Les devoirs surveillés sont créés par l'administration. Saisissez et signez les notes de votre matière dans « Fiches des DS »."
+        }
       />
 
       {isLoading && (
@@ -407,6 +417,7 @@ function MockExamsPage({ kind = 'ESSAI' }) {
               exams={exams}
               classes={classes}
               isAdmin={isAdmin}
+              canManage={canManage}
               onDelete={(id) => deleteMutation.mutate(id)}
               onCreateClick={setCreateType}
               onDatesUpdated={() => qc.invalidateQueries({ queryKey: ['mock-exams'] })}
