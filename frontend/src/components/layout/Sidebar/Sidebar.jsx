@@ -1,5 +1,8 @@
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
+import { classesService } from '../../../services/classesService';
+import { isSecondaryLevel } from '../../../utils/examKinds';
 import { useAuth } from '../../../context/AuthContext';
 import { useInstitution } from '../../../context/InstitutionContext';
 import Avatar from '../../common/Avatar/Avatar';
@@ -75,9 +78,9 @@ const NAV = {
     { to: '/teacher/mock-exams',         icon: 'exam',      labelKey: 'nav.mockExams' },
     { to: '/teacher/mock-exam-fiches',   icon: 'fichexam',  labelKey: 'nav.mockExamFiches' },
     { to: '/teacher/mock-exam-results',  icon: 'trophy',    labelKey: 'nav.mockExamResults' },
-    { to: '/teacher/devoirs-surveilles',           icon: 'exam',     labelKey: 'nav.dsList' },
-    { to: '/teacher/devoirs-surveilles/fiches',    icon: 'fichexam', labelKey: 'nav.dsFiches' },
-    { to: '/teacher/devoirs-surveilles/resultats', icon: 'trophy',   labelKey: 'nav.dsResults' },
+    { to: '/teacher/devoirs-surveilles',           icon: 'exam',     labelKey: 'nav.dsList', secondaryOnly: true },
+    { to: '/teacher/devoirs-surveilles/fiches',    icon: 'fichexam', labelKey: 'nav.dsFiches', secondaryOnly: true },
+    { to: '/teacher/devoirs-surveilles/resultats', icon: 'trophy',   labelKey: 'nav.dsResults', secondaryOnly: true },
     { to: '/teacher/lms',                icon: 'lms',       labelKey: 'nav.lms' },
     { divider: true,              sectionKey: 'section.other' },
     { to: '/teacher/report-incident',    icon: 'flag',      labelKey: 'nav.reportIncident' },
@@ -371,7 +374,14 @@ function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
   const { user } = useAuth();
   const { institution } = useInstitution();
   const { t } = useTranslation();
-  const items = NAV[user?.role] ?? [];
+  // Devoirs surveillés : secondaire uniquement (6ème → Terminale) — masqués pour les maîtres du primaire
+  const { data: myClasses } = useQuery({
+    queryKey: ['classes'],
+    queryFn: () => classesService.list().then((r) => r.data),
+    enabled: user?.role === 'TEACHER',
+  });
+  const hasSecondary = !myClasses || myClasses.some((c) => isSecondaryLevel(c.level));
+  const items = (NAV[user?.role] ?? []).filter((item) => !item.secondaryOnly || hasSecondary);
 
   return (
     <>
