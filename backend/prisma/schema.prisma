@@ -59,6 +59,7 @@ enum NotificationChannel {
   WHATSAPP
   EMAIL
   IN_APP
+  SMS
 }
 
 enum NotificationStatus {

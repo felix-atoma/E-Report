@@ -11,8 +11,8 @@ import Button from '../../../components/common/Button/Button';
 import Badge from '../../../components/common/Badge/Badge';
 import './NotificationLogsPage.css';
 
-const CHANNEL_LABEL  = { WHATSAPP: 'WhatsApp', EMAIL: 'Email', IN_APP: 'In-app' };
-const CHANNEL_VARIANT = { WHATSAPP: 'success', EMAIL: 'info', IN_APP: 'default' };
+const CHANNEL_LABEL  = { WHATSAPP: 'WhatsApp', EMAIL: 'Email', IN_APP: 'In-app', SMS: 'SMS' };
+const CHANNEL_VARIANT = { WHATSAPP: 'success', EMAIL: 'info', IN_APP: 'default', SMS: 'warning' };
 
 function NotificationLogsPage() {
   const { t } = useTranslation();

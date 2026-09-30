@@ -4,6 +4,7 @@ import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
 import { WhatsAppService } from '../whatsapp/whatsapp.service';
+import { SmsService } from '../sms/sms.service';
 
 @Injectable()
 export class NotificationsService {
@@ -14,6 +15,7 @@ export class NotificationsService {
     private readonly prisma: PrismaService,
     private readonly mail: MailService,
     private readonly whatsapp: WhatsAppService,
+    private readonly sms: SmsService,
   ) {}
 
   // ─── Queries ─────────────────────────────────────────────────────────────
@@ -121,7 +123,9 @@ export class NotificationsService {
       ? 'Bulletin retenu — paiement partiel'
       : 'Bulletin retenu — aucun paiement enregistré';
 
-    const channels: Array<'WHATSAPP' | 'EMAIL' | 'IN_APP'> = ['IN_APP', 'WHATSAPP', 'EMAIL'];
+    // SMS au numéro WhatsApp du parent — uniquement si un fournisseur SMS est configuré
+    const channels: Array<'WHATSAPP' | 'EMAIL' | 'IN_APP' | 'SMS'> = ['IN_APP', 'WHATSAPP', 'EMAIL'];
+    if (this.sms.enabled) channels.push('SMS');
 
     await this.prisma.notificationLog.createMany({
       data: channels.map((channel) => ({
@@ -164,7 +168,7 @@ export class NotificationsService {
   private async _dispatch() {
     const now = new Date();
     const pending = await this.prisma.notificationLog.findMany({
-      where: { status: 'PENDING', channel: { in: ['WHATSAPP', 'EMAIL'] } },
+      where: { status: 'PENDING', channel: { in: ['WHATSAPP', 'EMAIL', 'SMS'] } },
       include: {
         reportCard: {
           select: {
@@ -218,6 +222,12 @@ export class NotificationsService {
           });
         } else if (log.channel === 'WHATSAPP' && log.recipient.whatsappNumber) {
           success = await this.whatsapp.sendBulletinReady({
+            toPhone: log.recipient.whatsappNumber, studentName, termName,
+            academicYear, average, mention, pdfUrl, institutionName,
+            language: (log.recipient as any).language ?? 'FR',
+          });
+        } else if (log.channel === 'SMS' && log.recipient.whatsappNumber) {
+          success = await this.sms.sendBulletinReady({
             toPhone: log.recipient.whatsappNumber, studentName, termName,
             academicYear, average, mention, pdfUrl, institutionName,
             language: (log.recipient as any).language ?? 'FR',
