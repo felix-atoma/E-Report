@@ -613,12 +613,18 @@ export class ReportsService {
    * envoyés par WhatsApp/e-mail continuent de fonctionner (avec l'ancien modèle).
    */
   async regeneratePublishedPdfs(
-    options: { institutionId?: string; onProgress?: (done: number, total: number, failed: number) => void } = {},
+    options: {
+      institutionId?: string;
+      /** Seulement les bulletins sans PDF stocké (reprise après interruption). */
+      onlyMissing?: boolean;
+      onProgress?: (done: number, total: number, failed: number) => void;
+    } = {},
   ): Promise<{ total: number; regenerated: number; failed: number }> {
     const reports = await this.prisma.reportCard.findMany({
       where: {
         status: 'PUBLISHED',
         ...(options.institutionId ? { class: { institutionId: options.institutionId } } : {}),
+        ...(options.onlyMissing ? { pdfUrl: null } : {}),
       },
       select: { id: true, pdfUrl: true, class: { select: { institutionId: true } } },
       orderBy: { publishedAt: 'desc' },

@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import QRCode from 'qrcode';
 import { reportsService } from '../../../services/reportsService';
 import { institutionsService } from '../../../services/institutionsService';
 import { gradesService } from '../../../services/gradesService';
@@ -89,6 +90,18 @@ export default function PrintReportCardPage() {
       gradesService.listFiches(report.classId, report.academicYear, report.termNumber).then((r) => r.data),
     enabled: !!report?.classId && !!report?.academicYear && !!report?.termNumber,
   });
+
+  // QR code de vérification — même contenu que sur le PDF (le code de sécurité du bulletin)
+  const [qrDataUri, setQrDataUri] = useState(null);
+  useEffect(() => {
+    const code = report?.securityCode;
+    if (!code) { setQrDataUri(null); return undefined; }
+    let cancelled = false;
+    QRCode.toDataURL(String(code), { margin: 0, width: 220, errorCorrectionLevel: 'M' })
+      .then((uri) => { if (!cancelled) setQrDataUri(uri); })
+      .catch(() => { if (!cancelled) setQrDataUri(null); });
+    return () => { cancelled = true; };
+  }, [report?.securityCode]);
 
   useEffect(() => {
     if (!report) return;
@@ -233,7 +246,10 @@ export default function PrintReportCardPage() {
                 <li><span className="prh__ico">{ICONS.star}</span><span className="prh__motto">{institution.motto}</span></li>
               )}
             </ul>
-            <div className="prh__serial">N° {report.securityCode ?? fallbackSerial(report)}</div>
+            <div className="prh__verify">
+              {qrDataUri && <img src={qrDataUri} alt="Code de vérification" className="prh__qr" />}
+              <div className="prh__serial">N° {report.securityCode ?? fallbackSerial(report)}</div>
+            </div>
             <div className="prh__photo">
               {report.student?.user?.profileImage
                 ? <img src={report.student.user.profileImage} alt="Photo élève" />

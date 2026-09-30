@@ -427,7 +427,9 @@
 }
 .prh__ico svg { width: 9px; height: 9px; fill: #fff; }
 .prh__motto { font-style: italic; font-weight: 700; color: var(--bulletin-primary, #1e3a8a); }
-.prh__serial { align-self: flex-end; font-size: 0.75em; color: #6b7280; letter-spacing: 0.3px; white-space: nowrap; }
+.prh__verify { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; align-self: flex-end; }
+.prh__qr { width: 64px; height: 64px; display: block; image-rendering: pixelated; }
+.prh__serial { font-size: 0.75em; color: #6b7280; letter-spacing: 0.3px; white-space: nowrap; }
 .prh__photo {
   width: 70px; height: 84px; flex-shrink: 0; overflow: hidden; border-radius: 3px;
   border: 2px solid var(--bulletin-primary, #1e3a8a); background: #f3f4f6;
