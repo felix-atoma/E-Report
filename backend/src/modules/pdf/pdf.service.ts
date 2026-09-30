@@ -74,6 +74,11 @@ function formatScore(value: number | null | undefined): string {
   return value.toFixed(2).replace('.', ',');
 }
 
+/** Nombre de pages d'un PDF (objets « /Type /Page », hors « /Pages »). */
+export function countPdfPages(pdf: Buffer): number {
+  return (pdf.toString('latin1').match(/\/Type\s*\/Page(?![a-zA-Z])/g) || []).length;
+}
+
 /** Primaire (CI → CM2) : notes sur 10, sans coefficients. Les moyennes restent stockées sur 20. */
 export function isPrimaryLevel(level: string | null | undefined): boolean {
   return /^\s*(CI|CP\s*[12]?|CE\s*[12]|CM\s*[12])\s*$/i.test(level ?? '');
@@ -124,19 +129,55 @@ export class PdfService {
     return Buffer.from(buf);
   }
 
+  /**
+   * Bulletin sur UNE seule page A4 : on mesure la hauteur rendue et, si elle dépasse la zone
+   * imprimable, on réduit l'échelle juste assez ; puis on vérifie le nombre de pages du PDF et
+   * on réduit encore un peu si besoin. Un bulletin court garde sa taille normale (échelle 1).
+   */
+  private async renderOnePagePdf(html: string): Promise<Buffer> {
+    const MM = 96 / 25.4;                       // px par mm à 96 dpi
+    const margin = { top: 15, bottom: 15, left: 12, right: 12 };
+    const printableW = Math.floor((210 - margin.left - margin.right) * MM);
+    const printableH = Math.floor((297 - margin.top - margin.bottom) * MM);
+
+    const browser = await getBrowser();
+    const page = await browser.newPage();
+    try {
+      await page.emulateMediaType('print');
+      await page.setViewport({ width: printableW, height: printableH });
+      await page.setContent(html, { waitUntil: 'domcontentloaded' });
+
+      const contentH: number = await page.evaluate(() =>
+        Math.ceil(Math.max(document.documentElement.scrollHeight, document.body.scrollHeight)),
+      );
+      let scale = Math.min(1, (printableH / contentH) * 0.98);
+      scale = Math.max(0.5, Math.round(scale * 100) / 100);
+
+      let buf = Buffer.alloc(0);
+      for (let attempt = 0; attempt < 6; attempt++) {
+        buf = Buffer.from(await page.pdf({
+          format: 'A4',
+          printBackground: true,
+          scale,
+          margin: {
+            top: `${margin.top}mm`, bottom: `${margin.bottom}mm`,
+            left: `${margin.left}mm`, right: `${margin.right}mm`,
+          },
+        }));
+        if (countPdfPages(buf) <= 1 || scale <= 0.5) break;
+        scale = Math.max(0.5, Math.round(scale * 0.94 * 100) / 100);
+      }
+      if (scale < 1) this.logger.debug(`Bulletin ajusté à une page (échelle ${scale})`);
+      return buf;
+    } finally {
+      await page.close();
+    }
+  }
+
   async generateReportCardPdfBuffer(reportData: ReportCardData): Promise<Buffer> {
     const html = await this.buildHtml(reportData);
     try {
-      const browser = await getBrowser();
-      const page = await browser.newPage();
-      await page.setContent(html, { waitUntil: 'domcontentloaded' });
-      const buf = await page.pdf({
-        format: 'A4',
-        printBackground: true,
-        margin: { top: '15mm', bottom: '15mm', left: '12mm', right: '12mm' },
-      });
-      await page.close();
-      return Buffer.from(buf);
+      return await this.renderOnePagePdf(html);
     } catch (err) {
       this.logger.error('Puppeteer PDF buffer generation failed', err);
       throw err;
@@ -149,16 +190,7 @@ export class PdfService {
     const outputPath = path.join(this.outputDir, filename);
 
     try {
-      const browser = await getBrowser();
-      const page = await browser.newPage();
-      await page.setContent(html, { waitUntil: 'domcontentloaded' });
-      await page.pdf({
-        path: outputPath,
-        format: 'A4',
-        printBackground: true,
-        margin: { top: '15mm', bottom: '15mm', left: '12mm', right: '12mm' },
-      });
-      await page.close();
+      fs.writeFileSync(outputPath, await this.renderOnePagePdf(html));
     } catch (err) {
       this.logger.error('Puppeteer PDF generation failed', err);
       throw err;

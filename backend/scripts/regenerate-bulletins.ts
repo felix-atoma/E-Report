@@ -41,7 +41,11 @@ async function main() {
   }
 }
 
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+// Les tâches planifiées de l'application (cron, files d'attente) gardent le processus en vie
+// même après app.close() : on quitte explicitement une fois le travail terminé.
+main()
+  .then(() => process.exit(process.exitCode ?? 0))
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });

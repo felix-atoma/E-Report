@@ -404,6 +404,19 @@
 
 @page { margin: 0; }
 
+/* Ajustement à une page : --fit est calculé dans PrintReportCardPage.jsx (1 = taille normale).
+   Le contenu est agrandi de 1/fit puis réduit de fit : il garde sa mise en page et remplit la
+   feuille. Le filigrane reste hors de ce conteneur et garde sa taille. */
+.print-page__fit {
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  width: calc(100% / var(--fit, 1));
+  height: calc(100% / var(--fit, 1));
+  transform: scale(var(--fit, 1));
+  transform-origin: top left;
+}
+
 /* ── En-tête du bulletin (modèle identique au PDF) ─────────────────── */
 .prh { position: relative; margin-bottom: 6px; }
 .prh__country {

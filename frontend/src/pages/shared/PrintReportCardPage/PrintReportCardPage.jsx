@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import QRCode from 'qrcode';
 import { reportsService } from '../../../services/reportsService';
@@ -89,6 +89,29 @@ export default function PrintReportCardPage() {
     queryFn: () =>
       gradesService.listFiches(report.classId, report.academicYear, report.termNumber).then((r) => r.data),
     enabled: !!report?.classId && !!report?.academicYear && !!report?.termNumber,
+  });
+
+  // Une seule page A4 : si le contenu dépasse la feuille (beaucoup de matières, longues
+  // observations), on le réduit (transform: scale) juste assez pour qu'il tienne.
+  // On mesure la hauteur naturelle du contenu en le laissant grandir le temps de la mesure.
+  const fitRef = useRef(null);
+  const [fit, setFit] = useState(1);
+  useLayoutEffect(() => {
+    const el = fitRef.current;
+    if (!el) return undefined;
+    const measure = () => {
+      el.style.setProperty('--fit', '1');
+      const available = el.clientHeight;
+      el.style.height = 'auto';
+      const content = el.offsetHeight;
+      el.style.height = '';
+      const next = content > available ? Math.max(0.5, Math.floor((available / content) * 100) / 100) : 1;
+      el.style.setProperty('--fit', String(next));
+      setFit(next);
+    };
+    measure();
+    document.fonts?.ready?.then(measure).catch(() => {});
+    return undefined;
   });
 
   // QR code de vérification — même contenu que sur le PDF (le code de sécurité du bulletin)
@@ -216,7 +239,7 @@ export default function PrintReportCardPage() {
       </div>
 
       {/* A4 page */}
-      <div className="print-page__a4">
+      <div className="print-page__a4" data-fit={fit < 1 ? fit : undefined}>
 
         {/* ── Full-page watermark — SVG stretches name to fixed width ─────── */}
         {watermark && (
@@ -235,6 +258,9 @@ export default function PrintReportCardPage() {
             ))}
           </svg>
         )}
+
+        {/* Contenu réduit si besoin pour tenir sur une page (voir fitRef) */}
+        <div className="print-page__fit" ref={fitRef}>
 
         {/* ── En-tête (même modèle que le PDF) ─────────────────────────── */}
         <div className="prh">
@@ -559,6 +585,7 @@ export default function PrintReportCardPage() {
           </span>
         </div>
 
+        </div>
       </div>
     </div>
   );
