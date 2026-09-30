@@ -36,21 +36,17 @@ export class MockExamsService {
   }
 
   /**
-   * Devoirs surveillés : seul l'administrateur crée et gère les sessions (dates, type,
-   * publication, suppression). Les professeurs saisissent et signent seulement leurs notes.
-   * `target` = identifiant d'une session existante, ou { examType } pour une création.
+   * L'administrateur crée et gère toutes les sessions — examens blancs comme devoirs surveillés
+   * (création, dates, type, publication, suppression). Les professeurs appliquent : ils saisissent
+   * et signent les notes de leur matière. `target` : id d'une session existante, ou { examType }.
    */
   async assertCanManage(target: string | { examType?: string }, role: string, institutionId: string) {
     if (role === 'ADMIN') return;
-    let examType = typeof target === 'string' ? undefined : target.examType;
     if (typeof target === 'string') {
-      const exam = await this.prisma.mockExam.findFirst({ where: { id: target, institutionId }, select: { examType: true } });
+      const exam = await this.prisma.mockExam.findFirst({ where: { id: target, institutionId }, select: { id: true } });
       if (!exam) throw new NotFoundException('Session introuvable');
-      examType = exam.examType;
     }
-    if (examType === 'DEVOIR_SURVEILLE') {
-      throw new ForbiddenException("Seul l'administrateur peut créer et gérer les devoirs surveillés");
-    }
+    throw new ForbiddenException("Seul l'administrateur peut créer et gérer les sessions d'examens et de devoirs surveillés");
   }
 
   // ─── Create a new mock exam session ─────────────────────────────────────────

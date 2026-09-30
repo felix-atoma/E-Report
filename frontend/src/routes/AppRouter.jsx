@@ -1,5 +1,5 @@
 ﻿import { lazy, Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from '../components/auth/ProtectedRoute/ProtectedRoute';
 import Loading from '../components/common/Loading/Loading';
 
@@ -207,7 +207,8 @@ function AppRouter() {
         <Route path="/teacher/classes/:classId/subjects/:subjectId/program" element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><ProgramPage /></ProtectedRoute>} />
         <Route path="/teacher/students/:id"       element={<ProtectedRoute roles={['TEACHER']}><StudentProfilePage /></ProtectedRoute>} />
         <Route path="/teacher/reports"            element={<ProtectedRoute roles={['TEACHER']}><ReportCardsPage /></ProtectedRoute>} />
-        <Route path="/teacher/reports/new"        element={<ProtectedRoute roles={['TEACHER']}><CreateReportCardPage /></ProtectedRoute>} />
+        {/* Les bulletins sont générés automatiquement (ou créés par l'administrateur) : plus de création côté professeur */}
+        <Route path="/teacher/reports/new"        element={<Navigate to="/teacher/reports" replace />} />
         <Route path="/teacher/reports/:id"        element={<ProtectedRoute roles={['TEACHER']}><EditReportCardPage /></ProtectedRoute>} />
         <Route path="/teacher/bulletins"          element={<ProtectedRoute roles={['TEACHER']}><TeacherBulletinsPage /></ProtectedRoute>} />
         <Route path="/teacher/statistics"         element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><ClassStatsPage /></ProtectedRoute>} />

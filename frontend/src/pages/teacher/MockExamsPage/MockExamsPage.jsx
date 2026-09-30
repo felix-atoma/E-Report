@@ -187,7 +187,7 @@ function ExamRow({ exam, isAdmin, canManage = true, onDelete, color, onDatesUpda
         <div className="mex-exam-row__title">
           {exam.label}
           {/* Un devoir surveillé reste un devoir surveillé : pas de changement de type */}
-          {!isDsType(exam.examType) && (
+          {canManage && !isDsType(exam.examType) && (
             <select
               className={`mex-type-select${savingType ? ' mex-type-select--saving' : ''}`}
               value={exam.examType}
@@ -362,8 +362,8 @@ function MockExamsPage({ kind = 'ESSAI' }) {
   const isAdmin = user?.role === 'ADMIN';
   const isDs = kind === 'DS';
   const types = isDs ? [DS_TYPE_CFG] : EXAM_TYPES;
-  // Devoirs surveillés : seul l'administrateur crée et gère les sessions ; les professeurs saisissent leurs notes
-  const canManage = !isDs || isAdmin;
+  // L'administrateur crée et gère toutes les sessions ; les professeurs saisissent et signent leurs notes
+  const canManage = isAdmin;
   const pageTitle = isDs ? KIND_TEXT.DS.listTitle : t('mockExams.title');
 
   const [createType, setCreateType] = useState(null);
@@ -395,9 +395,11 @@ function MockExamsPage({ kind = 'ESSAI' }) {
       <PageHeader
         title={pageTitle}
         subtitle={
-          !isDs ? t('mockExams.subtitle')
-            : isAdmin ? KIND_TEXT.DS.listSubtitle
-              : "Les devoirs surveillés sont créés par l'administration. Saisissez et signez les notes de votre matière dans « Fiches des DS »."
+          isAdmin
+            ? (isDs ? KIND_TEXT.DS.listSubtitle : t('mockExams.subtitle'))
+            : isDs
+              ? "Les devoirs surveillés sont créés par l'administration. Saisissez et signez les notes de votre matière dans « Fiches des DS »."
+              : "Les examens blancs sont créés par l'administration. Saisissez et signez les notes de votre matière dans « Fiches d'examen »."
         }
       />
 

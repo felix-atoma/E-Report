@@ -72,8 +72,8 @@ export class ReportsController {
   }
 
   @Post()
-  @Roles(Role.ADMIN, Role.TEACHER)
-  @ApiOperation({ summary: 'Create a new report card (DRAFT status)' })
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Create a report card manually (Admin only — normally generated when all grade sheets are signed)' })
   create(@Body() dto: CreateReportDto, @CurrentUser() user: any) {
     return this.service.create(dto, user.institutionId, user.id);
   }

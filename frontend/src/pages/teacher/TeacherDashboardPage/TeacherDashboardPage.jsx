@@ -11,7 +11,6 @@ import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Card from '../../../components/common/Card/Card';
 import StatusPill from '../../../components/common/StatusPill/StatusPill';
 import Loading from '../../../components/common/Loading/Loading';
-import Button from '../../../components/common/Button/Button';
 import './TeacherDashboardPage.css';
 
 const TODAY_MAP = { 1:'LUNDI', 2:'MARDI', 3:'MERCREDI', 4:'JEUDI', 5:'VENDREDI', 6:'SAMEDI' };
@@ -63,11 +62,6 @@ function TeacherDashboardPage() {
       <PageHeader
         title={t('dash.hello', { name: user?.name ?? t('role.TEACHER') })}
         subtitle={t('dash.activities')}
-        actions={
-          <Button icon="+" onClick={() => {}}>
-            <Link to="/teacher/reports/new" className="teacher-dash__link">{t('dash.newBulletin')}</Link>
-          </Button>
-        }
       />
 
       <div className="teacher-dash__stats">

@@ -83,8 +83,6 @@ export default function ClassDetailScreen({ route, navigation }) {
 
         {/* Quick actions */}
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Actions</Text>
-        <QuickAction icon="add-circle-outline"  label="Créer des bulletins"  color="#6366f1"
-          onPress={() => navigation.navigate('CreateReportCard', { classId, className })} colors={colors} />
         <QuickAction icon="checkmark-done-outline" label="Registre des présences" color="#10b981"
           onPress={() => navigation.navigate('Attendance', { classId, className })} colors={colors} />
         <QuickAction icon="list-outline" label="Fiches de notes (par matière)" color="#f59e0b"

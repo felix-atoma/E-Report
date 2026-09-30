@@ -59,14 +59,6 @@ function StudentProfilePage() {
       <PageHeader
         title={fullName}
         subtitle={`${t('studentProfile.matricule')} ${student?.admissionNumber ?? '—'}`}
-        actions={
-          <Link
-            to={`/teacher/reports/new?studentId=${id}`}
-            className="sp-btn-primary"
-          >
-            {t('studentProfile.newReport')}
-          </Link>
-        }
       />
 
       <div className="sp-grid">

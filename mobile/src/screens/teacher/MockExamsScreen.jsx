@@ -164,9 +164,6 @@ export default function MockExamsScreen({ navigation }) {
                     </Text>
                   )}
                 </View>
-                <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.deleteBtn}>
-                  <Ionicons name="trash-outline" size={18} color={colors.danger} />
-                </TouchableOpacity>
                 <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
               </TouchableOpacity>
             );
@@ -174,10 +171,8 @@ export default function MockExamsScreen({ navigation }) {
         />
       )}
 
-      <TouchableOpacity onPress={() => setShowModal(true)}
-        style={[styles.fab, { backgroundColor: colors.primary }]}>
-        <Ionicons name="add" size={28} color="#fff" />
-      </TouchableOpacity>
+      {/* Les sessions (examens blancs, devoirs surveillés) sont créées par l'administrateur :
+          le professeur saisit et signe ses notes. */}
 
       <Modal visible={showModal} animationType="slide" presentationStyle="pageSheet">
         <SafeAreaView style={[styles.modal, { backgroundColor: colors.bg }]}>
