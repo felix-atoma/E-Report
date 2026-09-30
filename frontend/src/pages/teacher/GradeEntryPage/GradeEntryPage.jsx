@@ -351,14 +351,19 @@ export default function GradeEntryPage() {
   // ── Mode saisie paysage (téléphones / petites tablettes) ──────────────────
   const isSmallScreen = useMediaQuery('(max-width: 900px), (pointer: coarse) and (max-width: 1100px)');
   const isPortrait    = useMediaQuery('(orientation: portrait)');
+  const isPhone       = useMediaQuery('(max-width: 600px), (max-height: 500px)');
   const [focusMode, setFocusMode] = useState(false);
-  const [portraitOk, setPortraitOk] = useState(false);
+  // Paysage forcé : si le téléphone reste en portrait (iPhone, verrouillage de rotation, navigateur
+  // sans orientation.lock), la fiche est affichée tournée de 90° par CSS.
+  const [forceLandscape, setForceLandscape] = useState(true);
   const fullscreenRef = useRef(false);
+  const autoOpenedRef = useRef(false);
+  const rotated = focusMode && isPortrait && forceLandscape;
 
   async function enterFocusMode() {
     setFocusMode(true);
-    setPortraitOk(false);
-    // Plein écran + verrouillage paysage : Android/Chrome. iOS ne le permet pas → invite à tourner l'écran.
+    setForceLandscape(true);
+    // Plein écran + verrouillage paysage : Android/Chrome. Sinon, le paysage forcé par CSS prend le relais.
     try {
       if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
         await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
@@ -394,6 +399,15 @@ export default function GradeEntryPage() {
       document.removeEventListener('fullscreenchange', onFsChange);
     };
   }, [focusMode]);
+
+  // Sur téléphone, la fiche s'ouvre directement en mode saisie paysage (une fois par visite).
+  // Pas de plein écran ici : le navigateur l'exige d'un geste de l'utilisateur ; le paysage forcé suffit.
+  useEffect(() => {
+    if (isPhone && data && !autoOpenedRef.current) {
+      autoOpenedRef.current = true;
+      setFocusMode(true);
+    }
+  }, [isPhone, data]);
 
   const maxScoreRef = useRef(20);
   maxScoreRef.current = maxScore;
@@ -641,7 +655,7 @@ export default function GradeEntryPage() {
         </div>
       )}
 
-      <div className={focusMode ? 'fdn-focus' : undefined}>
+      <div className={focusMode ? `fdn-focus${rotated ? ' fdn-focus--rotated' : ''}` : undefined}>
         {focusMode && (
           <div className="fdn-focus__bar">
             <div className="fdn-focus__title">
@@ -660,19 +674,17 @@ export default function GradeEntryPage() {
                 {mutation.isPending ? t('gradeEntry.saving') : t('gradeEntry.save')}
               </button>
             )}
+            {isPortrait && (
+              <button
+                type="button"
+                className="fdn__btn fdn__btn--secondary"
+                onClick={() => setForceLandscape((v) => !v)}
+              >
+                ↻ {forceLandscape ? t('gradeEntry.landscape.portraitBtn') : t('gradeEntry.landscape.landscapeBtn')}
+              </button>
+            )}
             <button type="button" className="fdn__btn fdn__btn--secondary" onClick={exitFocusMode}>
               {t('gradeEntry.landscape.exit')}
-            </button>
-          </div>
-        )}
-
-        {focusMode && isPortrait && !portraitOk && (
-          <div className="fdn-focus__rotate">
-            <div className="fdn-focus__rotate-icon" aria-hidden="true">📱</div>
-            <strong>{t('gradeEntry.landscape.rotateTitle')}</strong>
-            <p>{t('gradeEntry.landscape.rotateDesc')}</p>
-            <button type="button" className="fdn__btn fdn__btn--secondary" onClick={() => setPortraitOk(true)}>
-              {t('gradeEntry.landscape.continuePortrait')}
             </button>
           </div>
         )}

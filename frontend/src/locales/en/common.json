@@ -1951,9 +1951,8 @@
       "ctaDesc": "Open the sheet full-screen in landscape to see every column. Enter key = next student.",
       "enter": "📱 Enter in landscape",
       "exit": "Exit",
-      "rotateTitle": "Rotate your phone",
-      "rotateDesc": "The grade sheet is easier to fill in landscape. Turn off rotation lock if the screen doesn't rotate.",
-      "continuePortrait": "Continue in portrait"
+      "portraitBtn": "Portrait",
+      "landscapeBtn": "Landscape"
     },
     "save":         "Save",
     "saving":       "Saving…",

@@ -539,34 +539,32 @@
 .fdn-focus .fdn__student-id { display: none; }
 .fdn-focus .fdn__teacher-input { font-size: 16px; min-height: 38px; }
 
-/* Invite à tourner le téléphone (iOS ne permet pas le verrouillage) */
-.fdn-focus__rotate {
-  position: absolute;
-  inset: 0;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  padding: 2rem;
-  text-align: center;
-  background: rgba(255, 255, 255, 0.97);
-  color: #1f2937;
+/* ── Paysage forcé ───────────────────────────────────────────────────────
+   Le téléphone reste en portrait (iPhone, verrouillage de rotation…) : on tourne la fiche
+   de 90° dans le sens horaire. Le haut de la fiche se trouve alors côté droit de l'écran :
+   le professeur tient le téléphone couché, bouton de volume vers le haut.
+   Largeur = hauteur de l'écran et inversement ; dvh/dvw suivent la barre d'adresse et le clavier. */
+.fdn-focus--rotated {
+  inset: auto;
+  top: 0;
+  left: 0;
+  width: 100vh;
+  height: 100vw;
+  width: 100dvh;
+  height: 100dvw;
+  transform-origin: top left;
+  transform: translateX(100vw) rotate(90deg);
+  transform: translateX(100dvw) rotate(90deg);
+  /* Encoches : après rotation, le haut physique de l'écran est le bord gauche de la fiche */
+  padding:
+    env(safe-area-inset-right, 0px)
+    env(safe-area-inset-bottom, 0px)
+    env(safe-area-inset-left, 0px)
+    env(safe-area-inset-top, 0px);
 }
-.fdn-focus__rotate p { font-size: 0.9rem; color: #4b5563; max-width: 320px; margin: 0; }
-.fdn-focus__rotate-icon {
-  font-size: 3rem;
-  animation: fdn-rotate-hint 1.8s ease-in-out infinite;
-}
-@keyframes fdn-rotate-hint {
-  0%, 20%  { transform: rotate(0deg); }
-  50%, 80% { transform: rotate(-90deg); }
-  100%     { transform: rotate(0deg); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .fdn-focus__rotate-icon { animation: none; transform: rotate(-90deg); }
-}
+.fdn-focus--rotated .fdn__table-wrap { touch-action: pan-x pan-y; overscroll-behavior: contain; }
+.fdn-focus--rotated .fdn-focus__bar { padding: 0.25rem 0.6rem; }
+.fdn-focus--rotated .fdn-focus__bar .fdn__btn { min-height: 36px; padding: 0.35rem 0.7rem; font-size: 0.8rem; }
 
 @media (orientation: landscape) and (max-height: 500px) {
   .fdn-focus__bar { padding: 0.25rem 0.6rem; }

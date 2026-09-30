@@ -2033,9 +2033,8 @@
       "ctaDesc": "Ouvrez la fiche en plein écran, en mode paysage, pour voir toutes les colonnes. Touche Entrée = élève suivant.",
       "enter": "📱 Saisir en paysage",
       "exit": "Quitter",
-      "rotateTitle": "Tournez votre téléphone",
-      "rotateDesc": "La fiche de notes est plus facile à remplir en mode paysage. Désactivez le verrouillage de rotation si l'écran ne tourne pas.",
-      "continuePortrait": "Continuer en portrait"
+      "portraitBtn": "Portrait",
+      "landscapeBtn": "Paysage"
     },
     "save":         "Enregistrer",
     "saving":       "Enregistrement…",
