@@ -1,4 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Role } from '../../common/enums/role.enum';
 import { BulkGradesDto } from './dto/bulk-grades.dto';
@@ -63,7 +64,10 @@ function computeMoyenneMatiere(
 
 @Injectable()
 export class GradesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly events: EventEmitter2,
+  ) {}
 
   // ─── Existing: grades by report card ────────────────────────────────────
 
@@ -487,7 +491,7 @@ export class GradesService {
       }
     }
 
-    return this.prisma.gradeFiche.upsert({
+    const fiche = await this.prisma.gradeFiche.upsert({
       where: { classId_subjectId_academicYear_termNumber: { classId, subjectId, academicYear, termNumber } },
       create: {
         classId,
@@ -507,6 +511,10 @@ export class GradesService {
         signatureData,
       },
     });
+
+    // Dernière fiche signée ? → les bulletins de la classe sont générés (ReportsService)
+    this.events.emit('fiche.signed', { classId, academicYear, termNumber, institutionId: cls.institutionId });
+    return fiche;
   }
 
   async unsignFiche(
@@ -529,10 +537,13 @@ export class GradesService {
       throw new ForbiddenException('Seul le signataire peut annuler la signature');
     }
 
-    return this.prisma.gradeFiche.update({
+    const updated = await this.prisma.gradeFiche.update({
       where: { id: fiche.id },
       data: { signedAt: null, signedByName: null, signedById: null },
     });
+    // Signature retirée : les bulletins non publiés de la classe repassent en brouillon
+    this.events.emit('fiche.unsigned', { classId, academicYear, termNumber });
+    return updated;
   }
 
   // ─── Private helpers ─────────────────────────────────────────────────────

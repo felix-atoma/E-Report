@@ -56,48 +56,112 @@ export class AiService {
     }
   }
 
+  get isEnabled(): boolean {
+    return this.enabled;
+  }
+
+  /**
+   * Observation du professeur titulaire pour un bulletin, rédigée à la 3e personne et accordée
+   * au genre de l'élève (sexe M / F ; formulation épicène s'il est inconnu).
+   * Le texte est proposé au titulaire, qui le relit et le modifie avant de l'enregistrer.
+   */
   async generateReportComment(opts: {
     studentName: string;
+    sex?: 'M' | 'F' | null;
     className: string;
+    termName?: string;
+    isPrimary?: boolean;
     avg: number;
     mention: string;
+    rank?: number | null;
+    classSize?: number | null;
+    classAverage?: number | null;
+    conduct?: string | null;
+    absentDays?: number | null;
+    lateHours?: string | null;
     grades: { subject: string; score: number; coefficient: number }[];
   }): Promise<string> {
     if (!this.enabled || !this.client) {
       throw new Error("L'assistant IA n'est pas encore configuré.");
     }
 
-    const { studentName, className, avg, mention, grades } = opts;
-    const gradeList = grades
-      .map((g) => `  - ${g.subject} : ${g.score}/20 (coef. ${g.coefficient})`)
+    // Au primaire, les notes sont affichées sur 10 : on les présente ainsi à l'IA (stockées sur 20)
+    const scale = opts.isPrimary ? 10 : 20;
+    const fmt = (v: number) => (opts.isPrimary ? v / 2 : v).toFixed(2).replace('.', ',');
+    const gradeList = opts.grades
+      .map((g) => `- ${g.subject} : ${fmt(g.score)}/${scale}${opts.isPrimary ? '' : ` (coef. ${g.coefficient})`}`)
       .join('\n');
 
-    const prompt =
-      `Rédige une appréciation de bulletin scolaire pour un(e) élève de ${className}.\n\n` +
-      `Données :\n` +
-      `- Nom : ${studentName}\n` +
-      `- Moyenne générale : ${avg.toFixed(2)}/20\n` +
-      `- Mention : ${mention}\n` +
-      `- Notes par matière :\n${gradeList}\n\n` +
-      `Rédigez une appréciation de 2-3 phrases, bienveillante mais honnête, adaptée à la moyenne. ` +
-      `Sans émojis. Vouvoiement non. Tutoyer l'élève. Répondez uniquement avec le texte de l'appréciation.`;
+    const gender =
+      opts.sex === 'F' ? "une élève (fille) : accorde TOUT au féminin singulier (ex. « sérieuse », « appliquée », « elle »)"
+      : opts.sex === 'M' ? "un élève (garçon) : accorde TOUT au masculin singulier (ex. « sérieux », « appliqué », « il »)"
+      : "un·e élève dont le sexe n'est pas renseigné : utilise uniquement des tournures épicènes (ex. « l'élève », « fait preuve de », « des efforts sont attendus ») et aucun adjectif ni participe accordé au masculin ou au féminin";
+
+    const facts = [
+      `Élève : ${opts.studentName} — ${gender}.`,
+      `Classe : ${opts.className}${opts.termName ? ` — ${opts.termName}` : ''}.`,
+      `Moyenne générale : ${fmt(opts.avg)}/${scale} (mention : ${opts.mention}).`,
+      opts.rank ? `Rang : ${opts.rank}${opts.classSize ? ` sur ${opts.classSize}` : ''}.` : null,
+      opts.classAverage != null ? `Moyenne de la classe : ${fmt(opts.classAverage)}/${scale}.` : null,
+      opts.conduct ? `Conduite : ${opts.conduct}.` : null,
+      opts.absentDays != null ? `Absences non justifiées : ${opts.absentDays} jour(s).` : null,
+      opts.lateHours ? `Retards : ${opts.lateHours} h.` : null,
+      `Notes par matière :\n${gradeList}`,
+    ].filter(Boolean).join('\n');
+
+    const system =
+      "Tu es professeur titulaire (professeur principal) dans un établissement scolaire d'Afrique francophone (Togo). " +
+      "Tu rédiges l'observation générale du titulaire qui figure sur le bulletin trimestriel.\n\n" +
+      "Règles de rédaction :\n" +
+      "- 2 ou 3 phrases, 45 mots au maximum, en français correct et soutenu.\n" +
+      "- Écris à la 3e personne, jamais au « tu » ni au « vous » (ex. « Élève sérieuse qui… », « Il doit… »).\n" +
+      "- Respecte strictement les accords en genre et en nombre (adjectifs, participes passés, pronoms) avec le sexe de l'élève indiqué.\n" +
+      "- Appuie-toi sur les résultats : souligne les points forts réels, nomme une ou deux matières à améliorer si la moyenne ou certaines notes sont faibles, et termine par un encouragement ou un conseil concret.\n" +
+      "- Ton bienveillant mais honnête, adapté au niveau : ne félicite pas un résultat insuffisant.\n" +
+      "- N'invente aucun fait absent des données. Ne cite pas les notes chiffrées.\n" +
+      "- Réponds uniquement par le texte de l'observation : sans titre, sans guillemets, sans émoji, sans le nom de l'élève.";
 
     try {
-      const response = await this.client.messages.create({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 256,
-        system:
-          'Tu es un professeur principal dans une école d\'Afrique francophone (Togo). ' +
-          'Tu rédiges des appréciations de bulletins scolaires en français, de manière concise et professionnelle. ' +
-          'Réponds uniquement avec le texte de l\'appréciation, sans introduction ni guillemets.',
-        messages: [{ role: 'user', content: prompt }],
-      });
-      const text = response.content[0];
-      if (text.type === 'text') return text.text.trim();
-      return '';
+      const params: Anthropic.Beta.MessageCreateParamsNonStreaming = {
+        model: 'claude-opus-5-5',
+        max_tokens: 4000,
+        // Texte court et bien cadré : un effort faible suffit et limite le coût
+        output_config: { effort: 'low' },
+        betas: ['server-side-fallback-2026-07-01'],
+        system,
+        messages: [{ role: 'user', content: facts }],
+      };
+      // Si le modèle décline (faux positif d'un filtre), l'API relance sur un autre modèle.
+      // `fallbacks` est plus récent que le SDK installé (0.100) : ajouté hors du typage.
+      const response = await this.client.beta.messages.create(
+        { ...params, fallbacks: 'default' } as Anthropic.Beta.MessageCreateParamsNonStreaming,
+      );
+
+      if (response.stop_reason === 'refusal') {
+        throw new Error('refusal');
+      }
+      const text = response.content
+        .map((b: any) => (b.type === 'text' ? b.text : ''))
+        .join('')
+        .trim()
+        .replace(/^["«»“”\s]+|["«»“”\s]+$/g, '');
+      if (!text) throw new Error('empty response');
+      return text;
     } catch (err: any) {
-      this.logger.error('Report comment generation error:', err?.message);
-      throw new Error("Impossible de générer l'appréciation. Réessayez.");
+      if (err instanceof Anthropic.RateLimitError) {
+        this.logger.warn('Report comment: rate limited');
+        throw new Error("Trop de demandes en même temps. Réessayez dans quelques secondes.");
+      }
+      if (err instanceof Anthropic.APIError) {
+        this.logger.error(`Report comment API error ${err.status}: ${err.message}`);
+        // Crédit du compte Anthropic épuisé : le signaler clairement au lieu de « Réessayez »
+        if (err instanceof Anthropic.BadRequestError && /credit balance/i.test(err.message)) {
+          throw new Error("Le service d'IA est momentanément indisponible (crédit épuisé). Rédigez l'observation manuellement ou contactez l'administrateur.");
+        }
+      } else {
+        this.logger.error('Report comment generation error:', err?.message);
+      }
+      throw new Error("Impossible de générer l'observation. Réessayez.");
     }
   }
 

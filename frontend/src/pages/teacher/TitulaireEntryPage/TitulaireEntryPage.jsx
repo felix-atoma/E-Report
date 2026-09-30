@@ -88,6 +88,43 @@ export default function TitulaireEntryPage() {
     [termAttendance],
   );
 
+  // État de la classe : fiches signées par les professeurs, bulletins par statut
+  const { data: status } = useQuery({
+    queryKey: ['class-status', classId, academicYear, term],
+    queryFn: () => reportsService.classStatus({ classId, academicYear, termNumber: term }).then((r) => r.data),
+    enabled: !!classId && !!academicYear,
+  });
+
+  // Observation proposée par l'IA : remplie dans le champ, le titulaire relit puis enregistre
+  const [aiLoadingFor, setAiLoadingFor] = useState(null);
+  async function suggestComment(studentId, reportId) {
+    setAiLoadingFor(studentId);
+    try {
+      const res = await reportsService.aiComment(reportId);
+      const comment = res.data?.comment ?? '';
+      if (comment) {
+        setField(studentId, 'teacherComment', comment);
+        toast.success("Observation proposée — relisez-la puis cliquez sur « Enregistrer tout ».");
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.message ?? "Impossible de générer l'observation.");
+    } finally {
+      setAiLoadingFor(null);
+    }
+  }
+
+  const publishMutation = useMutation({
+    mutationFn: () => reportsService.bulkPublish({ classId, academicYear, termNumber: term }),
+    onSuccess: (res) => {
+      qc.invalidateQueries({ queryKey: ['reports', classId, academicYear, term] });
+      qc.invalidateQueries({ queryKey: ['class-status', classId, academicYear, term] });
+      const { published = 0, skipped = 0 } = res.data ?? {};
+      toast.success(`${published} bulletin(s) publié(s)${skipped ? `, ${skipped} ignoré(s)` : ''}.`);
+    },
+    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur lors de la publication'),
+  });
+  const [confirmPublish, setConfirmPublish] = useState(false);
+
   const students = useMemo(() => {
     return [...(cls?.students ?? [])].sort((a, b) => {
       const na = a.student?.user?.name ?? a.student?.admissionNumber ?? '';
@@ -188,7 +225,7 @@ export default function TitulaireEntryPage() {
     <AppShell title="Saisie titulaire">
       <PageHeader
         title={`Saisie titulaire — ${cls?.name ?? ''}`}
-        subtitle="Assiduité, conduite et discipline par élève"
+        subtitle="Assiduité, conduite, observations — relecture et publication des bulletins de la classe"
         actions={
           <button className="tit__back-btn" onClick={() => navigate(`/teacher/classes/${classId}`)}>
             ← Retour à la classe
@@ -216,6 +253,50 @@ export default function TitulaireEntryPage() {
           {saveMutation.isPending ? 'Enregistrement…' : '💾 Enregistrer tout'}
         </button>
       </div>
+
+      {status && (
+        status.allSigned ? (
+          <div className="tit__status tit__status--ready">
+            <div className="tit__status-text">
+              <strong>✅ Toutes les fiches de notes sont signées ({status.signedSubjects}/{status.subjects}).</strong>
+              <span>
+                {status.reports.review > 0
+                  ? `${status.reports.review} bulletin(s) prêt(s) : relisez-les, ajoutez vos observations, puis publiez.`
+                  : status.reports.published > 0
+                    ? `${status.reports.published} bulletin(s) déjà publié(s) pour ce trimestre.`
+                    : 'Les bulletins sont en cours de préparation.'}
+              </span>
+            </div>
+            {status.reports.review > 0 && (
+              confirmPublish ? (
+                <div className="tit__status-confirm">
+                  <span>Publier {status.reports.review} bulletin(s) et les envoyer aux parents ?</span>
+                  <button type="button" className="tit__publish-btn" disabled={publishMutation.isPending}
+                    onClick={() => { publishMutation.mutate(); setConfirmPublish(false); }}>
+                    {publishMutation.isPending ? 'Publication…' : 'Oui, publier'}
+                  </button>
+                  <button type="button" className="tit__cancel-btn" onClick={() => setConfirmPublish(false)}>Annuler</button>
+                </div>
+              ) : (
+                <button type="button" className="tit__publish-btn" onClick={() => setConfirmPublish(true)}
+                  disabled={publishMutation.isPending}>
+                  📤 Publier les bulletins de la classe
+                </button>
+              )
+            )}
+          </div>
+        ) : (
+          <div className="tit__status tit__status--waiting">
+            <div className="tit__status-text">
+              <strong>⏳ Fiches de notes signées : {status.signedSubjects}/{status.subjects}</strong>
+              <span>
+                Les bulletins seront générés automatiquement dès que tous les professeurs auront signé.
+                {status.unsignedSubjects.length > 0 && <> En attente : {status.unsignedSubjects.join(', ')}.</>}
+              </span>
+            </div>
+          </div>
+        )
+      )}
 
       {termAttendance.length > 0 && (
         <p className="tit__auto-note">
@@ -322,13 +403,32 @@ export default function TitulaireEntryPage() {
                       </select>
                     </td>
                     <td className="tit__td tit__td--comment">
-                      <input
-                        type="text"
-                        className="tit__comment-input"
-                        placeholder="Observation…"
-                        value={e.teacherComment ?? ''}
-                        onChange={(ev) => setField(studentId, 'teacherComment', ev.target.value)}
-                      />
+                      <div className="tit__comment-cell">
+                        <textarea
+                          className="tit__comment-input"
+                          rows={2}
+                          placeholder="Observation du titulaire…"
+                          value={e.teacherComment ?? ''}
+                          onChange={(ev) => setField(studentId, 'teacherComment', ev.target.value)}
+                        />
+                        <div className="tit__comment-actions">
+                          <button
+                            type="button"
+                            className="tit__ai-btn"
+                            title={rc ? "Proposer une observation d'après les résultats de l'élève" : "Aucun bulletin : les notes ne sont pas encore saisies"}
+                            disabled={!rc || rc.status === 'PUBLISHED' || aiLoadingFor === studentId}
+                            onClick={() => suggestComment(studentId, rc.id)}
+                          >
+                            {aiLoadingFor === studentId ? '…' : '✨ IA'}
+                          </button>
+                          {rc && (
+                            <a className="tit__view-link" href={`/reports/${rc.id}/print`} target="_blank" rel="noreferrer"
+                              title="Relire le bulletin">
+                              👁
+                            </a>
+                          )}
+                        </div>
+                      </div>
                     </td>
                   </tr>
                 );

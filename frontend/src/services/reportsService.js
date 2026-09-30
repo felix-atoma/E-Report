@@ -11,6 +11,8 @@ export const reportsService = {
   titulaireUpsert: (data) => api.put('/reports/titulaire', data),
   bulkZip: (dto) => api.post('/reports/bulk-zip', dto, { responseType: 'blob' }),
   bulkPublish: (dto) => api.post('/reports/bulk-publish', dto),
+  classStatus: (params) => api.get('/reports/class-status', { params }),
+  aiComment: (id) => api.post(`/reports/${id}/ai-comment`),
   getAnnualReport: (studentId, academicYear) => api.get('/reports/annual', { params: { studentId, academicYear } }),
   palmares: (params) => api.get('/reports/palmares', { params }),
 };

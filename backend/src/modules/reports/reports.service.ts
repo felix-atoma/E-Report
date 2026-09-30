@@ -4,12 +4,18 @@
   Injectable,
   Logger,
   NotFoundException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import archiver = require('archiver');
 import { PrismaService } from '../../prisma/prisma.service';
-import { PdfService } from '../pdf/pdf.service';
+import { PdfService, isPrimaryLevel } from '../pdf/pdf.service';
 import { AttendanceService } from '../attendance/attendance.service';
+import { AiService } from '../ai/ai.service';
+
+const CONDUCT_LABELS_FR: Record<string, string> = {
+  TRES_BIEN: 'Très bien', BIEN: 'Bien', PASSABLE: 'Passable', MEDIOCRE: 'Médiocre',
+};
 import { Role } from '../../common/enums/role.enum';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
@@ -46,6 +52,7 @@ export class ReportsService {
     private readonly events: EventEmitter2,
     private readonly pdf: PdfService,
     private readonly attendance: AttendanceService,
+    private readonly ai: AiService,
   ) {}
 
   async palmares(
@@ -206,7 +213,20 @@ export class ReportsService {
     return this.prisma.reportCard.update({ where: { id }, data: { status: 'REVIEW' } });
   }
 
-  async publish(id: string, institutionId: string, _userId: string, role: Role) {
+  /** Seul le professeur titulaire de la classe relit et publie ses bulletins (l'admin garde ce droit). */
+  private async assertTitulaireOrAdmin(classId: string, institutionId: string, userId: string, role: Role) {
+    if (role === Role.ADMIN) return;
+    const cls = await this.prisma.class.findFirst({
+      where: { id: classId, institutionId },
+      select: { teacherId: true },
+    });
+    if (!cls) throw new NotFoundException('Class not found');
+    if (role !== Role.TEACHER || !userId || cls.teacherId !== userId) {
+      throw new ForbiddenException('Seul le professeur titulaire de cette classe peut relire et publier ses bulletins');
+    }
+  }
+
+  async publish(id: string, institutionId: string, userId: string, role: Role) {
     const report = await this.prisma.reportCard.findFirst({
       where: { id, class: { institutionId } },
       include: {
@@ -223,7 +243,8 @@ export class ReportsService {
       },
     });
     if (!report) throw new NotFoundException('Report card not found');
-    if (role !== Role.ADMIN) throw new ForbiddenException('Only admins can publish reports');
+    // Publication : le professeur titulaire de la classe (ou l'administrateur)
+    await this.assertTitulaireOrAdmin(report.classId, institutionId, userId, role);
     if (report.status !== 'REVIEW') throw new BadRequestException('Only REVIEW reports can be published');
 
     // Verify all teacher fiches are signed
@@ -758,7 +779,10 @@ export class ReportsService {
     academicYear: string,
     termNumber: number,
     institutionId: string,
+    userId: string,
+    role: Role,
   ): Promise<{ published: number; skipped: number }> {
+    await this.assertTitulaireOrAdmin(classId, institutionId, userId, role);
     const candidates = await this.prisma.reportCard.findMany({
       where: { classId, academicYear, termNumber, status: 'REVIEW', class: { institutionId } },
       select: { id: true },
@@ -773,7 +797,8 @@ export class ReportsService {
 
     for (const { id } of candidates) {
       try {
-        await this.publish(id, institutionId, '', Role.ADMIN);
+        // Droits déjà vérifiés pour toute la classe ci-dessus
+        await this.publish(id, institutionId, userId, Role.ADMIN);
         published++;
       } catch (err) {
         this.logger.warn(`bulkPublish: skipped report ${id} — ${err?.message}`);
@@ -782,6 +807,151 @@ export class ReportsService {
     }
 
     return { published, skipped };
+  }
+
+  // ─── Préparation automatique des bulletins d'une classe ──────────────────
+
+  /**
+   * État de la classe pour un trimestre : fiches de notes signées (par matière) et bulletins
+   * par statut. Sert au bandeau de la page du titulaire.
+   */
+  async classStatus(classId: string, academicYear: string, termNumber: number, institutionId: string) {
+    const cls = await this.prisma.class.findFirst({
+      where: { id: classId, institutionId },
+      select: { id: true, teacherId: true, subjects: { select: { subjectId: true, subject: { select: { nameFr: true } } } } },
+    });
+    if (!cls) throw new NotFoundException('Class not found');
+
+    const fiches = await this.prisma.gradeFiche.findMany({
+      where: { classId, academicYear, termNumber, signedAt: { not: null } },
+      select: { subjectId: true },
+    });
+    const signed = new Set(fiches.map((f) => f.subjectId));
+    const unsignedSubjects = cls.subjects.filter((s) => !signed.has(s.subjectId)).map((s) => s.subject.nameFr);
+
+    const byStatus = await this.prisma.reportCard.groupBy({
+      by: ['status'],
+      where: { classId, academicYear, termNumber },
+      _count: true,
+    });
+    const count = (s: string) => byStatus.find((b) => b.status === s)?._count ?? 0;
+
+    return {
+      subjects: cls.subjects.length,
+      signedSubjects: cls.subjects.length - unsignedSubjects.length,
+      unsignedSubjects,
+      allSigned: cls.subjects.length > 0 && unsignedSubjects.length === 0,
+      reports: { draft: count('DRAFT'), review: count('REVIEW'), published: count('PUBLISHED') },
+    };
+  }
+
+  /**
+   * Dès que toutes les fiches de notes d'une classe sont signées pour le trimestre, les bulletins
+   * sont générés automatiquement : un bulletin par élève inscrit (créé s'il manque) passe
+   * « à relire » (REVIEW). Le titulaire les relit, ajoute ses observations et les publie.
+   */
+  @OnEvent('fiche.signed')
+  async prepareClassBulletins(payload: { classId: string; academicYear: string; termNumber: number; institutionId: string }) {
+    const { classId, academicYear, termNumber, institutionId } = payload;
+    try {
+      const status = await this.classStatus(classId, academicYear, termNumber, institutionId);
+      if (!status.allSigned) return { prepared: 0 };
+
+      const enrolled = await this.prisma.classStudent.findMany({
+        where: { classId, academicYear },
+        select: { studentId: true },
+      });
+      const existing = await this.prisma.reportCard.findMany({
+        where: { classId, academicYear, termNumber },
+        select: { studentId: true, termName: true, termType: true },
+      });
+      const have = new Set(existing.map((r) => r.studentId));
+      const termName = existing[0]?.termName ?? `${termNumber === 1 ? '1er' : `${termNumber}e`} Trimestre`;
+      const termType = existing[0]?.termType ?? 'TRIMESTRE';
+
+      const missing = enrolled.filter((e) => !have.has(e.studentId));
+      if (missing.length) {
+        await this.prisma.reportCard.createMany({
+          data: missing.map((e) => ({
+            studentId: e.studentId, classId, academicYear, termNumber, termName, termType,
+            securityCode: generateSecurityCode(academicYear, termNumber),
+          })),
+          skipDuplicates: true,
+        });
+      }
+
+      const { count } = await this.prisma.reportCard.updateMany({
+        where: { classId, academicYear, termNumber, status: 'DRAFT' },
+        data: { status: 'REVIEW' },
+      });
+      this.logger.log(`Class ${classId} T${termNumber}: all fiches signed — ${count} bulletin(s) ready for review`);
+      return { prepared: count };
+    } catch (err: any) {
+      this.logger.error(`prepareClassBulletins failed for class ${classId}: ${err?.message ?? err}`);
+      return { prepared: 0 };
+    }
+  }
+
+  /** Une signature retirée : les bulletins non publiés de la classe repassent en brouillon. */
+  @OnEvent('fiche.unsigned')
+  async revertClassBulletins(payload: { classId: string; academicYear: string; termNumber: number }) {
+    const { classId, academicYear, termNumber } = payload;
+    await this.prisma.reportCard.updateMany({
+      where: { classId, academicYear, termNumber, status: 'REVIEW' },
+      data: { status: 'DRAFT' },
+    });
+  }
+
+  // ─── Observation du titulaire générée par l'IA ───────────────────────────
+
+  async generateTitulaireComment(reportId: string, institutionId: string, userId: string, role: Role) {
+    const report = await this.prisma.reportCard.findFirst({
+      where: { id: reportId, class: { institutionId } },
+      include: {
+        student: { select: { sex: true, admissionNumber: true, user: { select: { name: true } } } },
+        class: { select: { name: true, level: true } },
+        grades: { include: { subject: { select: { nameFr: true } } }, orderBy: { coefficient: 'desc' } },
+      },
+    });
+    if (!report) throw new NotFoundException('Report card not found');
+    await this.assertTitulaireOrAdmin(report.classId, institutionId, userId, role);
+    if (report.status === 'PUBLISHED') throw new BadRequestException('Ce bulletin est déjà publié');
+
+    const graded = report.grades
+      .map((g) => ({ subject: g.subject.nameFr, score: (g.moyenneMatiere ?? g.score) as number, coefficient: g.coefficient }))
+      .filter((g) => g.score != null);
+    if (!graded.length) throw new BadRequestException("Aucune note n'est encore saisie pour cet élève");
+
+    // Moyenne : celle du bulletin si déjà calculée, sinon moyenne pondérée des matières
+    const totalCoef = graded.reduce((s, g) => s + g.coefficient, 0);
+    const avg = report.overallAverage
+      ?? (totalCoef > 0 ? graded.reduce((s, g) => s + g.score * g.coefficient, 0) / totalCoef : 0);
+
+    if (!this.ai.isEnabled) {
+      throw new ServiceUnavailableException("L'assistant IA n'est pas configuré sur cette plateforme.");
+    }
+    const comment = await this.ai.generateReportComment({
+      studentName: report.student.user?.name ?? report.student.admissionNumber,
+      sex: (report.student.sex as 'M' | 'F' | null) ?? null,
+      className: report.class.name,
+      termName: report.termName,
+      isPrimary: isPrimaryLevel(report.class.level),
+      avg,
+      mention: report.mention ?? computeMention(avg),
+      rank: report.classRank,
+      classSize: report.classSize,
+      classAverage: report.classAverage,
+      conduct: report.conductRating ? CONDUCT_LABELS_FR[report.conductRating] ?? null : null,
+      absentDays: report.attendanceAbsent,
+      lateHours: report.attendanceLateMinutes != null
+        ? String(Math.round((report.attendanceLateMinutes / 60) * 10) / 10).replace('.', ',')
+        : null,
+      grades: graded,
+    }).catch((err: Error) => {
+      // Message lisible côté titulaire (sinon « Internal server error »)
+      throw new ServiceUnavailableException(err?.message ?? "Impossible de générer l'observation.");
+    });
+    return { comment };
   }
 
   async bulkZip(dto: BulkZipDto, institutionId: string): Promise<Buffer> {

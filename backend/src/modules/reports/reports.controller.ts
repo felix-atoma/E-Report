@@ -58,6 +58,19 @@ export class ReportsController {
     });
   }
 
+  // Déclarée avant @Get(':id') pour que « class-status » ne soit pas pris pour un identifiant
+  @Get('class-status')
+  @Roles(Role.ADMIN, Role.TEACHER)
+  @ApiOperation({ summary: 'Signed grade sheets and bulletin counts for a class term' })
+  classStatus(
+    @CurrentUser() user: any,
+    @Query('classId') classId: string,
+    @Query('academicYear') academicYear: string,
+    @Query('termNumber') termNumber: string,
+  ) {
+    return this.service.classStatus(classId, academicYear, Number(termNumber) || 1, user.institutionId);
+  }
+
   @Post()
   @Roles(Role.ADMIN, Role.TEACHER)
   @ApiOperation({ summary: 'Create a new report card (DRAFT status)' })
@@ -95,11 +108,19 @@ export class ReportsController {
   }
 
   @Patch(':id/publish')
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.TEACHER)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Publish report card — triggers fee-gate delivery flow (Admin only)' })
+  @ApiOperation({ summary: 'Publish report card — class titulaire (or admin); triggers fee-gate delivery flow' })
   publish(@Param('id') id: string, @CurrentUser() user: any) {
     return this.service.publish(id, user.institutionId, user.id, user.role);
+  }
+
+  @Post(':id/ai-comment')
+  @Roles(Role.ADMIN, Role.TEACHER)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Suggest the titulaire's observation with AI (gender/number agreement from the student's sex)" })
+  aiComment(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.service.generateTitulaireComment(id, user.institutionId, user.id, user.role);
   }
 
   @Get('palmares')
@@ -131,14 +152,16 @@ export class ReportsController {
   }
 
   @Post('bulk-publish')
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.TEACHER)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Publish all REVIEW bulletins for a class in one click (Admin only)' })
+  @ApiOperation({ summary: 'Publish all REVIEW bulletins for a class in one click (class titulaire or admin)' })
   bulkPublish(
     @Body() dto: { classId: string; academicYear: string; termNumber: number },
     @CurrentUser() user: any,
   ) {
-    return this.service.bulkPublish(dto.classId, dto.academicYear, dto.termNumber, user.institutionId);
+    return this.service.bulkPublish(
+      dto.classId, dto.academicYear, Number(dto.termNumber), user.institutionId, user.id, user.role,
+    );
   }
 
   @Post('bulk-zip')
