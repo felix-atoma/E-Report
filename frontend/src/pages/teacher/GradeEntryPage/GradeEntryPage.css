@@ -504,7 +504,15 @@
 .fdn-focus__title { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.2; }
 .fdn-focus__title strong { font-size: 0.9rem; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fdn-focus__title span { font-size: 0.72rem; color: #6b7280; }
-.fdn-focus__coef { font-size: 0.78rem; font-weight: 600; color: #374151; white-space: nowrap; }
+.fdn-focus__coef { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.78rem; font-weight: 600; color: #374151; white-space: nowrap; }
+/* Coefficient modifiable en mode plein écran (16px : pas de zoom automatique sur iPhone) */
+.fdn-focus__coef-input {
+  width: 56px; min-height: 36px; padding: 0.2rem 0.3rem;
+  border: 1.5px solid #d1d5db; border-radius: 6px;
+  font-size: 16px; font-family: inherit; text-align: center; color: #111827; background: #fff;
+}
+.fdn-focus__coef-input:focus { outline: none; border-color: var(--color-primary, #f97316); }
+.fdn-focus__coef-input:disabled { background: #f3f4f6; color: #6b7280; }
 .fdn-focus__saved { font-size: 0.78rem; font-weight: 600; color: #047857; white-space: nowrap; }
 
 /* Le tableau occupe tout l'espace restant, avec défilement propre */

@@ -662,7 +662,20 @@ export default function GradeEntryPage() {
               <strong>{subjectTitle}</strong>
               <span>{termName}</span>
             </div>
-            {hasCoefficient && <span className="fdn-focus__coef">{t('gradeEntry.coef')} {coef}</span>}
+            {hasCoefficient && (
+              <label className="fdn-focus__coef">
+                {t('gradeEntry.coef')}
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  className="fdn-focus__coef-input"
+                  min={0.5} max={20} step={0.5}
+                  value={coef}
+                  onChange={(e) => setCoef(parseFloat(e.target.value))}
+                  disabled={isSigned}
+                />
+              </label>
+            )}
             {saved && <span className="fdn-focus__saved">✓ {t('gradeEntry.saved')}</span>}
             {!isSigned && (
               <button
@@ -672,6 +685,20 @@ export default function GradeEntryPage() {
                 disabled={mutation.isPending}
               >
                 {mutation.isPending ? t('gradeEntry.saving') : t('gradeEntry.save')}
+              </button>
+            )}
+            {!isSigned && (
+              <button
+                type="button"
+                className="fdn__btn fdn__btn--sign"
+                onClick={() => {
+                  // La fenêtre de signature s'ouvre hors du mode plein écran (pad non tourné, plus de place)
+                  exitFocusMode();
+                  setSigData(null);
+                  setSignModal(true);
+                }}
+              >
+                {t('gradeEntry.sign')}
               </button>
             )}
             {isPortrait && (

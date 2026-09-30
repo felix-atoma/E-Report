@@ -75,3 +75,13 @@
   font-weight: 600;
   color: #0f766e;
 }
+
+/* Import d'une signature (PNG, JPG, PDF) */
+.sig-pad__import { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+.sig-pad__import-btn {
+  padding: 0.45rem 0.9rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; font-family: inherit;
+  background: #eff6ff; color: #1d4ed8; border: 1.5px solid #93c5fd; cursor: pointer;
+}
+.sig-pad__import-btn:hover:not(:disabled) { background: #dbeafe; }
+.sig-pad__import-btn:disabled { opacity: 0.6; cursor: wait; }
+.sig-pad__import-error { font-size: 0.8rem; color: #b91c1c; }

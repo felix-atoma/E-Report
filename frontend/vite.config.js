@@ -39,6 +39,8 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // pdf.js (import de signature en PDF) : chargé à la demande, pas pré-téléchargé pour tous
+        globIgnores: ['**/pdf.worker*.js', '**/pdf-*.js'],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         skipWaiting: true,
