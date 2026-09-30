@@ -173,6 +173,15 @@ export class PdfService {
         ? Math.round((report.attendancePresent / report.attendanceDays) * 100)
         : null;
 
+    // Retards affichés en heures, virgule décimale (ex. 1,5 h)
+    const lateHours =
+      report.attendanceLateMinutes != null
+        ? (Math.round((report.attendanceLateMinutes / 60) * 10) / 10).toString().replace('.', ',')
+        : null;
+    const hasAttendance =
+      !!report.attendanceDays || report.attendanceAbsent != null ||
+      report.attendanceExcused != null || report.attendanceLateMinutes != null;
+
     const inst = institution as any;
     const countryLine = [inst.country, inst.countryMotto].filter(Boolean).join(' â€” ') || null;
 
@@ -208,6 +217,8 @@ export class PdfService {
         annualIsPassing: report.annualAverage != null ? report.annualAverage >= 10 : null,
         absences,
         attendanceRate,
+        lateHours,
+        hasAttendance,
         totalCoef,
         totalPoints: Math.round(totalPoints * 100) / 100,
       },
@@ -243,6 +254,8 @@ export interface ReportCardData {
     attendanceLate: number | null;
     attendanceAbsent: number | null;
     attendanceAbsentHours: number | null;
+    attendanceExcused?: number | null;
+    attendanceLateMinutes?: number | null;
     honorCouncil: boolean | null;
     commendations: number | null;
     warnings: number | null;

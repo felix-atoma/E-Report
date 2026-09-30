@@ -453,8 +453,10 @@ model ReportCard {
   conductRating         ConductRating?
   attendanceDays        Int? // Nombre de jours de classe
   attendancePresent     Int? // Jours de présence
-  attendanceLate        Int? // Retards
-  attendanceAbsent      Int? // Absences (in half-days)
+  attendanceLate        Int? // Nombre de retards
+  attendanceLateMinutes Int? // Durée cumulée des retards en minutes (affichée en heures)
+  attendanceAbsent      Int? // Jours d'absence non justifiés
+  attendanceExcused     Int? // Jours d'absence justifiés
   attendanceAbsentHours Int? // Heures d'absence
   attendanceExcluded    Int? // Exclusions
   warnings              Int? // Avertissements
@@ -1138,7 +1140,12 @@ model Attendance {
   subjectId     String?
   institutionId String
   date          DateTime         @db.Date
+  startTime     String? // Début de la séance "08:00" (null = saisie journalière)
+  // Identifie la séance : "<subjectId>|<startTime>" — "" pour une saisie journalière.
+  // Permet à plusieurs professeurs d'enregistrer le même jour sans s'écraser.
+  sessionKey    String           @default("")
   status        AttendanceStatus @default(PRESENT)
+  minutesLate   Int? // Durée du retard en minutes (status = LATE)
   note          String?
   recordedBy    String?
 
@@ -1150,7 +1157,8 @@ model Attendance {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([studentId, classId, date])
+  @@unique([studentId, classId, date, sessionKey])
+  @@index([classId, date])
 }
 
 enum AttendanceStatus {

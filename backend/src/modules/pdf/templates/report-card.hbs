@@ -396,16 +396,20 @@ body {
   {{/if}}
 
   <!-- Attendance + remarks -->
-  <div class="two-col" style="{{#unless report.attendanceDays}}display:block;{{/unless}}">
-    {{#if report.attendanceDays}}
+  <div class="two-col" style="{{#unless report.hasAttendance}}display:block;{{/unless}}">
+    {{#if report.hasAttendance}}
     <div class="box">
       <div class="box-title">Assiduité</div>
       <div class="att-row">
+        {{#if report.attendanceDays}}
         <div class="att-cell"><div class="att-label">Jours de cours</div><div class="att-val">{{report.attendanceDays}}</div></div>
-        <div class="att-cell"><div class="att-label">Présences</div><div class="att-val">{{report.attendancePresent}}</div></div>
-        <div class="att-cell"><div class="att-label">H. d'absence</div><div class="att-val">{{#if report.attendanceAbsentHours}}{{report.attendanceAbsentHours}} h{{else}}�{{/if}}</div></div>
-        <div class="att-cell"><div class="att-label">Retards</div><div class="att-val">{{#if report.attendanceLate}}{{report.attendanceLate}}{{else}}�{{/if}}</div></div>
+        {{/if}}
+        <div class="att-cell"><div class="att-label">Abs. non justifiées</div><div class="att-val">{{#if report.attendanceAbsent}}{{report.attendanceAbsent}}{{else}}0{{/if}} j</div></div>
+        <div class="att-cell"><div class="att-label">Abs. justifiées</div><div class="att-val">{{#if report.attendanceExcused}}{{report.attendanceExcused}}{{else}}0{{/if}} j</div></div>
+        <div class="att-cell"><div class="att-label">Retards</div><div class="att-val">{{#if report.lateHours}}{{report.lateHours}} h{{else}}{{#if report.attendanceLate}}{{report.attendanceLate}}{{else}}0 h{{/if}}{{/if}}</div></div>
+        {{#if report.attendanceRate}}
         <div class="att-cell"><div class="att-label">Taux</div><div class="att-val">{{report.attendanceRate}}%</div></div>
+        {{/if}}
       </div>
     </div>
     {{/if}}

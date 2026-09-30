@@ -9,6 +9,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import archiver = require('archiver');
 import { PrismaService } from '../../prisma/prisma.service';
 import { PdfService } from '../pdf/pdf.service';
+import { AttendanceService } from '../attendance/attendance.service';
 import { Role } from '../../common/enums/role.enum';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
@@ -44,6 +45,7 @@ export class ReportsService {
     private readonly prisma: PrismaService,
     private readonly events: EventEmitter2,
     private readonly pdf: PdfService,
+    private readonly attendance: AttendanceService,
   ) {}
 
   async palmares(
@@ -314,9 +316,25 @@ export class ReportsService {
       councilDecision = annualAverage >= 10 ? 'Admis(e) en classe supÃ©rieure' : 'Redoublant(e)';
     }
 
+    // Absences (jours) et retards (minutes) calculés depuis les saisies des professeurs.
+    // Sans aucune saisie sur le trimestre, on garde les valeurs entrées par le titulaire.
+    const termAttendance = await this.attendance.computeTermAttendance(
+      report.classId, report.academicYear, report.termType, report.termNumber, institutionId, [report.studentId],
+    );
+    const att = termAttendance.get(report.studentId);
+    const attendanceData = att
+      ? {
+          attendanceAbsent: att.absentDays,
+          attendanceExcused: att.excusedDays,
+          attendanceLate: att.lateCount,
+          attendanceLateMinutes: att.lateMinutes,
+        }
+      : {};
+
     const published = await this.prisma.reportCard.update({
       where: { id },
       data: {
+        ...attendanceData,
         status: 'PUBLISHED',
         publishedAt: new Date(),
         // Backfill a security code at publish time if one wasn't already
@@ -411,6 +429,8 @@ export class ReportsService {
         attendanceLate: (published as any).attendanceLate ?? null,
         attendanceAbsent: (published as any).attendanceAbsent ?? null,
         attendanceAbsentHours: (published as any).attendanceAbsentHours ?? null,
+        attendanceExcused: (published as any).attendanceExcused ?? null,
+        attendanceLateMinutes: (published as any).attendanceLateMinutes ?? null,
         honorCouncil: (published as any).honorCouncil ?? null,
         commendations: (published as any).commendations ?? null,
         warnings: (published as any).warnings ?? null,
@@ -769,6 +789,7 @@ export class ReportsService {
               principalComment: (r as any).principalComment, attendanceDays: (r as any).attendanceDays,
               attendancePresent: (r as any).attendancePresent, attendanceLate: (r as any).attendanceLate ?? null,
               attendanceAbsent: (r as any).attendanceAbsent ?? null, attendanceAbsentHours: (r as any).attendanceAbsentHours ?? null,
+              attendanceExcused: (r as any).attendanceExcused ?? null, attendanceLateMinutes: (r as any).attendanceLateMinutes ?? null,
               honorCouncil: (r as any).honorCouncil ?? null, commendations: (r as any).commendations ?? null,
               warnings: (r as any).warnings ?? null, annualAverage: (r as any).annualAverage ?? null,
               councilDecision: (r as any).councilDecision ?? null,
@@ -843,6 +864,7 @@ export class ReportsService {
         principalComment: r.principalComment, attendanceDays: r.attendanceDays, attendancePresent: r.attendancePresent,
         attendanceLate: r.attendanceLate ?? null, attendanceAbsent: r.attendanceAbsent ?? null,
         attendanceAbsentHours: r.attendanceAbsentHours ?? null, honorCouncil: r.honorCouncil ?? null,
+        attendanceExcused: r.attendanceExcused ?? null, attendanceLateMinutes: r.attendanceLateMinutes ?? null,
         commendations: r.commendations ?? null, warnings: r.warnings ?? null,
         annualAverage: r.annualAverage ?? null, councilDecision: r.councilDecision ?? null,
       },

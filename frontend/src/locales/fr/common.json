@@ -551,6 +551,11 @@
     "complexSchoolDesc": "Activez si votre établissement regroupe plusieurs cycles (primaire, collège, lycée) avec des systèmes de périodes différents — par exemple trimestres au primaire et au collège, semestres au lycée.",
     "complexOn":         "Complexe activé — paramétrage par cycle",
     "complexOff":        "Monocycle — même système pour toutes les classes",
+    "termDates":         "Dates des périodes",
+    "termDatesDesc":     "Utilisées pour cumuler les absences (en jours) et les retards (en heures) de chaque période sur les bulletins. Laissez vide pour le calendrier par défaut.",
+    "termDatesStart":    "Début",
+    "termDatesEnd":      "Fin",
+    "termDatesDefault":  "Calendrier par défaut",
     "cycle": {
       "PRIMAIRE": "Primaire (CI → CM2)",
       "COLLEGE":  "Collège (6ème → 3ème)",

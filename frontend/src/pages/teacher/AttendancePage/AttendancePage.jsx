@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { classesService } from '../../../services/classesService';
 import { attendanceService } from '../../../services/attendanceService';
+import { timetablesService } from '../../../services/timetablesService';
+import { useAuth } from '../../../context/AuthContext';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Card from '../../../components/common/Card/Card';
@@ -16,12 +18,18 @@ function today() {
   return new Date().toISOString().split('T')[0];
 }
 
+const WEEKDAYS = ['DIMANCHE', 'LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI'];
+
 export default function AttendancePage() {
   const qc = useQueryClient();
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [selectedClassId, setSelectedClassId] = useState('');
   const [date, setDate] = useState(today());
+  const [subjectId, setSubjectId] = useState('');
+  const [startTime, setStartTime] = useState('');
   const [entries, setEntries] = useState({});
+  const [lateMinutes, setLateMinutes] = useState({});
 
   const STATUS_OPTIONS = [
     { value: 'PRESENT',  label: t('attendance.PRESENT'),  color: '#16a34a' },
@@ -55,17 +63,56 @@ export default function AttendancePage() {
     enabled: !!selectedClassId,
   });
 
-  const { data: existing = [] } = useQuery({
-    queryKey: ['attendance', selectedClassId, date],
-    queryFn: () => attendanceService.listByClass(selectedClassId, { date }).then((r) => r.data),
+  // Le titulaire et l'admin peuvent saisir pour toutes les matières (ou la journée entière) ;
+  // un professeur de matière uniquement pour les siennes.
+  const isTitulaire = user?.role === 'ADMIN' || (classDetail && classDetail.teacherId === user?.id);
+  const subjectOptions = (classDetail?.subjects ?? [])
+    .filter((cs) => isTitulaire || cs.teacher?.id === user?.id)
+    .map((cs) => ({ value: cs.subject.id, label: cs.subject.nameFr }));
+
+  useEffect(() => {
+    if (!classDetail) return;
+    if (!isTitulaire && subjectOptions.length && !subjectOptions.some((o) => o.value === subjectId)) {
+      setSubjectId(subjectOptions[0].value);
+    }
+  }, [classDetail]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const { data: timetable = [] } = useQuery({
+    queryKey: ['timetable', selectedClassId, classDetail?.academicYear],
+    queryFn: () => timetablesService.list(selectedClassId, classDetail.academicYear).then((r) => r.data),
+    enabled: !!selectedClassId && !!classDetail?.academicYear,
+  });
+
+  // Séances de l'emploi du temps pour ce jour et cette matière → proposées comme heure de début
+  const weekday = WEEKDAYS[new Date(`${date}T00:00:00`).getDay()];
+  const slotOptions = timetable
+    .filter((s) => s.dayOfWeek === weekday && (!subjectId || s.subjectId === subjectId))
+    .map((s) => ({ value: s.startTime, label: `${s.startTime}–${s.endTime}` }));
+
+  useEffect(() => {
+    if (slotOptions.length && !slotOptions.some((o) => o.value === startTime)) {
+      setStartTime(slotOptions[0].value);
+    }
+  }, [subjectId, date, timetable.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const sessionParams = { date, subjectId: subjectId || '', startTime: startTime || '' };
+
+  const { data: existing } = useQuery({
+    queryKey: ['attendance', selectedClassId, date, subjectId, startTime],
+    queryFn: () => attendanceService.listByClass(selectedClassId, sessionParams).then((r) => r.data),
     enabled: !!selectedClassId && !!date,
   });
 
   useEffect(() => {
-    if (!existing.length) return;
+    if (!existing) return;
     const map = {};
-    existing.forEach((rec) => { map[rec.studentId] = rec.status; });
+    const mins = {};
+    existing.forEach((rec) => {
+      map[rec.studentId] = rec.status;
+      if (rec.minutesLate) mins[rec.studentId] = String(rec.minutesLate);
+    });
     setEntries(map);
+    setLateMinutes(mins);
   }, [existing]);
 
   const students = classDetail?.students?.map((cs) => cs.student) ?? [];
@@ -75,14 +122,28 @@ export default function AttendancePage() {
       attendanceService.bulkUpsert({
         classId: selectedClassId,
         date,
-        entries: students.map((s) => ({
-          studentId: s.id,
-          status: entries[s.id] ?? 'PRESENT',
-        })),
+        subjectId: subjectId || undefined,
+        startTime: startTime || undefined,
+        entries: students.map((s) => {
+          const status = entries[s.id] ?? 'PRESENT';
+          const mins = Number(lateMinutes[s.id]);
+          return {
+            studentId: s.id,
+            status,
+            minutesLate: status === 'LATE' && mins > 0 ? mins : undefined,
+          };
+        }),
       }),
-    onSuccess: () => toast.success('Présences enregistrées'),
-    onError: () => toast.error('Erreur lors de l\'enregistrement'),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['attendance', selectedClassId] });
+      toast.success('Présences enregistrées');
+    },
+    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur lors de l\'enregistrement'),
   });
+
+  const missingLateMinutes = students.some(
+    (s) => entries[s.id] === 'LATE' && !(Number(lateMinutes[s.id]) > 0),
+  );
 
   const setAll = (status) => {
     const map = {};
@@ -93,6 +154,8 @@ export default function AttendancePage() {
   const toggle = (studentId, status) => {
     setEntries((prev) => ({ ...prev, [studentId]: status }));
   };
+
+  const resetSession = () => { setEntries({}); setLateMinutes({}); };
 
   if (loadingClasses) return <AppShell title="Présences"><Loading /></AppShell>;
 
@@ -110,7 +173,7 @@ export default function AttendancePage() {
         <div className="att-controls__row">
           <div className="att-controls__field">
             <label>Classe</label>
-            <select value={selectedClassId} onChange={(e) => { setSelectedClassId(e.target.value); setEntries({}); }}>
+            <select value={selectedClassId} onChange={(e) => { setSelectedClassId(e.target.value); setSubjectId(''); setStartTime(''); resetSession(); }}>
               <option value="">— Sélectionner une classe —</option>
               {classes.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
@@ -119,9 +182,37 @@ export default function AttendancePage() {
           </div>
           <div className="att-controls__field">
             <label>Date</label>
-            <input type="date" value={date} onChange={(e) => { setDate(e.target.value); setEntries({}); }} />
+            <input type="date" value={date} onChange={(e) => { setDate(e.target.value); resetSession(); }} />
           </div>
         </div>
+        {selectedClassId && classDetail && (
+          <div className="att-controls__row att-controls__row--session">
+            <div className="att-controls__field">
+              <label>Matière / séance</label>
+              <select value={subjectId} onChange={(e) => { setSubjectId(e.target.value); resetSession(); }}>
+                {isTitulaire && <option value="">Journée entière</option>}
+                {subjectOptions.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="att-controls__field">
+              <label>Heure de début</label>
+              {slotOptions.length > 0 ? (
+                <select value={startTime} onChange={(e) => { setStartTime(e.target.value); resetSession(); }}>
+                  {slotOptions.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              ) : (
+                <input type="time" value={startTime} onChange={(e) => { setStartTime(e.target.value); resetSession(); }} />
+              )}
+            </div>
+          </div>
+        )}
+        {selectedClassId && classDetail && !isTitulaire && subjectOptions.length === 0 && (
+          <p className="att-controls__hint">Aucune matière ne vous est attribuée dans cette classe.</p>
+        )}
       </Card>
 
       {selectedClassId && loadingClass && <Loading />}
@@ -207,6 +298,18 @@ export default function AttendancePage() {
                         {opt.label}
                       </button>
                     ))}
+                    {current === 'LATE' && (
+                      <label className="att-late">
+                        <input
+                          type="number" min="1" max="600" inputMode="numeric"
+                          className="att-late__input"
+                          value={lateMinutes[student.id] ?? ''}
+                          placeholder="15"
+                          onChange={(e) => setLateMinutes((prev) => ({ ...prev, [student.id]: e.target.value }))}
+                        />
+                        <span>min</span>
+                      </label>
+                    )}
                   </div>
                 </div>
               );
@@ -214,7 +317,10 @@ export default function AttendancePage() {
           </Card>
 
           <div className="att-footer">
-            <Button onClick={() => save()} disabled={saving}>
+            {missingLateMinutes && (
+              <span className="att-footer__warn">Indiquez la durée (en minutes) de chaque retard.</span>
+            )}
+            <Button onClick={() => save()} disabled={saving || missingLateMinutes || (!isTitulaire && !subjectId)}>
               {saving ? 'Enregistrement…' : '💾 Enregistrer les présences'}
             </Button>
           </div>

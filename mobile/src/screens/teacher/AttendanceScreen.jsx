@@ -1,12 +1,13 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator, Alert, FlatList, ScrollView, StyleSheet,
-  Text, TouchableOpacity, View,
+  Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 import { classesService } from '../../services/classesService';
 import { attendanceService } from '../../services/attendanceService';
 import { fontSize, fontWeight, radius, spacing } from '../../theme';
@@ -18,8 +19,11 @@ const STATUSES = [
   { value: 'EXCUSED',  label: 'E',  color: '#6366f1', title: 'Excusé'   },
 ];
 
+const WEEKDAYS = ['DIMANCHE', 'LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI'];
+
 function toDateStr(d) {
-  return d.toISOString().split('T')[0];
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 function addDays(d, n) {
@@ -31,27 +35,73 @@ function addDays(d, n) {
 export default function AttendanceScreen({ route }) {
   const { classId, className } = route.params;
   const { colors } = useTheme();
+  const { user } = useAuth();
 
   const [date, setDate]         = useState(new Date());
-  const [students, setStudents] = useState([]);
+  const [cls, setCls]           = useState(null);
+  const [timetable, setTimetable] = useState([]);
+  const [subjectId, setSubjectId] = useState(null);   // null = pas encore choisi, '' = journée entière
+  const [startTime, setStartTime] = useState('');
   const [records, setRecords]   = useState({});   // studentId → status
+  const [lateMinutes, setLateMinutes] = useState({}); // studentId → "15"
   const [loading, setLoading]   = useState(true);
   const [saving, setSaving]     = useState(false);
 
+  // Charge la classe (élèves + matières) et l'emploi du temps une seule fois
+  useEffect(() => {
+    (async () => {
+      try {
+        const classRes = await classesService.getById(classId);
+        const c = classRes.data.data;
+        setCls(c);
+        if (c?.academicYear) {
+          const tt = await attendanceService.timetable(classId, c.academicYear).catch(() => null);
+          setTimetable(tt?.data?.data ?? []);
+        }
+      } catch { /* silent */ }
+    })();
+  }, [classId]);
+
+  const students = (cls?.students ?? []).map((cs) => cs.student ?? cs);
+
+  // Le titulaire peut saisir pour toute matière ou la journée entière ; un prof de matière pour les siennes
+  const isTitulaire = user?.role === 'ADMIN' || (cls && cls.teacherId === user?.id);
+  const subjectOptions = (cls?.subjects ?? [])
+    .filter((cs) => isTitulaire || cs.teacher?.id === user?.id)
+    .map((cs) => ({ value: cs.subject.id, label: cs.subject.nameFr }));
+
+  useEffect(() => {
+    if (!cls || subjectId !== null) return;
+    setSubjectId(isTitulaire ? '' : (subjectOptions[0]?.value ?? ''));
+  }, [cls]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const weekday = WEEKDAYS[date.getDay()];
+  const slotOptions = timetable
+    .filter((s) => s.dayOfWeek === weekday && (!subjectId || s.subjectId === subjectId))
+    .map((s) => ({ value: s.startTime, label: `${s.startTime}–${s.endTime}` }));
+
+  useEffect(() => {
+    setStartTime(slotOptions[0]?.value ?? '');
+  }, [subjectId, weekday, timetable.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const load = useCallback(async () => {
+    if (subjectId === null) return;
     setLoading(true);
     try {
-      const [classRes, attRes] = await Promise.all([
-        classesService.getById(classId),
-        attendanceService.listByClass(classId, { date: toDateStr(date) }),
-      ]);
-      setStudents(classRes.data.data?.students ?? []);
+      const attRes = await attendanceService.listByClass(classId, {
+        date: toDateStr(date), subjectId: subjectId || '', startTime: startTime || '',
+      });
       const existing = {};
-      (attRes.data.data ?? []).forEach((r) => { existing[r.studentId] = r.status; });
+      const mins = {};
+      (attRes.data.data ?? []).forEach((r) => {
+        existing[r.studentId] = r.status;
+        if (r.minutesLate) mins[r.studentId] = String(r.minutesLate);
+      });
       setRecords(existing);
+      setLateMinutes(mins);
     } catch { /* silent */ }
     finally { setLoading(false); }
-  }, [classId, date]);
+  }, [classId, date, subjectId, startTime]);
 
   useFocusEffect(load);
 
@@ -66,15 +116,32 @@ export default function AttendanceScreen({ route }) {
   }
 
   async function handleSave() {
-    const recs = students.map((s) => ({
-      studentId: s.id,
+    const missing = students.some((s) => records[s.id] === 'LATE' && !(Number(lateMinutes[s.id]) > 0));
+    if (missing) {
+      Alert.alert('Retards', 'Indiquez la durée (en minutes) de chaque retard.');
+      return;
+    }
+    if (!isTitulaire && !subjectId) {
+      Alert.alert('Matière', 'Aucune matière ne vous est attribuée dans cette classe.');
+      return;
+    }
+    const payload = {
       classId,
       date: toDateStr(date),
-      status: records[s.id] ?? 'PRESENT',
-    }));
+      subjectId: subjectId || undefined,
+      startTime: startTime || undefined,
+      entries: students.map((s) => {
+        const status = records[s.id] ?? 'PRESENT';
+        return {
+          studentId: s.id,
+          status,
+          minutesLate: status === 'LATE' ? Number(lateMinutes[s.id]) : undefined,
+        };
+      }),
+    };
     setSaving(true);
     try {
-      await attendanceService.bulkUpsert(recs);
+      await attendanceService.bulkUpsert(payload);
       Alert.alert('Enregistré', 'Les présences ont été sauvegardées.');
     } catch (err) {
       Alert.alert('Erreur', err.response?.data?.message ?? 'Erreur lors de la sauvegarde.');
@@ -102,6 +169,32 @@ export default function AttendanceScreen({ route }) {
           <Ionicons name="chevron-forward" size={20} color={colors.primary} />
         </TouchableOpacity>
       </View>
+
+      {/* Séance : matière + heure */}
+      {cls && (
+        <View style={[styles.sessionBar, { backgroundColor: colors.bg, borderBottomColor: colors.border }]}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+            {isTitulaire && (
+              <Chip label="Journée entière" active={subjectId === ''} onPress={() => setSubjectId('')} colors={colors} />
+            )}
+            {subjectOptions.map((o) => (
+              <Chip key={o.value} label={o.label} active={subjectId === o.value}
+                onPress={() => setSubjectId(o.value)} colors={colors} />
+            ))}
+          </ScrollView>
+          {slotOptions.length > 0 && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+              {slotOptions.map((o) => (
+                <Chip key={o.value} label={o.label} active={startTime === o.value}
+                  onPress={() => setStartTime(o.value)} colors={colors} />
+              ))}
+            </ScrollView>
+          )}
+          {!isTitulaire && subjectOptions.length === 0 && (
+            <Text style={[styles.hint, { color: '#b45309' }]}>Aucune matière ne vous est attribuée dans cette classe.</Text>
+          )}
+        </View>
+      )}
 
       {/* Stats */}
       <View style={[styles.statsRow, { backgroundColor: colors.bg, borderBottomColor: colors.border }]}>
@@ -161,6 +254,20 @@ export default function AttendanceScreen({ route }) {
                     {item.user?.name ?? item.admissionNumber}
                   </Text>
                   <Text style={[styles.studentNum, { color: colors.textMuted }]}>N° {item.admissionNumber}</Text>
+                  {status === 'LATE' && (
+                    <View style={styles.lateRow}>
+                      <TextInput
+                        value={lateMinutes[item.id] ?? ''}
+                        onChangeText={(v) => setLateMinutes((prev) => ({ ...prev, [item.id]: v.replace(/[^0-9]/g, '') }))}
+                        keyboardType="number-pad"
+                        placeholder="15"
+                        placeholderTextColor={colors.textMuted}
+                        maxLength={3}
+                        style={[styles.lateInput, { color: colors.text, borderColor: '#f59e0b' }]}
+                      />
+                      <Text style={styles.lateUnit}>min de retard</Text>
+                    </View>
+                  )}
                 </View>
                 <View style={styles.statusButtons}>
                   {STATUSES.map((s) => (
@@ -206,8 +313,39 @@ export default function AttendanceScreen({ route }) {
   );
 }
 
+function Chip({ label, active, onPress, colors }) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      style={[
+        styles.chip,
+        active
+          ? { backgroundColor: colors.primary, borderColor: colors.primary }
+          : { backgroundColor: 'transparent', borderColor: colors.border },
+      ]}
+    >
+      <Text style={{ color: active ? '#fff' : colors.text, fontSize: fontSize.xs, fontWeight: fontWeight.semibold }}>
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+}
+
 const styles = StyleSheet.create({
   safe:   { flex: 1 },
+  sessionBar: { paddingVertical: spacing.sm, borderBottomWidth: 1, gap: spacing.xs },
+  chips: { paddingHorizontal: spacing.lg, gap: spacing.xs },
+  chip: {
+    paddingHorizontal: spacing.md, paddingVertical: spacing.xs,
+    borderRadius: radius.full, borderWidth: 1,
+  },
+  hint: { fontSize: fontSize.xs, paddingHorizontal: spacing.lg },
+  lateRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
+  lateInput: {
+    width: 52, borderWidth: 1.5, borderRadius: radius.sm,
+    paddingVertical: 2, paddingHorizontal: 6, fontSize: fontSize.sm,
+  },
+  lateUnit: { fontSize: fontSize.xs, color: '#b45309', fontWeight: fontWeight.semibold },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl },
   dateBar: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',

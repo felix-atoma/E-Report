@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { classesService } from '../../../services/classesService';
 import { reportsService } from '../../../services/reportsService';
+import { attendanceService } from '../../../services/attendanceService';
 import { AuthContext } from '../../../context/AuthContext';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
@@ -73,6 +74,19 @@ export default function TitulaireEntryPage() {
     queryFn: () => reportsService.list({ classId, academicYear, termNumber: term }).then((r) => r.data),
     enabled: !!classId && !!academicYear,
   });
+
+  // Cumul calculé depuis les feuilles de présence des professeurs — prioritaire sur la saisie manuelle
+  const { data: termAttendance = [] } = useQuery({
+    queryKey: ['attendance-term-summary', classId, academicYear, term],
+    queryFn: () => attendanceService
+      .termSummary(classId, { academicYear, termType: 'TRIMESTRE', termNumber: term })
+      .then((r) => r.data),
+    enabled: !!classId && !!academicYear,
+  });
+  const attendanceByStudentId = useMemo(
+    () => new Map(termAttendance.map((a) => [a.studentId, a])),
+    [termAttendance],
+  );
 
   const students = useMemo(() => {
     return [...(cls?.students ?? [])].sort((a, b) => {
@@ -203,6 +217,13 @@ export default function TitulaireEntryPage() {
         </button>
       </div>
 
+      {termAttendance.length > 0 && (
+        <p className="tit__auto-note">
+          Les absences et retards en <span className="tit__auto">vert</span> sont calculés automatiquement
+          à partir des feuilles de présence des professeurs et seront reportés sur le bulletin à la publication.
+        </p>
+      )}
+
       {reportsLoading ? (
         <Loading />
       ) : students.length === 0 ? (
@@ -217,7 +238,7 @@ export default function TitulaireEntryPage() {
                 <th className="tit__th">Présents</th>
                 <th className="tit__th">Abs. (j)</th>
                 <th className="tit__th">H. Absence</th>
-                <th className="tit__th">Retards</th>
+                <th className="tit__th">Retards (h)</th>
                 <th className="tit__th">Exclusions</th>
                 <th className="tit__th">Avert.</th>
                 <th className="tit__th">Fél.</th>
@@ -233,6 +254,7 @@ export default function TitulaireEntryPage() {
                 if (!studentId) return null;
                 const e = entries[studentId] ?? {};
                 const rc = reportsByStudentId.get(studentId);
+                const auto = attendanceByStudentId.get(studentId);
 
                 return (
                   <tr key={studentId} className={rc ? '' : 'tit__tr--new'}>
@@ -249,13 +271,26 @@ export default function TitulaireEntryPage() {
                       <SmallInput value={e.attendancePresent} onChange={(v) => setField(studentId, 'attendancePresent', v)} />
                     </td>
                     <td className="tit__td">
-                      <SmallInput value={e.attendanceAbsent} onChange={(v) => setField(studentId, 'attendanceAbsent', v)} />
+                      {auto ? (
+                        <span className="tit__auto" title="Calculé depuis les feuilles de présence">
+                          {auto.absentDays} j
+                          {auto.excusedDays > 0 && <small> (+{auto.excusedDays} just.)</small>}
+                        </span>
+                      ) : (
+                        <SmallInput value={e.attendanceAbsent} onChange={(v) => setField(studentId, 'attendanceAbsent', v)} />
+                      )}
                     </td>
                     <td className="tit__td">
                       <SmallInput value={e.attendanceAbsentHours} onChange={(v) => setField(studentId, 'attendanceAbsentHours', v)} />
                     </td>
                     <td className="tit__td">
-                      <SmallInput value={e.attendanceLate} onChange={(v) => setField(studentId, 'attendanceLate', v)} />
+                      {auto ? (
+                        <span className="tit__auto" title={`${auto.lateCount} retard(s) — calculé depuis les feuilles de présence`}>
+                          {String(Math.round((auto.lateMinutes / 60) * 10) / 10).replace('.', ',')} h
+                        </span>
+                      ) : (
+                        <SmallInput value={e.attendanceLate} onChange={(v) => setField(studentId, 'attendanceLate', v)} />
+                      )}
                     </td>
                     <td className="tit__td">
                       <SmallInput value={e.attendanceExcluded} onChange={(v) => setField(studentId, 'attendanceExcluded', v)} />

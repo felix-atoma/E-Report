@@ -24,9 +24,30 @@ const DEFAULT_ACADEMIC = {
   passMark: '10', maxScore: '20', feeGateEnabled: true,
   isComplex: false,
   termSystemByCycle: { PRIMAIRE: 'TRIMESTRE', COLLEGE: 'TRIMESTRE', LYCEE: 'TRIMESTRE' },
+  termDates: [],
 };
 
 const DEFAULT_PAYMENT = { notchpayPublicKey: '', notchpayHashKey: '' };
+
+// Calendrier togolais par défaut (MM-JJ) — même logique que resolveTermRange côté backend
+const DEFAULT_TERM_CALENDAR = {
+  TRIMESTRE: [['09-01', '12-31'], ['01-01', '03-31'], ['04-01', '08-31']],
+  SEMESTRE:  [['09-01', '02-28'], ['03-01', '08-31']],
+};
+
+function defaultTermDates(termType, academicYear) {
+  const startYear = parseInt((academicYear ?? '').split('-')[0], 10);
+  const cal = DEFAULT_TERM_CALENDAR[termType] ?? DEFAULT_TERM_CALENDAR.TRIMESTRE;
+  return cal.map(([s, e], i) => {
+    if (isNaN(startYear)) return { termNumber: i + 1, start: '', end: '' };
+    const yearOf = (md) => (Number(md.slice(0, 2)) >= 9 ? startYear : startYear + 1);
+    return { termNumber: i + 1, start: `${yearOf(s)}-${s}`, end: `${yearOf(e)}-${e}` };
+  });
+}
+
+function fmtDate(iso) {
+  return iso ? iso.split('-').reverse().join('/') : '';
+}
 
 function SummaryRow({ label, value }) {
   if (!value) return null;
@@ -94,6 +115,7 @@ function SettingsPage() {
       feeGateEnabled:    s.feeGateEnabled ?? true,
       isComplex:         !!(s.termSystemByCycle),
       termSystemByCycle: s.termSystemByCycle ?? { PRIMAIRE: 'TRIMESTRE', COLLEGE: 'TRIMESTRE', LYCEE: 'TRIMESTRE' },
+      termDates:         Array.isArray(s.termDates) ? s.termDates : [],
     });
   }, [institution]);
 
@@ -164,7 +186,20 @@ function SettingsPage() {
       maxScore:          Number(academicForm.maxScore),
       feeGateEnabled:    academicForm.feeGateEnabled,
       termSystemByCycle: academicForm.isComplex ? academicForm.termSystemByCycle : undefined,
+      termDates:         (academicForm.termDates ?? []).filter((d) => d.start && d.end),
     });
+  }
+
+  // Lignes affichées : une par période du système choisi, préremplies avec l'existant
+  const termRowCount = academicForm.termType === 'SEMESTRE' ? 2
+    : academicForm.termType === 'CUSTOM' ? Math.max(3, (academicForm.termDates ?? []).length) : 3;
+  const termDateRows = Array.from({ length: termRowCount }, (_, i) =>
+    (academicForm.termDates ?? []).find((d) => Number(d.termNumber) === i + 1)
+      ?? { termNumber: i + 1, start: '', end: '' });
+
+  function setTermDate(termNumber, field, value) {
+    const rows = termDateRows.map((r) => (r.termNumber === termNumber ? { ...r, [field]: value } : r));
+    setAcademic('termDates', rows);
   }
 
   function handlePaymentSave() {
@@ -272,6 +307,12 @@ function SettingsPage() {
               </div>
             )}
             <SummaryRow label={t('settings.currentPeriod')} value={`${t('fees.period')} ${ac.currentTerm ?? 1}`} />
+            <SummaryRow
+              label={t('settings.termDates')}
+              value={Array.isArray(ac.termDates) && ac.termDates.length
+                ? ac.termDates.map((d) => `P${d.termNumber}: ${fmtDate(d.start)} → ${fmtDate(d.end)}`).join(' · ')
+                : t('settings.termDatesDefault')}
+            />
             <SummaryRow label={t('settings.maxScore')}     value={ac.maxScore ? `${ac.maxScore}` : '20'} />
             <SummaryRow label={t('settings.passMark')}     value={ac.passMark ? `${ac.passMark}` : '10'} />
             <div className="settings-summary__row">
@@ -486,6 +527,35 @@ function SettingsPage() {
               onChange={(e) => setAcademic('passMark', e.target.value)}
               hint={t('settings.passMarkHint')}
             />
+          </div>
+
+          <div className="settings-section__divider" />
+
+          <div>
+            <p className="settings-field__label" style={{ marginBottom: '0.25rem' }}>{t('settings.termDates')}</p>
+            <p className="settings-section__desc" style={{ marginBottom: '0.75rem' }}>{t('settings.termDatesDesc')}</p>
+            {termDateRows.map((row, i) => {
+              const placeholder = defaultTermDates(academicForm.termType, academicForm.academicYear)[i];
+              return (
+                <div key={row.termNumber} className="settings-row">
+                  <Input
+                    id={`termStart-${row.termNumber}`} type="date"
+                    label={`${t('fees.period')} ${row.termNumber} — ${t('settings.termDatesStart')}`}
+                    value={row.start}
+                    hint={!row.start && placeholder?.start ? fmtDate(placeholder.start) : undefined}
+                    onChange={(e) => setTermDate(row.termNumber, 'start', e.target.value)}
+                  />
+                  <Input
+                    id={`termEnd-${row.termNumber}`} type="date"
+                    label={t('settings.termDatesEnd')}
+                    value={row.end}
+                    min={row.start || undefined}
+                    hint={!row.end && placeholder?.end ? fmtDate(placeholder.end) : undefined}
+                    onChange={(e) => setTermDate(row.termNumber, 'end', e.target.value)}
+                  />
+                </div>
+              );
+            })}
           </div>
 
           <div className="settings-section__divider" />

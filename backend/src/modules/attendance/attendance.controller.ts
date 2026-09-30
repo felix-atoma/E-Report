@@ -11,7 +11,9 @@ export class AttendanceController {
   @Post('bulk')
   @Roles(Role.ADMIN, Role.TEACHER)
   bulkUpsert(@Body() dto: BulkAttendanceDto, @Req() req: any) {
-    return this.service.bulkUpsert(dto, req.user.institutionId, req.user.name ?? req.user.email);
+    return this.service.bulkUpsert(
+      dto, req.user.institutionId, req.user.name ?? req.user.email, req.user.role, req.user.id,
+    );
   }
 
   @Get('class/:classId')
@@ -21,8 +23,24 @@ export class AttendanceController {
     @Req() req: any,
     @Query('date') date?: string,
     @Query('subjectId') subjectId?: string,
+    @Query('startTime') startTime?: string,
   ) {
-    return this.service.listByClass(classId, req.user.institutionId, date, subjectId);
+    return this.service.listByClass(classId, req.user.institutionId, date, subjectId, startTime);
+  }
+
+  // Cumul trimestriel : jours d'absence (justifiés / non justifiés) et minutes de retard
+  @Get('class/:classId/term-summary')
+  @Roles(Role.ADMIN, Role.TEACHER)
+  termSummary(
+    @Param('classId') classId: string,
+    @Req() req: any,
+    @Query('academicYear') academicYear: string,
+    @Query('termType') termType: string,
+    @Query('termNumber') termNumber: string,
+  ) {
+    return this.service.termSummary(
+      classId, academicYear, termType || 'TRIMESTRE', Number(termNumber) || 1, req.user.institutionId,
+    );
   }
 
   @Get('class/:classId/summary')

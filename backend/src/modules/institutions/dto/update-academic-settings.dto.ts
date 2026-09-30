@@ -1,6 +1,17 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsEnum, IsInt, IsNumber, IsObject, IsOptional, IsString, Max, Min, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsDateString, IsEnum, IsInt, IsNumber, IsObject, IsOptional, IsString, Max, Min, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
+
+class TermDateDto {
+  @IsInt() @Min(1) @Max(12)
+  termNumber!: number;
+
+  @IsDateString()
+  start!: string; // "YYYY-MM-DD"
+
+  @IsDateString()
+  end!: string;
+}
 
 class TermSystemByCycleDto {
   @IsOptional()
@@ -63,4 +74,11 @@ export class UpdateAcademicSettingsDto {
   @ValidateNested()
   @Type(() => TermSystemByCycleDto)
   termSystemByCycle?: TermSystemByCycleDto;
+
+  @ApiPropertyOptional({ description: 'Dates de début/fin de chaque période — utilisées pour cumuler absences et retards' })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => TermDateDto)
+  termDates?: TermDateDto[];
 }

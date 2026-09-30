@@ -23,6 +23,11 @@ function fallbackSerial(report) {
   const id = (report.id ?? '').replace(/-/g, '').toUpperCase().slice(0, 8);
   return `${ay}T${report.termNumber ?? 1}-${id.slice(0,4)}-${id.slice(4,8)}`;
 }
+// Minutes → heures, une décimale, virgule française (90 → "1,5")
+function fmtHours(minutes) {
+  return String(Math.round((minutes / 60) * 10) / 10).replace('.', ',');
+}
+
 function fmtNote(v) {
   if (v == null) return '—';
   return Number(v).toFixed(0);
@@ -329,12 +334,20 @@ export default function PrintReportCardPage() {
                 <strong>{report.conductRating ? CONDUCT_LABELS[report.conductRating] : '—'}</strong>
               </div>
               <div className="pr-results__cell">
-                <label>Heures d'absence</label>
-                <strong>{report.attendanceAbsentHours != null ? `${report.attendanceAbsentHours} h` : '—'}</strong>
+                <label>Abs. non justifiées</label>
+                <strong>{report.attendanceAbsent != null ? `${report.attendanceAbsent} j` : '—'}</strong>
+              </div>
+              <div className="pr-results__cell">
+                <label>Abs. justifiées</label>
+                <strong>{report.attendanceExcused != null ? `${report.attendanceExcused} j` : '—'}</strong>
               </div>
               <div className="pr-results__cell">
                 <label>Retards</label>
-                <strong>{report.attendanceLate != null ? report.attendanceLate : '—'}</strong>
+                <strong>
+                  {report.attendanceLateMinutes != null
+                    ? `${fmtHours(report.attendanceLateMinutes)} h`
+                    : report.attendanceLate != null ? report.attendanceLate : '—'}
+                </strong>
               </div>
               {report.honorCouncil && (
                 <div className="pr-results__cell pr-results__cell--honor">

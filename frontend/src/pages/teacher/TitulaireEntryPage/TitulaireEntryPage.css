@@ -190,3 +190,8 @@
   .tit__th--name { min-width: 120px; }
   .tit__th--comment { min-width: 120px; }
 }
+
+/* Valeurs calculées depuis les feuilles de présence */
+.tit__auto { display: inline-block; padding: .15rem .5rem; border-radius: 6px; background: #dcfce7; color: #15803d; font-weight: 700; font-size: .8rem; white-space: nowrap; }
+.tit__auto small { font-weight: 600; color: #166534; }
+.tit__auto-note { margin: 0 0 1rem; font-size: .85rem; color: #4b5563; }

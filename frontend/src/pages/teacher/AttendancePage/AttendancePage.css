@@ -34,7 +34,15 @@
 .att-status-btn:hover { border-color: #9ca3af; color: #374151; }
 .att-status-btn.active { background: var(--sc, #1E2A78); border-color: var(--sc, #1E2A78); color: #fff; }
 
-.att-footer { margin-top: 1.5rem; display: flex; justify-content: flex-end; }
+.att-controls__row--session { margin-top: 1rem; }
+.att-controls__hint { margin-top: .75rem; font-size: .85rem; color: #b45309; }
+
+.att-late { display: inline-flex; align-items: center; gap: .3rem; font-size: .78rem; font-weight: 600; color: #b45309; }
+.att-late__input { width: 64px; padding: .3rem .5rem; border: 1.5px solid #fcd34d; border-radius: 6px; font-size: .8rem; font-family: inherit; }
+.att-late__input:focus { outline: none; border-color: #d97706; }
+
+.att-footer { margin-top: 1.5rem; display: flex; justify-content: flex-end; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.att-footer__warn { font-size: .85rem; color: #b45309; }
 
 .att-section-title {
   font-size: .9rem;
