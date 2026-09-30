@@ -92,10 +92,14 @@ function fmt(v, dec = 2) {
   return v !== null && v !== undefined ? Number(v).toFixed(dec) : '—';
 }
 
-function NoteInput({ value, onChange, disabled, maxScore = 20 }) {
+function NoteInput({ value, onChange, disabled, maxScore = 20, row, col }) {
   return (
     <input
       type="number"
+      inputMode="decimal"
+      enterKeyHint="next"
+      data-row={row}
+      data-col={col}
       className={`fdn__note-input${disabled ? ' fdn__note-input--locked' : ''}`}
       min={0} max={maxScore} step={maxScore === 10 ? 0.5 : 0.25}
       value={value ?? ''}
@@ -105,6 +109,33 @@ function NoteInput({ value, onChange, disabled, maxScore = 20 }) {
       readOnly={disabled}
     />
   );
+}
+
+function useMediaQuery(query) {
+  const get = () => typeof window !== 'undefined' && window.matchMedia(query).matches;
+  const [matches, setMatches] = useState(get);
+  useEffect(() => {
+    const mql = window.matchMedia(query);
+    const onChange = () => setMatches(mql.matches);
+    onChange();
+    mql.addEventListener?.('change', onChange);
+    return () => mql.removeEventListener?.('change', onChange);
+  }, [query]);
+  return matches;
+}
+
+// Entrée → passe à l'élève suivant dans la même colonne (saisie rapide au clavier / téléphone)
+function handleGridKeyDown(e) {
+  if (e.key !== 'Enter') return;
+  const el = e.target;
+  const col = el.dataset?.col;
+  if (col === undefined) return;
+  e.preventDefault();
+  const row = Number(el.dataset.row);
+  const table = el.closest('table');
+  const next = table?.querySelector(`input[data-col="${col}"][data-row="${row + 1}"]`);
+  if (next) { next.focus(); next.select?.(); }
+  else el.blur();
 }
 
 // ── Page ─────────────────────────────────────────────────────────────────────
@@ -316,6 +347,53 @@ export default function GradeEntryPage() {
     },
     onError: (err) => toast.error(err?.response?.data?.message ?? t('gradeEntry.toast.signError')),
   });
+
+  // ── Mode saisie paysage (téléphones / petites tablettes) ──────────────────
+  const isSmallScreen = useMediaQuery('(max-width: 900px), (pointer: coarse) and (max-width: 1100px)');
+  const isPortrait    = useMediaQuery('(orientation: portrait)');
+  const [focusMode, setFocusMode] = useState(false);
+  const [portraitOk, setPortraitOk] = useState(false);
+  const fullscreenRef = useRef(false);
+
+  async function enterFocusMode() {
+    setFocusMode(true);
+    setPortraitOk(false);
+    // Plein écran + verrouillage paysage : Android/Chrome. iOS ne le permet pas → invite à tourner l'écran.
+    try {
+      if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+        await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
+        fullscreenRef.current = true;
+      }
+      await window.screen?.orientation?.lock?.('landscape');
+    } catch { /* non supporté */ }
+  }
+
+  function exitFocusMode() {
+    setFocusMode(false);
+    try { window.screen?.orientation?.unlock?.(); } catch { /* ignore */ }
+    if (fullscreenRef.current && document.fullscreenElement) {
+      document.exitFullscreen?.().catch(() => {});
+    }
+    fullscreenRef.current = false;
+  }
+
+  useEffect(() => {
+    if (!focusMode) return undefined;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    // Bouton retour Android = sortie du plein écran → on quitte aussi le mode saisie
+    const onFsChange = () => {
+      if (fullscreenRef.current && !document.fullscreenElement) {
+        fullscreenRef.current = false;
+        setFocusMode(false);
+      }
+    };
+    document.addEventListener('fullscreenchange', onFsChange);
+    return () => {
+      document.body.style.overflow = prev;
+      document.removeEventListener('fullscreenchange', onFsChange);
+    };
+  }, [focusMode]);
 
   const maxScoreRef = useRef(20);
   maxScoreRef.current = maxScore;
@@ -550,7 +628,56 @@ export default function GradeEntryPage() {
         </div>
       </div>
 
-      <div className="fdn__table-wrap">
+      {isSmallScreen && !focusMode && (
+        <div className="fdn__landscape-cta">
+          <span className="fdn__landscape-cta__icon" aria-hidden="true">📱↻</span>
+          <div className="fdn__landscape-cta__text">
+            <strong>{t('gradeEntry.landscape.ctaTitle')}</strong>
+            <span>{t('gradeEntry.landscape.ctaDesc')}</span>
+          </div>
+          <button type="button" className="fdn__btn fdn__btn--primary" onClick={enterFocusMode}>
+            {t('gradeEntry.landscape.enter')}
+          </button>
+        </div>
+      )}
+
+      <div className={focusMode ? 'fdn-focus' : undefined}>
+        {focusMode && (
+          <div className="fdn-focus__bar">
+            <div className="fdn-focus__title">
+              <strong>{subjectTitle}</strong>
+              <span>{termName}</span>
+            </div>
+            {hasCoefficient && <span className="fdn-focus__coef">{t('gradeEntry.coef')} {coef}</span>}
+            {saved && <span className="fdn-focus__saved">✓ {t('gradeEntry.saved')}</span>}
+            {!isSigned && (
+              <button
+                type="button"
+                className="fdn__btn fdn__btn--primary"
+                onClick={handleSave}
+                disabled={mutation.isPending}
+              >
+                {mutation.isPending ? t('gradeEntry.saving') : t('gradeEntry.save')}
+              </button>
+            )}
+            <button type="button" className="fdn__btn fdn__btn--secondary" onClick={exitFocusMode}>
+              {t('gradeEntry.landscape.exit')}
+            </button>
+          </div>
+        )}
+
+        {focusMode && isPortrait && !portraitOk && (
+          <div className="fdn-focus__rotate">
+            <div className="fdn-focus__rotate-icon" aria-hidden="true">📱</div>
+            <strong>{t('gradeEntry.landscape.rotateTitle')}</strong>
+            <p>{t('gradeEntry.landscape.rotateDesc')}</p>
+            <button type="button" className="fdn__btn fdn__btn--secondary" onClick={() => setPortraitOk(true)}>
+              {t('gradeEntry.landscape.continuePortrait')}
+            </button>
+          </div>
+        )}
+
+      <div className="fdn__table-wrap" onKeyDown={handleGridKeyDown}>
         <table className="fdn__table">
           <thead>
             <tr>
@@ -587,13 +714,13 @@ export default function GradeEntryPage() {
                     <div className="fdn__student-name">{row.studentName}</div>
                     <div className="fdn__student-id">{row.admissionNumber}</div>
                   </td>
-                  <td className="fdn__td"><NoteInput value={row.noteInterro1} onChange={(v) => updateRow(idx, 'noteInterro1', v)} disabled={isSigned} maxScore={maxScore} /></td>
-                  <td className="fdn__td"><NoteInput value={row.noteInterro2} onChange={(v) => updateRow(idx, 'noteInterro2', v)} disabled={isSigned} maxScore={maxScore} /></td>
-                  <td className="fdn__td"><NoteInput value={row.noteInterro3} onChange={(v) => updateRow(idx, 'noteInterro3', v)} disabled={isSigned} maxScore={maxScore} /></td>
-                  <td className="fdn__td"><NoteInput value={row.noteInterro4} onChange={(v) => updateRow(idx, 'noteInterro4', v)} disabled={isSigned} maxScore={maxScore} /></td>
+                  <td className="fdn__td"><NoteInput row={idx} col="i1" value={row.noteInterro1} onChange={(v) => updateRow(idx, 'noteInterro1', v)} disabled={isSigned} maxScore={maxScore} /></td>
+                  <td className="fdn__td"><NoteInput row={idx} col="i2" value={row.noteInterro2} onChange={(v) => updateRow(idx, 'noteInterro2', v)} disabled={isSigned} maxScore={maxScore} /></td>
+                  <td className="fdn__td"><NoteInput row={idx} col="i3" value={row.noteInterro3} onChange={(v) => updateRow(idx, 'noteInterro3', v)} disabled={isSigned} maxScore={maxScore} /></td>
+                  <td className="fdn__td"><NoteInput row={idx} col="i4" value={row.noteInterro4} onChange={(v) => updateRow(idx, 'noteInterro4', v)} disabled={isSigned} maxScore={maxScore} /></td>
                   <td className="fdn__td fdn__td--computed">{fmt(moyI)}</td>
-                  <td className="fdn__td fdn__td--devoir"><NoteInput value={row.noteDevoir} onChange={(v) => updateRow(idx, 'noteDevoir', v)} disabled={isSigned} maxScore={maxScore} /></td>
-                  <td className="fdn__td fdn__td--compo"><NoteInput value={row.noteComposition} onChange={(v) => updateRow(idx, 'noteComposition', v)} disabled={isSigned} maxScore={maxScore} /></td>
+                  <td className="fdn__td fdn__td--devoir"><NoteInput row={idx} col="dev" value={row.noteDevoir} onChange={(v) => updateRow(idx, 'noteDevoir', v)} disabled={isSigned} maxScore={maxScore} /></td>
+                  <td className="fdn__td fdn__td--compo"><NoteInput row={idx} col="comp" value={row.noteComposition} onChange={(v) => updateRow(idx, 'noteComposition', v)} disabled={isSigned} maxScore={maxScore} /></td>
                   <td className={`fdn__td fdn__td--moy ${moy !== null && moy < 10 ? 'fdn__td--fail' : ''}`}>{fmt(moy)}</td>
                   {hasCoefficient && <td className="fdn__td fdn__td--coef">{coef}</td>}
                   {hasCoefficient && <td className="fdn__td fdn__td--total">{moy !== null ? fmt(moy * coef) : '—'}</td>}
@@ -638,6 +765,7 @@ export default function GradeEntryPage() {
             </tr>
           </tfoot>
         </table>
+      </div>
       </div>
 
       {rowsWithMoy.length > 0 && (

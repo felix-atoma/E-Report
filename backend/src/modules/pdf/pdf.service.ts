@@ -28,14 +28,49 @@ async function getBrowser() {
 }
 
 const CONDUCT_LABELS: Record<string, string> = {
-  TRES_BIEN: 'TrÃ¨s Bien',
+  TRES_BIEN: 'Très Bien',
   BIEN: 'Bien',
   PASSABLE: 'Passable',
-  MEDIOCRE: 'MÃ©diocre',
+  MEDIOCRE: 'Médiocre',
 };
 
+/**
+ * Filigrane : nom de l'école en majuscules, coupé en 2 lignes équilibrées s'il est long,
+ * avec une taille de police calculée pour remplir ~680 unités de large sans déformer le texte.
+ */
+export function buildWatermark(name: string | null | undefined) {
+  const text = (name ?? '').trim().toUpperCase();
+  if (!text) return null;
+  let lines = [text];
+  if (text.length > 24 && text.includes(' ')) {
+    const words = text.split(/\s+/);
+    let best = { diff: Infinity, i: 1 };
+    for (let i = 1; i < words.length; i++) {
+      const a = words.slice(0, i).join(' ').length;
+      const b = words.slice(i).join(' ').length;
+      if (Math.abs(a - b) < best.diff) best = { diff: Math.abs(a - b), i };
+    }
+    lines = [words.slice(0, best.i).join(' '), words.slice(best.i).join(' ')];
+  }
+  const longest = Math.max(...lines.map((l) => l.length));
+  // Arial Black majuscule ≈ 0,72 em par caractère
+  const fontSize = Math.round(Math.min(120, Math.max(34, 680 / (longest * 0.72))));
+  const lineHeight = Math.round(fontSize * 1.1);
+  const height = lineHeight * lines.length + Math.round(fontSize * 0.3);
+  return {
+    height,
+    fontSize,
+    lines: lines.map((t, i) => ({
+      text: t,
+      y: Math.round(fontSize * 0.95) + i * lineHeight,
+      // N'impose la largeur que si la ligne est presque pleine (évite d'étirer les noms courts)
+      fit: t.length * fontSize * 0.72 > 600,
+    })),
+  };
+}
+
 function formatScore(value: number | null | undefined): string {
-  if (value == null) return 'â€”';
+  if (value == null) return '—';
   return value.toFixed(2).replace('.', ',');
 }
 
@@ -63,8 +98,9 @@ export class PdfService {
 
     Handlebars.registerHelper('formatScore', (val: number | null) => formatScore(val));
     Handlebars.registerHelper('fmtScore', (val: number | null) => formatScore(val));
+    Handlebars.registerHelper('inc', (val: number) => Number(val) + 1);
     Handlebars.registerHelper('fmtNote', (val: number | null | undefined) =>
-      val == null ? 'â€”' : Number(val).toFixed(0).replace('.', ','),
+      val == null ? '—' : Number(val).toFixed(0).replace('.', ','),
     );
 
     this.template = Handlebars.compile(templateSrc);
@@ -149,10 +185,14 @@ export class PdfService {
       const moyInterros = interros.length > 0
         ? Math.round((interros.reduce((a, b) => a + b, 0) / interros.length) * 100) / 100
         : null;
+      const moy = g.moyenneMatiere ?? g.score;
       return {
         ...g,
         moyInterros,
-        passed: (g.moyenneMatiere ?? g.score) >= (g.subject?.passMark ?? 10),
+        passed: moy >= (g.subject?.passMark ?? 10),
+        // Couleur de l'appréciation selon le niveau (vert ≥ 14, orange ≥ 10, rouge < 10)
+        levelClass: moy == null ? '' : moy >= 14 ? 'lvl-good' : moy >= 10 ? 'lvl-pass' : 'lvl-fail',
+        rangLabel: g.rangMatiere ? (g.rangMatiere === 1 ? '1er' : `${g.rangMatiere}e`) : null,
         ficheSignedAt: g.ficheSignedAt
           ? new Date(g.ficheSignedAt).toLocaleDateString('fr-FR')
           : null,
@@ -183,7 +223,15 @@ export class PdfService {
       report.attendanceExcused != null || report.attendanceLateMinutes != null;
 
     const inst = institution as any;
-    const countryLine = [inst.country, inst.countryMotto].filter(Boolean).join(' â€” ') || null;
+    const countryLine = [inst.country, inst.countryMotto].filter(Boolean).join(' — ') || null;
+    const circonscription = (branding.circonscription as string) || null;
+
+    // En-tête : rang à la française (1er / 1ère / 2e), moyenne avec virgule
+    const isFemale = student.sex === 'F';
+    const rankLabel = report.classRank != null
+      ? (report.classRank === 1 ? (isFemale ? '1ère' : '1er') : `${report.classRank}e`)
+      : null;
+    const sexLabel = student.sex === 'F' ? 'Féminin' : student.sex === 'M' ? 'Masculin' : '—';
 
     let qrDataUri: string | null = null;
     const securityCode = (report as any).securityCode;
@@ -200,20 +248,27 @@ export class PdfService {
     }
 
     const ctx = {
-      institution: { ...institution, primaryColor, secondaryColor, countryLine },
+      institution: {
+        ...institution, primaryColor, secondaryColor, countryLine, circonscription,
+        headerLogo: inst.logo || inst.crest || null,
+      },
       student: {
-        name: student.user?.name ?? 'â€”',
+        name: student.user?.name ?? '—',
+        sexLabel,
         admissionNumber: student.admissionNumber,
         dateOfBirth: student.dateOfBirth
           ? new Date(student.dateOfBirth).toLocaleDateString('fr-FR')
-          : 'â€”',
+          : '—',
         photo: student.user?.profileImage ?? null,
       },
       class: { name: data.className },
       report: {
         ...report,
-        conductLabel: report.conductRating ? CONDUCT_LABELS[report.conductRating] : 'â€”',
+        conductLabel: report.conductRating ? CONDUCT_LABELS[report.conductRating] : '—',
         isPassing: (report.overallAverage ?? 0) >= 10,
+        rankLabel,
+        averageLabel: report.overallAverage != null ? formatScore(report.overallAverage) : null,
+        hasDistinctions: !!(report.honorCouncil || report.commendations || report.warnings),
         annualIsPassing: report.annualAverage != null ? report.annualAverage >= 10 : null,
         absences,
         attendanceRate,
@@ -227,6 +282,7 @@ export class PdfService {
         day: '2-digit', month: 'long', year: 'numeric',
       }),
       qrDataUri,
+      watermark: buildWatermark(institution.name),
     };
 
     return this.template(ctx);
@@ -266,6 +322,7 @@ export interface ReportCardData {
   student: {
     admissionNumber: string;
     dateOfBirth: Date;
+    sex?: string | null;
     user: { name: string; profileImage?: string | null } | null;
   };
   className: string;

@@ -20,7 +20,8 @@
     "prisma:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "prisma:seed": "ts-node prisma/seed.ts",
-    "prisma:seed-at-risk": "ts-node -r dotenv/config prisma/seed-at-risk.ts"
+    "prisma:seed-at-risk": "ts-node -r dotenv/config prisma/seed-at-risk.ts",
+    "bulletins:regenerate": "ts-node -r dotenv/config scripts/regenerate-bulletins.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",

@@ -1,4 +1,4 @@
-�<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8" />
@@ -8,327 +8,302 @@
   --c-secondary: {{institution.secondaryColor}};
   --c-primary-light: color-mix(in srgb, var(--c-primary) 10%, white);
   --c-primary-text:  color-mix(in srgb, var(--c-primary) 85%, black);
+  --c-line: #3f3f46;
+  --c-good: #15803d;
+  --c-pass: #b45309;
+  --c-fail: #b91c1c;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
-  font-family: Arial, Helvetica, sans-serif; font-size:11px; color:#111; background:#fff;
+  font-family: Arial, Helvetica, sans-serif; font-size:10.5px; color:#111; background:#fff;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
-.page { width:210mm; min-height:297mm; padding:10mm 12mm 20mm; position:relative; }
+.page { width:210mm; min-height:297mm; padding:10mm 12mm; position:relative; }
+.sheet { border:2px solid var(--c-primary); position:relative; }
 
-/* ���� Header ���� */
-.header {
-  display:flex; align-items:center;
-  border-bottom:3px solid var(--c-primary);
-  padding-bottom:10px; margin-bottom:10px;
+/* ── Bandeau nom de l'école ── */
+.top-bar {
+  background:var(--c-primary); color:#fff; text-align:center;
+  font-size:22px; font-weight:900; letter-spacing:1px; text-transform:uppercase; line-height:1.2;
+  padding:7px 10px; border-bottom:3px solid var(--c-secondary);
 }
-.header .logo  { width:85px; height:85px; object-fit:contain; margin-right:14px; flex-shrink:0; }
-.header .crest { width:85px; height:85px; object-fit:contain; margin-left:14px;  flex-shrink:0; }
-.header .qr-box { margin-left:14px; flex-shrink:0; text-align:center; }
-.header .qr { width:70px; height:70px; display:block; }
-.header .qr-code-text { font-size:6px; color:#6b7280; margin-top:2px; letter-spacing:0.3px; }
-.header .center { flex:1; text-align:center; }
-.header .center .country { font-size:8.5px; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:3px; }
-.header .center h1 {
-  font-size:17px; font-weight:bold;
-  color:var(--c-primary); text-transform:uppercase; letter-spacing:1.5px;
-  line-height:1.2;
-}
-.header .center .subtitle { font-size:11px; color:#444; margin-top:3px; }
-.header .center .motto    { font-size:11px; font-style:italic; color:#374151; margin-top:3px; }
-
-/* ���� Title bar ���� */
-.title-bar {
-  background:var(--c-primary); color:#fff;
-  text-align:center; padding:7px 10px;
-  font-size:14px; font-weight:bold; letter-spacing:1.5px;
-  margin-bottom:10px;
+.country {
+  display:flex; justify-content:space-between; gap:10px;
+  font-size:8px; color:#4b5563; text-transform:uppercase; letter-spacing:0.5px;
+  padding:3px 10px; border-bottom:1px solid #e5e7eb;
 }
 
-/* ���� Student band ���� */
-.student-band {
-  display:flex; border:2px solid var(--c-primary);
-  border-radius:4px; margin-bottom:10px; overflow:hidden;
+/* ── En-tête : logo | coordonnées + titre | photo ── */
+.hd { display:flex; align-items:center; gap:12px; padding:8px 10px 6px; }
+.hd-logo { width:84px; height:84px; object-fit:contain; flex-shrink:0; }
+.hd-mid { flex:1; min-width:0; }
+.hd-contacts { list-style:none; display:flex; flex-direction:column; gap:3px; margin-bottom:6px; }
+.hd-contacts li { display:flex; align-items:center; gap:7px; font-size:11px; color:#1f2937; }
+.hd-contacts .ico {
+  width:16px; height:16px; flex-shrink:0; border-radius:50%;
+  background:var(--c-primary); display:flex; align-items:center; justify-content:center;
 }
-.student-band .photo-cell {
-  display:flex; align-items:center; justify-content:center; padding:6px 8px;
-  border-right:1px solid #9ca3af; flex-shrink:0;
+.hd-contacts .ico svg { width:9px; height:9px; fill:#fff; }
+.hd-contacts .motto { font-style:italic; font-weight:700; color:var(--c-primary-text); }
+.hd-title {
+  display:inline-block; background:var(--c-primary); color:#fff;
+  font-size:11.5px; font-weight:800; letter-spacing:1px; text-transform:uppercase;
+  padding:3px 12px; border-radius:2px; border-bottom:2px solid var(--c-secondary);
 }
-.student-band .photo-cell img {
-  width:64px; height:80px; object-fit:cover;
-  border-radius:2px; border:2px solid var(--c-primary);
+.hd-title .term { text-transform:none; }
+.hd-photo {
+  width:78px; height:94px; flex-shrink:0; overflow:hidden;
+  border:2px solid var(--c-primary); background:#f3f4f6;
+  display:flex; align-items:center; justify-content:center;
 }
-.student-band .fields { display:flex; flex:1; flex-wrap:wrap; }
-.student-band .field {
-  flex:1; min-width:110px;
-  padding:6px 10px; border-right:1px solid #c7d0da;
-}
-.student-band .field:last-child { border-right:none; }
-.student-band .field label {
-  display:block; font-size:8.5px; font-weight:bold;
-  color:var(--c-primary); text-transform:uppercase; margin-bottom:3px;
-  letter-spacing:0.4px;
-}
-.student-band .field span { font-size:12px; font-weight:700; color:#111; }
+.hd-photo img { width:100%; height:100%; object-fit:cover; }
+.hd-photo svg { width:48px; height:48px; fill:#cbd5e1; }
 
-/* ���� Grades table ���� */
-.grades-table { width:100%; border-collapse:collapse; margin-bottom:10px; font-size:10px; }
-.grades-table th, .grades-table td {
-  border:1px solid #c4c9d4; padding:4px 4px;
-  text-align:center; vertical-align:middle;
-}
-.grades-table thead tr:first-child th {
-  background:var(--c-primary); color:#fff;
-  font-size:10px; font-weight:bold; padding:5px 4px;
-}
-.grades-table thead tr:last-child th {
-  background:var(--c-primary-light); color:var(--c-primary-text);
-  font-size:9.5px; font-weight:700;
-}
-.grades-table .col-matiere {
-  text-align:left; min-width:100px; font-weight:700; font-size:10.5px;
-  padding-left:7px; background:#f8f9fb;
-}
-.grades-table .col-num    { min-width:30px; }
-.grades-table .col-moy    { background:#dcfce7; font-weight:700; min-width:34px; font-size:11px; }
-.grades-table .col-moy-i  { background:#dbeafe; font-style:italic; }
-.grades-table .col-dev    { background:rgba(254,252,193,0.55); }
-.grades-table .col-cmp    { background:rgba(250,232,255,0.55); }
-.grades-table .col-coef   { min-width:30px; }
-.grades-table .col-pts    { background:#f0fdf4; font-weight:700; }
-.grades-table .col-rang   { color:#0f766e; font-weight:700; min-width:30px; font-size:11px; }
-.grades-table .col-appr   { text-align:left; min-width:70px; font-size:10px; }
-.grades-table .col-prof   { text-align:left; min-width:75px; font-size:9.5px; }
-.grades-table .col-sig-hbs { min-width:60px; }
-.grades-table tbody tr { page-break-inside: avoid; }
-.grades-table tbody tr:nth-child(even) { background:#f8fafb; }
-.grades-table tbody td.fail { color:#dc2626; font-weight:bold; }
-.grades-table tbody td.pass { color:#15803d; font-weight:600; }
-.grades-table tfoot { page-break-before: avoid; }
-.grades-table tfoot td {
-  background:var(--c-primary); color:#fff;
-  font-weight:bold; font-size:11px; padding:5px 4px;
-}
+/* ── Identité de l'élève ── */
+.info { width:100%; border-collapse:collapse; font-size:11px; margin:0 0 6px; }
+.info td { padding:2px 10px 2px 0; vertical-align:top; }
+.info td:first-child { padding-left:10px; }
+.info .lbl { font-weight:700; white-space:nowrap; width:18%; }
+.info .sep { width:6px; font-weight:700; padding-right:6px; }
+.info .val { font-weight:700; color:var(--c-primary-text); width:32%; }
+.info .val--strong { color:var(--c-good); font-size:12px; }
+.info .val--fail { color:var(--c-fail); }
 
-/* ���� Summary strip ���� */
-.summary {
-  display:flex; border:2px solid var(--c-primary);
-  border-radius:4px; margin-bottom:10px; overflow:hidden;
+/* ── Tableau des notes ── */
+/* Largeurs fixes : le tableau ne dépasse jamais du cadre, quel que soit le contenu */
+.grades { width:100%; border-collapse:collapse; font-size:9px; table-layout:fixed; }
+.grades th, .grades td {
+  border:1px solid var(--c-line); padding:3px 2px; text-align:center; vertical-align:middle;
+  overflow-wrap:anywhere;
 }
-.sum-card {
-  flex:1; padding:10px 8px; text-align:center;
-  border-right:1px solid #c7d0da;
+.grades thead th {
+  background:#fff; color:#111; font-weight:800; font-size:7.5px; text-transform:uppercase; line-height:1.15;
+  border-top:2px solid var(--c-line); border-bottom:2px solid var(--c-line);
+  overflow-wrap:normal; word-break:normal; hyphens:none;
 }
-.sum-card:last-child { border-right:none; }
-.sum-card .label { font-size:9px; color:#555; text-transform:uppercase; font-weight:700; margin-bottom:5px; letter-spacing:0.3px; }
-.sum-card .value { font-size:26px; font-weight:bold; color:var(--c-primary); line-height:1.1; }
-.sum-card .value.fail    { color:#dc2626; }
-.sum-card .value.pass    { color:#15803d; }
-.sum-card .value--lg     { font-size:20px; }
-.sum-card .mention       { font-size:16px; font-weight:bold; }
-.sum-card .mention.fail  { color:#dc2626; }
-.sum-card .mention.pass  { color:#15803d; }
+.grades thead th small { display:block; font-weight:600; text-transform:none; color:#4b5563; }
+.grades .c-num  { font-weight:700; }
+.grades .c-mat  { text-align:left; font-weight:700; padding-left:4px; overflow-wrap:normal; }
+.grades .c-mi   { font-style:italic; color:#374151; }
+.grades .c-moy  { font-weight:800; font-size:10px; color:var(--c-primary-text); }
+.grades .c-moy.fail { color:var(--c-fail); }
+.grades .c-pts  { font-weight:700; }
+.grades .c-rang { font-weight:800; color:var(--c-good); }
+.grades .c-appr { text-align:left; font-weight:700; font-size:8.5px; overflow-wrap:normal; }
+.grades .c-prof { text-align:left; font-size:8px; overflow-wrap:normal; }
+.grades .lvl-good { color:var(--c-good); }
+.grades .lvl-pass { color:var(--c-pass); }
+.grades .lvl-fail { color:var(--c-fail); }
+.grades tbody tr { page-break-inside:avoid; }
+.grades tfoot td { font-weight:800; font-size:9.5px; border-top:2px solid var(--c-line); white-space:nowrap; overflow-wrap:normal; }
+.grades tfoot .t-label { text-align:right; padding-right:8px; letter-spacing:0.5px; }
+.grades tfoot .t-val { color:var(--c-fail); }
 
-/* ���� Annual average + council decision ���� */
-.annual-bar {
-  display:flex; align-items:stretch; border:2px solid var(--c-primary);
-  border-radius:4px; margin-bottom:10px; overflow:hidden;
-}
-.annual-bar .ann-cell {
-  flex:1; padding:8px 12px; text-align:center; border-right:1px solid #c7d0da;
-}
-.annual-bar .ann-cell:last-child { border-right:none; }
-.annual-bar .ann-label {
-  font-size:8.5px; color:#555; text-transform:uppercase;
-  font-weight:700; margin-bottom:4px; letter-spacing:0.3px;
-}
-.annual-bar .ann-value { font-size:24px; font-weight:bold; }
-.annual-bar .ann-value.pass { color:#15803d; }
-.annual-bar .ann-value.fail { color:#dc2626; }
-.annual-bar .decision-cell {
-  flex:2; padding:8px 14px; display:flex;
-  align-items:center; justify-content:center;
-}
-.annual-bar .decision-text {
-  font-size:14px; font-weight:800; text-transform:uppercase;
-  letter-spacing:1px;
-}
-.annual-bar .decision-text.pass { color:#15803d; }
-.annual-bar .decision-text.fail { color:#dc2626; }
+/* ── Bas de page : observations | résultats ── */
+.bottom { display:flex; border-top:2px solid var(--c-line); }
+.bottom-left { flex:1.45; padding:6px 10px; border-right:2px solid var(--c-line); }
+.bottom-right { flex:1; display:flex; flex-direction:column; }
 
-/* ���� Two-col section ���� */
-.two-col { display:flex; gap:8px; margin-bottom:10px; }
-.two-col > * { flex:1; }
+.kv { width:100%; border-collapse:collapse; font-size:10.5px; }
+.kv td { padding:2.5px 0; vertical-align:top; }
+.kv .k { font-weight:700; white-space:nowrap; width:38%; padding-right:8px; }
+.kv .v { color:#111; }
+.kv .v--muted { color:#9ca3af; font-style:italic; }
+.kv .v--pass { color:var(--c-good); font-weight:800; text-transform:uppercase; }
+.kv .v--fail { color:var(--c-fail); font-weight:800; text-transform:uppercase; }
+.chip { display:inline-block; font-size:9px; font-weight:700; padding:1px 6px; border-radius:8px; margin:0 3px 2px 0; }
+.chip--honor   { background:#fef9c3; border:1px solid #f59e0b; color:#92400e; }
+.chip--commend { background:#dcfce7; border:1px solid #86efac; color:#166534; }
+.chip--warn    { background:#fef2f2; border:1px solid #fca5a5; color:#991b1b; }
 
-/* ���� Attendance box ���� */
-.box {
-  border:1px solid #d1d5db; border-radius:4px; overflow:hidden;
+.res-title {
+  background:var(--c-primary); color:#fff; text-align:center;
+  font-size:10.5px; font-weight:800; letter-spacing:1px; text-transform:uppercase;
+  padding:4px 6px; border-bottom:2px solid var(--c-secondary);
 }
-.box .box-title {
-  background:var(--c-primary-light); padding:5px 10px;
-  font-size:10px; font-weight:bold; color:var(--c-primary);
-  text-transform:uppercase; letter-spacing:0.5px;
-  border-bottom:1px solid #d1d5db;
-}
-.att-row { display:flex; }
-.att-cell { flex:1; padding:6px 4px; text-align:center; border-right:1px solid #e5e7eb; }
-.att-cell:last-child { border-right:none; }
-.att-cell .att-label { font-size:8.5px; color:#6b7280; font-weight:600; }
-.att-cell .att-val   { font-size:15px; font-weight:bold; color:var(--c-primary); margin-top:2px; }
+.res { width:100%; border-collapse:collapse; font-size:10.5px; flex:1; }
+.res td { border-bottom:1px solid var(--c-line); padding:3px 8px; }
+.res td:last-child { text-align:right; font-weight:700; border-left:1px solid var(--c-line); width:42%; }
+.res tr.sub td { font-weight:800; border-top:2px solid var(--c-line); }
+.res tr.grand td { font-weight:900; font-size:12px; background:var(--c-primary-light); }
+.res tr.grand td:last-child { color:var(--c-good); }
+.res tr.grand td.fail { color:var(--c-fail); }
+.res tr:last-child td { border-bottom:none; }
 
-/* ���� Comment box ���� */
-.box .content { padding:7px 10px; font-size:11px; min-height:48px; color:#222; line-height:1.5; }
-.box .content--empty { color:#9ca3af; font-style:italic; }
-.box .honor-badge {
-  display:inline-block; background:#fef9c3;
-  border:1px solid #fbbf24; color:#92400e;
-  font-size:10px; font-weight:bold;
-  padding:2px 8px; border-radius:10px; margin-top:4px;
-}
+/* ── QR + barème ── */
+.verify { display:flex; align-items:center; gap:10px; margin-top:8px; }
+.verify .qr { width:64px; height:64px; flex-shrink:0; }
+.verify .qr img { width:64px; height:64px; display:block; }
+.verify .code { font-size:6.5px; color:#4b5563; text-align:center; margin-top:1px; letter-spacing:0.3px; }
+.scale { flex:1; border:1px solid var(--c-line); padding:4px 7px; font-size:8.5px; line-height:1.45; }
+.scale-title { text-align:center; font-weight:800; font-size:8.5px; text-transform:uppercase; margin-bottom:2px; }
 
-/* ���� Class stats ���� */
-.class-stats-bar {
-  display:flex; border:1px solid #d1d5db; border-radius:4px;
-  margin-bottom:10px; overflow:hidden;
-}
-.stats-cell { flex:1; padding:6px 6px; text-align:center; border-right:1px solid #e5e7eb; }
-.stats-cell:last-child { border-right:none; }
-.stats-cell .stats-label { font-size:8.5px; color:#6b7280; font-weight:600; }
-.stats-cell .stats-val   { font-size:15px; font-weight:bold; color:var(--c-primary); margin-top:2px; }
-
-/* ���� Honour / remarks ���� */
-.remark {
-  padding:5px 10px; border-radius:4px; font-size:10.5px; font-weight:700;
-  margin-bottom:5px;
-}
-.remark--honor   { background:#fef9c3; border:1px solid #fbbf24; color:#92400e; text-align:center; }
-.remark--commend { background:#dcfce7; border:1px solid #86efac; color:#166534; }
-.remark--warn    { background:#fef2f2; border:1px solid #fca5a5; color:#991b1b; }
-
-/* ���� Signatures ���� */
-.signatures {
-  display:flex; border-top:2px solid var(--c-primary);
-  padding-top:10px; margin-top:14px;
-}
-.sig-box { flex:1; text-align:center; border-right:1px solid #d1d5db; padding:0 10px; }
+/* ── Signatures ── */
+.signatures { display:flex; border-top:2px solid var(--c-line); }
+.sig-box { flex:1; text-align:center; padding:6px 10px 8px; border-right:1px solid var(--c-line); }
 .sig-box:last-child { border-right:none; }
-.sig-box .sig-title { font-size:10px; font-weight:bold; text-transform:uppercase; color:var(--c-primary); margin-bottom:4px; }
-.sig-box .sig-line  { border-bottom:1px solid #374151; margin:0 10px 4px; }
-.sig-box .sig-name  { font-size:9px; color:#6b7280; }
+.sig-title { font-size:9.5px; font-weight:800; text-transform:uppercase; color:var(--c-primary-text); }
+.sig-hint  { font-size:8px; color:#9ca3af; margin-bottom:20px; }
+.sig-line  { border-bottom:1px solid #374151; margin:0 12px 3px; }
+.sig-name  { font-size:8.5px; color:#374151; }
 
-/* ���� Stamp ���� */
-.stamp-area { position:absolute; bottom:22mm; right:12mm; opacity:0.5; }
-.stamp-area img { width:80px; height:80px; object-fit:contain; }
-
-/* ���� Footer ���� */
-.footer {
-  border-top:1px solid #d1d5db; padding-top:5px;
-  text-align:center; font-size:9px; color:#9ca3af; margin-top:10px;
+/* ── Filigrane : nom de l'école en diagonale, au-dessus du contenu mais très léger ── */
+.watermark {
+  position:absolute; top:50%; left:50%; width:92%;
+  transform:translate(-50%, -50%) rotate(-35deg);
+  z-index:50; pointer-events:none; overflow:visible;
+  /* « multiply » = comme de l'encre : teinte fortement le blanc, le texte noir reste noir et lisible */
+  mix-blend-mode:multiply;
 }
+.watermark text {
+  font-family:'Arial Black', Arial, Helvetica, sans-serif; font-weight:900;
+  fill:var(--c-primary); fill-opacity:0.18;
+  stroke:var(--c-primary); stroke-opacity:0.22; stroke-width:2px; paint-order:stroke;
+  letter-spacing:3px;
+}
+
+/* ── Cachet + pied ── */
+.stamp-area { position:absolute; bottom:28px; right:18px; opacity:0.5; }
+.stamp-area img { width:84px; height:84px; object-fit:contain; }
+.footer { text-align:center; font-size:8px; color:#9ca3af; padding-top:4px; }
 
 @media print {
   @page { size:A4; margin:0; }
-  body { background:#fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .page { width:100%; min-height:auto; padding:14mm 14mm 18mm; }
-  .stamp-area { position:fixed; bottom:10mm; right:10mm; }
+  body { background:#fff; }
+  /* Puppeteer fournit déjà les marges : la feuille prend toute la largeur utile */
+  .page { width:100%; min-height:auto; padding:0; }
+  /* position fixe à l'impression = répété et centré sur chaque page */
+  .watermark { position:fixed; }
 }
-/* Moyenne generale & Mention - rouge, gros et gras */
-.summary .sum-card .value,
-.summary .sum-card .mention {
-  color:#dc2626 !important;
-  font-weight:900 !important;
-  font-size:26px !important;
-}
-.summary .sum-card .mention { font-size:20px !important; }
-.summary .sum-card .label { font-weight:700; }
 </style>
 </head>
 <body>
 <div class="page">
+{{#if watermark}}
+<svg class="watermark" aria-hidden="true" viewBox="0 0 700 {{watermark.height}}" xmlns="http://www.w3.org/2000/svg">
+  {{#each watermark.lines}}
+  <text x="350" y="{{this.y}}" text-anchor="middle" font-size="{{../watermark.fontSize}}"{{#if this.fit}} textLength="680" lengthAdjust="spacingAndGlyphs"{{/if}}>{{this.text}}</text>
+  {{/each}}
+</svg>
+{{/if}}
+<div class="sheet">
 
-  <!-- Header -->
-  <div class="header">
-    {{#if institution.logo}}<img class="logo" src="{{institution.logo}}" alt="Logo" />{{/if}}
-    <div class="center">
-      {{#if institution.countryLine}}<div class="country">{{institution.countryLine}}</div>{{/if}}
-      <h1>{{institution.name}}</h1>
-      {{#if institution.address}}<div class="subtitle">{{institution.address}}{{#if institution.phone}} &nbsp;|&nbsp; Tél : {{institution.phone}}{{/if}}</div>{{/if}}
-      {{#if institution.motto}}<div class="motto">« {{institution.motto}} »</div>{{/if}}
-    </div>
-    {{#if institution.crest}}<img class="crest" src="{{institution.crest}}" alt="Blason" />{{/if}}
-    {{#if qrDataUri}}
-    <div class="qr-box">
-      <img class="qr" src="{{qrDataUri}}" alt="Code de verification" />
-      {{#if report.securityCode}}<div class="qr-code-text">{{report.securityCode}}</div>{{/if}}
-    </div>
-    {{/if}}
+  <div class="top-bar">{{institution.name}}</div>
+  {{#if institution.countryLine}}
+  <div class="country">
+    <span>{{institution.countryLine}}</span>
+    {{#if institution.circonscription}}<span>{{institution.circonscription}}</span>{{/if}}
   </div>
+  {{/if}}
 
-  <!-- Title -->
-  <div class="title-bar">BULLETIN DE NOTES &mdash; {{report.termName}} &mdash; Année Scolaire {{report.academicYear}}</div>
-
-  <!-- Student band -->
-  <div class="student-band">
-    {{#if student.photo}}
-    <div class="photo-cell">
-      <img src="{{student.photo}}" alt="Photo" />
+  <!-- En-tête -->
+  <div class="hd">
+    {{#if institution.headerLogo}}<img class="hd-logo" src="{{institution.headerLogo}}" alt="Logo" />{{/if}}
+    <div class="hd-mid">
+      <ul class="hd-contacts">
+        {{#if institution.phone}}<li><span class="ico"><svg viewBox="0 0 24 24"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/></svg></span>{{institution.phone}}</li>{{/if}}
+        {{#if institution.address}}<li><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg></span>{{institution.address}}</li>{{/if}}
+        {{#if institution.email}}<li><span class="ico"><svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5z"/></svg></span>{{institution.email}}</li>{{/if}}
+        {{#if institution.motto}}<li><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 17.3 18.2 21l-1.6-7L22 9.2l-7.2-.6L12 2 9.2 8.6 2 9.2 7.5 14l-1.7 7z"/></svg></span><span class="motto">{{institution.motto}}</span></li>{{/if}}
+      </ul>
+      <div class="hd-title">Bulletin de notes &mdash; <span class="term">{{report.termName}}</span></div>
     </div>
-    {{/if}}
-    <div class="fields">
-      <div class="field"><label>Nom &amp; Prénom</label><span>{{student.name}}</span></div>
-      <div class="field"><label>N° Matricule</label><span>{{student.admissionNumber}}</span></div>
-      <div class="field"><label>Date de naissance</label><span>{{student.dateOfBirth}}</span></div>
-      <div class="field"><label>Classe</label><span>{{class.name}}</span></div>
-      <div class="field"><label>Année scolaire</label><span>{{report.academicYear}}</span></div>
+    <div class="hd-photo">
+      {{#if student.photo}}<img src="{{student.photo}}" alt="Photo" />{{else}}<svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-4.3 0-9 2.2-9 5v3h18v-3c0-2.8-4.7-5-9-5z"/></svg>{{/if}}
     </div>
   </div>
 
-  <!-- Grades table -->
-  <table class="grades-table">
+  <!-- Identité de l'élève -->
+  <table class="info">
+    <tr>
+      <td class="lbl">Nom et prénoms</td><td class="sep">:</td><td class="val">{{student.name}}</td>
+      <td class="lbl">N° Matricule</td><td class="sep">:</td><td class="val">{{student.admissionNumber}}</td>
+    </tr>
+    <tr>
+      <td class="lbl">Sexe</td><td class="sep">:</td><td class="val">{{student.sexLabel}}</td>
+      <td class="lbl">Date de naissance</td><td class="sep">:</td><td class="val">{{student.dateOfBirth}}</td>
+    </tr>
+    <tr>
+      <td class="lbl">Classe</td><td class="sep">:</td><td class="val">{{class.name}}</td>
+      <td class="lbl">Effectif</td><td class="sep">:</td><td class="val">{{#if report.classSize}}{{report.classSize}} élèves{{else}}&mdash;{{/if}}</td>
+    </tr>
+    <tr>
+      <td class="lbl">Rang</td><td class="sep">:</td><td class="val val--strong">{{#if report.rankLabel}}{{report.rankLabel}}{{#if report.classSize}} / {{report.classSize}}{{/if}}{{else}}&mdash;{{/if}}</td>
+      <td class="lbl">Année scolaire</td><td class="sep">:</td><td class="val">{{report.academicYear}}</td>
+    </tr>
+    <tr>
+      <td class="lbl">Moyenne générale</td><td class="sep">:</td><td class="val val--strong{{#unless report.isPassing}} val--fail{{/unless}}">{{#if report.averageLabel}}{{report.averageLabel}} / 20{{else}}&mdash;{{/if}}</td>
+      <td class="lbl">Période</td><td class="sep">:</td><td class="val">{{report.termName}}</td>
+    </tr>
+    <tr>
+      <td class="lbl">Mention</td><td class="sep">:</td><td class="val">{{#if report.mention}}{{report.mention}}{{else}}&mdash;{{/if}}</td>
+      <td class="lbl">Conduite</td><td class="sep">:</td><td class="val">{{report.conductLabel}}</td>
+    </tr>
+  </table>
+
+  <!-- Tableau des notes -->
+  <table class="grades">
+    <colgroup>
+      <col style="width:3%" />   <!-- N° -->
+      <col style="width:15%" />  <!-- Matières -->
+      <col style="width:4%" /><col style="width:4%" /><col style="width:4%" /><col style="width:4%" />
+      <col style="width:4.5%" /> <!-- Moy. int. -->
+      <col style="width:5.5%" /> <!-- Devoir -->
+      <col style="width:6%" />   <!-- Examen -->
+      <col style="width:6%" />   <!-- Moy. -->
+      <col style="width:4%" />   <!-- Coef. -->
+      <col style="width:6%" />   <!-- Points -->
+      <col style="width:4.5%" /> <!-- Rang -->
+      <col style="width:10.5%" /><!-- Appréciation -->
+      <col style="width:10%" />  <!-- Professeur -->
+      <col style="width:9%" />   <!-- Signature -->
+    </colgroup>
     <thead>
       <tr>
-        <th class="col-matiere" rowspan="2">Matières</th>
+        <th class="c-num" rowspan="2">N°</th>
+        <th class="c-mat" rowspan="2">Matières</th>
         <th colspan="5">Notes de classe</th>
-        <th class="col-dev"  rowspan="2">Devoir<br>/20</th>
-        <th class="col-cmp"  rowspan="2">Examen<br>/20</th>
-        <th class="col-moy"  rowspan="2">Moy.<br>Trim.</th>
-        <th class="col-coef" rowspan="2">Coef.</th>
-        <th class="col-pts"  rowspan="2">Points</th>
-        <th class="col-rang" rowspan="2">Rang</th>
-        <th class="col-appr" rowspan="2">Appréciation</th>
-        <th class="col-prof" rowspan="2">Professeur</th>
-        <th class="col-sig-hbs" rowspan="2">Signature</th>
+        <th rowspan="2">Devoir<small>/20</small></th>
+        <th rowspan="2">Examen<small>/20</small></th>
+        <th rowspan="2">Moy.<small>/20</small></th>
+        <th rowspan="2">Coef.</th>
+        <th rowspan="2">Points</th>
+        <th rowspan="2">Rang</th>
+        <th rowspan="2">Appré&shy;ciation</th>
+        <th rowspan="2">Profes&shy;seur</th>
+        <th rowspan="2">Signa&shy;ture</th>
       </tr>
       <tr>
-        <th class="col-num">Int. 1</th>
-        <th class="col-num">Int. 2</th>
-        <th class="col-num">Int. 3</th>
-        <th class="col-num">Int. 4</th>
-        <th class="col-moy-i">Moy.<br>interros</th>
+        <th class="c-note">Int.1</th>
+        <th class="c-note">Int.2</th>
+        <th class="c-note">Int.3</th>
+        <th class="c-note">Int.4</th>
+        <th class="c-note">Moy.<small>int.</small></th>
       </tr>
     </thead>
     <tbody>
       {{#each grades}}
       <tr>
-        <td class="col-matiere">{{subject.nameFr}}</td>
-        <td class="col-num">{{fmtNote this.noteInterro1}}</td>
-        <td class="col-num">{{fmtNote this.noteInterro2}}</td>
-        <td class="col-num">{{fmtNote this.noteInterro3}}</td>
-        <td class="col-num">{{fmtNote this.noteInterro4}}</td>
-        <td class="col-moy-i">{{fmtNote this.moyInterros}}</td>
-        <td class="col-dev">{{fmtNote this.noteDevoir}}</td>
-        <td class="col-cmp">{{fmtNote this.noteComposition}}</td>
-        <td class="col-moy {{#if this.passed}}pass{{else}}fail{{/if}}">{{fmtScore this.moyenneMatiere}}</td>
-        <td class="col-coef">{{this.coefficient}}</td>
-        <td class="col-pts">{{fmtScore this.weightedScore}}</td>
-        <td class="col-rang">{{this.rangMatiere}}{{#if this.rangMatiere}}e{{/if}}</td>
-        <td class="col-appr">{{this.appreciation}}</td>
-        <td class="col-prof">{{this.teacherName}}</td>
-        <td class="col-sig-hbs" style="text-align:center;">
+        <td class="c-num">{{inc @index}}</td>
+        <td class="c-mat">{{subject.nameFr}}</td>
+        <td class="c-note">{{fmtNote this.noteInterro1}}</td>
+        <td class="c-note">{{fmtNote this.noteInterro2}}</td>
+        <td class="c-note">{{fmtNote this.noteInterro3}}</td>
+        <td class="c-note">{{fmtNote this.noteInterro4}}</td>
+        <td class="c-note c-mi">{{fmtNote this.moyInterros}}</td>
+        <td class="c-note">{{fmtNote this.noteDevoir}}</td>
+        <td class="c-note">{{fmtNote this.noteComposition}}</td>
+        <td class="c-moy{{#unless this.passed}} fail{{/unless}}">{{fmtScore this.moyenneMatiere}}</td>
+        <td>{{this.coefficient}}</td>
+        <td class="c-pts">{{fmtScore this.weightedScore}}</td>
+        <td class="c-rang">{{#if this.rangLabel}}{{this.rangLabel}}{{else}}&mdash;{{/if}}</td>
+        <td class="c-appr {{this.levelClass}}">{{this.appreciation}}</td>
+        <td class="c-prof">{{this.teacherName}}</td>
+        <td class="c-sig">
           {{#if this.signatureData}}
-            <img src="{{this.signatureData}}" alt="sig" style="max-height:34px;max-width:85px;object-fit:contain;display:block;margin:3px auto 0;" />
-            {{#if this.ficheSignedAt}}<span style="font-size:7.5px;color:#0f766e;display:block;">�S {{this.ficheSignedAt}}</span>{{/if}}
+            <img src="{{this.signatureData}}" alt="sig" style="max-height:28px;max-width:78px;object-fit:contain;display:block;margin:0 auto;" />
+            {{#if this.ficheSignedAt}}<span style="font-size:7px;color:#0f766e;display:block;">&#10003; {{this.ficheSignedAt}}</span>{{/if}}
           {{else}}
             <div style="border-bottom:1px dotted #9ca3af;margin:8px 4px 0;"></div>
           {{/if}}
@@ -338,111 +313,85 @@ body {
     </tbody>
     <tfoot>
       <tr>
-        <td class="col-matiere" colspan="8" style="text-align:right;padding-right:10px;font-size:12px;">TOTAUX</td>
-        <td class="col-moy">{{fmtScore report.overallAverage}}</td>
-        <td class="col-coef">{{report.totalCoef}}</td>
-        <td class="col-pts">{{fmtScore report.totalPoints}}</td>
+        <td class="t-label" colspan="9">TOTAUX</td>
+        <td class="t-val">{{fmtScore report.overallAverage}}</td>
+        <td>{{report.totalCoef}}</td>
+        <td class="t-val">{{fmtScore report.totalPoints}}</td>
         <td colspan="4"></td>
       </tr>
     </tfoot>
   </table>
 
-  <!-- Summary strip -->
-  <div class="summary">
-    <div class="sum-card">
-      <div class="label">Moyenne générale</div>
-      <div class="value {{#if report.isPassing}}pass{{else}}fail{{/if}}">{{fmtScore report.overallAverage}}<small style="font-size:11px;">/20</small></div>
-    </div>
-    <div class="sum-card">
-      <div class="label">Mention</div>
-      <div class="mention {{#if report.isPassing}}pass{{else}}fail{{/if}}">{{report.mention}}</div>
-    </div>
-    <div class="sum-card">
-      <div class="label">Rang dans la classe</div>
-      <div class="value">{{report.classRank}}<small style="font-size:11px;">/{{report.classSize}}</small></div>
-    </div>
-    <div class="sum-card">
-      <div class="label">Moy. la plus forte</div>
-      <div class="value value--lg">{{fmtScore report.classHighest}}</div>
-    </div>
-    <div class="sum-card">
-      <div class="label">Moy. la plus faible</div>
-      <div class="value value--lg">{{fmtScore report.classLowest}}</div>
-    </div>
-    <div class="sum-card">
-      <div class="label">Moy. de la classe</div>
-      <div class="value value--lg">{{fmtScore report.classAverage}}</div>
-    </div>
-    <div class="sum-card">
-      <div class="label">Conduite</div>
-      <div class="mention">{{report.conductLabel}}</div>
-    </div>
-  </div>
+  <!-- Observations | Résultats -->
+  <div class="bottom">
+    <div class="bottom-left">
+      <table class="kv">
+        {{#if report.hasAttendance}}
+        <tr>
+          <td class="k">Assiduité</td>
+          <td class="v">
+            Abs. non justifiées : <b>{{#if report.attendanceAbsent}}{{report.attendanceAbsent}}{{else}}0{{/if}} j</b>
+            &nbsp;·&nbsp; Abs. justifiées : <b>{{#if report.attendanceExcused}}{{report.attendanceExcused}}{{else}}0{{/if}} j</b>
+            &nbsp;·&nbsp; Retards : <b>{{#if report.lateHours}}{{report.lateHours}} h{{else}}{{#if report.attendanceLate}}{{report.attendanceLate}}{{else}}0 h{{/if}}{{/if}}</b>
+            {{#if report.attendanceDays}}<br>Jours de cours : <b>{{report.attendanceDays}}</b>{{#if report.attendanceRate}} &nbsp;·&nbsp; Taux : <b>{{report.attendanceRate}} %</b>{{/if}}{{/if}}
+          </td>
+        </tr>
+        {{/if}}
+        <tr><td class="k">Conduite</td><td class="v">{{report.conductLabel}}</td></tr>
+        {{#if report.hasDistinctions}}
+        <tr>
+          <td class="k">Distinctions</td>
+          <td class="v">
+            {{#if report.honorCouncil}}<span class="chip chip--honor">&#9733; Tableau d&apos;honneur</span>{{/if}}
+            {{#if report.commendations}}<span class="chip chip--commend">Félicitations : {{report.commendations}}</span>{{/if}}
+            {{#if report.warnings}}<span class="chip chip--warn">Avertissement(s) : {{report.warnings}}</span>{{/if}}
+          </td>
+        </tr>
+        {{/if}}
+        <tr>
+          <td class="k">Obs. du Prof. principal</td>
+          <td class="v{{#unless report.teacherComment}} v--muted{{/unless}}">{{#if report.teacherComment}}{{report.teacherComment}}{{else}}Aucune observation{{/if}}</td>
+        </tr>
+        <tr>
+          <td class="k">Obs. du Conseil des prof.</td>
+          <td class="v{{#unless report.principalComment}} v--muted{{/unless}}">{{#if report.principalComment}}{{report.principalComment}}{{else}}Aucune observation{{/if}}</td>
+        </tr>
+        {{#if report.councilDecision}}
+        <tr>
+          <td class="k">Décision du Conseil</td>
+          <td class="v {{#if report.annualIsPassing}}v--pass{{else}}v--fail{{/if}}">{{report.councilDecision}}</td>
+        </tr>
+        {{/if}}
+      </table>
 
-  {{#if report.annualAverage}}
-  <!-- Annual average + council decision -->
-  <div class="annual-bar">
-    <div class="ann-cell">
-      <div class="ann-label">Moyenne Annuelle</div>
-      <div class="ann-value {{#if report.annualIsPassing}}pass{{else}}fail{{/if}}">{{fmtScore report.annualAverage}}<small style="font-size:11px;">/20</small></div>
-    </div>
-    <div class="decision-cell">
-      <div style="text-align:center;">
-        <div class="ann-label" style="margin-bottom:4px;">Décision du Conseil de Classe</div>
-        <div class="decision-text {{#if report.annualIsPassing}}pass{{else}}fail{{/if}}">{{report.councilDecision}}</div>
+      <div class="verify">
+        {{#if qrDataUri}}
+        <div>
+          <div class="qr"><img src="{{qrDataUri}}" alt="Code de vérification" /></div>
+          {{#if report.securityCode}}<div class="code">{{report.securityCode}}</div>{{/if}}
+        </div>
+        {{/if}}
+        <div class="scale">
+          <div class="scale-title">Barème des mentions</div>
+          18 à 20 : Excellent &nbsp;·&nbsp; 16 à 17,99 : Très Bien &nbsp;·&nbsp; 14 à 15,99 : Bien &nbsp;·&nbsp;
+          12 à 13,99 : Assez Bien &nbsp;·&nbsp; 10 à 11,99 : Passable &nbsp;·&nbsp; 0 à 9,99 : Insuffisant
+        </div>
       </div>
     </div>
-  </div>
-  {{/if}}
 
-  <!-- Attendance + remarks -->
-  <div class="two-col" style="{{#unless report.hasAttendance}}display:block;{{/unless}}">
-    {{#if report.hasAttendance}}
-    <div class="box">
-      <div class="box-title">Assiduité</div>
-      <div class="att-row">
-        {{#if report.attendanceDays}}
-        <div class="att-cell"><div class="att-label">Jours de cours</div><div class="att-val">{{report.attendanceDays}}</div></div>
+    <div class="bottom-right">
+      <div class="res-title">Résultats</div>
+      <table class="res">
+        <tr><td>Moy. la plus forte</td><td>{{fmtScore report.classHighest}}</td></tr>
+        <tr><td>Moy. la plus faible</td><td>{{fmtScore report.classLowest}}</td></tr>
+        <tr><td>Moy. de la classe</td><td>{{fmtScore report.classAverage}}</td></tr>
+        <tr><td>Mention</td><td>{{#if report.mention}}{{report.mention}}{{else}}&mdash;{{/if}}</td></tr>
+        <tr class="sub"><td>Rang</td><td>{{#if report.rankLabel}}{{report.rankLabel}}{{#if report.classSize}} / {{report.classSize}}{{/if}}{{else}}&mdash;{{/if}}</td></tr>
+        <tr class="grand"><td>Moyenne générale</td><td class="{{#unless report.isPassing}}fail{{/unless}}">{{fmtScore report.overallAverage}} / 20</td></tr>
+        {{#if report.annualAverage}}
+        <tr class="grand"><td>Moyenne annuelle</td><td class="{{#unless report.annualIsPassing}}fail{{/unless}}">{{fmtScore report.annualAverage}} / 20</td></tr>
         {{/if}}
-        <div class="att-cell"><div class="att-label">Abs. non justifiées</div><div class="att-val">{{#if report.attendanceAbsent}}{{report.attendanceAbsent}}{{else}}0{{/if}} j</div></div>
-        <div class="att-cell"><div class="att-label">Abs. justifiées</div><div class="att-val">{{#if report.attendanceExcused}}{{report.attendanceExcused}}{{else}}0{{/if}} j</div></div>
-        <div class="att-cell"><div class="att-label">Retards</div><div class="att-val">{{#if report.lateHours}}{{report.lateHours}} h{{else}}{{#if report.attendanceLate}}{{report.attendanceLate}}{{else}}0 h{{/if}}{{/if}}</div></div>
-        {{#if report.attendanceRate}}
-        <div class="att-cell"><div class="att-label">Taux</div><div class="att-val">{{report.attendanceRate}}%</div></div>
-        {{/if}}
-      </div>
-    </div>
-    {{/if}}
-    <div style="display:flex;flex-direction:column;gap:6px;justify-content:center;">
-      {{#if report.honorCouncil}}
-      <div class="remark remark--honor">&#11088; TABLEAU D&apos;HONNEUR &mdash; Félicitations du Conseil des Professeurs</div>
-      {{/if}}
-      {{#if report.commendations}}
-      <div class="remark remark--commend">Félicitations : {{report.commendations}}</div>
-      {{/if}}
-      {{#if report.warnings}}
-      <div class="remark remark--warn">Avertissement(s) : {{report.warnings}}</div>
-      {{/if}}
-    </div>
-  </div>
-
-  <!-- Comments -->
-  <div class="two-col">
-    <div class="box">
-      <div class="box-title">Observation du Professeur Principal</div>
-      {{#if report.teacherComment}}
-      <div class="content">{{report.teacherComment}}</div>
-      {{else}}
-      <div class="content content--empty">Aucune observation</div>
-      {{/if}}
-    </div>
-    <div class="box">
-      <div class="box-title">Observation Générale du Conseil des Professeurs</div>
-      {{#if report.principalComment}}
-      <div class="content">{{report.principalComment}}</div>
-      {{else}}
-      <div class="content content--empty">Aucune observation</div>
-      {{/if}}
+      </table>
     </div>
   </div>
 
@@ -450,27 +399,28 @@ body {
   <div class="signatures">
     <div class="sig-box">
       <div class="sig-title">Le Professeur Principal</div>
-      <div style="font-size:8.5px;color:#9ca3af;margin-bottom:22px;">(Nom et signature)</div>
+      <div class="sig-hint">(Nom et signature)</div>
       <div class="sig-line"></div>
       <div class="sig-name">&nbsp;</div>
     </div>
     <div class="sig-box">
-      <div class="sig-title">Le Directeur de l&apos;�0cole</div>
-      <div style="font-size:8.5px;color:#9ca3af;margin-bottom:22px;">(Cachet et signature)</div>
+      <div class="sig-title">Le Directeur de l&apos;&Eacute;cole</div>
+      <div class="sig-hint">(Cachet et signature)</div>
       <div class="sig-line"></div>
-      <div class="sig-name" style="font-size:8.5px;color:#374151;">Fait le &nbsp;_____ / _____ / _____</div>
+      <div class="sig-name">Fait le &nbsp;_____ / _____ / _____</div>
     </div>
-    <div class="sig-box" style="border:1px solid #d1d5db;border-radius:4px;padding:6px 8px;background:#fafafa;">
+    <div class="sig-box">
       <div class="sig-title">Visa des Parents</div>
-      <div style="font-size:8.5px;color:#9ca3af;margin-bottom:18px;">(Lu et approuvé)</div>
+      <div class="sig-hint">(Lu et approuvé)</div>
       <div class="sig-line"></div>
-      <div class="sig-name" style="font-size:8.5px;color:#374151;">Vu le : ___ / ___ / _______</div>
+      <div class="sig-name">Vu le : ___ / ___ / _______</div>
     </div>
   </div>
 
   {{#if institution.stamp}}
   <div class="stamp-area"><img src="{{institution.stamp}}" alt="Cachet" /></div>
   {{/if}}
+</div>
 
   <div class="footer">
     Généré le {{generatedAt}} &nbsp;|&nbsp; {{institution.name}} &nbsp;|&nbsp; Powered by NovaBulletin

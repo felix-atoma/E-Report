@@ -457,7 +457,120 @@
   .fdn__th--total  { min-width: 52px; }
   .fdn__th--rang   { min-width: 44px; }
   .fdn__td, .fdn__th { font-size: 0.78rem; padding: 6px 4px; }
-  .fdn__input { width: 52px; padding: 4px 2px; font-size: 0.78rem; }
+  .fdn__note-input { width: 52px; min-height: 36px; padding: 4px 2px; font-size: 16px; }
+}
+
+/* ── Invitation au mode paysage (petits écrans) ───────────────────────── */
+.fdn__landscape-cta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+.fdn__landscape-cta__icon { font-size: 1.4rem; flex-shrink: 0; }
+.fdn__landscape-cta__text { flex: 1 1 180px; display: flex; flex-direction: column; gap: 2px; font-size: 0.85rem; color: #3730a3; }
+.fdn__landscape-cta__text strong { font-size: 0.9rem; color: #1e1b4b; }
+
+/* ── Mode saisie plein écran (paysage) ───────────────────────────────── */
+.fdn-focus {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  padding:
+    env(safe-area-inset-top, 0px)
+    env(safe-area-inset-right, 0px)
+    env(safe-area-inset-bottom, 0px)
+    env(safe-area-inset-left, 0px);
+}
+
+.fdn-focus__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f8fafc;
+  flex-shrink: 0;
+}
+.fdn-focus__bar .fdn__btn { padding: 0.45rem 0.85rem; min-height: 40px; }
+.fdn-focus__title { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.2; }
+.fdn-focus__title strong { font-size: 0.9rem; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fdn-focus__title span { font-size: 0.72rem; color: #6b7280; }
+.fdn-focus__coef { font-size: 0.78rem; font-weight: 600; color: #374151; white-space: nowrap; }
+.fdn-focus__saved { font-size: 0.78rem; font-weight: 600; color: #047857; white-space: nowrap; }
+
+/* Le tableau occupe tout l'espace restant, avec défilement propre */
+.fdn-focus .fdn__table-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  -webkit-overflow-scrolling: touch;
+}
+.fdn-focus .fdn__table thead { position: sticky; top: 0; z-index: 4; }
+.fdn-focus .fdn__th--coef,
+.fdn-focus .fdn__td--coef,
+.fdn-focus .fdn__th--total,
+.fdn-focus .fdn__td--total { display: none; } /* coef affiché dans la barre */
+.fdn-focus .fdn__stats { display: none; }
+
+/* Cibles tactiles plus grandes, polices lisibles (16px évite le zoom auto d'iOS) */
+.fdn-focus .fdn__note-input {
+  width: 58px;
+  min-height: 38px;
+  font-size: 16px;
+  padding: 0.2rem;
+}
+.fdn-focus .fdn__td { padding: 3px 4px; }
+.fdn-focus .fdn__th { padding: 4px; font-size: 0.74rem; }
+.fdn-focus .fdn__th--name { min-width: 118px; max-width: 150px; }
+.fdn-focus .fdn__td--name { max-width: 150px; padding-left: 0.5rem; }
+.fdn-focus .fdn__student-name { font-size: 0.82rem; white-space: normal; line-height: 1.15; }
+.fdn-focus .fdn__student-id { display: none; }
+.fdn-focus .fdn__teacher-input { font-size: 16px; min-height: 38px; }
+
+/* Invite à tourner le téléphone (iOS ne permet pas le verrouillage) */
+.fdn-focus__rotate {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.97);
+  color: #1f2937;
+}
+.fdn-focus__rotate p { font-size: 0.9rem; color: #4b5563; max-width: 320px; margin: 0; }
+.fdn-focus__rotate-icon {
+  font-size: 3rem;
+  animation: fdn-rotate-hint 1.8s ease-in-out infinite;
+}
+@keyframes fdn-rotate-hint {
+  0%, 20%  { transform: rotate(0deg); }
+  50%, 80% { transform: rotate(-90deg); }
+  100%     { transform: rotate(0deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fdn-focus__rotate-icon { animation: none; transform: rotate(-90deg); }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .fdn-focus__bar { padding: 0.25rem 0.6rem; }
+  .fdn-focus__bar .fdn__btn { min-height: 36px; padding: 0.35rem 0.75rem; font-size: 0.82rem; }
 }
 
 .fdn__csv-bar {
