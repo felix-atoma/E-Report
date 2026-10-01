@@ -5,7 +5,7 @@ import { mockExamsService } from '../../../services/mockExamsService';
 import PrintFormatPicker from '../../../components/common/PrintFormatPicker/PrintFormatPicker';
 import { fmtSessionDates } from '../../../utils/fmtSessionDates';
 import './MockExamRelevePage.css';
-import { examScale, isNonExamType } from '../../../utils/examKinds';
+import { examScale, isNonExamType, isCmType } from '../../../utils/examKinds';
 
 const TYPE_LABELS = {
   BLANC: 'Examen Blanc',
@@ -50,19 +50,23 @@ function getResult(avg, examType, sex) {
 // Single student card (one per print page)
 function StudentCard({ student, subjects, exam, institution }) {
   const scale = examScale(exam?.examType); // 10 pour les compositions mensuelles
+  const isCm = isCmType(exam?.examType);
   const totalCoeff = subjects.reduce((s, subj) => s + subj.coefficient, 0);
   const gradeMap = new Map(student.grades.map((g) => [g.subjectId, g]));
 
+  // Points obtenus ÷ points possibles, ramenés au barème de la session (compositions mensuelles :
+  // chaque matière sur 10 ou 20) — même calcul que le serveur.
+  const subjMax = (subj) => subj.maxScore ?? scale;
   let totalPts = 0;
-  let filledCoeff = 0;
+  let filledMax = 0;
   subjects.forEach((subj) => {
     const g = gradeMap.get(subj.id);
     if (g?.score != null) {
       totalPts += g.score * subj.coefficient;
-      filledCoeff += subj.coefficient;
+      filledMax += subjMax(subj) * subj.coefficient;
     }
   });
-  const avg = filledCoeff > 0 ? Math.round((totalPts / filledCoeff) * 100) / 100 : null;
+  const avg = filledMax > 0 ? Math.round((totalPts / filledMax) * scale * 100) / 100 : null;
   const mention = apprec(avg, scale);
   const result = getResult(avg, exam.examType, student.sex);
 
@@ -123,7 +127,7 @@ function StudentCard({ student, subjects, exam, institution }) {
           <tr>
             <th className="mrel-th mrel-th--subject">Matière / Discipline</th>
             <th className="mrel-th mrel-th--coeff">Coeff.</th>
-            <th className="mrel-th mrel-th--score">Note /{scale}</th>
+            <th className="mrel-th mrel-th--score">Note{isCm ? '' : ` /${scale}`}</th>
             <th className="mrel-th mrel-th--pts">Pts × Coeff</th>
             <th className="mrel-th mrel-th--appre">Appréciation</th>
           </tr>
@@ -139,11 +143,12 @@ function StudentCard({ student, subjects, exam, institution }) {
                 <td className="mrel-td mrel-td--center">{subj.coefficient}</td>
                 <td className="mrel-td mrel-td--center mrel-td--score">
                   {score != null ? score.toFixed(2).replace('.', ',') : '—'}
+                  {isCm && <small className="mrel-max"> / {subjMax(subj)}</small>}
                 </td>
                 <td className="mrel-td mrel-td--center">
                   {pts != null ? pts.toFixed(2).replace('.', ',') : '—'}
                 </td>
-                <td className="mrel-td mrel-td--appre">{apprec(score, scale)}</td>
+                <td className="mrel-td mrel-td--appre">{apprec(score, subjMax(subj))}</td>
               </tr>
             );
           })}
@@ -155,6 +160,7 @@ function StudentCard({ student, subjects, exam, institution }) {
             <td className="mrel-td" />
             <td className="mrel-td mrel-td--center mrel-td--bold">
               {totalPts > 0 ? totalPts.toFixed(2).replace('.', ',') : '—'}
+              {isCm && filledMax > 0 && <small className="mrel-max"> / {filledMax}</small>}
             </td>
             <td className="mrel-td" />
           </tr>

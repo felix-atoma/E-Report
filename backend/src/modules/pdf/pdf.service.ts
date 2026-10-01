@@ -314,19 +314,25 @@ export class PdfService {
     const isBac = exam.examType === 'BAC1' || exam.examType === 'BAC2';
     const female = student.sex === 'F';
     const scale = exam.scale ?? 20;          // 10 pour les compositions mensuelles (primaire)
-    const to20 = (v: number) => (v * 20) / scale;
     const pass = scale / 2;
 
-    const rows = data.rows.map((r) => ({
-      ...r,
-      scoreLabel: formatScore(r.score),
-      pointsLabel: r.score != null ? formatScore(r.score * r.coefficient) : '—',
-      passed: r.score == null || r.score >= pass,
-      levelClass: r.score == null ? '' : to20(r.score) >= 14 ? 'lvl-good' : to20(r.score) >= 10 ? 'lvl-pass' : 'lvl-fail',
-    }));
+    const rows = data.rows.map((r) => {
+      const max = r.max ?? scale;                // barème de la matière
+      const on20 = r.score == null ? null : (r.score * 20) / max;
+      return {
+        ...r,
+        max,
+        scoreLabel: formatScore(r.score),
+        pointsLabel: r.score != null ? formatScore(r.score * r.coefficient) : '—',
+        passed: on20 == null || on20 >= 10,
+        levelClass: on20 == null ? '' : on20 >= 14 ? 'lvl-good' : on20 >= 10 ? 'lvl-pass' : 'lvl-fail',
+      };
+    });
     const graded = rows.filter((r) => r.score != null);
     const totalCoef = graded.reduce((s, r) => s + r.coefficient, 0);
     const totalPoints = graded.reduce((s, r) => s + (r.score as number) * r.coefficient, 0);
+    // Points possibles (compositions mensuelles : chaque matière sur 10 ou 20)
+    const totalMax = graded.reduce((s, r) => s + r.max * r.coefficient, 0);
 
     // Examen : admis / admissible (BAC ≥ 9) / ajourné — Devoir surveillé : moyenne atteinte ou non
     const avg = data.average;
@@ -359,6 +365,7 @@ export class PdfService {
       gradedCount: graded.length,
       totalCoef,
       totalPointsLabel: formatScore(Math.round(totalPoints * 100) / 100),
+      totalMax,
       averageLabel: avg != null ? formatScore(avg) : null,
       isPassing: (avg ?? 0) >= pass,
       scale,
@@ -669,7 +676,8 @@ export interface ReleveData {
     name: string; admissionNumber: string; sex?: string | null;
     dateOfBirth?: Date | string | null; photo?: string | null;
   };
-  rows: Array<{ subject: string; score: number | null; coefficient: number; appreciation: string }>;
+  /** max : barème de la matière (/10 ou /20 aux compositions mensuelles ; sinon celui de la session) */
+  rows: Array<{ subject: string; score: number | null; coefficient: number; max?: number; appreciation: string }>;
   average: number | null;
   appreciation: string;
   rank: number | null;

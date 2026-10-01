@@ -78,6 +78,7 @@ body {
 .grades .c-mat { text-align:left; font-weight:700; }
 .grades .c-note { font-weight:800; font-size:11.5px; color:var(--c-primary-text); }
 .grades .c-note.fail { color:var(--c-fail); }
+.grades .c-note .c-max { font-size:8.5px; font-weight:600; color:#6b7280; }
 .grades .c-pts { font-weight:700; }
 .grades .c-appr { text-align:left; font-weight:700; }
 .grades .lvl-good { color:var(--c-good); }
@@ -211,7 +212,7 @@ body {
       <tr>
         <th class="c-num">N°</th>
         <th class="c-mat">Matières</th>
-        <th>Note<small>/{{scale}}</small></th>
+        <th>Note{{#unless isCm}}<small>/{{scale}}</small>{{/unless}}</th>
         <th>Coef.</th>
         <th>Points</th>
         <th>Appréciation</th>
@@ -222,7 +223,7 @@ body {
       <tr>
         <td class="c-num">{{inc @index}}</td>
         <td class="c-mat">{{this.subject}}</td>
-        <td class="c-note{{#unless this.passed}} fail{{/unless}}">{{this.scoreLabel}}</td>
+        <td class="c-note{{#unless this.passed}} fail{{/unless}}">{{this.scoreLabel}}{{#if ../isCm}}<small class="c-max"> / {{this.max}}</small>{{/if}}</td>
         <td>{{this.coefficient}}</td>
         <td class="c-pts">{{this.pointsLabel}}</td>
         <td class="c-appr {{this.levelClass}}">{{this.appreciation}}</td>
@@ -233,7 +234,7 @@ body {
       <tr>
         <td class="t-label" colspan="3">TOTAUX</td>
         <td>{{totalCoef}}</td>
-        <td class="t-val">{{totalPointsLabel}}</td>
+        <td class="t-val">{{totalPointsLabel}}{{#if isCm}} / {{totalMax}}{{/if}}</td>
         <td class="t-val">{{#if averageLabel}}{{averageLabel}} / {{scale}}{{else}}&mdash;{{/if}}</td>
       </tr>
     </tfoot>

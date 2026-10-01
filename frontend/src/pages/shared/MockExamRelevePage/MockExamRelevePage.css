@@ -97,6 +97,7 @@
 .mrel-td--center { text-align: center; }
 .mrel-td--subject { font-weight: 600; }
 .mrel-td--score { font-weight: 700; color: #1e3a8a; }
+.mrel-max { font-size: 0.8em; font-weight: 500; color: #6b7280; }
 .mrel-td--appre { font-style: italic; font-size: 10px; }
 .mrel-td--bold  { font-weight: 900; }
 

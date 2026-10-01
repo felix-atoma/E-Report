@@ -126,7 +126,8 @@ function MockExamPalmaresPage() {
               <tr>
                 {subjects.map((subj) => (
                   <th key={`c-${subj.id}`} className="mpal-th mpal-th--coeff">
-                    ×{subj.coefficient}
+                    {/* Barème de la matière (compositions mensuelles : /10 ou /20) */}
+                    /{subj.maxScore ?? scale} ×{subj.coefficient}
                   </th>
                 ))}
               </tr>
@@ -162,7 +163,7 @@ function MockExamPalmaresPage() {
                     {subjects.map((subj) => {
                       const g = gradeMap.get(subj.id);
                       const score = g?.score ?? null;
-                      const low = score != null && score < pass;
+                      const low = score != null && score < (subj.maxScore ?? scale) / 2;
                       return (
                         <td
                           key={subj.id}

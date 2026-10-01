@@ -43,8 +43,9 @@ function fmtSignDate(iso) {
 
 /* ── Single subject fiche ─────────────────────────────────────────────────── */
 function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished, isAdmin, currentUser }) {
-  // Compositions mensuelles (primaire) sur 10, le reste sur 20
-  const scale = examScale(exam?.examType);
+  // Barème de la matière : aux compositions mensuelles, « Noté sur » de la matière (10 ou 20) ;
+  // ailleurs, celui de la session (20)
+  const scale = subject?.maxScore ?? examScale(exam?.examType);
   const pass = scale / 2;
   const qc = useQueryClient();
 

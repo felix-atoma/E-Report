@@ -36,8 +36,9 @@ function RankBadge({ rank }) {
 }
 
 function SubjectPrintFiche({ subject, students, institution, exam }) {
-  // Compositions mensuelles (primaire) sur 10, le reste sur 20
-  const scale = examScale(exam?.examType);
+  // Barème de la matière : aux compositions mensuelles, « Noté sur » de la matière (10 ou 20) ;
+  // ailleurs, celui de la session (20)
+  const scale = subject?.maxScore ?? examScale(exam?.examType);
   const gradeMap = new Map();
   students.forEach((s) => {
     const g = s.grades.find((g) => g.subjectId === subject.id);

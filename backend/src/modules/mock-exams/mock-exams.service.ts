@@ -1,13 +1,21 @@
 import { BadRequestException, Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
 import archiver = require('archiver');
 import { PrismaService } from '../../prisma/prisma.service';
-import { PdfService, ReleveData, isPrimaryLevel, isSecondaryLevel } from '../pdf/pdf.service';
+import { PdfService, ReleveData, isPrimaryLevel, isSecondaryLevel, primarySubjectMax } from '../pdf/pdf.service';
 import { CreateMockExamDto } from './dto/create-mock-exam.dto';
 import { SaveMockExamGradesDto } from './dto/save-grades.dto';
 
 /** Barème de la session : compositions mensuelles (primaire) sur 10, le reste sur 20. */
 export function examScale(examType: string | null | undefined): number {
   return examType === 'COMPOSITION_MENSUELLE' ? 10 : 20;
+}
+
+/**
+ * Barème d'une matière dans la session : aux compositions mensuelles, celui de la matière
+ * (« Noté sur » 10 ou 20, réglé dans Matières) ; ailleurs, celui de la session (sur 20).
+ */
+export function subjectScale(examType: string | null | undefined, subjectMaxScore: number | null | undefined): number {
+  return examType === 'COMPOSITION_MENSUELLE' ? primarySubjectMax(subjectMaxScore) : examScale(examType);
 }
 
 /** Appréciation d'une note exprimée sur `scale` (seuils définis sur 20). */
@@ -105,7 +113,7 @@ export class MockExamsService {
     // Subjects assigned to this class
     const classSubjects = await this.prisma.classSubject.findMany({
       where: { classId: exam.classId },
-      include: { subject: { select: { id: true, nameFr: true, nameEn: true, code: true } } },
+      include: { subject: { select: { id: true, nameFr: true, nameEn: true, code: true, maxScore: true } } },
       orderBy: { subject: { nameFr: 'asc' } },
     });
 
@@ -143,6 +151,8 @@ export class MockExamsService {
       nameEn: cs.subject.nameEn,
       code: cs.subject.code,
       coefficient: subjectCoeffMap.get(cs.subject.id) ?? 1,
+      // Barème de la matière pour cette session (/10 ou /20 aux compositions mensuelles)
+      maxScore: subjectScale(exam.examType, cs.subject.maxScore),
     }));
 
     const scale = examScale(exam.examType);
@@ -153,16 +163,19 @@ export class MockExamsService {
         return {
           subjectId: subj.id,
           coefficient: g?.coefficient ?? subj.coefficient,
+          maxScore: subj.maxScore,
           score: g?.score ?? null,
-          appreciation: appreciation(g?.score ?? null, scale),
+          appreciation: appreciation(g?.score ?? null, subj.maxScore),
         };
       });
 
-      // Compute total and average
+      // Total et moyenne : points obtenus sur points possibles, ramenés au barème de la session.
+      // Toutes les matières sur 20 → moyenne pondérée classique ; compositions mensuelles → total des
+      // notes (chacune sur 10 ou 20) ÷ total des barèmes × 10.
       const filled = gradesForStudent.filter((g) => g.score != null);
-      const totalCoeff = filled.reduce((s, g) => s + g.coefficient, 0);
+      const totalMax = filled.reduce((s, g) => s + g.maxScore * g.coefficient, 0);
       const totalPoints = filled.reduce((s, g) => s + (g.score ?? 0) * g.coefficient, 0);
-      const average = totalCoeff > 0 ? round2(totalPoints / totalCoeff) : null;
+      const average = totalMax > 0 ? round2((totalPoints / totalMax) * scale) : null;
 
       return {
         studentId: student.id,
@@ -314,6 +327,7 @@ export class MockExamsService {
         throw new ForbiddenException('Cette fiche est signée. Annulez la signature avant de modifier les notes.');
       }
     }
+    await this.assertWithinScale(exam.examType, grades.map((g) => ({ subjectId, score: g.score })));
     await this.prisma.$transaction(
       grades.map((g) =>
         this.prisma.mockExamGrade.upsert({
@@ -330,6 +344,24 @@ export class MockExamsService {
       ),
     );
     return { message: 'Notes sauvegardées.' };
+  }
+
+  /** Refuse une note négative ou au-dessus du barème de sa matière (/10 ou /20). */
+  private async assertWithinScale(examType: string, grades: { subjectId: string; score?: number | null }[]) {
+    const ids = [...new Set(grades.map((g) => g.subjectId))];
+    const subjects = await this.prisma.subject.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, nameFr: true, maxScore: true },
+    });
+    const byId = new Map(subjects.map((s) => [s.id, s]));
+    for (const g of grades) {
+      if (g.score == null) continue;
+      const subj = byId.get(g.subjectId);
+      const max = subjectScale(examType, subj?.maxScore);
+      if (g.score < 0 || g.score > max) {
+        throw new BadRequestException(`Note invalide en ${subj?.nameFr ?? 'cette matière'} : elle doit être comprise entre 0 et ${max}.`);
+      }
+    }
   }
 
   // ─── Get palmares (proclamation des résultats) ────────────────────────────
@@ -382,6 +414,7 @@ export class MockExamsService {
     if (exam.status === 'PUBLISHED') {
       throw new ForbiddenException('Impossible de modifier un examen publié.');
     }
+    await this.assertWithinScale(exam.examType, dto.grades);
 
     await this.prisma.$transaction(
       dto.grades.map((g) =>
@@ -542,6 +575,7 @@ export class MockExamsService {
         subject: subjectName.get(g.subjectId) ?? '—',
         score: g.score,
         coefficient: g.coefficient,
+        max: g.maxScore,
         appreciation: g.appreciation,
       })),
       average: s.average,

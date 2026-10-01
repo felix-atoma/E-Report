@@ -27,19 +27,21 @@ function apprec(score, scale = 20) {
   return 'Insuffisant';
 }
 
-function computeAvg(gradesRow, subjects) {
-  let totalPts = 0, totalCoeff = 0;
+// Points obtenus ÷ points possibles, ramenés au barème de la session : chaque matière a son propre
+// barème aux compositions mensuelles (/10 ou /20) — même calcul que le serveur.
+function computeAvg(gradesRow, subjects, scale = 20) {
+  let totalPts = 0, totalMax = 0;
   subjects.forEach((subj) => {
     const raw = gradesRow[subj.id];
     if (raw == null || raw === '') return;
     const v = parseFloat(raw);
     if (!isNaN(v)) {
       totalPts += v * subj.coefficient;
-      totalCoeff += subj.coefficient;
+      totalMax += (subj.maxScore ?? scale) * subj.coefficient;
     }
   });
-  if (totalCoeff === 0) return null;
-  return Math.round((totalPts / totalCoeff) * 100) / 100;
+  if (totalMax === 0) return null;
+  return Math.round((totalPts / totalMax) * scale * 100) / 100;
 }
 
 function MockExamGradePage() {
@@ -90,7 +92,7 @@ function MockExamGradePage() {
     if (!data) return {};
     const avgs = data.students.map((s) => ({
       id: s.studentId,
-      avg: computeAvg(grades[s.studentId] ?? {}, data.subjects),
+      avg: computeAvg(grades[s.studentId] ?? {}, data.subjects, examScale(data.exam.examType)),
     }));
     const sorted = avgs.filter((a) => a.avg != null).sort((a, b) => (b.avg ?? 0) - (a.avg ?? 0));
     const map = {};
@@ -228,13 +230,13 @@ function MockExamGradePage() {
               </tr>
               <tr>
                 {subjects.map((subj) => (
-                  <th key={`max-${subj.id}`} className="meg-th meg-th--max">/{scale}</th>
+                  <th key={`max-${subj.id}`} className="meg-th meg-th--max">/{subj.maxScore ?? scale}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {students.map((student) => {
-                const avg = computeAvg(grades[student.studentId] ?? {}, subjects);
+                const avg = computeAvg(grades[student.studentId] ?? {}, subjects, scale);
                 const rank = ranks[student.studentId];
                 const app = apprec(avg, scale);
 
@@ -248,14 +250,14 @@ function MockExamGradePage() {
                     {subjects.map((subj) => {
                       const val = grades[student.studentId]?.[subj.id] ?? '';
                       const numVal = val !== '' ? parseFloat(val) : null;
-                      const isErr = numVal != null && (numVal < 0 || numVal > scale);
+                      const isErr = numVal != null && (numVal < 0 || numVal > (subj.maxScore ?? scale));
                       return (
                         <td key={subj.id} className="meg-cell meg-cell--score">
                           {canEditSubject(subj.id) ? (
                             <input
                               type="number"
                               className={`meg-input${isErr ? ' meg-input--err' : ''}`}
-                              min="0" max={scale} step="0.25"
+                              min="0" max={subj.maxScore ?? scale} step="0.25"
                               value={val}
                               onChange={(e) => setScore(student.studentId, subj.id, e.target.value)}
                               placeholder="—"
