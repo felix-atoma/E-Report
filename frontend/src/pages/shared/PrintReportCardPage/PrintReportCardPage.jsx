@@ -7,6 +7,7 @@ import { institutionsService } from '../../../services/institutionsService';
 import { gradesService } from '../../../services/gradesService';
 import Loading from '../../../components/common/Loading/Loading';
 import PrintFormatPicker from '../../../components/common/PrintFormatPicker/PrintFormatPicker';
+import { scoreToFrench } from '../../../utils/numberToFrench';
 import './PrintReportCardPage.css';
 
 const CONDUCT_LABELS = {
@@ -528,6 +529,15 @@ export default function PrintReportCardPage() {
             </div>
           </div>
         </div>
+
+        {/* ── Moyenne générale en lettres ──────────────────────────────────── */}
+        {displayAverage != null && (
+          <div className="pr-avg-words">
+            <span className="pr-avg-words__label">Moyenne générale en lettres :</span>
+            <span className="pr-avg-words__value">{scoreToFrench(isPrimary ? displayAverage / 2 : displayAverage)}</span>
+            <span className="pr-avg-words__denom">sur {isPrimary ? 'dix' : 'vingt'}</span>
+          </div>
+        )}
 
         {/* ── Annual average + council decision (last term only) ─────────── */}
         {report.annualAverage != null && (

@@ -5,6 +5,7 @@ import * as path from 'path';
 import * as Handlebars from 'handlebars';
 import * as QRCode from 'qrcode';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { scoreToFrench } from './number-to-french';
 
 let _browser: import('puppeteer').Browser | null = null;
 
@@ -157,7 +158,9 @@ export class PdfService {
   private readonly outputDir: string;
   private readonly baseUrl: string;
   private readonly verifyUrl: string;
-  private readonly template: HandlebarsTemplateDelegate;
+  private template: HandlebarsTemplateDelegate;
+  private templatePath = path.join(__dirname, 'templates', 'report-card.hbs');
+  private templateMtime = 0;
   private readonly releveTemplate: HandlebarsTemplateDelegate;
 
   constructor(
@@ -175,9 +178,6 @@ export class PdfService {
     this.verifyUrl = `${(frontend || 'http://localhost:5173').replace(/\/+$/, '')}/verify`;
     fs.mkdirSync(this.outputDir, { recursive: true });
 
-    const templatePath = path.join(__dirname, 'templates', 'report-card.hbs');
-    const templateSrc = fs.readFileSync(templatePath, 'utf8');
-
     Handlebars.registerHelper('formatScore', (val: number | null) => formatScore(val));
     Handlebars.registerHelper('fmtScore', (val: number | null) => formatScore(val));
     Handlebars.registerHelper('inc', (val: number) => Number(val) + 1);
@@ -185,10 +185,23 @@ export class PdfService {
       val == null ? '—' : Number(val).toFixed(0).replace('.', ','),
     );
 
-    this.template = Handlebars.compile(templateSrc);
+    this.template = this.loadTemplate();
     this.releveTemplate = Handlebars.compile(
       fs.readFileSync(path.join(__dirname, 'templates', 'releve.hbs'), 'utf8'),
     );
+  }
+
+  /**
+   * Modèle du bulletin, relu dès que le fichier change : une modification du modèle s'applique aux
+   * PDF suivants sans redémarrer le serveur (sinon l'ancien modèle restait en mémoire).
+   */
+  private loadTemplate(): HandlebarsTemplateDelegate {
+    const mtime = fs.statSync(this.templatePath).mtimeMs;
+    if (!this.template || mtime !== this.templateMtime) {
+      this.template = Handlebars.compile(fs.readFileSync(this.templatePath, 'utf8'));
+      this.templateMtime = mtime;
+    }
+    return this.template;
   }
 
   async generateFromHtml(html: string): Promise<Buffer> {
@@ -574,6 +587,9 @@ export class PdfService {
       classTeacherName: data.classTeacherName ?? '',
       classTeacherSignature: data.classTeacherSignature ?? null,
       verifyUrl: this.verifyUrl,
+      // Moyenne générale en toutes lettres (sur l'échelle du bulletin : /10 au primaire, /20 sinon)
+      averageWords: displayAverage != null ? scoreToFrench(toScale(displayAverage)) : '',
+      averageDenomWords: isPrimary ? 'dix' : 'vingt',
       averageFailing: displayAverage != null && displayAverage < 10,
       annualFailing: report.annualAverage != null && report.annualAverage < 10,
       totalPointsLabel: formatScore(Math.round(totalPoints * 100) / 100),
@@ -581,7 +597,7 @@ export class PdfService {
         : report.attendanceLate != null ? String(report.attendanceLate) : '—',
     };
 
-    return this.template(ctx);
+    return this.loadTemplate()(ctx);
   }
 }
 

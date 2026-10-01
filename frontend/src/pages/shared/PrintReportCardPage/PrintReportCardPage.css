@@ -304,6 +304,16 @@
 .pr-val--fail { color: #dc2626; }
 .pr-val-denom { font-size: 0.75em; font-weight: 400; color: #6b7280; }
 
+/* ── Moyenne générale en lettres ── */
+.pr-avg-words {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px;
+  border: 1.5px solid #dc2626; border-radius: 3px; background: #fef2f2;
+  padding: 3px 8px; margin-bottom: 4px; flex-shrink: 0;
+}
+.pr-avg-words__label { font-size: 0.75em; font-weight: 800; color: #991b1b; text-transform: uppercase; letter-spacing: 0.3px; }
+.pr-avg-words__value { font-size: 1.1em; font-weight: 900; color: #dc2626; }
+.pr-avg-words__denom { font-size: 0.9em; font-weight: 700; color: #991b1b; }
+
 /* ── Annual average + council decision ── */
 .pr-annual-bar {
   display: flex; border: 2px solid var(--bulletin-primary, var(--bp));
