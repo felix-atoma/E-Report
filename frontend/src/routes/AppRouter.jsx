@@ -185,7 +185,7 @@ function AppRouter() {
         <Route path="/admin/devoirs-surveilles"           element={<ProtectedRoute roles={['ADMIN']}><MockExamsPage kind="DS" /></ProtectedRoute>} />
         <Route path="/admin/devoirs-surveilles/fiches"    element={<ProtectedRoute roles={['ADMIN']}><MockExamFichesListPage kind="DS" /></ProtectedRoute>} />
         <Route path="/admin/devoirs-surveilles/resultats" element={<ProtectedRoute roles={['ADMIN']}><MockExamResultsPage kind="DS" /></ProtectedRoute>} />
-        {/* Compositions mensuelles (primaire, CI → CM2) : même procédure, notes sur 10 */}
+        {/* Compositions mensuelles (primaire, CI → CM2) : même procédure, chaque matière sur 10 ou 20 */}
         <Route path="/admin/compositions-mensuelles"           element={<ProtectedRoute roles={['ADMIN']}><MockExamsPage kind="CM" /></ProtectedRoute>} />
         <Route path="/admin/compositions-mensuelles/fiches"    element={<ProtectedRoute roles={['ADMIN']}><MockExamFichesListPage kind="CM" /></ProtectedRoute>} />
         <Route path="/admin/compositions-mensuelles/resultats" element={<ProtectedRoute roles={['ADMIN']}><MockExamResultsPage kind="CM" /></ProtectedRoute>} />

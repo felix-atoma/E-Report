@@ -77,7 +77,7 @@ const EVALUATION_KINDS = [
   },
   {
     key: 'CM', title: 'Compositions mensuelles', icon: '📒', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd',
-    desc: 'Primaire (CI au CM2) · notes sur 10',
+    desc: 'Primaire (CI au CM2) · notes sur 10 ou 20 selon la matière',
     base: '/admin/compositions-mensuelles', match: (t) => isCmType(t), directCreate: true,
   },
   {

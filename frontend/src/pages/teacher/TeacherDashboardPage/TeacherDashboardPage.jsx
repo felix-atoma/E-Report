@@ -121,7 +121,7 @@ function TeacherDashboardPage() {
         </Card>
       </div>
 
-      {/* Maîtres du primaire (CI → CM2) : compositions mensuelles, notes sur 10 */}
+      {/* Maîtres du primaire (CI → CM2) : compositions mensuelles, chaque matière sur son barème (10 ou 20) */}
       {primaryClasses.length > 0 && (
         <Card className="teacher-dash__cm">
           <div className="teacher-dash__cm-head">
@@ -129,7 +129,7 @@ function TeacherDashboardPage() {
             <div>
               <h3 className="teacher-dash__cm-title">Compositions mensuelles</h3>
               <p className="teacher-dash__cm-sub">
-                {primaryClasses.map((c) => c.name).join(' · ')} — saisissez et signez les notes (sur 10), puis consultez palmarès et relevés.
+                {primaryClasses.map((c) => c.name).join(' · ')} — saisissez et signez les notes (sur 10 ou 20 selon la matière), puis consultez palmarès et relevés.
               </p>
             </div>
           </div>

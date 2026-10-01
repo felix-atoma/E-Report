@@ -415,7 +415,7 @@ function MockExamsPage({ kind = 'ESSAI' }) {
           isAdmin
             ? (isDs ? text.listSubtitle : t('mockExams.subtitle'))
             : kind === 'CM'
-              ? "Les compositions mensuelles sont créées par l'administration. Saisissez et signez les notes (sur 10) dans « Fiches »."
+              ? "Les compositions mensuelles sont créées par l'administration. Saisissez et signez les notes dans « Fiches » (sur 10 ou sur 20 selon la matière)."
             : isDs
               ? "Les devoirs surveillés sont créés par l'administration. Saisissez et signez les notes de votre matière dans « Fiches des DS »."
               : "Les examens blancs sont créés par l'administration. Saisissez et signez les notes de votre matière dans « Fiches d'examen »."

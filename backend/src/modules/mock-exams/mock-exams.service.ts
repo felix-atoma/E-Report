@@ -5,7 +5,8 @@ import { PdfService, ReleveData, isPrimaryLevel, isSecondaryLevel, primarySubjec
 import { CreateMockExamDto } from './dto/create-mock-exam.dto';
 import { SaveMockExamGradesDto } from './dto/save-grades.dto';
 
-/** Barème de la session : compositions mensuelles (primaire) sur 10, le reste sur 20. */
+/** Barème de la moyenne de la session : compositions mensuelles (primaire) sur 10, le reste sur 20.
+ *  Chaque matière garde son propre barème : voir subjectScale(). */
 export function examScale(examType: string | null | undefined): number {
   return examType === 'COMPOSITION_MENSUELLE' ? 10 : 20;
 }
@@ -77,7 +78,7 @@ export class MockExamsService {
       where: { id: dto.classId, institutionId },
     });
     if (!cls) throw new NotFoundException('Classe introuvable');
-    // Les compositions mensuelles sont propres au primaire (notes sur 10)
+    // Les compositions mensuelles sont propres au primaire (chaque matière sur 10 ou 20)
     if (dto.examType === ('COMPOSITION_MENSUELLE' as any) && !isPrimaryLevel(cls.level)) {
       throw new BadRequestException('Les compositions mensuelles concernent uniquement les classes du CI au CM2');
     }

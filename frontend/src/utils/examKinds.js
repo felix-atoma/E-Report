@@ -14,13 +14,13 @@ export const DS_TYPE_CFG = {
 
 export const isDsType = (examType) => examType === DS_TYPE;
 
-// Compositions mensuelles : primaire (CI → CM2), notes sur 10, même procédure que les DS
+// Compositions mensuelles : primaire (CI → CM2), chaque matière sur son barème (10 ou 20), moyenne sur 10
 export const CM_TYPE = 'COMPOSITION_MENSUELLE';
 
 export const CM_TYPE_CFG = {
   value: CM_TYPE,
   label: 'Composition mensuelle',
-  full: 'Composition mensuelle — primaire (CI au CM2), notes sur 10',
+  full: 'Composition mensuelle — primaire (CI au CM2), notes sur 10 ou 20 selon la matière',
   color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd',
   icon: '📒',
   desc: 'Compositions mensuelles',
@@ -73,11 +73,11 @@ export const KIND_TEXT = {
   },
   CM: {
     listTitle: 'Compositions mensuelles',
-    listSubtitle: 'Primaire (CI au CM2) : créez une composition mensuelle par classe, puis chaque maître saisit et signe les notes sur 10',
+    listSubtitle: 'Primaire (CI au CM2) : créez une composition mensuelle par classe, puis chaque maître saisit et signe les notes (sur 10 ou 20 selon la matière, réglé dans Matières)',
     fichesTitle: 'Fiches de notes — Compositions mensuelles',
-    fichesSubtitle: 'Saisie des notes des compositions mensuelles (sur 10) par matière',
+    fichesSubtitle: 'Saisie des notes des compositions mensuelles par matière (sur 10 ou sur 20)',
     resultsTitle: 'Résultats des compositions mensuelles',
-    resultsSubtitle: 'Palmarès et relevés de notes des compositions mensuelles (sur 10)',
+    resultsSubtitle: 'Palmarès et relevés de notes des compositions mensuelles (moyenne sur 10)',
     empty: 'Aucune composition mensuelle créée.',
     listPath: '/teacher/compositions-mensuelles',
   },
