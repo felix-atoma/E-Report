@@ -551,9 +551,11 @@ export default function PrintReportCardPage() {
         {/* ── Signature row ──────────────────────────────────────────────── */}
         <div className="pr-signatures">
           <div className="pr-sig">
-            <div className="pr-sig__area" />
+            {report.classTeacherSignature
+              ? <div className="pr-sig__area pr-sig__area--signed"><img src={report.classTeacherSignature} alt="Signature du titulaire" /></div>
+              : <div className="pr-sig__area" />}
             <div className="pr-sig__line" />
-            <div className="pr-sig__name">{report.class?.teacher?.name ?? report.createdBy?.name ?? ''}</div>
+            <div className="pr-sig__name">{report.class?.teacher?.name ?? ''}</div>
             <div className="pr-sig__label">Le Professeur Principal</div>
           </div>
           <div className="pr-sig pr-sig--stamp">

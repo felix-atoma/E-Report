@@ -527,6 +527,7 @@ export class PdfService {
       termLabel: report.termName || `Trimestre ${report.termNumber}`,
       serial: securityCode ?? fallbackSerial(report),
       classTeacherName: data.classTeacherName ?? '',
+      classTeacherSignature: data.classTeacherSignature ?? null,
       verifyUrl: this.verifyUrl,
       averageFailing: report.overallAverage != null && report.overallAverage < 10,
       annualFailing: report.annualAverage != null && report.annualAverage < 10,
@@ -578,6 +579,8 @@ export interface ReportCardData {
   className: string;
   /** Titulaire de la classe (professeur principal / maître) — nom sous sa signature. */
   classTeacherName?: string | null;
+  /** Signature du titulaire — la même image que sur ses fiches de notes. */
+  classTeacherSignature?: string | null;
   /** Niveau de la classe (CI, CP1…CM2, 6ème…) — détermine le modèle primaire ou secondaire. */
   classLevel?: string | null;
   grades: Array<{

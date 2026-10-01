@@ -158,7 +158,36 @@ export class ReportsService {
       }
     }
 
-    return report;
+    // Signature du titulaire (celle de ses fiches de notes) pour le bas du bulletin
+    const classTeacherSignature = await this.titulaireSignature(
+      report.class?.teacher?.id, report.classId, report.academicYear, report.termNumber,
+    );
+    return { ...report, classTeacherSignature };
+  }
+
+  /**
+   * Signature du titulaire affichée sur le bulletin : la même que celle qu'il appose sur ses fiches
+   * de notes. On prend de préférence sa fiche signée de cette classe et de ce trimestre, sinon sa
+   * fiche signée la plus récente. Les validations administratives (« ADMIN_VERIFIED ») ne comptent pas.
+   */
+  private async titulaireSignature(
+    teacherId: string | null | undefined, classId: string, academicYear: string, termNumber: number,
+  ): Promise<string | null> {
+    if (!teacherId) return null;
+    const where = { signedById: teacherId, signedAt: { not: null }, signatureData: { not: null } };
+    const exclude = { NOT: { signatureData: 'ADMIN_VERIFIED' } };
+    const sameTerm = await this.prisma.gradeFiche.findFirst({
+      where: { ...where, ...exclude, classId, academicYear, termNumber },
+      orderBy: { signedAt: 'desc' },
+      select: { signatureData: true },
+    });
+    if (sameTerm?.signatureData) return sameTerm.signatureData;
+    const latest = await this.prisma.gradeFiche.findFirst({
+      where: { ...where, ...exclude },
+      orderBy: { signedAt: 'desc' },
+      select: { signatureData: true },
+    });
+    return latest?.signatureData ?? null;
   }
 
   async create(dto: CreateReportDto, institutionId: string, createdById: string) {
@@ -239,7 +268,7 @@ export class ReportsService {
             parent: { select: { id: true } },
           },
         },
-        class: { select: { name: true, level: true, teacher: { select: { name: true } } } },
+        class: { select: { name: true, level: true, teacher: { select: { id: true, name: true } } } },
       },
     });
     if (!report) throw new NotFoundException('Report card not found');
@@ -396,7 +425,7 @@ export class ReportsService {
             parent: { select: { id: true } },
           },
         },
-        class: { select: { name: true, level: true, teacher: { select: { name: true } } } },
+        class: { select: { name: true, level: true, teacher: { select: { id: true, name: true } } } },
       },
     });
 
@@ -468,6 +497,7 @@ export class ReportsService {
       className: reportWithGrades.class.name,
       classLevel: reportWithGrades.class.level ?? null,
       classTeacherName: reportWithGrades.class.teacher?.name ?? null,
+      classTeacherSignature: await this.titulaireSignature(reportWithGrades.class.teacher?.id, published.classId, published.academicYear, published.termNumber),
       grades: reportWithGrades.grades.map((g: any) => ({
         score: g.score,
         moyenneMatiere: g.moyenneMatiere,
@@ -518,7 +548,7 @@ export class ReportsService {
             user: { select: { name: true } },
           },
         },
-        class: { select: { name: true, level: true, teacher: { select: { name: true } } } },
+        class: { select: { name: true, level: true, teacher: { select: { id: true, name: true } } } },
       },
     });
     if (!report) {
@@ -617,7 +647,7 @@ export class ReportsService {
             user: { select: { name: true, profileImage: true } },
           },
         },
-        class: { select: { name: true, level: true, teacher: { select: { name: true } } } },
+        class: { select: { name: true, level: true, teacher: { select: { id: true, name: true } } } },
       },
     });
     if (!report) throw new NotFoundException('Published report card not found');
@@ -693,7 +723,7 @@ export class ReportsService {
     const reports = await this.prisma.reportCard.findMany({
       where: { studentId, academicYear, status: 'PUBLISHED', class: { institutionId } },
       include: {
-        class: { select: { name: true, level: true, teacher: { select: { name: true } } } },
+        class: { select: { name: true, level: true, teacher: { select: { id: true, name: true } } } },
         grades: { include: { subject: { select: { nameFr: true, passMark: true } } } },
       },
       orderBy: { termNumber: 'asc' },
@@ -910,7 +940,7 @@ export class ReportsService {
       where: { id: reportId, class: { institutionId } },
       include: {
         student: { select: { sex: true, admissionNumber: true, user: { select: { name: true } } } },
-        class: { select: { name: true, level: true, teacher: { select: { name: true } } } },
+        class: { select: { name: true, level: true, teacher: { select: { id: true, name: true } } } },
         grades: { include: { subject: { select: { nameFr: true } } }, orderBy: { coefficient: 'desc' } },
       },
     });
@@ -966,7 +996,7 @@ export class ReportsService {
       },
       include: {
         student: { include: { user: { select: { name: true, profileImage: true } } } },
-        class: { select: { name: true, level: true, teacher: { select: { name: true } } } },
+        class: { select: { name: true, level: true, teacher: { select: { id: true, name: true } } } },
         grades: { include: { subject: { select: { nameFr: true, passMark: true } } } },
       },
       orderBy: [{ class: { name: 'asc' } }, { student: { admissionNumber: 'asc' } }],
@@ -1025,6 +1055,7 @@ export class ReportsService {
             className: r.class.name,
             classLevel: (r.class as any).level ?? null,
             classTeacherName: (r.class as any).teacher?.name ?? null,
+            classTeacherSignature: await this.titulaireSignature((r.class as any).teacher?.id, r.classId, r.academicYear, r.termNumber),
             grades: r.grades.map((g: any) => ({
               score: g.score, moyenneMatiere: g.moyenneMatiere, coefficient: g.coefficient, weightedScore: g.weightedScore,
               noteInterro1: g.noteInterro1, noteInterro2: g.noteInterro2, noteInterro3: g.noteInterro3, noteInterro4: g.noteInterro4,
@@ -1058,7 +1089,7 @@ export class ReportsService {
           orderBy: { coefficient: 'desc' },
         },
         student: { include: { user: { select: { name: true, profileImage: true } } } },
-        class: { select: { name: true, level: true, teacher: { select: { name: true } } } },
+        class: { select: { name: true, level: true, teacher: { select: { id: true, name: true } } } },
       },
     });
     if (!report) throw new NotFoundException('Published report card not found');
@@ -1103,6 +1134,7 @@ export class ReportsService {
       className: r.class.name,
       classLevel: r.class.level ?? null,
       classTeacherName: r.class.teacher?.name ?? null,
+      classTeacherSignature: await this.titulaireSignature(r.class.teacher?.id, r.classId, r.academicYear, r.termNumber),
       grades: r.grades.map((g: any) => ({
         score: g.score, moyenneMatiere: g.moyenneMatiere, coefficient: g.coefficient, weightedScore: g.weightedScore,
         noteInterro1: g.noteInterro1, noteInterro2: g.noteInterro2, noteInterro3: g.noteInterro3, noteInterro4: g.noteInterro4,

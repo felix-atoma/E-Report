@@ -212,6 +212,8 @@ body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .pr-sig { flex: 1; text-align: center; }
 .pr-sig__area { height: 22px; border: 1px dashed #d1d5db; border-radius: 3px; margin-bottom: 2px; background: #fafafa; }
 .pr-sig__area--stamp { border: 1.5px dashed #9ca3af; border-radius: 50%; height: 28px; width: 28px; margin: 0 auto 2px; background: #f9fafb; }
+.pr-sig__area--signed { height: 28px; border: none; background: none; display: flex; align-items: center; justify-content: center; }
+.pr-sig__area--signed img { max-height: 28px; max-width: 100%; object-fit: contain; }
 .pr-sig__line  { height: 1px; background: #374151; margin-bottom: 2px; }
 .pr-sig__name  { font-size: 0.75em; font-weight: 800; color: var(--bulletin-primary); min-height: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pr-sig__date  { font-size: 0.68em; color: #374151; min-height: 9px; }
@@ -483,7 +485,7 @@ body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   <!-- Signatures -->
   <div class="pr-signatures">
     <div class="pr-sig">
-      <div class="pr-sig__area"></div>
+      {{#if classTeacherSignature}}<div class="pr-sig__area pr-sig__area--signed"><img src="{{classTeacherSignature}}" alt="Signature du titulaire" /></div>{{else}}<div class="pr-sig__area"></div>{{/if}}
       <div class="pr-sig__line"></div>
       <div class="pr-sig__name">{{classTeacherName}}</div>
       <div class="pr-sig__label">Le Professeur Principal</div>
