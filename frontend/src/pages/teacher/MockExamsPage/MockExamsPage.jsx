@@ -66,7 +66,7 @@ function fmtDate(iso) {
 }
 
 /* ── Create form ──────────────────────────────────────────────────────────── */
-function CreateForm({ examType, classes, onClose, onCreate }) {
+function CreateForm({ examType, classes, onClose, onCreate, serverError, isSaving }) {
   const { t } = useTranslation();
   const type = [...EXAM_TYPES, DS_TYPE_CFG, CM_TYPE_CFG].find((et) => et.value === examType);
   // Compositions mensuelles : primaire (CI → CM2) ; devoirs surveillés : secondaire (6ème → Terminale)
@@ -99,7 +99,7 @@ function CreateForm({ examType, classes, onClose, onCreate }) {
         </div>
       )}
 
-      {error && <div className="mex-alert">{error}</div>}
+      {(error || serverError) && <div className="mex-alert">{error || serverError}</div>}
 
       <Select
         label={t('mockExams.form.class')}
@@ -142,7 +142,7 @@ function CreateForm({ examType, classes, onClose, onCreate }) {
 
       <div className="mex-form__actions">
         <Button variant="ghost" onClick={onClose}>{t('action.cancel')}</Button>
-        <Button onClick={handleSubmit}>{t('mockExams.form.create')}</Button>
+        <Button onClick={handleSubmit} disabled={isSaving}>{t('mockExams.form.create')}</Button>
       </div>
     </div>
   );
@@ -457,8 +457,13 @@ function MockExamsPage({ kind = 'ESSAI' }) {
           <CreateForm
             examType={createType}
             classes={classes}
-            onClose={() => setCreateType(null)}
+            onClose={() => { setCreateType(null); createMutation.reset(); }}
             onCreate={(data) => createMutation.mutate(data)}
+            isSaving={createMutation.isPending}
+            // Message du serveur (ex. classe non éligible) au lieu d'un échec silencieux
+            serverError={createMutation.error ? (createMutation.error.response?.data?.message
+              ? [].concat(createMutation.error.response.data.message).join(' · ')
+              : "La création a échoué. Réessayez.") : null}
           />
         )}
       </OffCanvas>
