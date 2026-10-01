@@ -239,7 +239,7 @@ export class ReportsService {
             parent: { select: { id: true } },
           },
         },
-        class: { select: { name: true, level: true } },
+        class: { select: { name: true, level: true, teacher: { select: { name: true } } } },
       },
     });
     if (!report) throw new NotFoundException('Report card not found');
@@ -396,7 +396,7 @@ export class ReportsService {
             parent: { select: { id: true } },
           },
         },
-        class: { select: { name: true, level: true } },
+        class: { select: { name: true, level: true, teacher: { select: { name: true } } } },
       },
     });
 
@@ -467,6 +467,7 @@ export class ReportsService {
       },
       className: reportWithGrades.class.name,
       classLevel: reportWithGrades.class.level ?? null,
+      classTeacherName: reportWithGrades.class.teacher?.name ?? null,
       grades: reportWithGrades.grades.map((g: any) => ({
         score: g.score,
         moyenneMatiere: g.moyenneMatiere,
@@ -517,7 +518,7 @@ export class ReportsService {
             user: { select: { name: true } },
           },
         },
-        class: { select: { name: true, level: true } },
+        class: { select: { name: true, level: true, teacher: { select: { name: true } } } },
       },
     });
     if (!report) {
@@ -616,7 +617,7 @@ export class ReportsService {
             user: { select: { name: true, profileImage: true } },
           },
         },
-        class: { select: { name: true, level: true } },
+        class: { select: { name: true, level: true, teacher: { select: { name: true } } } },
       },
     });
     if (!report) throw new NotFoundException('Published report card not found');
@@ -692,7 +693,7 @@ export class ReportsService {
     const reports = await this.prisma.reportCard.findMany({
       where: { studentId, academicYear, status: 'PUBLISHED', class: { institutionId } },
       include: {
-        class: { select: { name: true, level: true } },
+        class: { select: { name: true, level: true, teacher: { select: { name: true } } } },
         grades: { include: { subject: { select: { nameFr: true, passMark: true } } } },
       },
       orderBy: { termNumber: 'asc' },
@@ -909,7 +910,7 @@ export class ReportsService {
       where: { id: reportId, class: { institutionId } },
       include: {
         student: { select: { sex: true, admissionNumber: true, user: { select: { name: true } } } },
-        class: { select: { name: true, level: true } },
+        class: { select: { name: true, level: true, teacher: { select: { name: true } } } },
         grades: { include: { subject: { select: { nameFr: true } } }, orderBy: { coefficient: 'desc' } },
       },
     });
@@ -965,7 +966,7 @@ export class ReportsService {
       },
       include: {
         student: { include: { user: { select: { name: true, profileImage: true } } } },
-        class: { select: { name: true, level: true } },
+        class: { select: { name: true, level: true, teacher: { select: { name: true } } } },
         grades: { include: { subject: { select: { nameFr: true, passMark: true } } } },
       },
       orderBy: [{ class: { name: 'asc' } }, { student: { admissionNumber: 'asc' } }],
@@ -1023,6 +1024,7 @@ export class ReportsService {
             student: { admissionNumber: r.student.admissionNumber, dateOfBirth: (r.student as any).dateOfBirth, sex: (r.student as any).sex ?? null, user: r.student.user },
             className: r.class.name,
             classLevel: (r.class as any).level ?? null,
+            classTeacherName: (r.class as any).teacher?.name ?? null,
             grades: r.grades.map((g: any) => ({
               score: g.score, moyenneMatiere: g.moyenneMatiere, coefficient: g.coefficient, weightedScore: g.weightedScore,
               noteInterro1: g.noteInterro1, noteInterro2: g.noteInterro2, noteInterro3: g.noteInterro3, noteInterro4: g.noteInterro4,
@@ -1056,7 +1058,7 @@ export class ReportsService {
           orderBy: { coefficient: 'desc' },
         },
         student: { include: { user: { select: { name: true, profileImage: true } } } },
-        class: { select: { name: true, level: true } },
+        class: { select: { name: true, level: true, teacher: { select: { name: true } } } },
       },
     });
     if (!report) throw new NotFoundException('Published report card not found');
@@ -1100,6 +1102,7 @@ export class ReportsService {
       student: { admissionNumber: r.student.admissionNumber, dateOfBirth: r.student.dateOfBirth, sex: r.student.sex ?? null, user: r.student.user },
       className: r.class.name,
       classLevel: r.class.level ?? null,
+      classTeacherName: r.class.teacher?.name ?? null,
       grades: r.grades.map((g: any) => ({
         score: g.score, moyenneMatiere: g.moyenneMatiere, coefficient: g.coefficient, weightedScore: g.weightedScore,
         noteInterro1: g.noteInterro1, noteInterro2: g.noteInterro2, noteInterro3: g.noteInterro3, noteInterro4: g.noteInterro4,

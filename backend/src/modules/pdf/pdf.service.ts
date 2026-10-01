@@ -74,6 +74,38 @@ function formatScore(value: number | null | undefined): string {
   return value.toFixed(2).replace('.', ',');
 }
 
+/** N° de série de secours (bulletin sans code de sécurité) — même format que la page web. */
+function fallbackSerial(report: { academicYear?: string; termNumber?: number; id?: string }): string {
+  const ay = (report.academicYear ?? '').replace('-', '').slice(-4);
+  const id = (report.id ?? '').replace(/-/g, '').toUpperCase().slice(0, 8);
+  return `${ay}T${report.termNumber ?? 1}-${id.slice(0, 4)}-${id.slice(4, 8)}`;
+}
+
+const SYSTEM_FONTS = new Set([
+  'Arial', 'Helvetica', 'Times New Roman', 'Times', 'Georgia', 'Garamond',
+  'Palatino Linotype', 'Palatino', 'Trebuchet MS', 'Verdana', 'Geneva',
+  'Courier New', 'Courier', 'Impact', 'Comic Sans MS',
+]);
+
+/**
+ * Thème du bulletin depuis les réglages de l'établissement — mêmes valeurs par défaut que la
+ * page d'impression web (PrintReportCardPage.jsx), pour un rendu identique.
+ */
+function bulletinTheme(branding: Record<string, unknown>, primary: string, secondary: string) {
+  const fontName = String(branding.bulletinFontFamily || 'Arial').trim();
+  const str = (k: string, d: string) => String(branding[k] || d).replace(/[;{}<>]/g, '');
+  return {
+    primary, secondary,
+    fontFamily: `'${fontName.replace(/['";{}<>]/g, '')}', sans-serif`,
+    fontSize: str('bulletinFontSize', '10px'),
+    h1Size: str('bulletinH1Size', '1.3em'), h1Weight: str('bulletinH1Weight', '900'),
+    h2Size: str('bulletinH2Size', '1.1em'), h2Weight: str('bulletinH2Weight', '900'),
+    h3Size: str('bulletinH3Size', '0.8em'), h3Weight: str('bulletinH3Weight', '800'),
+    googleFontUrl: SYSTEM_FONTS.has(fontName) ? null
+      : `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontName)}:wght@400;700&display=swap`,
+  };
+}
+
 /** Nombre de pages d'un PDF (objets « /Type /Page », hors « /Pages »). */
 export function countPdfPages(pdf: Buffer): number {
   return (pdf.toString('latin1').match(/\/Type\s*\/Page(?![a-zA-Z])/g) || []).length;
@@ -94,6 +126,7 @@ export class PdfService {
   private readonly logger = new Logger(PdfService.name);
   private readonly outputDir: string;
   private readonly baseUrl: string;
+  private readonly verifyUrl: string;
   private readonly template: HandlebarsTemplateDelegate;
   private readonly releveTemplate: HandlebarsTemplateDelegate;
 
@@ -107,6 +140,9 @@ export class PdfService {
       'report-card-pdfs',
     );
     this.baseUrl = config.get<string>('BASE_URL', 'http://localhost:4000');
+    // Adresse de vérification imprimée en pied de bulletin (même lien que la version web)
+    const frontend = (config.get<string>('FRONTEND_URL') ?? '').split(',')[0].trim();
+    this.verifyUrl = `${(frontend || 'http://localhost:5173').replace(/\/+$/, '')}/verify`;
     fs.mkdirSync(this.outputDir, { recursive: true });
 
     const templatePath = path.join(__dirname, 'templates', 'report-card.hbs');
@@ -198,6 +234,44 @@ export class PdfService {
   }
 
   /**
+   * Bulletin : le modèle reproduit exactement la page d'impression web (feuille A4 de 210 × 297 mm,
+   * mise à l'échelle par le script du modèle quand le contenu dépasse). On imprime donc sans marge
+   * ni réduction Puppeteer : la feuille HTML est déjà la page A4.
+   */
+  private async renderA4SheetPdf(html: string): Promise<Buffer> {
+    const browser = await getBrowser();
+    const page = await browser.newPage();
+    try {
+      await page.emulateMediaType('print');
+      await page.setViewport({ width: 794, height: 1123 }); // A4 à 96 dpi
+      await page.setContent(html, { waitUntil: 'domcontentloaded' });
+      // Images distantes (logo, photo, signatures) et police Google éventuelle : plafond de 15 s
+      await page.evaluate(() => Promise.race([
+        Promise.all([
+          ...Array.from(document.images).map((img) =>
+            img.complete ? Promise.resolve() : new Promise((resolve) => {
+              img.addEventListener('load', resolve, { once: true });
+              img.addEventListener('error', resolve, { once: true });
+            })),
+          (document as any).fonts?.ready ?? Promise.resolve(),
+        ]),
+        new Promise((resolve) => setTimeout(resolve, 15000)),
+      ]));
+      // Ajustement à une page, une fois images et police en place (même calcul que la page web)
+      await page.evaluate(() => (window as any).__fitBulletin?.());
+      return Buffer.from(await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        preferCSSPageSize: true,
+        margin: { top: '0', bottom: '0', left: '0', right: '0' },
+        pageRanges: '1',
+      }));
+    } finally {
+      await page.close();
+    }
+  }
+
+  /**
    * Relevé de notes d'un examen blanc ou d'un devoir surveillé : même charte, même filigrane
    * et même mise sur une page que le bulletin.
    */
@@ -274,7 +348,7 @@ export class PdfService {
   async generateReportCardPdfBuffer(reportData: ReportCardData): Promise<Buffer> {
     const html = await this.buildHtml(reportData);
     try {
-      return await this.renderOnePagePdf(html);
+      return await this.renderA4SheetPdf(html);
     } catch (err) {
       this.logger.error('Puppeteer PDF buffer generation failed', err);
       throw err;
@@ -287,7 +361,7 @@ export class PdfService {
     const outputPath = path.join(this.outputDir, filename);
 
     try {
-      fs.writeFileSync(outputPath, await this.renderOnePagePdf(html));
+      fs.writeFileSync(outputPath, await this.renderA4SheetPdf(html));
     } catch (err) {
       this.logger.error('Puppeteer PDF generation failed', err);
       throw err;
@@ -328,17 +402,22 @@ export class PdfService {
       return {
         ...g,
         moyInterros,
-        passed: moy >= (g.subject?.passMark ?? 10),
+        passed: moy == null || moy >= (g.subject?.passMark ?? 10),
         // Couleur de l'appréciation selon le niveau (vert ≥ 14, orange ≥ 10, rouge < 10)
         levelClass: moy == null ? '' : moy >= 14 ? 'lvl-good' : moy >= 10 ? 'lvl-pass' : 'lvl-fail',
         rangLabel: g.rangMatiere ? (g.rangMatiere === 1 ? '1er' : `${g.rangMatiere}e`) : null,
+        moyLabel: formatScore(moy),
         noteLabel: fmtScaled(moy), // note de la matière sur l'échelle du bulletin (/10 au primaire)
         ficheSignedAt: g.ficheSignedAt
           ? new Date(g.ficheSignedAt).toLocaleDateString('fr-FR')
           : null,
-        signatureData: g.signatureData ?? null,
+        // Fiche validée par l'administration (sans signature manuscrite) : coche ✓ comme sur la page web
+        adminVerified: g.signatureData === 'ADMIN_VERIFIED',
+        signatureData: g.signatureData && g.signatureData !== 'ADMIN_VERIFIED' ? g.signatureData : null,
       };
-    });
+    })
+      // Même ordre que la page d'impression : coefficients les plus forts en premier
+      .sort((a, b) => (b.coefficient ?? 0) - (a.coefficient ?? 0));
 
     const totalCoef   = enrichedGrades.reduce((s, g) => s + g.coefficient, 0);
     const totalPoints = enrichedGrades.reduce((s, g) => s + (g.weightedScore ?? 0), 0);
@@ -432,6 +511,8 @@ export class PdfService {
         attendanceRate,
         lateHours,
         hasAttendance,
+        hasAbsent: report.attendanceAbsent != null,
+        hasExcused: report.attendanceExcused != null,
         totalCoef,
         totalPoints: Math.round(totalPoints * 100) / 100,
       },
@@ -441,6 +522,17 @@ export class PdfService {
       }),
       qrDataUri,
       watermark: buildWatermark(institution.name),
+      // ── Données propres au modèle « page d'impression » ──
+      theme: bulletinTheme(branding, primaryColor, secondaryColor),
+      termLabel: report.termName || `Trimestre ${report.termNumber}`,
+      serial: securityCode ?? fallbackSerial(report),
+      classTeacherName: data.classTeacherName ?? '',
+      verifyUrl: this.verifyUrl,
+      averageFailing: report.overallAverage != null && report.overallAverage < 10,
+      annualFailing: report.annualAverage != null && report.annualAverage < 10,
+      totalPointsLabel: formatScore(Math.round(totalPoints * 100) / 100),
+      lateLabel: lateHours != null ? `${lateHours} h`
+        : report.attendanceLate != null ? String(report.attendanceLate) : '—',
     };
 
     return this.template(ctx);
@@ -484,6 +576,8 @@ export interface ReportCardData {
     user: { name: string; profileImage?: string | null } | null;
   };
   className: string;
+  /** Titulaire de la classe (professeur principal / maître) — nom sous sa signature. */
+  classTeacherName?: string | null;
   /** Niveau de la classe (CI, CP1…CM2, 6ème…) — détermine le modèle primaire ou secondaire. */
   classLevel?: string | null;
   grades: Array<{
