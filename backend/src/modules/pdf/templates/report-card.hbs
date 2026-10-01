@@ -200,6 +200,16 @@ body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .pr-avg-words__value { font-size: 1.1em; font-weight: 900; color: #dc2626; }
 .pr-avg-words__denom { font-size: 0.9em; font-weight: 700; color: #991b1b; }
 
+/* ── Rentrée suivante (primaire) ── */
+.pr-next-term {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px;
+  border: 1.5px solid #0f766e; border-radius: 3px; background: #f0fdfa;
+  padding: 3px 8px; margin-bottom: 4px; flex-shrink: 0;
+}
+.pr-next-term__label { font-size: 0.75em; font-weight: 800; color: #0f766e; text-transform: uppercase; letter-spacing: 0.3px; }
+.pr-next-term__date { font-size: 1.05em; font-weight: 900; color: #115e59; }
+.pr-next-term__hint { font-size: 0.8em; font-weight: 600; font-style: italic; color: #475569; }
+
 /* ── Moyenne annuelle + décision ── */
 .pr-annual-bar { display: flex; border: 2px solid var(--bulletin-primary); border-radius: 3px; margin-bottom: 4px; flex-shrink: 0; overflow: hidden; }
 .pr-annual-bar__cell { padding: 4px 8px; text-align: center; border-right: 1px solid #c7d0da; min-width: 80px; }
@@ -475,6 +485,14 @@ body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     <span class="pr-avg-words__label">Moyenne générale en lettres :</span>
     <span class="pr-avg-words__value">{{averageWords}}</span>
     <span class="pr-avg-words__denom">sur {{averageDenomWords}}</span>
+  </div>
+  {{/if}}
+
+  {{#if nextTerm}}
+  <div class="pr-next-term">
+    <span class="pr-next-term__label">📅 {{nextTerm.label}} :</span>
+    <span class="pr-next-term__date">{{nextTerm.dateLabel}}</span>
+    <span class="pr-next-term__hint">— Merci de préparer la rentrée de votre enfant.</span>
   </div>
   {{/if}}
 

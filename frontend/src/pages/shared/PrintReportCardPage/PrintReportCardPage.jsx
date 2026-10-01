@@ -548,8 +548,17 @@ export default function PrintReportCardPage() {
         {displayAverage != null && (
           <div className="pr-avg-words">
             <span className="pr-avg-words__label">Moyenne générale en lettres :</span>
-            <span className="pr-avg-words__value">{scoreToFrench(isPrimary ? displayAverage / 2 : displayAverage)}</span>
+            <span className="pr-avg-words__value">{scoreToFrench(Number(fmtS(displayAverage).replace(',', '.')))}</span>
             <span className="pr-avg-words__denom">sur {isPrimary ? 'dix' : 'vingt'}</span>
+          </div>
+        )}
+
+        {/* ── Rentrée suivante (primaire) : pour que les parents se préparent ── */}
+        {isPrimary && report.nextTerm && (
+          <div className="pr-next-term">
+            <span className="pr-next-term__label">📅 {report.nextTerm.label} :</span>
+            <span className="pr-next-term__date">{report.nextTerm.dateLabel}</span>
+            <span className="pr-next-term__hint">— Merci de préparer la rentrée de votre enfant.</span>
           </div>
         )}
 

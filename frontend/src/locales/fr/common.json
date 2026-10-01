@@ -562,6 +562,8 @@
     "termDatesDesc":     "Utilisées pour cumuler les absences (en jours) et les retards (en heures) de chaque période sur les bulletins. Laissez vide pour le calendrier par défaut.",
     "termDatesStart":    "Début",
     "termDatesEnd":      "Fin",
+    "nextSchoolYearStart": "Rentrée de l'année scolaire suivante",
+    "nextSchoolYearStartDesc": "Imprimée sur les bulletins du dernier trimestre au primaire, avec la date de début de chaque trimestre suivant, pour que les parents préparent la rentrée.",
     "termDatesDefault":  "Calendrier par défaut",
     "cycle": {
       "PRIMAIRE": "Primaire (CI → CM2)",

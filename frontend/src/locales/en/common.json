@@ -500,6 +500,8 @@
     "termDatesDesc":     "Used to total each term's absences (in days) and lateness (in hours) on report cards. Leave empty to use the default calendar.",
     "termDatesStart":    "Start",
     "termDatesEnd":      "End",
+    "nextSchoolYearStart": "Next school year starts",
+    "nextSchoolYearStartDesc": "Printed on last-term primary report cards (along with each next term start date) so parents can prepare.",
     "termDatesDefault":  "Default calendar",
     "cycle": {
       "PRIMAIRE": "Primary (CI → CM2)",

@@ -319,6 +319,16 @@
 .pr-avg-words__value { font-size: 1.1em; font-weight: 900; color: #dc2626; }
 .pr-avg-words__denom { font-size: 0.9em; font-weight: 700; color: #991b1b; }
 
+/* ── Rentrée suivante (primaire) ── */
+.pr-next-term {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px;
+  border: 1.5px solid #0f766e; border-radius: 3px; background: #f0fdfa;
+  padding: 3px 8px; margin-bottom: 4px; flex-shrink: 0;
+}
+.pr-next-term__label { font-size: 0.75em; font-weight: 800; color: #0f766e; text-transform: uppercase; letter-spacing: 0.3px; }
+.pr-next-term__date { font-size: 1.05em; font-weight: 900; color: #115e59; }
+.pr-next-term__hint { font-size: 0.8em; font-weight: 600; font-style: italic; color: #475569; }
+
 /* ── Annual average + council decision ── */
 .pr-annual-bar {
   display: flex; border: 2px solid var(--bulletin-primary, var(--bp));

@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsBoolean, IsDateString, IsEnum, IsInt, IsNumber, IsObject, IsOptional, IsString, Max, Min, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsDateString, IsEnum, IsInt, IsNumber, IsObject, IsOptional, IsString, Matches, Max, Min, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class TermDateDto {
@@ -81,4 +81,9 @@ export class UpdateAcademicSettingsDto {
   @ValidateNested({ each: true })
   @Type(() => TermDateDto)
   termDates?: TermDateDto[];
+
+  @ApiPropertyOptional({ example: '2027-09-13', description: "Rentrée de l'année scolaire suivante (AAAA-MM-JJ) — affichée sur les bulletins du dernier trimestre au primaire" })
+  @IsOptional()
+  @Matches(/^(\d{4}-\d{2}-\d{2})?$/, { message: 'Date au format AAAA-MM-JJ' })
+  nextSchoolYearStart?: string;
 }

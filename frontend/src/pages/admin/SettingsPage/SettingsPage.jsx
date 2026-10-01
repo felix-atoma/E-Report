@@ -25,6 +25,7 @@ const DEFAULT_ACADEMIC = {
   isComplex: false,
   termSystemByCycle: { PRIMAIRE: 'TRIMESTRE', COLLEGE: 'TRIMESTRE', LYCEE: 'TRIMESTRE' },
   termDates: [],
+  nextSchoolYearStart: '',
 };
 
 const DEFAULT_PAYMENT = { notchpayPublicKey: '', notchpayHashKey: '' };
@@ -116,6 +117,7 @@ function SettingsPage() {
       isComplex:         !!(s.termSystemByCycle),
       termSystemByCycle: s.termSystemByCycle ?? { PRIMAIRE: 'TRIMESTRE', COLLEGE: 'TRIMESTRE', LYCEE: 'TRIMESTRE' },
       termDates:         Array.isArray(s.termDates) ? s.termDates : [],
+      nextSchoolYearStart: s.nextSchoolYearStart ?? '',
     });
   }, [institution]);
 
@@ -187,6 +189,7 @@ function SettingsPage() {
       feeGateEnabled:    academicForm.feeGateEnabled,
       termSystemByCycle: academicForm.isComplex ? academicForm.termSystemByCycle : undefined,
       termDates:         (academicForm.termDates ?? []).filter((d) => d.start && d.end),
+      nextSchoolYearStart: academicForm.nextSchoolYearStart || '',
     });
   }
 
@@ -556,6 +559,16 @@ function SettingsPage() {
                 </div>
               );
             })}
+            {/* Rentrée de l'année suivante : imprimée sur les bulletins du dernier trimestre (primaire) */}
+            <div className="settings-row">
+              <Input
+                id="nextSchoolYearStart" type="date"
+                label={t('settings.nextSchoolYearStart')}
+                hint={t('settings.nextSchoolYearStartDesc')}
+                value={academicForm.nextSchoolYearStart ?? ''}
+                onChange={(e) => setAcademic('nextSchoolYearStart', e.target.value)}
+              />
+            </div>
           </div>
 
           <div className="settings-section__divider" />

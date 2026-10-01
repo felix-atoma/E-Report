@@ -9,7 +9,7 @@
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import archiver = require('archiver');
 import { PrismaService } from '../../prisma/prisma.service';
-import { PdfService, isPrimaryLevel, primaryTotals } from '../pdf/pdf.service';
+import { PdfService, isPrimaryLevel, primaryTotals, nextTermStart } from '../pdf/pdf.service';
 import { AttendanceService } from '../attendance/attendance.service';
 import { AiService } from '../ai/ai.service';
 
@@ -162,7 +162,13 @@ export class ReportsService {
     const classTeacherSignature = await this.titulaireSignature(
       report.class?.teacher?.id, report.classId, report.academicYear, report.termNumber,
     );
-    return { ...report, classTeacherSignature };
+    // Primaire : date de la rentrée suivante (dates réglées dans Paramètres)
+    let nextTerm: { label: string; dateLabel: string } | null = null;
+    if (isPrimaryLevel(report.class?.level)) {
+      const inst = await this.prisma.institution.findUnique({ where: { id: institutionId }, select: { academicSettings: true } });
+      nextTerm = nextTermStart(inst?.academicSettings, report.academicYear, report.termType, report.termNumber);
+    }
+    return { ...report, classTeacherSignature, nextTerm };
   }
 
   /**
@@ -457,7 +463,7 @@ export class ReportsService {
   private async generateAndSavePdf(published: any, reportWithGrades: any, institutionId: string) {
     const institution = await this.prisma.institution.findUnique({
       where: { id: institutionId },
-      select: { name: true, country: true, countryMotto: true, address: true, phone: true, email: true, website: true, motto: true, logo: true, crest: true, stamp: true, brandingSettings: true },
+      select: { name: true, country: true, countryMotto: true, address: true, phone: true, email: true, website: true, motto: true, logo: true, crest: true, stamp: true, brandingSettings: true, academicSettings: true },
     });
     if (!institution) return;
 
@@ -466,7 +472,7 @@ export class ReportsService {
         id: published.id,
         termName: published.termName,
         academicYear: published.academicYear,
-        termNumber: published.termNumber,
+        termNumber: published.termNumber, termType: (published as any).termType,
         overallAverage: published.overallAverage,
         classRank: published.classRank,
         classSize: published.classSize,
@@ -736,7 +742,7 @@ export class ReportsService {
 
     const institution = await this.prisma.institution.findUnique({
       where: { id: institutionId },
-      select: { name: true, country: true, countryMotto: true, address: true, phone: true, email: true, website: true, motto: true, logo: true, crest: true, stamp: true, brandingSettings: true },
+      select: { name: true, country: true, countryMotto: true, address: true, phone: true, email: true, website: true, motto: true, logo: true, crest: true, stamp: true, brandingSettings: true, academicSettings: true },
     });
 
     // Build subject map: subjectId → { name, coef, termAverages }
@@ -783,7 +789,7 @@ export class ReportsService {
       academicYear,
       termSystem: lastTerm.termType,
       terms: reports.map((r) => ({
-        termNumber: r.termNumber,
+        termNumber: r.termNumber, termType: (r as any).termType,
         termName: r.termName,
         overallAverage: r.overallAverage,
         classRank: r.classRank,
@@ -1012,7 +1018,7 @@ export class ReportsService {
 
     const institution = await this.prisma.institution.findUnique({
       where: { id: institutionId },
-      select: { name: true, country: true, countryMotto: true, address: true, phone: true, email: true, website: true, motto: true, logo: true, crest: true, stamp: true, brandingSettings: true },
+      select: { name: true, country: true, countryMotto: true, address: true, phone: true, email: true, website: true, motto: true, logo: true, crest: true, stamp: true, brandingSettings: true, academicSettings: true },
     });
     if (!institution) throw new NotFoundException('Institution introuvable');
 
@@ -1043,7 +1049,7 @@ export class ReportsService {
           const ficheMap = fichesByCombo.get(ficheKey) ?? new Map();
           const buf = await this.pdf.generateReportCardPdfBuffer({
             report: {
-              id: r.id, termName: (r as any).termName, academicYear: r.academicYear, termNumber: r.termNumber,
+              id: r.id, termName: (r as any).termName, academicYear: r.academicYear, termNumber: r.termNumber, termType: (r as any).termType,
               overallAverage: (r as any).overallAverage, classRank: (r as any).classRank, classSize: (r as any).classSize,
               classHighest: (r as any).classHighest ?? null, classLowest: (r as any).classLowest ?? null,
               classAverage: (r as any).classAverage ?? null, mention: (r as any).mention,
@@ -1112,7 +1118,7 @@ export class ReportsService {
 
     const institution = await this.prisma.institution.findUnique({
       where: { id: institutionId },
-      select: { name: true, country: true, countryMotto: true, address: true, phone: true, email: true, website: true, motto: true, logo: true, crest: true, stamp: true, brandingSettings: true },
+      select: { name: true, country: true, countryMotto: true, address: true, phone: true, email: true, website: true, motto: true, logo: true, crest: true, stamp: true, brandingSettings: true, academicSettings: true },
     });
     if (!institution) throw new NotFoundException('Institution not found');
 
@@ -1124,7 +1130,7 @@ export class ReportsService {
     const r = report as any;
     const buffer = await this.pdf.generateReportCardPdfBuffer({
       report: {
-        id: r.id, termName: r.termName, academicYear: r.academicYear, termNumber: r.termNumber,
+        id: r.id, termName: r.termName, academicYear: r.academicYear, termNumber: r.termNumber, termType: (r as any).termType,
         overallAverage: r.overallAverage, classRank: r.classRank, classSize: r.classSize,
         classHighest: r.classHighest ?? null, classLowest: r.classLowest ?? null, classAverage: r.classAverage ?? null,
         mention: r.mention, conductRating: r.conductRating, teacherComment: r.teacherComment,

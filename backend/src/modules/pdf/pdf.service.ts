@@ -89,6 +89,43 @@ export function pdfImage(url: string | null | undefined, width = 400): string | 
   return `${m[1]}w_${width},c_limit,q_auto,f_jpg/${m[2]}`;
 }
 
+/**
+ * Rentrée suivante, pour aider les parents à se préparer (bulletins du primaire) : début de la période
+ * suivante (dates réglées par l'admin dans Paramètres), ou rentrée de l'année suivante après la
+ * dernière période. Rien si la date n'est pas réglée — on n'invente pas de date.
+ */
+export function nextTermStart(
+  academicSettings: unknown,
+  academicYear: string,
+  termType: string | null | undefined,
+  termNumber: number,
+): { label: string; dateLabel: string } | null {
+  const settings = (academicSettings ?? {}) as Record<string, any>;
+  const dates: Array<{ termNumber: number; start?: string }> = Array.isArray(settings.termDates) ? settings.termDates : [];
+  const type = termType ?? 'TRIMESTRE';
+  if ((settings.termType ?? 'TRIMESTRE') !== type) return null;   // dates réglées pour un autre système
+  const total = type === 'TRIMESTRE' ? 3 : type === 'SEMESTRE' ? 2 : Math.max(dates.length, termNumber);
+  const word = type === 'SEMESTRE' ? 'semestre' : type === 'TRIMESTRE' ? 'trimestre' : 'période';
+  const fmt = (iso: string) => {
+    const d = new Date(`${iso}T12:00:00Z`);
+    return isNaN(d.getTime()) ? null
+      : (() => {
+        const t = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+        return t.charAt(0).toUpperCase() + t.slice(1);   // « Lundi 4 janvier 2027 »
+      })();
+  };
+
+  if (termNumber < total) {
+    const next = dates.find((t) => Number(t.termNumber) === termNumber + 1);
+    const dateLabel = next?.start ? fmt(next.start) : null;
+    return dateLabel ? { label: `Rentrée du ${termNumber + 1}e ${word}`, dateLabel } : null;
+  }
+  const start = typeof settings.nextSchoolYearStart === 'string' ? settings.nextSchoolYearStart : '';
+  const dateLabel = start ? fmt(start) : null;
+  const y = parseInt((academicYear ?? '').split('-')[1], 10);
+  return dateLabel ? { label: isNaN(y) ? 'Rentrée scolaire' : `Rentrée scolaire ${y}-${y + 1}`, dateLabel } : null;
+}
+
 /** N° de série de secours (bulletin sans code de sécurité) — même format que la page web. */
 function fallbackSerial(report: { academicYear?: string; termNumber?: number; id?: string }): string {
   const ay = (report.academicYear ?? '').replace('-', '').slice(-4);
@@ -603,8 +640,13 @@ export class PdfService {
       classTeacherSignature: data.classTeacherSignature ?? null,
       verifyUrl: this.verifyUrl,
       // Moyenne générale en toutes lettres (sur l'échelle du bulletin : /10 au primaire, /20 sinon)
-      averageWords: displayAverage != null ? scoreToFrench(toScale(displayAverage)) : '',
+      // En lettres à partir du chiffre imprimé (même arrondi) : 5,83 → « Cinq virgule quatre-vingt-trois »
+      averageWords: displayAverage != null ? scoreToFrench(Number(fmtScaled(displayAverage).replace(',', '.'))) : '',
       averageDenomWords: isPrimary ? 'dix' : 'vingt',
+      // Primaire : date de la rentrée suivante, pour que les parents se préparent
+      nextTerm: isPrimary
+        ? nextTermStart((institution as any).academicSettings, report.academicYear, report.termType, report.termNumber)
+        : null,
       averageFailing: displayAverage != null && displayAverage < 10,
       annualFailing: report.annualAverage != null && report.annualAverage < 10,
       totalPointsLabel: formatScore(Math.round(totalPoints * 100) / 100),
@@ -622,6 +664,7 @@ export interface ReportCardData {
     termName: string;
     academicYear: string;
     termNumber: number;
+    termType?: string | null;
     overallAverage: number | null;
     classRank: number | null;
     classSize: number | null;
@@ -687,6 +730,7 @@ export interface ReportCardData {
     crest: string | null;
     stamp: string | null;
     brandingSettings?: unknown;
+    academicSettings?: unknown;
   };
 }
 
