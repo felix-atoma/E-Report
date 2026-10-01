@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import DateInput from '../../../components/common/DateInput/DateInput';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -130,15 +131,13 @@ function BursarDashboardPage() {
           ))}
         </div>
         <div className="bursar-dash__date-inputs">
-          <input
-            type="date"
+          <DateInput
             className="bursar-dash__date-input"
             value={dateFrom}
             onChange={(e) => { setPreset('custom'); setDateFrom(e.target.value); }}
           />
           <span className="bursar-dash__date-sep">→</span>
-          <input
-            type="date"
+          <DateInput
             className="bursar-dash__date-input"
             value={dateTo}
             onChange={(e) => { setPreset('custom'); setDateTo(e.target.value); }}

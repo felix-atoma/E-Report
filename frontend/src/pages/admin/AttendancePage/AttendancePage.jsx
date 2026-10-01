@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import DateInput from '../../../components/common/DateInput/DateInput';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -86,7 +87,7 @@ export default function AdminAttendancePage() {
           {view === 'list' && (
             <div className="att-controls__field">
               <label>{t('attendance.date')}</label>
-              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+              <DateInput value={date} onChange={(e) => setDate(e.target.value)} />
             </div>
           )}
         </div>

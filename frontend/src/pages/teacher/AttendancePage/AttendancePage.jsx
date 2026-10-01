@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import DateInput from '../../../components/common/DateInput/DateInput';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -185,7 +186,7 @@ export default function AttendancePage() {
           </div>
           <div className="att-controls__field">
             <label>Date</label>
-            <input type="date" value={date} onChange={(e) => { setDate(e.target.value); resetSession(); }} />
+            <DateInput value={date} onChange={(e) => { setDate(e.target.value); resetSession(); }} />
           </div>
         </div>
         {selectedClassId && classDetail && (

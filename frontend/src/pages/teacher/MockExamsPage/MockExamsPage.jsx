@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import DateInput from '../../../components/common/DateInput/DateInput';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -211,14 +212,14 @@ function ExamRow({ exam, isAdmin, canManage = true, onDelete, color, onDatesUpda
 
           {editingDates ? (
             <span className="mex-date-edit">
-              <input
-                type="date" value={dateStart}
+              <DateInput
+                value={dateStart}
                 onChange={(e) => setDateStart(e.target.value)}
                 className="mex-date-input"
               />
               <span className="mex-date-sep">→</span>
-              <input
-                type="date" value={dateEnd}
+              <DateInput
+                value={dateEnd}
                 min={dateStart || undefined}
                 onChange={(e) => setDateEnd(e.target.value)}
                 className="mex-date-input"

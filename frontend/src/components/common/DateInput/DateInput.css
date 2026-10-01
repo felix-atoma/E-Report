@@ -1,0 +1,48 @@
+.date-input {
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+  min-width: 0;
+}
+/* Dans un champ de formulaire : toute la largeur ; bordure rouge si la date est invalide */
+.input-field__wrapper > .date-input { flex: 1; width: 100%; }
+.input-field__wrapper:has(.date-input--invalid) { border-color: #dc2626; }
+.date-input__text {
+  flex: 1;
+  width: 100%;
+  min-width: 9.5em;   /* « jj/mm/aaaa » toujours lisible */
+  padding-right: 2.4rem !important;   /* place du bouton calendrier */
+  font-variant-numeric: tabular-nums;
+}
+.date-input__btn {
+  position: absolute;
+  top: 50%;
+  right: 0.3rem;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1.05rem;
+  line-height: 1;
+  padding: 0.3rem;
+  border-radius: 6px;
+}
+.date-input__btn:hover:not(:disabled) { background: rgba(0, 0, 0, 0.06); }
+.date-input__btn:disabled { cursor: not-allowed; opacity: 0.5; }
+/* Champ natif invisible, placé sous le bouton pour que le calendrier s'ouvre au bon endroit */
+.date-input__picker {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 2.2rem;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  border: 0 !important;
+  padding: 0 !important;
+  margin: 0;
+}
+.date-input--invalid .date-input__text {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.15);
+}

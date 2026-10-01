@@ -1,3 +1,4 @@
+import DateInput from '../DateInput/DateInput';
 import './Input.css';
 
 function Input({
@@ -21,6 +22,17 @@ function Input({
       )}
       <div className="input-field__wrapper">
         {prefix && <span className="input-field__affix input-field__prefix">{prefix}</span>}
+        {props.type === 'date' ? (
+          // Date : saisie au clavier (jj/mm/aaaa) ou calendrier — utile sur téléphone
+          <DateInput
+            id={id}
+            className={`input-field__control ${error ? 'input-field__control--error' : ''}`}
+            aria-invalid={!!error}
+            aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
+            required={required}
+            {...props}
+          />
+        ) : (
         <input
           id={id}
           className={`input-field__control ${error ? 'input-field__control--error' : ''}`}
@@ -29,6 +41,7 @@ function Input({
           required={required}
           {...props}
         />
+        )}
         {suffix && <span className="input-field__affix input-field__suffix">{suffix}</span>}
       </div>
       {hint && !error && <p id={`${id}-hint`} className="form-field__hint">{hint}</p>}
