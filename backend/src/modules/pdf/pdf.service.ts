@@ -75,6 +75,20 @@ function formatScore(value: number | null | undefined): string {
   return value.toFixed(2).replace('.', ',');
 }
 
+/**
+ * Image Cloudinary redimensionnée pour le PDF : logo et photo sont souvent des photos de téléphone de
+ * plusieurs Mo, intégrées telles quelles par Chrome (PDF de 6 Mo, téléchargement interrompu). Une
+ * largeur de 400 px suffit largement à l'impression. Les autres adresses sont laissées telles quelles.
+ */
+export function pdfImage(url: string | null | undefined, width = 400): string | null {
+  if (!url) return null;
+  const m = /^(https:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/)(.*)$/.exec(url);
+  if (!m) return url;
+  // Déjà transformée (ex. w_300,…) : on ne touche pas
+  if (/^[a-z]{1,3}_[^/]*\//.test(m[2]) && !/^v\d+\//.test(m[2])) return url;
+  return `${m[1]}w_${width},c_limit,q_auto,f_jpg/${m[2]}`;
+}
+
 /** N° de série de secours (bulletin sans code de sécurité) — même format que la page web. */
 function fallbackSerial(report: { academicYear?: string; termNumber?: number; id?: string }): string {
   const ay = (report.academicYear ?? '').replace('-', '').slice(-4);
@@ -366,11 +380,12 @@ export class PdfService {
         secondaryColor: (branding.secondaryColor as string) || '#f59e0b',
         countryLine: [inst.country, inst.countryMotto].filter(Boolean).join(' — ') || null,
         circonscription: (branding.circonscription as string) || null,
-        headerLogo: inst.logo || inst.crest || null,
+        headerLogo: pdfImage(inst.logo || inst.crest),
       },
       exam: { ...exam, dates, typeLabel: exam.typeLabel },
       student: {
         ...student,
+        photo: pdfImage((student as any).photo),
         sexLabel: student.sex === 'F' ? 'Féminin' : student.sex === 'M' ? 'Masculin' : '—',
         dateOfBirth: fmtDate(student.dateOfBirth) ?? '—',
       },
@@ -532,7 +547,7 @@ export class PdfService {
     const ctx = {
       institution: {
         ...institution, primaryColor, secondaryColor, countryLine, circonscription,
-        headerLogo: inst.logo || inst.crest || null,
+        headerLogo: pdfImage(inst.logo || inst.crest),
       },
       student: {
         name: student.user?.name ?? '—',
@@ -541,7 +556,7 @@ export class PdfService {
         dateOfBirth: student.dateOfBirth
           ? new Date(student.dateOfBirth).toLocaleDateString('fr-FR')
           : '—',
-        photo: student.user?.profileImage ?? null,
+        photo: pdfImage(student.user?.profileImage),
       },
       class: { name: data.className },
       isPrimary,

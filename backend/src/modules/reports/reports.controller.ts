@@ -194,7 +194,7 @@ export class ReportsController {
     const { buffer, filename } = await this.service.downloadPdf(id, user.institutionId, user.id, user.role);
     res.set({
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename="${filename}"`,
+      'Content-Disposition': `inline; filename="${filename}"`,
       'Content-Length': buffer.length,
     });
     res.end(buffer);

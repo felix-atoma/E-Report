@@ -147,7 +147,7 @@ export class MockExamsController {
     const { buffer, filename } = await this.service.relevePdf(id, req.user.institutionId, studentId);
     res.set({
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename="${filename}"`,
+      'Content-Disposition': `inline; filename="${filename}"`,
       'Content-Length': buffer.length,
     });
     res.end(buffer);
