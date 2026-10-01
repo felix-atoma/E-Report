@@ -80,6 +80,8 @@ const ClassStatsPage         = lazy(() => import('../pages/teacher/ClassStatsPag
 const TitulaireEntryPage     = lazy(() => import('../pages/teacher/TitulaireEntryPage/TitulaireEntryPage'));
 const PrincipalCommentPage   = lazy(() => import('../pages/admin/PrincipalCommentPage/PrincipalCommentPage'));
 const MockExamsPage          = lazy(() => import('../pages/teacher/MockExamsPage/MockExamsPage'));
+const ExamPapersPage         = lazy(() => import('../pages/shared/ExamPapersPage/ExamPapersPage'));
+const ExamPaperEditorPage    = lazy(() => import('../pages/shared/ExamPaperEditorPage/ExamPaperEditorPage'));
 const MockExamGradePage      = lazy(() => import('../pages/teacher/MockExamGradePage/MockExamGradePage'));
 
 // â”€â”€ Parent â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -177,6 +179,10 @@ function AppRouter() {
         <Route path="/admin/library"        element={<ProtectedRoute roles={['ADMIN']}><LibraryPage /></ProtectedRoute>} />
         <Route path="/admin/health"         element={<ProtectedRoute roles={['ADMIN']}><HealthRecordsPage /></ProtectedRoute>} />
         <Route path="/admin/timetable"      element={<ProtectedRoute roles={['ADMIN']}><TimetableBuilderPage /></ProtectedRoute>} />
+        {/* Épreuves : import du sujet, transcription IA, correction, soumission pour impression */}
+        <Route path="/admin/epreuves"   element={<ProtectedRoute roles={['ADMIN']}><ExamPapersPage /></ProtectedRoute>} />
+        <Route path="/teacher/epreuves" element={<ProtectedRoute roles={['TEACHER']}><ExamPapersPage /></ProtectedRoute>} />
+        <Route path="/epreuves/:id"      element={<ProtectedRoute roles={['ADMIN', 'TEACHER']}><ExamPaperEditorPage /></ProtectedRoute>} />
         <Route path="/admin/mock-exams"              element={<ProtectedRoute roles={['ADMIN']}><MockExamsPage /></ProtectedRoute>} />
         <Route path="/admin/mock-exams/:id/grades"   element={<ProtectedRoute roles={['ADMIN']}><MockExamGradePage /></ProtectedRoute>} />
         <Route path="/admin/mock-exam-fiches"        element={<ProtectedRoute roles={['ADMIN']}><MockExamFichesListPage /></ProtectedRoute>} />

@@ -36,6 +36,8 @@
     "attendance":       "Attendance",
     "absencesLate":     "Absences & lateness",
     "dsList": "Supervised tests",
+    "examPapers": "My exam papers",
+    "examPapersAdmin": "Exam papers to print",
     "dsFiches": "Supervised test sheets",
     "dsResults": "Supervised test results",
     "cmList": "Monthly tests (primary)",

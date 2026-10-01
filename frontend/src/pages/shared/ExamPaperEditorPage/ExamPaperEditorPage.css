@@ -1,0 +1,66 @@
+.epe-page { max-width: 920px; margin: 0 auto; display: flex; flex-direction: column; gap: 0.8rem; }
+.epe-empty { padding: 2rem; text-align: center; color: #64748b; }
+.epe-back { font-size: 0.85rem; color: #1d4ed8; text-decoration: none; }
+.epe-top__title { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin: 0.3rem 0; }
+.epe-top__title h1 { margin: 0; font-size: 1.3rem; color: #0f172a; }
+.epe-top__meta { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem 1rem; font-size: 0.85rem; color: #64748b; }
+.epe-top__meta .form-field { margin: 0; min-width: 220px; }
+
+.epe-alert { padding: 0.65rem 0.85rem; border-radius: 8px; font-size: 0.87rem; line-height: 1.45; }
+.epe-alert--info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e3a8a; }
+.epe-alert--warn { background: #fffbeb; border: 1px solid #fcd34d; color: #78350f; }
+.epe-alert--ok { background: #f0fdf4; border: 1px solid #86efac; color: #166534; }
+.epe-alert--error { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+
+/* Feuille : aspect du document imprimé (police à empattements, comme le modèle Word) */
+.epe-sheet {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+  padding: 1.6rem 1.8rem; font-family: 'Times New Roman', Times, serif; font-size: 1rem; color: #111;
+}
+.epe-header { width: 100%; border-collapse: separate; border-spacing: 0; border: 3px double #111; margin-bottom: 1.2rem; }
+.epe-header td { border: 3px double #111; padding: 0.3rem 0.45rem; vertical-align: top; font-size: 0.95rem; }
+.epe-header td:nth-child(1) { width: 27%; }
+.epe-header td:nth-child(2) { width: 33%; }
+.epe-h-input {
+  font: inherit; border: none; border-bottom: 1px dashed #93c5fd; background: #f8fbff; padding: 0 0.15rem;
+  max-width: 100%; min-width: 3.5rem; color: #111;
+}
+.epe-h-input:focus { outline: none; border-bottom-color: #1d4ed8; background: #eff6ff; }
+.epe-h-input--wide { width: 100%; }
+.epe-h-input--short { width: 4rem; }
+
+.epe-toolbar {
+  position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; gap: 0.2rem; align-items: center;
+  background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.3rem; margin-bottom: 0.6rem;
+  font-family: system-ui, sans-serif;
+}
+.epe-tool {
+  min-width: 2rem; height: 2rem; padding: 0 0.45rem; border: 1px solid #e2e8f0; background: #fff; border-radius: 5px;
+  cursor: pointer; font-size: 0.85rem; color: #0f172a;
+}
+.epe-tool:hover { background: #eff6ff; border-color: #93c5fd; }
+.epe-tool--sym { font-family: 'Times New Roman', serif; font-size: 1rem; min-width: 1.9rem; padding: 0; }
+.epe-tool-sep { width: 1px; height: 1.4rem; background: #cbd5e1; margin: 0 0.2rem; }
+
+.epe-body { min-height: 300px; line-height: 1.55; outline: none; overflow-wrap: anywhere; }
+.epe-body--editable { border: 1px dashed #cbd5e1; border-radius: 4px; padding: 0.6rem 0.8rem; }
+.epe-body--editable:focus { border-color: #93c5fd; }
+.epe-body:empty::before { content: attr(data-placeholder); color: #94a3b8; }
+.epe-body h2 { font-size: 1.08rem; font-weight: 700; text-decoration: underline; margin: 1rem 0 0.4rem; }
+.epe-body h3 { font-size: 1rem; font-weight: 700; margin: 0.8rem 0 0.3rem; }
+.epe-body p { margin: 0 0 0.5rem; }
+.epe-body table { border-collapse: collapse; margin: 0.5rem 0; }
+.epe-body td, .epe-body th { border: 1px solid #111; padding: 0.2rem 0.5rem; }
+
+.epe-sources { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; font-size: 0.85rem; color: #475569; }
+.epe-sources a { color: #1d4ed8; }
+.epe-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-end; }
+.epe-return { display: flex; flex-direction: column; gap: 0.5rem; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.8rem; }
+.epe-return label { font-weight: 600; font-size: 0.88rem; }
+.epe-return textarea { font: inherit; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.5rem; resize: vertical; }
+.epe-return .button { align-self: flex-end; }
+
+@media (max-width: 640px) {
+  .epe-sheet { padding: 0.9rem 0.7rem; }
+  .epe-header td { font-size: 0.8rem; padding: 0.25rem; }
+}

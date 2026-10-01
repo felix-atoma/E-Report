@@ -1,0 +1,44 @@
+.ep-tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem; }
+.ep-tab {
+  border: 1px solid var(--color-border, #e5e7eb); background: #fff; border-radius: 999px;
+  padding: 0.35rem 0.9rem; font-size: 0.85rem; font-weight: 600; color: #475569; cursor: pointer;
+}
+.ep-tab--on { background: var(--color-primary, #1e3a8a); border-color: var(--color-primary, #1e3a8a); color: #fff; }
+.ep-empty { padding: 2rem; text-align: center; color: #64748b; background: #fff; border-radius: 10px; border: 1px dashed #cbd5e1; }
+.ep-list { display: flex; flex-direction: column; gap: 0.6rem; }
+.ep-card {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  background: #fff; border: 1px solid var(--color-border, #e5e7eb); border-radius: 10px;
+  padding: 0.85rem 1rem; text-decoration: none; color: inherit; transition: box-shadow 0.15s, border-color 0.15s;
+}
+.ep-card:hover { border-color: #93c5fd; box-shadow: 0 2px 10px rgba(30, 58, 138, 0.08); }
+.ep-card__main { min-width: 0; }
+.ep-card__title { font-weight: 700; color: #0f172a; margin-bottom: 0.25rem; }
+.ep-card__meta { display: flex; flex-wrap: wrap; gap: 0.3rem 0.9rem; font-size: 0.8rem; color: #64748b; }
+.ep-card__comment { margin-top: 0.35rem; font-size: 0.8rem; color: #92400e; }
+.ep-badge {
+  flex-shrink: 0; border: 1px solid; border-radius: 999px; padding: 0.2rem 0.65rem;
+  font-size: 0.75rem; font-weight: 700; white-space: nowrap;
+}
+@media (max-width: 600px) {
+  .ep-card { flex-direction: column; align-items: flex-start; }
+}
+
+.ep-form { display: flex; flex-direction: column; gap: 0.9rem; }
+.ep-form__intro { margin: 0; font-size: 0.88rem; color: #475569; line-height: 1.5; }
+.ep-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; }
+.ep-alert { padding: 0.6rem 0.8rem; border-radius: 8px; font-size: 0.85rem; }
+.ep-alert--error { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+.ep-drop {
+  display: flex; flex-direction: column; align-items: center; gap: 0.25rem; text-align: center;
+  border: 2px dashed #93c5fd; border-radius: 12px; background: #eff6ff; padding: 1.1rem; cursor: pointer;
+  font-size: 0.85rem; color: #1e3a8a;
+}
+.ep-drop:hover { background: #dbeafe; }
+.ep-drop__icon { font-size: 1.8rem; }
+.ep-drop__hint { font-size: 0.78rem; color: #475569; font-style: italic; }
+.ep-files { margin: 0; padding-left: 1.3rem; display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.85rem; }
+.ep-files li span { overflow-wrap: anywhere; }
+.ep-files li small { margin-left: 0.5rem; color: #64748b; }
+.ep-files li button { margin-left: 0.5rem; border: none; background: none; color: #dc2626; cursor: pointer; font-weight: 700; }
+.ep-form__actions { display: flex; justify-content: flex-end; gap: 0.5rem; flex-wrap: wrap; }

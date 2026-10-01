@@ -38,6 +38,18 @@ NovaBulletin permet aux établissements scolaires de :
 - Utilise des émojis avec modération pour rendre les réponses plus lisibles
 - Réponds en 2-5 phrases maximum sauf si une explication détaillée est nécessaire`;
 
+/** Résultat de la transcription d'une épreuve par l'IA. */
+export interface ExamPaperTranscription {
+  subject: string;
+  title: string;
+  className: string;
+  academicYear: string;
+  duration: string;
+  coefficient: string;
+  contentHtml: string;
+  warnings: string;
+}
+
 @Injectable()
 export class AiService {
   private readonly logger = new Logger(AiService.name);
@@ -166,6 +178,110 @@ export class AiService {
         this.logger.error('Report comment generation error:', err?.message);
       }
       throw new Error("Impossible de générer l'observation. Réessayez.");
+    }
+  }
+
+  /**
+   * Transcrit une épreuve importée par un professeur (PDF, photos des pages, ou texte extrait d'un
+   * fichier Word) en HTML simple et modifiable, et relève les informations de l'en-tête (matière,
+   * durée, coefficient…). Le professeur relit et corrige ensuite le résultat avant de le soumettre.
+   */
+  async transcribeExamPaper(input: {
+    files: { mime: string; base64: string }[];
+    extractedText?: string;
+  }): Promise<ExamPaperTranscription> {
+    if (!this.enabled || !this.client) {
+      throw new Error("L'assistant IA n'est pas configuré : saisissez l'épreuve manuellement.");
+    }
+
+    const system =
+      "Tu transcris des sujets d'examen (devoirs, compositions, examens blancs) d'établissements scolaires " +
+      "d'Afrique francophone, à partir de photos ou de PDF, pour qu'un professeur puisse les corriger et les imprimer.\n\n" +
+      "Règles :\n" +
+      "- Transcris fidèlement TOUT le texte du sujet, dans l'ordre : consignes, exercices, questions, barème, données. " +
+      "Ne résous rien, n'ajoute rien, ne reformule pas. Corrige seulement les erreurs évidentes de lecture (lettres mal lues).\n" +
+      "- N'inclus PAS l'en-tête administratif (nom de l'école, adresse, année scolaire, classe, durée, coefficient, matière) " +
+      "dans le corps : relève ces informations dans les champs prévus. Laisse un champ vide s'il n'apparaît pas.\n" +
+      "- Corps en HTML simple, uniquement avec : <h2>, <h3>, <p>, <strong>, <em>, <u>, <sup>, <sub>, <br>, " +
+      "<ol>, <ul>, <li>, <table>, <tr>, <th>, <td>. Aucun attribut, aucun style, aucune image.\n" +
+      "- Titres d'exercices et de parties en <h2> ou <h3> (ex. « Exercice 1 (5 points) »). Garde la numérotation d'origine (1., a), b)…).\n" +
+      "- Mathématiques et sciences : écris les formules en texte lisible avec les caractères Unicode " +
+      "(×, ÷, ±, ≤, ≥, ≠, ≈, √, π, ∞, ∈, ∉, ⊂, ∪, ∩, →, ⇒, ⇔, °, α, β, Δ…), exposants et indices avec <sup> et <sub> " +
+      "(ex. x<sup>2</sup>, H<sub>2</sub>O), fractions sous la forme (a)/(b). Jamais de LaTeX.\n" +
+      "- Tableaux du sujet en <table>. Une figure ou un schéma impossible à transcrire : écris [Figure : courte description] à sa place.\n" +
+      "- Passage illisible : écris [illisible] et signale-le dans « warnings ».";
+
+    const content: any[] = input.files.map((f) =>
+      f.mime === 'application/pdf'
+        ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: f.base64 } }
+        : { type: 'image', source: { type: 'base64', media_type: f.mime, data: f.base64 } },
+    );
+    if (input.extractedText) {
+      content.push({ type: 'text', text: `Texte extrait du fichier Word du professeur :\n\n${input.extractedText}` });
+    }
+    content.push({
+      type: 'text',
+      text: input.files.length > 1
+        ? `Voici les ${input.files.length} pages du sujet, dans l'ordre. Transcris le sujet complet.`
+        : 'Transcris ce sujet.',
+    });
+
+    const schema = {
+      type: 'object',
+      properties: {
+        subject: { type: 'string', description: 'Matière, ex. « Mathématiques »' },
+        title: { type: 'string', description: 'Intitulé de l’épreuve, ex. « Devoir du deuxième trimestre »' },
+        className: { type: 'string', description: 'Classe, ex. « 1ère D »' },
+        academicYear: { type: 'string', description: 'Année scolaire, ex. « 2024-2025 »' },
+        duration: { type: 'string', description: 'Durée, ex. « 3h »' },
+        coefficient: { type: 'string', description: 'Coefficient, ex. « 3 »' },
+        contentHtml: { type: 'string', description: 'Corps du sujet en HTML simple' },
+        warnings: { type: 'string', description: 'Passages illisibles ou douteux à vérifier ; vide sinon' },
+      },
+      required: ['subject', 'title', 'className', 'academicYear', 'duration', 'coefficient', 'contentHtml', 'warnings'],
+      additionalProperties: false,
+    };
+
+    try {
+      const params = {
+        model: 'claude-opus-5-5',
+        max_tokens: 32000,
+        // Transcription fidèle : effort moyen (lecture attentive sans surcoût)
+        output_config: { effort: 'medium', format: { type: 'json_schema', schema } },
+        betas: ['server-side-fallback-2026-07-01'],
+        system,
+        messages: [{ role: 'user', content }],
+        // Si le modèle décline (faux positif d'un filtre), l'API relance sur un autre modèle.
+        fallbacks: 'default',
+      };
+      // Long sujet = longue réponse : flux + message final pour éviter les délais d'attente HTTP.
+      // `output_config.format` et `fallbacks` sont plus récents que le SDK installé : hors typage.
+      const response = await this.client.beta.messages
+        .stream(params as unknown as Anthropic.Beta.MessageCreateParamsStreaming)
+        .finalMessage();
+
+      if (response.stop_reason === 'refusal') throw new Error('refusal');
+      if (response.stop_reason === 'max_tokens') {
+        throw new Error("Le sujet est trop long pour être transcrit d'un coup. Importez-le en plusieurs parties.");
+      }
+      const text = response.content.map((b: any) => (b.type === 'text' ? b.text : '')).join('');
+      const data = JSON.parse(text) as ExamPaperTranscription;
+      if (!data.contentHtml?.trim()) throw new Error('empty transcription');
+      return data;
+    } catch (err: any) {
+      if (err instanceof Anthropic.RateLimitError) {
+        throw new Error('Trop de demandes en même temps. Réessayez dans quelques secondes.');
+      }
+      if (err instanceof Anthropic.APIError) {
+        this.logger.error(`Exam transcription API error ${err.status}: ${err.message}`);
+        if (err instanceof Anthropic.BadRequestError && /credit balance/i.test(err.message)) {
+          throw new Error("Le service d'IA est momentanément indisponible (crédit épuisé). Saisissez l'épreuve manuellement.");
+        }
+        throw new Error("La transcription par l'IA a échoué. Réessayez ou saisissez l'épreuve manuellement.");
+      }
+      if (err instanceof Error && /trop long/.test(err.message)) throw err;
+      this.logger.error('Exam transcription error:', err?.message);
+      throw new Error("La transcription par l'IA a échoué. Réessayez ou saisissez l'épreuve manuellement.");
     }
   }
 

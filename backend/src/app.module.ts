@@ -40,6 +40,7 @@ import { AssignmentsModule } from './modules/assignments/assignments.module';
 import { QuizzesModule } from './modules/quizzes/quizzes.module';
 import { SuperAdminModule } from './modules/superadmin/superadmin.module';
 import { MockExamsModule } from './modules/mock-exams/mock-exams.module';
+import { ExamPapersModule } from './modules/exam-papers/exam-papers.module';
 import { AttendanceModule } from './modules/attendance/attendance.module';
 import { SchoolDocumentsModule } from './modules/school-documents/school-documents.module';
 import { StaffProfilesModule } from './modules/staff-profiles/staff-profiles.module';
@@ -103,6 +104,7 @@ import { PurchasesModule } from './modules/purchases/purchases.module';
     QuizzesModule,
     SuperAdminModule,
     MockExamsModule,
+    ExamPapersModule,
     AttendanceModule,
     SchoolDocumentsModule,
     StaffProfilesModule,

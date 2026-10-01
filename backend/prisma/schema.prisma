@@ -231,6 +231,7 @@ model Institution {
   paymentPlans        PaymentPlan[]
   incidentReports     IncidentReport[]
   purchases           Purchase[]
+  examPapers          ExamPaper[]
 }
 
 model User {
@@ -277,6 +278,7 @@ model User {
   staffProfile          StaffProfile?
   paymentPlansCreated   PaymentPlan[]          @relation("PaymentPlanCreator")
   incidentsFiled        IncidentReport[]       @relation("IncidentReporter")
+  examPapersAuthored    ExamPaper[]            @relation("ExamPaperAuthor")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1578,4 +1580,54 @@ model Purchase {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ─── Épreuves : sujet importé par le professeur (PDF / photo / Word), transcrit par l'IA, corrigé,
+// puis soumis à l'administration pour impression ─────────────────────────────────────────────
+enum ExamPaperKind {
+  DEVOIR_SURVEILLE
+  COMPOSITION_MENSUELLE
+  COMPOSITION_TRIMESTRIELLE
+  EXAMEN_BLANC
+}
+
+enum ExamPaperStatus {
+  DRAFT     // en préparation par le professeur
+  SUBMITTED // soumise à l'administration
+  RETURNED  // renvoyée au professeur pour correction
+  PRINTED   // imprimée par l'administration
+}
+
+model ExamPaper {
+  id            String          @id @default(uuid())
+  institutionId String
+  institution   Institution     @relation(fields: [institutionId], references: [id])
+  authorId      String
+  author        User            @relation("ExamPaperAuthor", fields: [authorId], references: [id])
+  kind          ExamPaperKind
+  status        ExamPaperStatus @default(DRAFT)
+
+  // Classe et matière : identifiant + nom figé (l'en-tête reste juste même si la classe est renommée)
+  classId     String?
+  className   String?
+  subjectId   String?
+  subjectName String?
+
+  academicYear String
+  title        String  // ex. « Devoir du deuxième trimestre »
+  duration     String? // ex. « 3h »
+  coefficient  String? // ex. « 3 »
+  content      String  @db.Text // corps de l'épreuve (HTML simple, modifiable)
+  sourceFiles  Json?   // fichiers importés : [{ name, url, mime }]
+
+  adminComment   String?   @db.Text
+  submittedAt    DateTime?
+  reviewedAt     DateTime?
+  reviewedByName String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([institutionId, status])
+  @@index([authorId])
 }

@@ -36,6 +36,8 @@
     "attendance":       "Présences",
     "absencesLate":     "Absences & retards",
     "dsList": "Devoirs surveillés",
+    "examPapers": "Mes épreuves (sujets)",
+    "examPapersAdmin": "Épreuves à imprimer",
     "dsFiches": "Fiches des DS",
     "dsResults": "Résultats des DS",
     "cmList": "Compositions mensuelles",
