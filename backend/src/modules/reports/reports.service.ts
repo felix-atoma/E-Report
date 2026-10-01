@@ -9,7 +9,7 @@
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import archiver = require('archiver');
 import { PrismaService } from '../../prisma/prisma.service';
-import { PdfService, isPrimaryLevel } from '../pdf/pdf.service';
+import { PdfService, isPrimaryLevel, primaryTotals } from '../pdf/pdf.service';
 import { AttendanceService } from '../attendance/attendance.service';
 import { AiService } from '../ai/ai.service';
 
@@ -136,7 +136,7 @@ export class ReportsService {
         },
         createdBy: { select: { id: true, name: true } },
         grades: {
-          include: { subject: { select: { id: true, nameFr: true, nameEn: true, code: true, passMark: true } } },
+          include: { subject: { select: { id: true, nameFr: true, nameEn: true, code: true, passMark: true, maxScore: true } } },
           orderBy: { coefficient: 'desc' },
         },
       },
@@ -260,7 +260,7 @@ export class ReportsService {
       where: { id, class: { institutionId } },
       include: {
         grades: {
-          include: { subject: { select: { nameFr: true, passMark: true } } },
+          include: { subject: { select: { nameFr: true, passMark: true, maxScore: true } } },
         },
         student: {
           include: {
@@ -300,7 +300,10 @@ export class ReportsService {
     // Compute overall average
     const grades = report.grades;
     let overallAverage: number | null = null;
-    if (grades.length > 0) {
+    if (isPrimaryLevel(report.class.level)) {
+      // Primaire : total des points (chaque matière sur 10 ou sur 20) ÷ total des barèmes
+      overallAverage = primaryTotals(grades).average20;
+    } else if (grades.length > 0) {
       const totalWeighted = grades.reduce((sum, g) => sum + (g.weightedScore ?? 0), 0);
       const totalCoef = grades.reduce((sum, g) => sum + g.coefficient, 0);
       overallAverage = totalCoef > 0 ? Math.round((totalWeighted / totalCoef) * 100) / 100 : null;
@@ -416,7 +419,7 @@ export class ReportsService {
       where: { id },
       include: {
         grades: {
-          include: { subject: { select: { nameFr: true, passMark: true } } },
+          include: { subject: { select: { nameFr: true, passMark: true, maxScore: true } } },
           orderBy: { coefficient: 'desc' },
         },
         student: {
@@ -515,7 +518,7 @@ export class ReportsService {
         teacherName: g.teacherName,
         ficheSignedAt: g.ficheSignedAt ?? null,
         signatureData: g.signatureData ?? null,
-        subject: { nameFr: g.subject.nameFr, passMark: g.subject.passMark },
+        subject: { nameFr: g.subject.nameFr, passMark: g.subject.passMark, maxScore: g.subject.maxScore },
       })),
       institution,
     });
@@ -639,7 +642,7 @@ export class ReportsService {
       where: { id, class: { institutionId }, status: 'PUBLISHED' },
       include: {
         grades: {
-          include: { subject: { select: { nameFr: true, passMark: true } } },
+          include: { subject: { select: { nameFr: true, passMark: true, maxScore: true } } },
           orderBy: { coefficient: 'desc' },
         },
         student: {
@@ -724,7 +727,7 @@ export class ReportsService {
       where: { studentId, academicYear, status: 'PUBLISHED', class: { institutionId } },
       include: {
         class: { select: { name: true, level: true, teacher: { select: { id: true, name: true } } } },
-        grades: { include: { subject: { select: { nameFr: true, passMark: true } } } },
+        grades: { include: { subject: { select: { nameFr: true, passMark: true, maxScore: true } } } },
       },
       orderBy: { termNumber: 'asc' },
     });
@@ -941,7 +944,7 @@ export class ReportsService {
       include: {
         student: { select: { sex: true, admissionNumber: true, user: { select: { name: true } } } },
         class: { select: { name: true, level: true, teacher: { select: { id: true, name: true } } } },
-        grades: { include: { subject: { select: { nameFr: true } } }, orderBy: { coefficient: 'desc' } },
+        grades: { include: { subject: { select: { nameFr: true, maxScore: true } } }, orderBy: { coefficient: 'desc' } },
       },
     });
     if (!report) throw new NotFoundException('Report card not found');
@@ -949,14 +952,17 @@ export class ReportsService {
     if (report.status === 'PUBLISHED') throw new BadRequestException('Ce bulletin est déjà publié');
 
     const graded = report.grades
-      .map((g) => ({ subject: g.subject.nameFr, score: (g.moyenneMatiere ?? g.score) as number, coefficient: g.coefficient }))
+      .map((g) => ({ subject: g.subject.nameFr, score: (g.moyenneMatiere ?? g.score) as number, coefficient: g.coefficient, maxScore: g.subject.maxScore }))
       .filter((g) => g.score != null);
     if (!graded.length) throw new BadRequestException("Aucune note n'est encore saisie pour cet élève");
 
     // Moyenne : celle du bulletin si déjà calculée, sinon moyenne pondérée des matières
     const totalCoef = graded.reduce((s, g) => s + g.coefficient, 0);
-    const avg = report.overallAverage
-      ?? (totalCoef > 0 ? graded.reduce((s, g) => s + g.score * g.coefficient, 0) / totalCoef : 0);
+    const avg = isPrimaryLevel(report.class.level)
+      // Primaire : total des points ÷ total des barèmes (chaque matière sur 10 ou sur 20)
+      ? (primaryTotals(report.grades).average20 ?? 0)
+      : report.overallAverage
+        ?? (totalCoef > 0 ? graded.reduce((s, g) => s + g.score * g.coefficient, 0) / totalCoef : 0);
 
     if (!this.ai.isEnabled) {
       throw new ServiceUnavailableException("L'assistant IA n'est pas configuré sur cette plateforme.");
@@ -997,7 +1003,7 @@ export class ReportsService {
       include: {
         student: { include: { user: { select: { name: true, profileImage: true } } } },
         class: { select: { name: true, level: true, teacher: { select: { id: true, name: true } } } },
-        grades: { include: { subject: { select: { nameFr: true, passMark: true } } } },
+        grades: { include: { subject: { select: { nameFr: true, passMark: true, maxScore: true } } } },
       },
       orderBy: [{ class: { name: 'asc' } }, { student: { admissionNumber: 'asc' } }],
     });
@@ -1063,7 +1069,7 @@ export class ReportsService {
               appreciation: g.appreciation, teacherComment: g.teacherComment, teacherName: g.teacherName,
               ficheSignedAt: ficheMap.get(g.subjectId)?.signedAt ?? null,
               signatureData: ficheMap.get(g.subjectId)?.signatureData ?? null,
-              subject: { nameFr: g.subject.nameFr, passMark: g.subject.passMark },
+              subject: { nameFr: g.subject.nameFr, passMark: g.subject.passMark, maxScore: g.subject.maxScore },
             })),
             institution,
           });
@@ -1085,7 +1091,7 @@ export class ReportsService {
       where: { id, class: { institutionId }, status: 'PUBLISHED' },
       include: {
         grades: {
-          include: { subject: { select: { nameFr: true, passMark: true } } },
+          include: { subject: { select: { nameFr: true, passMark: true, maxScore: true } } },
           orderBy: { coefficient: 'desc' },
         },
         student: { include: { user: { select: { name: true, profileImage: true } } } },
@@ -1142,7 +1148,7 @@ export class ReportsService {
         appreciation: g.appreciation, teacherComment: g.teacherComment, teacherName: g.teacherName,
         ficheSignedAt: ficheMap.get(g.subjectId)?.signedAt ?? null,
         signatureData: ficheMap.get(g.subjectId)?.signatureData ?? null,
-        subject: { nameFr: g.subject.nameFr, passMark: g.subject.passMark },
+        subject: { nameFr: g.subject.nameFr, passMark: g.subject.passMark, maxScore: g.subject.maxScore },
       })),
       institution,
     });

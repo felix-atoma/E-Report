@@ -79,17 +79,21 @@ export class AiService {
     conduct?: string | null;
     absentDays?: number | null;
     lateHours?: string | null;
-    grades: { subject: string; score: number; coefficient: number }[];
+    grades: { subject: string; score: number; coefficient: number; maxScore?: number | null }[];
   }): Promise<string> {
     if (!this.enabled || !this.client) {
       throw new Error("L'assistant IA n'est pas encore configuré.");
     }
 
-    // Au primaire, les notes sont affichées sur 10 : on les présente ainsi à l'IA (stockées sur 20)
+    // Au primaire, chaque matière est présentée sur son barème (/10 ou /20) ; la moyenne générale sur 10.
+    // Les notes sont stockées sur 20.
     const scale = opts.isPrimary ? 10 : 20;
     const fmt = (v: number) => (opts.isPrimary ? v / 2 : v).toFixed(2).replace('.', ',');
+    const subjectMax = (g: { maxScore?: number | null }) => (opts.isPrimary && (g.maxScore ?? 20) <= 10 ? 10 : 20);
+    const fmtSubject = (g: { score: number; maxScore?: number | null }) =>
+      `${((g.score * subjectMax(g)) / 20).toFixed(2).replace('.', ',')}/${subjectMax(g)}`;
     const gradeList = opts.grades
-      .map((g) => `- ${g.subject} : ${fmt(g.score)}/${scale}${opts.isPrimary ? '' : ` (coef. ${g.coefficient})`}`)
+      .map((g) => `- ${g.subject} : ${fmtSubject(g)}${opts.isPrimary ? '' : ` (coef. ${g.coefficient})`}`)
       .join('\n');
 
     const gender =

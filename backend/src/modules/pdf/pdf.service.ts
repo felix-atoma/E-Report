@@ -116,6 +116,36 @@ export function isPrimaryLevel(level: string | null | undefined): boolean {
   return /^\s*(CI|CP\s*[12]?|CE\s*[12]|CM\s*[12])\s*$/i.test(level ?? '');
 }
 
+/**
+ * Primaire : chaque matière garde son barème (« Noté sur » 10 ou 20, réglé dans Matières).
+ * La moyenne d'une matière est stockée sur 20 ; la note affichée est ramenée à son barème.
+ */
+export function primarySubjectMax(maxScore: number | null | undefined): number {
+  return maxScore != null && maxScore <= 10 ? 10 : 20;
+}
+
+/**
+ * Totaux du primaire, à la togolaise : somme des notes (chacune sur son barème) sur la somme des
+ * barèmes ; moyenne sur 10 = total ÷ maximum × 10. Les matières non notées sont ignorées.
+ */
+export function primaryTotals(grades: Array<{ moyenneMatiere?: number | null; score?: number | null; subject?: { maxScore?: number | null } | null }>) {
+  let total = 0;
+  let max = 0;
+  for (const g of grades) {
+    const moy20 = g.moyenneMatiere ?? g.score;
+    if (moy20 == null) continue;
+    const m = primarySubjectMax(g.subject?.maxScore);
+    total += (moy20 * m) / 20;
+    max += m;
+  }
+  return {
+    total: Math.round(total * 100) / 100,
+    max,
+    /** Moyenne générale sur 20 (stockée), soit total ÷ maximum × 20 */
+    average20: max > 0 ? Math.round(((total / max) * 20) * 100) / 100 : null,
+  };
+}
+
 /** Classes du secondaire : 6ème → Terminale (devoirs surveillés). */
 export function isSecondaryLevel(level: string | null | undefined): boolean {
   return /^\s*([3-6]\s*(e|è|eme|ème)|2\s*nde|seconde|1\s*(re|ere|ère)|premi[eè]re|tle|terminale)\s*$/i.test(level ?? '');
@@ -402,12 +432,17 @@ export class PdfService {
       return {
         ...g,
         moyInterros,
-        passed: moy == null || moy >= (g.subject?.passMark ?? 10),
+        // Primaire : la moyenne de chaque matière est la moitié de son barème (10 / 20 une fois ramenée sur 20)
+        passed: moy == null || moy >= (isPrimary ? 10 : (g.subject?.passMark ?? 10)),
         // Couleur de l'appréciation selon le niveau (vert ≥ 14, orange ≥ 10, rouge < 10)
         levelClass: moy == null ? '' : moy >= 14 ? 'lvl-good' : moy >= 10 ? 'lvl-pass' : 'lvl-fail',
         rangLabel: g.rangMatiere ? (g.rangMatiere === 1 ? '1er' : `${g.rangMatiere}e`) : null,
         moyLabel: formatScore(moy),
-        noteLabel: fmtScaled(moy), // note de la matière sur l'échelle du bulletin (/10 au primaire)
+        // Primaire : note ramenée au barème de la matière (/10 ou /20) ; secondaire : sur 20
+        noteMax: primarySubjectMax(g.subject?.maxScore),
+        noteLabel: isPrimary
+          ? (moy == null ? '—' : formatScore((moy * primarySubjectMax(g.subject?.maxScore)) / 20))
+          : fmtScaled(moy),
         ficheSignedAt: g.ficheSignedAt
           ? new Date(g.ficheSignedAt).toLocaleDateString('fr-FR')
           : null,
@@ -422,10 +457,13 @@ export class PdfService {
     const totalCoef   = enrichedGrades.reduce((s, g) => s + g.coefficient, 0);
     const totalPoints = enrichedGrades.reduce((s, g) => s + (g.weightedScore ?? 0), 0);
 
-    // Primaire : total des notes sur 10 de chaque matière notée (ex. 78,50 / 100 pour 10 matières)
-    const graded = enrichedGrades.filter((g) => (g.moyenneMatiere ?? g.score) != null);
-    const primaryTotal = graded.reduce((s, g) => s + ((g.moyenneMatiere ?? g.score) as number) / 2, 0);
-    const primaryTotalMax = graded.length * 10;
+    // Primaire : somme des notes (chaque matière sur son barème) sur la somme des barèmes,
+    // moyenne sur 10 = total ÷ maximum × 10 (ex. 132,50 / 180 → 7,36 / 10)
+    const pt = primaryTotals(enrichedGrades);
+    const primaryTotal = pt.total;
+    const primaryTotalMax = pt.max;
+    // Moyenne affichée : au primaire, toujours celle des totaux imprimés (cohérente avec la page)
+    const displayAverage = isPrimary ? (pt.average20 ?? report.overallAverage) : report.overallAverage;
 
     const absences =
       report.attendanceDays != null && report.attendancePresent != null
@@ -494,7 +532,7 @@ export class PdfService {
         classHighest: fmtScaled(report.classHighest),
         classLowest: fmtScaled(report.classLowest),
         classAverage: fmtScaled(report.classAverage),
-        overallAverage: fmtScaled(report.overallAverage),
+        overallAverage: fmtScaled(displayAverage),
         annualAverage: report.annualAverage != null ? fmtScaled(report.annualAverage) : null,
         primaryTotal: formatScore(Math.round(primaryTotal * 100) / 100),
         primaryTotalMax,
@@ -502,9 +540,9 @@ export class PdfService {
       report: {
         ...report,
         conductLabel: report.conductRating ? CONDUCT_LABELS[report.conductRating] : '—',
-        isPassing: (report.overallAverage ?? 0) >= 10,
+        isPassing: (displayAverage ?? 0) >= 10,
         rankLabel,
-        averageLabel: report.overallAverage != null ? fmtScaled(report.overallAverage) : null,
+        averageLabel: displayAverage != null ? fmtScaled(displayAverage) : null,
         hasDistinctions: !!(report.honorCouncil || report.commendations || report.warnings),
         annualIsPassing: report.annualAverage != null ? report.annualAverage >= 10 : null,
         absences,
@@ -529,7 +567,7 @@ export class PdfService {
       classTeacherName: data.classTeacherName ?? '',
       classTeacherSignature: data.classTeacherSignature ?? null,
       verifyUrl: this.verifyUrl,
-      averageFailing: report.overallAverage != null && report.overallAverage < 10,
+      averageFailing: displayAverage != null && displayAverage < 10,
       annualFailing: report.annualAverage != null && report.annualAverage < 10,
       totalPointsLabel: formatScore(Math.round(totalPoints * 100) / 100),
       lateLabel: lateHours != null ? `${lateHours} h`
@@ -600,7 +638,7 @@ export interface ReportCardData {
     teacherName: string | null;
     ficheSignedAt: Date | null;
     signatureData: string | null;
-    subject: { nameFr: string; passMark: number };
+    subject: { nameFr: string; passMark: number; maxScore?: number | null };
   }>;
   institution: {
     name: string;

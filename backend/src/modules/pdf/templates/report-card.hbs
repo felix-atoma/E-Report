@@ -320,7 +320,7 @@ body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         <tr class="pr-grades__head-top">
           <th class="pr-grades__col-num">N°</th>
           <th class="pr-grades__col-matiere">Matière</th>
-          <th class="pr-grades__col-moy">Note / 10</th>
+          <th class="pr-grades__col-moy">Note</th>
           <th class="pr-grades__col-rang">Rang</th>
           <th class="pr-grades__col-appr">Appréciation</th>
         </tr>
@@ -330,7 +330,7 @@ body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         <tr>
           <td class="pr-grades__col-num">{{inc @index}}</td>
           <td class="pr-grades__col-matiere">{{#if subject.nameFr}}{{subject.nameFr}}{{else}}—{{/if}}</td>
-          <td class="pr-grades__col-moy{{#if this.passed}} pr-grades__pass{{else}} pr-grades__fail{{/if}}">{{this.noteLabel}}</td>
+          <td class="pr-grades__col-moy{{#if this.passed}} pr-grades__pass{{else}} pr-grades__fail{{/if}}">{{this.noteLabel}}<span class="pr-val-denom"> / {{this.noteMax}}</span></td>
           <td class="pr-grades__col-rang">{{#if this.rangMatiere}}{{this.rangMatiere}}{{else}}—{{/if}}</td>
           <td class="pr-grades__col-appr">{{#if this.appreciation}}{{this.appreciation}}{{else}}—{{/if}}</td>
         </tr>
