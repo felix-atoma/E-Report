@@ -183,6 +183,9 @@ body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .pr-results__cell--low  strong { color: #dc2626; }
 .pr-results__cell--honor { background: #fef3c7; border-color: #fcd34d; display: flex; align-items: center; justify-content: center; }
 .pr-results__cell--honor strong { font-size: 0.75em; color: #92400e; }
+/* Moyenne générale, rang, mention, plus forte et plus faible moyenne : en rouge, bien visibles */
+.pr-results__cell--red strong { color: #dc2626 !important; font-weight: 900; }
+.pr-results__cell--red label { color: #991b1b; }
 .pr-val--pass { color: #15803d; }
 .pr-val--fail { color: #dc2626; }
 .pr-val-denom { font-size: 0.75em; font-weight: 400; color: #6b7280; }
@@ -306,7 +309,7 @@ body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         <td class="prh__lbl">Période</td><td class="prh__sep">:</td><td class="prh__val">{{termLabel}}</td>
       </tr>
       <tr>
-        <td class="prh__lbl">Mention</td><td class="prh__sep">:</td><td class="prh__val">{{#if report.mention}}{{report.mention}}{{else}}—{{/if}}</td>
+        <td class="prh__lbl">Mention</td><td class="prh__sep">:</td><td class="prh__val prh__val--strong">{{#if report.mention}}{{report.mention}}{{else}}—{{/if}}</td>
         <td class="prh__lbl">Conduite</td><td class="prh__sep">:</td><td class="prh__val">{{report.conductLabel}}</td>
       </tr>
     </tbody>
@@ -405,7 +408,7 @@ body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     <div class="pr-results__section pr-results__section--student">
       <div class="pr-results__section-title">Résultats de l'élève</div>
       <div class="pr-results__cells">
-        <div class="pr-results__cell pr-results__cell--big">
+        <div class="pr-results__cell pr-results__cell--big pr-results__cell--red">
           <label>Moyenne Générale</label>
           <strong class="{{#if report.isPassing}}pr-val--pass{{else}}pr-val--fail{{/if}}">{{scale.overallAverage}}<span class="pr-val-denom"> / {{scale.denom}}</span></strong>
         </div>
@@ -415,11 +418,11 @@ body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           <strong>{{scale.primaryTotal}}<span class="pr-val-denom"> / {{scale.primaryTotalMax}}</span></strong>
         </div>
         {{/if}}
-        <div class="pr-results__cell">
+        <div class="pr-results__cell pr-results__cell--red">
           <label>Mention</label>
           <strong>{{#if report.mention}}{{report.mention}}{{else}}—{{/if}}</strong>
         </div>
-        <div class="pr-results__cell">
+        <div class="pr-results__cell pr-results__cell--red">
           <label>Rang</label>
           <strong>{{#if report.classRank}}{{report.classRank}}{{else}}—{{/if}}<span class="pr-val-denom"> / {{#if report.classSize}}{{report.classSize}}{{else}}—{{/if}}</span></strong>
         </div>
@@ -450,8 +453,8 @@ body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       <div class="pr-results__section-title">Statistiques de la classe</div>
       <div class="pr-results__cells">
         <div class="pr-results__cell"><label>Moy. de la classe</label><strong>{{scale.classAverage}}</strong></div>
-        <div class="pr-results__cell pr-results__cell--high"><label>Plus forte moy.</label><strong>{{scale.classHighest}}</strong></div>
-        <div class="pr-results__cell pr-results__cell--low"><label>Plus faible moy.</label><strong>{{scale.classLowest}}</strong></div>
+        <div class="pr-results__cell pr-results__cell--high pr-results__cell--red"><label>Plus forte moy.</label><strong>{{scale.classHighest}}</strong></div>
+        <div class="pr-results__cell pr-results__cell--low pr-results__cell--red"><label>Plus faible moy.</label><strong>{{scale.classLowest}}</strong></div>
         <div class="pr-results__cell"><label>Effectif</label><strong>{{#if report.classSize}}{{report.classSize}}{{else}}—{{/if}}</strong></div>
       </div>
     </div>

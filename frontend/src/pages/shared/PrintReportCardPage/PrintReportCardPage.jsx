@@ -338,7 +338,7 @@ export default function PrintReportCardPage() {
               <td className="prh__lbl">Période</td><td className="prh__sep">:</td><td className="prh__val">{termLabel}</td>
             </tr>
             <tr>
-              <td className="prh__lbl">Mention</td><td className="prh__sep">:</td><td className="prh__val">{report.mention ?? '—'}</td>
+              <td className="prh__lbl">Mention</td><td className="prh__sep">:</td><td className="prh__val prh__val--strong">{report.mention ?? '—'}</td>
               <td className="prh__lbl">Conduite</td><td className="prh__sep">:</td>
               <td className="prh__val">{report.conductRating ? CONDUCT_LABELS[report.conductRating] : '—'}</td>
             </tr>
@@ -458,7 +458,7 @@ export default function PrintReportCardPage() {
           <div className="pr-results__section pr-results__section--student">
             <div className="pr-results__section-title">Résultats de l'élève</div>
             <div className="pr-results__cells">
-              <div className="pr-results__cell pr-results__cell--big">
+              <div className="pr-results__cell pr-results__cell--big pr-results__cell--red">
                 <label>Moyenne Générale</label>
                 <strong className={displayAverage >= 10 ? 'pr-val--pass' : 'pr-val--fail'}>
                   {fmtS(displayAverage)}<span className="pr-val-denom"> / {denom}</span>
@@ -470,11 +470,11 @@ export default function PrintReportCardPage() {
                   <strong>{fmt(primaryTotal)}<span className="pr-val-denom"> / {primaryTotalMax}</span></strong>
                 </div>
               )}
-              <div className="pr-results__cell">
+              <div className="pr-results__cell pr-results__cell--red">
                 <label>Mention</label>
                 <strong>{report.mention ?? '—'}</strong>
               </div>
-              <div className="pr-results__cell">
+              <div className="pr-results__cell pr-results__cell--red">
                 <label>Rang</label>
                 <strong>{report.classRank ?? '—'}<span className="pr-val-denom"> / {report.classSize ?? '—'}</span></strong>
               </div>
@@ -513,11 +513,11 @@ export default function PrintReportCardPage() {
                 <label>Moy. de la classe</label>
                 <strong>{fmtS(report.classAverage)}</strong>
               </div>
-              <div className="pr-results__cell pr-results__cell--high">
+              <div className="pr-results__cell pr-results__cell--high pr-results__cell--red">
                 <label>Plus forte moy.</label>
                 <strong>{fmtS(report.classHighest)}</strong>
               </div>
-              <div className="pr-results__cell pr-results__cell--low">
+              <div className="pr-results__cell pr-results__cell--low pr-results__cell--red">
                 <label>Plus faible moy.</label>
                 <strong>{fmtS(report.classLowest)}</strong>
               </div>

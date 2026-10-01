@@ -297,6 +297,9 @@
   display: flex; align-items: center; justify-content: center;
 }
 .pr-results__cell--honor strong { font-size: 0.75em; color: #92400e; }
+/* Moyenne générale, rang, mention, plus forte et plus faible moyenne : en rouge, bien visibles */
+.pr-results__cell--red strong { color: #dc2626 !important; font-weight: 900; }
+.pr-results__cell--red label { color: #991b1b; }
 .pr-val--pass { color: #15803d; }
 .pr-val--fail { color: #dc2626; }
 .pr-val-denom { font-size: 0.75em; font-weight: 400; color: #6b7280; }
