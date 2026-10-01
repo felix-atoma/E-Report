@@ -90,8 +90,15 @@ function StudentCard({ student, subjects, exam, institution }) {
         </div>
         <div className="mrel-header__right">
           <div className="mrel-doc-title">RELEVÉ DE NOTES</div>
-          <div className="mrel-doc-subtitle">Bulletin d'examen blanc</div>
-          <div className="mrel-exam-type">{TYPE_LABELS[exam.examType] ?? exam.examType}</div>
+          {/* Devoir surveillé / composition mensuelle : seulement leur nom ; examens blancs : « Bulletin d'examen blanc » */}
+          {isNonExamType(exam.examType)
+            ? <div className="mrel-exam-type">{TYPE_LABELS[exam.examType]}</div>
+            : (
+              <>
+                <div className="mrel-doc-subtitle">Bulletin d'examen blanc</div>
+                <div className="mrel-exam-type">{TYPE_LABELS[exam.examType] ?? exam.examType}</div>
+              </>
+            )}
           <div className="mrel-exam-label">{exam.label}</div>
           {fmtSessionDates(exam.examDate, exam.examEndDate) && (
             <div className="mrel-exam-date">{fmtSessionDates(exam.examDate, exam.examEndDate)}</div>

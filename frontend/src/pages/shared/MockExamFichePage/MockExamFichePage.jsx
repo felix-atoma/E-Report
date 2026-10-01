@@ -373,13 +373,13 @@ function MockExamFichePage() {
   });
 
   if (isLoading) return (
-    <AppShell title="Fiches de notes — Examen blanc">
+    <AppShell title="Fiches de notes">
       <Loading />
     </AppShell>
   );
 
   if (isError || !data) return (
-    <AppShell title="Fiches de notes — Examen blanc">
+    <AppShell title="Fiches de notes">
       <div className="mfiche-screen-error">Impossible de charger les fiches. Vérifiez l'identifiant.</div>
     </AppShell>
   );
