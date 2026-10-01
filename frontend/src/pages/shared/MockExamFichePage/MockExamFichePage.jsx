@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { mockExamsService } from '../../../services/mockExamsService';
@@ -10,7 +10,32 @@ import SignaturePad from '../../../components/common/SignaturePad/SignaturePad';
 import { subjectApprec } from '../../../utils/subjectApprec';
 import { fmtSessionDates } from '../../../utils/fmtSessionDates';
 import { examScale } from '../../../utils/examKinds';
+// Mode saisie paysage et boutons : mêmes styles que la fiche de notes trimestrielle
+import '../../teacher/GradeEntryPage/GradeEntryPage.css';
 import './MockExamFichePage.css';
+
+function useMediaQuery(query) {
+  const get = () => typeof window !== 'undefined' && window.matchMedia(query).matches;
+  const [matches, setMatches] = useState(get);
+  useEffect(() => {
+    const mql = window.matchMedia(query);
+    const onChange = () => setMatches(mql.matches);
+    onChange();
+    mql.addEventListener?.('change', onChange);
+    return () => mql.removeEventListener?.('change', onChange);
+  }, [query]);
+  return matches;
+}
+
+// Entrée → élève suivant (saisie rapide au clavier / téléphone), comme la fiche trimestrielle
+function handleGridKeyDown(e) {
+  if (e.key !== 'Enter') return;
+  const el = e.target;
+  if (el.dataset?.row === undefined) return;
+  e.preventDefault();
+  const next = el.closest('table')?.querySelector(`input[data-row="${Number(el.dataset.row) + 1}"]`);
+  if (next) { next.focus(); next.select?.(); } else el.blur();
+}
 
 const TYPE_LABELS = {
   BLANC: 'Examen Blanc',
@@ -44,7 +69,7 @@ function fmtSignDate(iso) {
 }
 
 /* ── Single subject fiche ─────────────────────────────────────────────────── */
-function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished, isAdmin, currentUser }) {
+function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished, isAdmin, currentUser, autoFocus = false }) {
   // Barème de la matière : aux compositions mensuelles, « Noté sur » de la matière (10 ou 20) ;
   // ailleurs, celui de la session (20)
   const scale = subject?.maxScore ?? examScale(exam?.examType);
@@ -86,6 +111,54 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
   // Signature manuscrite : panneau pour dessiner ou importer (PNG, JPG, PDF), comme les fiches trimestrielles
   const [signModal,  setSignModal]  = useState(false);
   const [sigData,    setSigData]    = useState(null);
+
+  // ── Mode saisie paysage (téléphones), identique à la fiche de notes trimestrielle ──
+  const isSmallScreen = useMediaQuery('(max-width: 900px), (pointer: coarse) and (max-width: 1100px)');
+  const isPortrait    = useMediaQuery('(orientation: portrait)');
+  const isPhone       = useMediaQuery('(max-width: 600px), (max-height: 500px)');
+  const [focusMode, setFocusMode] = useState(false);
+  const [forceLandscape, setForceLandscape] = useState(true);
+  const fullscreenRef = useRef(false);
+  const autoOpenedRef = useRef(false);
+  const rotated = focusMode && isPortrait && forceLandscape;
+
+  async function enterFocusMode() {
+    setFocusMode(true);
+    setForceLandscape(true);
+    try {
+      if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+        await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
+        fullscreenRef.current = true;
+      }
+      await window.screen?.orientation?.lock?.('landscape');
+    } catch { /* non supporté */ }
+  }
+
+  function exitFocusMode() {
+    setFocusMode(false);
+    try { window.screen?.orientation?.unlock?.(); } catch { /* ignore */ }
+    if (fullscreenRef.current && document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+    fullscreenRef.current = false;
+  }
+
+  useEffect(() => {
+    if (!focusMode) return undefined;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onFsChange = () => {
+      if (fullscreenRef.current && !document.fullscreenElement) { fullscreenRef.current = false; setFocusMode(false); }
+    };
+    document.addEventListener('fullscreenchange', onFsChange);
+    return () => { document.body.style.overflow = prev; document.removeEventListener('fullscreenchange', onFsChange); };
+  }, [focusMode]);
+
+  // Sur téléphone, la fiche à remplir s'ouvre directement en mode saisie paysage
+  useEffect(() => {
+    if (isPhone && autoFocus && isEditable && !isPublished && !subject.isSigned && !autoOpenedRef.current) {
+      autoOpenedRef.current = true;
+      setFocusMode(true);
+    }
+  }, [isPhone, autoFocus, isEditable, isPublished, subject.isSigned]);
 
   // Sync signing state when subject prop changes (e.g. after refetch)
   useEffect(() => {
@@ -274,6 +347,49 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
         )}
       </div>
 
+      {isSmallScreen && !focusMode && isEditable && !isPublished && !isLocked && (
+        <div className="fdn__landscape-cta no-print">
+          <span className="fdn__landscape-cta__icon" aria-hidden="true">📱↻</span>
+          <div className="fdn__landscape-cta__text">
+            <strong>Saisie sur téléphone</strong>
+            <span>Ouvrez la fiche en plein écran, en mode paysage. Touche Entrée = élève suivant.</span>
+          </div>
+          <button type="button" className="fdn__btn fdn__btn--primary" onClick={enterFocusMode}>📱 Saisir en paysage</button>
+        </div>
+      )}
+
+      <div className={focusMode ? `fdn-focus${rotated ? ' fdn-focus--rotated' : ''}` : undefined}>
+        {focusMode && (
+          <div className="fdn-focus__bar">
+            <div className="fdn-focus__title">
+              <strong>{subject.nameFr}</strong>
+              <span>{exam?.label}</span>
+            </div>
+            <label className="fdn-focus__coef">
+              Coef.
+              <input type="number" inputMode="decimal" className="fdn-focus__coef-input" min={0.5} max={20} step={0.5}
+                value={coeff} onChange={(e) => handleCoeffChange(e.target.value)} disabled={isLocked} />
+            </label>
+            {saved && !dirty && <span className="fdn-focus__saved">✓ Enregistré</span>}
+            {!isLocked && (
+              <button type="button" className="fdn__btn fdn__btn--primary" onClick={handleSave} disabled={saving || !dirty}>
+                {saving ? 'Enregistrement…' : 'Enregistrer'}
+              </button>
+            )}
+            {!isLocked && !dirty && (
+              <button type="button" className="fdn__btn fdn__btn--sign" onClick={() => { exitFocusMode(); setSigData(null); setSignModal(true); }}>
+                Signer
+              </button>
+            )}
+            {isPortrait && (
+              <button type="button" className="fdn__btn fdn__btn--secondary" onClick={() => setForceLandscape((v) => !v)}>
+                ↻ {forceLandscape ? 'Portrait' : 'Paysage'}
+              </button>
+            )}
+            <button type="button" className="fdn__btn fdn__btn--secondary" onClick={exitFocusMode}>Quitter</button>
+          </div>
+        )}
+      <div className={focusMode ? 'fdn__table-wrap mfiche-focus-wrap' : undefined} onKeyDown={handleGridKeyDown}>
       {/* Grade table */}
       <table className="mfiche-table">
         <thead>
@@ -302,8 +418,11 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
                   {isEditable && !isPublished && !isLocked ? (
                     <input
                       type="number"
+                      inputMode="decimal"
+                      enterKeyHint="next"
+                      data-row={i}
                       className={`mfiche-input${isErr ? ' mfiche-input--err' : ''}`}
-                      min="0" max={scale} step="0.25"
+                      min="0" max={scale} step={scale === 10 ? '0.5' : '0.25'}
                       value={val}
                       onChange={(e) => setScore(student.studentId, e.target.value)}
                       placeholder="—"
@@ -348,6 +467,8 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
           </tr>
         </tfoot>
       </table>
+      </div>
+      </div>
 
       {/* Signature zone */}
       <div className="mfiche-sigs">
@@ -434,6 +555,8 @@ function MockExamFichePage() {
 
   const canEdit = (subjectId) =>
     editableSubjectIds === null || editableSubjectIds.includes(subjectId);
+  // Première fiche que l'utilisateur peut remplir (non signée) : ouverte en mode paysage sur téléphone
+  const firstEditableId = displaySubjects.find((s) => canEdit(s.id) && !s.isSigned)?.id ?? null;
 
   return (
     <AppShell title={`Fiches de notes — ${exam.label}`}>
@@ -515,6 +638,8 @@ function MockExamFichePage() {
               isPublished={isPublished}
               isAdmin={isAdmin}
               currentUser={user}
+              // Téléphone : seule la première fiche à remplir s'ouvre en mode paysage
+              autoFocus={subject.id === firstEditableId}
             />
           </div>
         ))}

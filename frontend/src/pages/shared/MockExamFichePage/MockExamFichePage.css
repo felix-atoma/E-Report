@@ -260,3 +260,9 @@
 /* Signature manuscrite du professeur (dessinée ou importée) */
 .mfiche-sig__img { display: block; max-height: 56px; max-width: 180px; object-fit: contain; margin: 0 auto 2px; }
 .mfiche-sign-info { margin: 0 0 0.75rem; font-size: 0.88rem; color: #475569; line-height: 1.5; }
+
+/* Mode saisie paysage (téléphone) : tableau plein écran, champs larges (16px évite le zoom d'iOS) */
+.mfiche-focus-wrap .mfiche-table { margin: 0; }
+.mfiche-focus-wrap .mfiche-table thead { position: sticky; top: 0; z-index: 4; }
+.mfiche-focus-wrap .mfiche-input { width: 70px; min-height: 38px; font-size: 16px; }
+.mfiche-focus-wrap .mfiche-td--mat, .mfiche-focus-wrap .mfiche-th--mat { display: none; }

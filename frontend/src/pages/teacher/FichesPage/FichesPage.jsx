@@ -7,9 +7,41 @@ import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Loading from '../../../components/common/Loading/Loading';
 import { classesService } from '../../../services/classesService';
 import { gradesService } from '../../../services/gradesService';
+import { mockExamsService } from '../../../services/mockExamsService';
+import { isDsType, isCmType } from '../../../utils/examKinds';
 import './FichesPage.css';
 
 const TERM_VALUES = [1, 2, 3];
+
+/**
+ * Devoirs surveillés et compositions mensuelles en cours dans les classes du professeur : même
+ * point d'entrée que les fiches trimestrielles (saisie des notes puis signature).
+ */
+function PendingEvaluations({ classes }) {
+  const classIds = new Set(classes.map((c) => c.id));
+  const { data: exams = [] } = useQuery({
+    queryKey: ['mock-exams'],
+    queryFn: () => mockExamsService.list({}).then((r) => r.data),
+  });
+  const pending = exams.filter((e) =>
+    (isDsType(e.examType) || isCmType(e.examType)) && e.status !== 'PUBLISHED' && classIds.has(e.classId));
+  if (!pending.length) return null;
+  return (
+    <div className="fp__evals">
+      <div className="fp__evals-title">🖊️ Devoirs à saisir</div>
+      <div className="fp__evals-list">
+        {pending.map((e) => (
+          <Link key={e.id} to={`/mock-exams/${e.id}/fiche`} className="fp__eval">
+            <span className="fp__eval-kind">{isCmType(e.examType) ? 'Composition mensuelle' : 'Devoir surveillé'}</span>
+            <strong>{e.label}</strong>
+            <span className="fp__eval-class">🏫 {e.class?.name}</span>
+            <span className="fp__eval-cta">Saisir les notes →</span>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function ClassFicheCard({ cls, term, termLabel }) {
   const { t } = useTranslation();
@@ -103,6 +135,8 @@ export default function FichesPage() {
         title={t('fiches.title')}
         subtitle={t('fiches.subtitle')}
       />
+
+      <PendingEvaluations classes={classes} />
 
       <div className="fp__term-bar">
         {TERM_VALUES.map((v) => (

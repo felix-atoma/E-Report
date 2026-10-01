@@ -173,3 +173,17 @@
   font-size: 0.875rem;
   color: var(--color-text-muted, #6b7280);
 }
+
+/* Devoirs surveillés / compositions mensuelles à saisir */
+.fp__evals { background: #f0fdfa; border: 1px solid #5eead4; border-radius: 10px; padding: 0.8rem 1rem; margin-bottom: 1rem; }
+.fp__evals-title { font-weight: 800; color: #0f766e; margin-bottom: 0.5rem; }
+.fp__evals-list { display: flex; flex-direction: column; gap: 0.45rem; }
+.fp__eval {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.8rem;
+  background: #fff; border: 1px solid #99f6e4; border-radius: 8px; padding: 0.55rem 0.8rem;
+  text-decoration: none; color: #0f172a; font-size: 0.88rem;
+}
+.fp__eval:hover { border-color: #0f766e; }
+.fp__eval-kind { font-size: 0.72rem; font-weight: 700; color: #0f766e; text-transform: uppercase; letter-spacing: 0.3px; }
+.fp__eval-class { color: #475569; }
+.fp__eval-cta { margin-left: auto; font-weight: 700; color: #0f766e; }
