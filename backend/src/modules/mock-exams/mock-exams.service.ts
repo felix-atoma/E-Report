@@ -272,6 +272,7 @@ export class MockExamsService {
           signedAt: sign?.signedAt ?? null,
           signedByName: sign?.signedByName ?? null,
           signedById: sign?.signedById ?? null,
+          signatureData: sign?.signatureData ?? null,
         };
       }),
       students: sheet.students,
@@ -280,13 +281,35 @@ export class MockExamsService {
   }
 
   // ─── Sign a subject fiche ────────────────────────────────────────────────
-  async signSubjectFiche(examId: string, subjectId: string, institutionId: string, userId: string, userName: string) {
-    await this.findExamOrThrow(examId, institutionId);
+  async signSubjectFiche(
+    examId: string, subjectId: string, institutionId: string, userId: string, userName: string,
+    userRole = 'TEACHER', signatureData?: string | null,
+  ) {
+    const exam = await this.findExamOrThrow(examId, institutionId);
+    await this.assertSubjectAccess(exam.classId, subjectId, userId, userRole);
+    // Comme les fiches trimestrielles : signature manuscrite obligatoire pour le professeur
+    // (dessinée ou importée) ; l'administrateur peut valider sans signature.
+    if (signatureData) {
+      if (!/^data:image\/(png|jpeg);base64,[A-Za-z0-9+/=]+$/.test(signatureData) || signatureData.length > 700_000) {
+        throw new BadRequestException('Signature invalide. Dessinez-la ou importez une image (PNG, JPG ou PDF).');
+      }
+    } else if (userRole === 'ADMIN') {
+      signatureData = 'ADMIN_VERIFIED';
+    } else {
+      throw new BadRequestException('Une signature manuscrite est requise pour valider la fiche.');
+    }
     return this.prisma.mockExamSubjectFiche.upsert({
       where: { mockExamId_subjectId: { mockExamId: examId, subjectId } },
-      update: { signedAt: new Date(), signedById: userId, signedByName: userName },
-      create: { mockExamId: examId, subjectId, signedAt: new Date(), signedById: userId, signedByName: userName },
+      update: { signedAt: new Date(), signedById: userId, signedByName: userName, signatureData },
+      create: { mockExamId: examId, subjectId, signedAt: new Date(), signedById: userId, signedByName: userName, signatureData },
     });
+  }
+
+  /** Un professeur ne saisit et ne signe que la fiche de sa matière dans cette classe */
+  private async assertSubjectAccess(classId: string, subjectId: string, userId?: string, userRole?: string) {
+    if (userRole === 'ADMIN') return;
+    const cs = await this.prisma.classSubject.findFirst({ where: { classId, subjectId, teacherId: userId } });
+    if (!cs) throw new ForbiddenException("Cette fiche n'est pas celle de votre matière dans cette classe.");
   }
 
   // ─── Unsign a subject fiche (admin always; teacher only if they are the signer) ──
@@ -314,8 +337,10 @@ export class MockExamsService {
     institutionId: string,
     coefficient = 1,
     userRole = 'TEACHER',
+    userId?: string,
   ) {
     const exam = await this.findExamOrThrow(examId, institutionId);
+    await this.assertSubjectAccess(exam.classId, subjectId, userId, userRole);
     if (exam.status === 'PUBLISHED') {
       throw new ForbiddenException('Impossible de modifier un examen publié.');
     }

@@ -185,7 +185,13 @@ function SubjectPrintFiche({ subject, students, institution, exam }) {
       <div className="mfp-sigs">
         <div className="mfp-sig">
           <div className="mfp-sig__label">Signature du professeur</div>
-          {subject.isSigned && subject.signedAt ? (
+          {subject.isSigned && subject.signatureData && subject.signatureData !== 'ADMIN_VERIFIED' ? (
+            <div className="mfp-sig__stamp">
+              {/* Signature manuscrite du professeur */}
+              <img src={subject.signatureData} alt="Signature" style={{ display: 'block', maxHeight: 52, maxWidth: 170, objectFit: 'contain', margin: '0 auto 2px' }} />
+              <div className="mfp-sig__stamp-name">{subject.signedByName || subject.teacherName || '—'}</div>
+            </div>
+          ) : subject.isSigned && subject.signedAt ? (
             <div className="mfp-sig__stamp">
               <div className="mfp-sig__stamp-name">{subject.signedByName || subject.teacherName || '—'}</div>
               <div className="mfp-sig__stamp-date">Signé le {fmtDate(subject.signedAt)}</div>

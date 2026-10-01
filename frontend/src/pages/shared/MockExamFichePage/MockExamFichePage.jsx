@@ -5,6 +5,8 @@ import { mockExamsService } from '../../../services/mockExamsService';
 import { useAuth } from '../../../context/AuthContext';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import Loading from '../../../components/common/Loading/Loading';
+import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
+import SignaturePad from '../../../components/common/SignaturePad/SignaturePad';
 import { subjectApprec } from '../../../utils/subjectApprec';
 import { fmtSessionDates } from '../../../utils/fmtSessionDates';
 import { examScale } from '../../../utils/examKinds';
@@ -80,6 +82,10 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
   const [signedAt,   setSignedAt]   = useState(subject.signedAt ?? null);
   const [signedBy,   setSignedBy]   = useState(subject.signedByName ?? null);
   const [signedById, setSignedById] = useState(subject.signedById ?? null);
+  const [signature,  setSignature]  = useState(subject.signatureData ?? null);
+  // Signature manuscrite : panneau pour dessiner ou importer (PNG, JPG, PDF), comme les fiches trimestrielles
+  const [signModal,  setSignModal]  = useState(false);
+  const [sigData,    setSigData]    = useState(null);
 
   // Sync signing state when subject prop changes (e.g. after refetch)
   useEffect(() => {
@@ -87,19 +93,24 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
     setSignedAt(subject.signedAt ?? null);
     setSignedBy(subject.signedByName ?? null);
     setSignedById(subject.signedById ?? null);
-  }, [subject.isSigned, subject.signedAt, subject.signedByName, subject.signedById]);
+    setSignature(subject.signatureData ?? null);
+  }, [subject.isSigned, subject.signedAt, subject.signedByName, subject.signedById, subject.signatureData]);
 
   const handleSign = async () => {
+    if (!sigData) { alert('Dessinez ou importez votre signature.'); return; }
     setSigning(true);
     try {
-      const res = await mockExamsService.signSubjectFiche(examId, subject.id);
+      const res = await mockExamsService.signSubjectFiche(examId, subject.id, sigData);
       setIsSigned(true);
       setSignedAt(res.data.signedAt);
       setSignedBy(res.data.signedByName);
       setSignedById(res.data.signedById);
+      setSignature(res.data.signatureData ?? sigData);
+      setSignModal(false);
+      setSigData(null);
       qc.invalidateQueries({ queryKey: ['mock-exam-fiche', examId] });
-    } catch {
-      alert('Erreur lors de la signature. Réessayez.');
+    } catch (err) {
+      alert(err?.response?.data?.message ? [].concat(err.response.data.message).join(' · ') : 'Erreur lors de la signature. Réessayez.');
     } finally {
       setSigning(false);
     }
@@ -114,6 +125,7 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
       setSignedAt(null);
       setSignedBy(null);
       setSignedById(null);
+      setSignature(null);
       qc.invalidateQueries({ queryKey: ['mock-exam-fiche', examId] });
     } catch {
       alert('Erreur. Réessayez.');
@@ -153,8 +165,8 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
       setDirty(false);
       setSaved(true);
       qc.invalidateQueries({ queryKey: ['mock-exam-fiche', examId] });
-    } catch {
-      alert('Erreur lors de la sauvegarde. Réessayez.');
+    } catch (err) {
+      alert(err?.response?.data?.message ? [].concat(err.response.data.message).join(' · ') : 'Erreur lors de la sauvegarde. Réessayez.');
     } finally {
       setSaving(false);
     }
@@ -242,7 +254,7 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
 
           {/* Sign button — only after saving, when not yet signed */}
           {isEditable && !isPublished && !isLocked && !dirty && !isSigned && (
-            <button className="mfiche-sign-btn" onClick={handleSign} disabled={signing}>
+            <button className="mfiche-sign-btn" onClick={() => setSignModal(true)} disabled={signing}>
               {signing ? 'Signature…' : '✍️ Signer la fiche'}
             </button>
           )}
@@ -341,7 +353,12 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
       <div className="mfiche-sigs">
         <div className="mfiche-sig">
           <div className="mfiche-sig__title">Signature du professeur</div>
-          {isSigned && signedAt ? (
+          {isSigned && signature && signature !== 'ADMIN_VERIFIED' ? (
+            <div className="mfiche-sig__signed-stamp">
+              <img src={signature} alt="Signature du professeur" className="mfiche-sig__img" />
+              <div className="mfiche-sig__signed-date">Signé le {fmtSignDate(signedAt)}</div>
+            </div>
+          ) : isSigned && signedAt ? (
             <div className="mfiche-sig__signed-stamp">
               <div className="mfiche-sig__signed-name">{signedBy || subject.teacherName || '—'}</div>
               <div className="mfiche-sig__signed-date">Signé le {fmtSignDate(signedAt)}</div>
@@ -357,6 +374,27 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
           <div className="mfiche-sig__name">Signature et cachet</div>
         </div>
       </div>
+
+      <OffCanvas
+        open={signModal}
+        onClose={() => setSignModal(false)}
+        title={`Signer la fiche — ${subject.nameFr}`}
+        size="md"
+        footer={
+          <>
+            <button className="mfiche-unsign-btn" onClick={() => setSignModal(false)} disabled={signing}>Annuler</button>
+            <button className="mfiche-sign-btn" onClick={handleSign} disabled={signing || !sigData}>
+              {signing ? 'Signature…' : '✍️ Valider la signature'}
+            </button>
+          </>
+        }
+      >
+        <p className="mfiche-sign-info">
+          Dessinez votre signature ou importez-la (PNG, JPG ou PDF). Une fois signée, la fiche est verrouillée :
+          les notes ne peuvent plus être modifiées sans annuler la signature.
+        </p>
+        <SignaturePad onChange={setSigData} width={460} height={180} />
+      </OffCanvas>
     </div>
   );
 }

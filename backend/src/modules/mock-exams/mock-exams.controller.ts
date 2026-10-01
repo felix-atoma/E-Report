@@ -56,7 +56,7 @@ export class MockExamsController {
     @Body() body: { grades: { studentId: string; score: number | null }[]; coefficient?: number },
     @Req() req: any,
   ) {
-    return this.service.saveSubjectGrades(id, subjectId, body.grades, req.user.institutionId, body.coefficient ?? 1, req.user.role);
+    return this.service.saveSubjectGrades(id, subjectId, body.grades, req.user.institutionId, body.coefficient ?? 1, req.user.role, req.user.id);
   }
 
   @Roles(Role.ADMIN, Role.TEACHER)
@@ -64,9 +64,10 @@ export class MockExamsController {
   signSubjectFiche(
     @Param('id') id: string,
     @Param('subjectId') subjectId: string,
+    @Body() body: { signatureData?: string | null },
     @Req() req: any,
   ) {
-    return this.service.signSubjectFiche(id, subjectId, req.user.institutionId, req.user.id, req.user.name);
+    return this.service.signSubjectFiche(id, subjectId, req.user.institutionId, req.user.id, req.user.name, req.user.role, body?.signatureData);
   }
 
   @Roles(Role.ADMIN, Role.TEACHER)

@@ -19,8 +19,9 @@ export const mockExamsService = {
   getFicheData: (id) => api.get(`/mock-exams/${id}/fiche`),
   saveSubjectGrades: (id, subjectId, grades, coefficient) =>
     api.patch(`/mock-exams/${id}/fiche/${subjectId}`, { grades, coefficient }),
-  signSubjectFiche: (id, subjectId) =>
-    api.post(`/mock-exams/${id}/fiche/${subjectId}/sign`),
+  // Signature manuscrite (image PNG) obligatoire pour le professeur, comme les fiches trimestrielles
+  signSubjectFiche: (id, subjectId, signatureData) =>
+    api.post(`/mock-exams/${id}/fiche/${subjectId}/sign`, { signatureData: signatureData ?? null }),
   unsignSubjectFiche: (id, subjectId) =>
     api.delete(`/mock-exams/${id}/fiche/${subjectId}/sign`),
   updateType: (id, examType) =>

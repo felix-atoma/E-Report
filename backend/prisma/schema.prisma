@@ -1125,6 +1125,8 @@ model MockExamSubjectFiche {
   signedAt     DateTime?
   signedByName String?
   signedById   String?
+  // Signature manuscrite du professeur (image PNG), comme sur les fiches de notes trimestrielles
+  signatureData String?  @db.Text
 
   mockExam MockExam @relation(fields: [mockExamId], references: [id], onDelete: Cascade)
   subject  Subject  @relation(fields: [subjectId], references: [id])
