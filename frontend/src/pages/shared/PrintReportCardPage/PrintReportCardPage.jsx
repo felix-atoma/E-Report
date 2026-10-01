@@ -252,6 +252,20 @@ export default function PrintReportCardPage() {
         </button>
       </div>
 
+      {/* Professeur principal manquant : avertissement à l'écran seulement (non imprimé) */}
+      {!report.class?.teacher ? (
+        <div className="print-page__warning no-print">
+          ⚠️ Aucun professeur principal (titulaire) n'est désigné pour la classe {report.class?.name}.
+          Son nom et sa signature ne peuvent pas apparaître sur le bulletin. L'administrateur doit le
+          désigner dans <strong>Classes → modifier la classe → Professeur principal</strong>.
+        </div>
+      ) : !report.classTeacherSignature && (
+        <div className="print-page__warning no-print">
+          ⚠️ {report.class.teacher.name}, titulaire de la classe, n'a encore signé aucune fiche de notes avec
+          sa signature (dessinée ou importée). Sa signature apparaîtra ici dès qu'il aura signé une fiche.
+        </div>
+      )}
+
       {/* A4 page */}
       <div className="print-page__a4" data-fit={fit < 1 ? fit : undefined}>
 

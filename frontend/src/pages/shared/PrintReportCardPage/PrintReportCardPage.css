@@ -37,6 +37,11 @@
   transition: opacity 0.15s;
 }
 .print-page__btn:hover { opacity: 0.85; }
+.print-page__warning {
+  max-width: 210mm; margin: 1rem auto 0; padding: 0.7rem 1rem;
+  background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px;
+  color: #78350f; font-size: 0.9rem; line-height: 1.45;
+}
 .print-page__btn--print { background: #f97316; color: #fff; }
 .print-page__btn--close  { background: transparent; color: #cbd5e1; border: 1px solid #475569; }
 
