@@ -66,15 +66,17 @@ function fmtDate(iso) {
 }
 
 /* ── Create form ──────────────────────────────────────────────────────────── */
-function CreateForm({ examType, classes, onClose, onCreate, serverError, isSaving }) {
+function CreateForm({ examType, classes, classesLoading, onClose, onCreate, serverError, isSaving }) {
   const { t } = useTranslation();
   const type = [...EXAM_TYPES, DS_TYPE_CFG, CM_TYPE_CFG].find((et) => et.value === examType);
   // Compositions mensuelles : primaire (CI → CM2) ; devoirs surveillés : secondaire (6ème → Terminale)
   const eligibleClasses = isCmType(examType) ? classes.filter((c) => isPrimaryLevel(c.level))
     : isDsType(examType) ? classes.filter((c) => isSecondaryLevel(c.level))
     : classes;
-  const CURRENT_YEAR = new Date().getFullYear();
-  const DEFAULT_YEAR = `${CURRENT_YEAR - 1}-${CURRENT_YEAR}`;
+  // Année scolaire en cours : elle commence en septembre (en octobre 2026 → « 2026-2027 »)
+  const now = new Date();
+  const startYear = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
+  const DEFAULT_YEAR = `${startYear}-${startYear + 1}`;
 
   const classOptions = eligibleClasses.map((c) => ({ value: c.id, label: `${c.name} (${c.academicYear})` }));
 
@@ -104,11 +106,25 @@ function CreateForm({ examType, classes, onClose, onCreate, serverError, isSavin
       <Select
         label={t('mockExams.form.class')}
         required
-        placeholder={t('mockExams.form.selectClass')}
         value={form.classId}
         options={classOptions}
-        onChange={(e) => set('classId', e.target.value)}
+        // Chargement en cours : on l'indique au lieu d'afficher une liste vide
+        placeholder={classesLoading ? 'Chargement des classes…' : t('mockExams.form.selectClass')}
+        onChange={(e) => {
+          // L'année scolaire suit celle de la classe choisie
+          const cls = eligibleClasses.find((c) => c.id === e.target.value);
+          setForm((p) => ({ ...p, classId: e.target.value, academicYear: cls?.academicYear || p.academicYear }));
+        }}
       />
+      {!classesLoading && classOptions.length === 0 && (
+        <div className="mex-alert">
+          {isDsType(examType)
+            ? 'Aucune classe de la 6ème à la Terminale. Vérifiez le niveau des classes dans « Classes ».'
+            : isCmType(examType)
+              ? 'Aucune classe du CI au CM2. Vérifiez le niveau des classes dans « Classes ».'
+              : 'Aucune classe. Créez d’abord vos classes dans « Classes ».'}
+        </div>
+      )}
 
       <Input
         label={t('mockExams.form.label')}
@@ -385,7 +401,7 @@ function MockExamsPage({ kind = 'ESSAI' }) {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const { data: classes = [] } = useQuery({
+  const { data: classes = [], isLoading: classesLoading } = useQuery({
     queryKey: ['classes'],
     queryFn: () => classesService.list().then((r) => r.data),
   });
@@ -457,6 +473,7 @@ function MockExamsPage({ kind = 'ESSAI' }) {
           <CreateForm
             examType={createType}
             classes={classes}
+            classesLoading={classesLoading}
             onClose={() => { setCreateType(null); createMutation.reset(); }}
             onCreate={(data) => createMutation.mutate(data)}
             isSaving={createMutation.isPending}
