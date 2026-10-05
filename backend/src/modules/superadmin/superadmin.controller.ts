@@ -95,6 +95,12 @@ export class SuperAdminController {
   }
 
   @Roles(Role.SUPERADMIN)
+  @Patch('institutions/:id/access')
+  updateAccess(@Param('id') id: string, @Body() body: { action: string; days?: number; months?: number }) {
+    return this.superAdminService.updateAccess(id, body);
+  }
+
+  @Roles(Role.SUPERADMIN)
   @Post('institutions/:id/remind')
   sendLoginReminder(@Param('id') id: string) {
     return this.superAdminService.sendLoginReminder(id);

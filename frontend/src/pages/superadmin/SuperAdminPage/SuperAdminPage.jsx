@@ -72,7 +72,87 @@ function CountChip({ icon, label, value, alert }) {
 }
 
 // ─── Expanded school profile panel ────────────────────────────────────────────
-function SchoolProfile({ inst, notesMap, setNotesMap, savingNotes, saveNotes, savingPlan, savePlan, planMap, setPlanMap }) {
+const ACCESS_LABEL = {
+  OPEN:      { text: 'Accès ouvert',  cls: 'sa-access--open' },
+  BLOCKED:   { text: 'Bloquée (essai / abonnement terminé)', cls: 'sa-access--blocked' },
+  SUSPENDED: { text: 'Suspendue',     cls: 'sa-access--suspended' },
+};
+const SUB_LABEL = { TRIAL: "Période d'essai", ACTIVE: 'Abonnement actif', EXPIRED: 'Expiré', SUSPENDED: 'Suspendu' };
+
+export function AccessBadge({ access }) {
+  const a = ACCESS_LABEL[access];
+  return a ? <span className={`sa-access ${a.cls}`}>{a.text}</span> : null;
+}
+
+/**
+ * Accès et abonnement d'une école, modifiables sans toucher au code : prolonger l'essai, activer
+ * l'abonnement, suspendre ou réactiver. Règle : une école de 50 élèves ou plus dont l'essai ou
+ * l'abonnement est terminé est bloquée (seul son administrateur peut se connecter, pour payer).
+ */
+function AccessPanel({ inst, onChanged }) {
+  const [days, setDays] = useState(30);
+  const [months, setMonths] = useState(12);
+  const [busy, setBusy] = useState('');
+
+  const run = async (body, confirmText) => {
+    if (confirmText && !window.confirm(confirmText)) return;
+    setBusy(body.action);
+    try {
+      const { data } = await institutionsService.updateInstitutionAccess(inst.id, body);
+      onChanged(inst.id, data);
+      toast.success('Accès mis à jour.');
+    } catch (err) {
+      toast.error(err?.response?.data?.message ?? 'Action échouée. Réessayez.');
+    } finally {
+      setBusy('');
+    }
+  };
+  const suspended = inst.status === 'SUSPENDED' || inst.status === 'REJECTED';
+
+  return (
+    <div className="sa-access-panel">
+      <div className="sa-profile__field-label">Accès et abonnement</div>
+      <div className="sa-access-panel__state">
+        <AccessBadge access={inst.access} />
+        <span>{SUB_LABEL[inst.subscriptionStatus] ?? inst.subscriptionStatus ?? '—'}</span>
+        {inst.subscriptionStatus === 'TRIAL' && <span>· fin d'essai : <strong>{fmtDateTime(inst.trialEndsAt)}</strong></span>}
+        {inst.subscriptionStatus === 'ACTIVE' && <span>· abonnement jusqu'au <strong>{fmtDate(inst.subscriptionExpiry)}</strong></span>}
+        {inst.actualStudentCount < 50 && <span className="sa-access-panel__hint">· moins de 50 élèves : gratuit, jamais bloquée</span>}
+      </div>
+      <div className="sa-access-panel__actions">
+        <span className="sa-access-panel__group">
+          <select value={days} onChange={(e) => setDays(Number(e.target.value))} className="sa-plan-select" aria-label="Durée de prolongation">
+            {[7, 15, 30, 60, 90].map((d) => <option key={d} value={d}>{d} jours</option>)}
+          </select>
+          <button className="sa-save-btn" disabled={!!busy} onClick={() => run({ action: 'extendTrial', days })}>
+            {busy === 'extendTrial' ? '...' : "Prolonger l'essai"}
+          </button>
+        </span>
+        <span className="sa-access-panel__group">
+          <select value={months} onChange={(e) => setMonths(Number(e.target.value))} className="sa-plan-select" aria-label="Durée d'abonnement">
+            {[1, 3, 6, 12].map((m) => <option key={m} value={m}>{m} mois</option>)}
+          </select>
+          <button className="sa-save-btn" disabled={!!busy}
+            onClick={() => run({ action: 'activate', months }, `Activer l'abonnement de « ${inst.name} » pour ${months} mois ?`)}>
+            {busy === 'activate' ? '...' : "Activer l'abonnement"}
+          </button>
+        </span>
+        {suspended ? (
+          <button className="sa-action-btn sa-action-btn--approve" disabled={!!busy} onClick={() => run({ action: 'reactivate' })}>
+            {busy === 'reactivate' ? '...' : 'Réactiver l’école'}
+          </button>
+        ) : (
+          <button className="sa-action-btn sa-action-btn--suspend" disabled={!!busy}
+            onClick={() => run({ action: 'suspend' }, `Suspendre « ${inst.name} » ? Plus aucun de ses utilisateurs ne pourra se connecter, administrateur compris.`)}>
+            {busy === 'suspend' ? '...' : 'Suspendre l’école'}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SchoolProfile({ inst, onAccessChanged, notesMap, setNotesMap, savingNotes, saveNotes, savingPlan, savePlan, planMap, setPlanMap }) {
   const overQuota =
     inst.declaredStudentCount &&
     inst.actualStudentCount > inst.declaredStudentCount * 1.1;
@@ -154,6 +234,9 @@ function SchoolProfile({ inst, notesMap, setNotesMap, savingNotes, saveNotes, sa
           )}
         </div>
       </div>
+
+      {/* ── Accès et abonnement ─────────────────────────────── */}
+      <AccessPanel inst={inst} onChanged={onAccessChanged} />
 
       {/* ── Row 2: Subscription + Notes ──────────────────────── */}
       <div className="sa-profile__footer">
@@ -694,7 +777,10 @@ function SuperAdminPage() {
                         </td>
 
                         {/* Statut */}
-                        <td className="sa-cell" data-label="Statut"><StatusBadge status={inst.status} /></td>
+                        <td className="sa-cell" data-label="Statut">
+                          <StatusBadge status={inst.status} />
+                          {inst.access === 'BLOCKED' && <div><AccessBadge access="BLOCKED" /></div>}
+                        </td>
 
                         {/* Élèves */}
                         <td className="sa-cell sa-cell--students sa-col-students" data-label="Élèves">
@@ -750,6 +836,7 @@ function SuperAdminPage() {
                           <td colSpan={6}>
                             <SchoolProfile
                               inst={inst}
+                              onAccessChanged={(id, patch) => setInstitutions((prev) => prev.map((i) => (i.id === id ? { ...i, ...patch } : i)))}
                               notesMap={notesMap}
                               setNotesMap={setNotesMap}
                               savingNotes={savingNotes}

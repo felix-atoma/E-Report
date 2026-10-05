@@ -821,3 +821,18 @@
   font-family: inherit;
   width: 180px;
 }
+
+/* ── Accès et abonnement d'une école ─────────────────────────────── */
+.sa-access { display: inline-block; margin-top: 4px; padding: 2px 8px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; white-space: nowrap; }
+.sa-access--open      { background: #dcfce7; color: #166534; }
+.sa-access--blocked   { background: #fee2e2; color: #991b1b; }
+.sa-access--suspended { background: #e5e7eb; color: #374151; }
+.sa-access-panel {
+  margin: 0.9rem 0; padding: 0.8rem 1rem; border: 1px solid #e5e7eb; border-radius: 10px; background: #f8fafc;
+  display: flex; flex-direction: column; gap: 0.6rem;
+}
+.sa-access-panel__state { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.6rem; font-size: 0.85rem; color: #374151; }
+.sa-access-panel__state .sa-access { margin-top: 0; }
+.sa-access-panel__hint { color: #6b7280; font-style: italic; }
+.sa-access-panel__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1rem; }
+.sa-access-panel__group { display: inline-flex; gap: 0.4rem; align-items: center; }

@@ -3,6 +3,7 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -13,6 +14,22 @@ import { WhatsAppService } from '../whatsapp/whatsapp.service';
 import { RegisterInstitutionDto } from './dto/register-institution.dto';
 import { Role } from '../../common/enums/role.enum';
 import { SubscriptionService } from '../subscription/subscription.service';
+
+/**
+ * État d'accès d'un établissement, selon les mêmes règles que la connexion (auth.service) :
+ * SUSPENDED (suspendu par le propriétaire), BLOCKED (50 élèves ou plus, essai ou abonnement terminé :
+ * seul l'administrateur peut se connecter), OPEN (accès normal).
+ */
+export function computeAccess(inst: any, studentCount: number): 'OPEN' | 'BLOCKED' | 'SUSPENDED' {
+  if (!inst) return 'OPEN';
+  if (['SUSPENDED', 'REJECTED'].includes(inst.status)) return 'SUSPENDED';
+  if (studentCount < 50) return 'OPEN';
+  const now = new Date();
+  const trialOver = inst.subscriptionStatus === 'TRIAL' && inst.trialEndsAt && new Date(inst.trialEndsAt) < now;
+  const subOver = inst.subscriptionStatus === 'EXPIRED' || inst.subscriptionStatus === 'SUSPENDED'
+    || (inst.subscriptionStatus === 'ACTIVE' && inst.subscriptionExpiry && new Date(inst.subscriptionExpiry) < now);
+  return trialOver || subOver ? 'BLOCKED' : 'OPEN';
+}
 
 @Injectable()
 export class SuperAdminService {
@@ -145,6 +162,11 @@ export class SuperAdminService {
         bulletinCount: inst._count.bulletins,
         paymentCount: inst._count.payments,
         subscriptionPlan: inst.subscriptionPlan,
+        // Accès et abonnement (blocage des écoles de 50 élèves ou plus en fin d'essai / d'abonnement)
+        subscriptionStatus: inst.subscriptionStatus,
+        trialEndsAt: inst.trialEndsAt,
+        subscriptionExpiry: inst.subscriptionExpiry,
+        access: computeAccess(inst, inst._count.students),
         ownerNotes: inst.ownerNotes,
         createdAt: inst.createdAt,
         updatedAt: inst.updatedAt,
@@ -160,6 +182,58 @@ export class SuperAdminService {
           : null,
       };
     });
+  }
+
+  /**
+   * Accès d'un établissement, sans toucher au code : prolonger l'essai, activer l'abonnement,
+   * suspendre ou réactiver. Les durées s'ajoutent à la date en cours si elle n'est pas dépassée.
+   */
+  async updateAccess(id: string, body: { action: string; days?: number; months?: number }) {
+    const inst = await this.findInstitutionOrThrow(id);
+    const now = new Date();
+    const from = (d?: Date | null) => (d && new Date(d) > now ? new Date(d) : now);
+    let data: Record<string, unknown>;
+    switch (body.action) {
+      case 'extendTrial': {
+        const days = Math.round(Number(body.days));
+        if (!(days >= 1 && days <= 365)) throw new BadRequestException('Durée invalide (1 à 365 jours)');
+        const end = from((inst as any).trialEndsAt);
+        end.setDate(end.getDate() + days);
+        data = { subscriptionStatus: 'TRIAL', trialEndsAt: end };
+        break;
+      }
+      case 'activate': {
+        const months = Math.round(Number(body.months));
+        if (!(months >= 1 && months <= 36)) throw new BadRequestException('Durée invalide (1 à 36 mois)');
+        const end = from((inst as any).subscriptionStatus === 'ACTIVE' ? (inst as any).subscriptionExpiry : null);
+        end.setMonth(end.getMonth() + months);
+        data = { subscriptionStatus: 'ACTIVE', subscriptionExpiry: end };
+        break;
+      }
+      case 'suspend':
+        data = { status: 'SUSPENDED', isActive: false };
+        break;
+      case 'reactivate':
+        // Lève la suspension sans renvoyer l'e-mail d'approbation
+        data = { status: 'ACTIVE', isActive: true };
+        break;
+      default:
+        throw new BadRequestException('Action inconnue');
+    }
+    await this.prisma.institution.update({ where: { id }, data: data as any });
+    this.logger.log(`Accès modifié pour « ${inst.name} » : ${body.action}`);
+    const updated = await this.prisma.institution.findUnique({
+      where: { id },
+      include: { _count: { select: { students: true } } },
+    });
+    return {
+      id,
+      status: updated!.status,
+      subscriptionStatus: (updated as any).subscriptionStatus,
+      trialEndsAt: (updated as any).trialEndsAt,
+      subscriptionExpiry: (updated as any).subscriptionExpiry,
+      access: computeAccess(updated, updated!._count.students),
+    };
   }
 
   // ─── SuperAdmin: Approve an institution ─────────────────────────────────────
