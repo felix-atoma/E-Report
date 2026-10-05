@@ -344,3 +344,10 @@
 .teacher-dash__cm--ds .teacher-dash__cm-link:hover { background: #ccfbf1; }
 .teacher-dash__cm--ds .teacher-dash__cm-link--main { background: #0f766e; color: #fff; border-color: #0f766e; }
 .teacher-dash__cm--ds .teacher-dash__cm-link--main:hover { background: #115e59; }
+
+/* Titulaire (bleu) */
+.teacher-dash__cm--tit { border-left-color: #1d4ed8; background: #eff6ff; }
+.teacher-dash__cm--tit .teacher-dash__cm-title { color: #1e3a8a; }
+.teacher-dash__cm--tit .teacher-dash__cm-sub { color: #1e40af; }
+.teacher-dash__cm--tit .teacher-dash__cm-link--main { background: #1d4ed8; color: #fff; border-color: #1d4ed8; }
+.teacher-dash__cm--tit .teacher-dash__cm-link--main:hover { background: #1e40af; }

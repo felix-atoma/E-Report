@@ -219,3 +219,7 @@
 .tit__ai-btn:hover:not(:disabled) { background: #e0e7ff; }
 .tit__ai-btn:disabled { opacity: .45; cursor: not-allowed; }
 .tit__view-link { text-align: center; text-decoration: none; font-size: .95rem; }
+
+/* Conduite proposée automatiquement (absences, retards, discipline) */
+.tit__conduct-auto { display: block; margin-top: 3px; font-size: 0.68rem; color: #6d28d9; line-height: 1.25; max-width: 170px; }
+.tit__conduct-warning { display: block; width: 100%; color: #92400e; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.82rem; }

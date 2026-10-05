@@ -38,6 +38,8 @@ function TeacherDashboardPage() {
   const primaryClasses = classes.filter((c) => isPrimaryLevel(c.level));
   // Classes du secondaire (6ème → Terminale) : lien vers les devoirs surveillés
   const secondaryClasses = classes.filter((c) => isSecondaryLevel(c.level));
+  // Classes dont le professeur est titulaire : observations, conduite et publication des bulletins
+  const titulaireClasses = classes.filter((c) => c.teacherId === user?.id || c.teacher?.id === user?.id);
 
   const { data: reports = [], isLoading: l2 } = useQuery({
     queryKey: ['reports'],
@@ -139,6 +141,28 @@ function TeacherDashboardPage() {
             <Link to="/teacher/compositions-mensuelles/fiches" className="teacher-dash__cm-link teacher-dash__cm-link--main">📝 Saisir les notes</Link>
             <Link to="/teacher/compositions-mensuelles" className="teacher-dash__cm-link">📋 Compositions</Link>
             <Link to="/teacher/compositions-mensuelles/resultats" className="teacher-dash__cm-link">🏆 Résultats et relevés</Link>
+          </div>
+        </Card>
+      )}
+
+      {/* Titulaire : relecture des bulletins de sa classe (observation, conduite, publication) */}
+      {titulaireClasses.length > 0 && (
+        <Card className="teacher-dash__cm teacher-dash__cm--tit">
+          <div className="teacher-dash__cm-head">
+            <span className="teacher-dash__cm-icon" aria-hidden="true">🧑‍🏫</span>
+            <div>
+              <h3 className="teacher-dash__cm-title">Titulaire — bulletins de ma classe</h3>
+              <p className="teacher-dash__cm-sub">
+                Observations, conduite (proposée d'après les absences, retards et sanctions) et publication des bulletins.
+              </p>
+            </div>
+          </div>
+          <div className="teacher-dash__cm-links">
+            {titulaireClasses.map((c) => (
+              <Link key={c.id} to={`/teacher/classes/${c.id}/titulaire`} className="teacher-dash__cm-link teacher-dash__cm-link--main">
+                📝 {c.name}
+              </Link>
+            ))}
           </div>
         </Card>
       )}

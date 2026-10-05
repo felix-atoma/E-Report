@@ -189,6 +189,7 @@ function EditReportCardPage() {
 
   const [gradeRows, setGradeRows]         = useState([]);
   const [teacherComment, setComment]      = useState('');
+  const [conduct, setConduct]             = useState('');
   const [absences, setAbsences]           = useState('');
   const [lates, setLates]                 = useState('');
   const [confirmPublish, setConfirmPublish] = useState(false);
@@ -224,6 +225,8 @@ function EditReportCardPage() {
     });
     setGradeRows(rows);
     setComment(report.teacherComment ?? '');
+    // Conduite vide : on part de la proposition (absences, retards, dossier disciplinaire)
+    setConduct(report.conductRating ?? report.conductSuggestion?.rating ?? '');
     setAbsences(report.attendanceAbsent != null ? String(report.attendanceAbsent) : '');
     setLates(report.attendanceLate != null ? String(report.attendanceLate) : '');
   }, [report, grades]);
@@ -248,6 +251,7 @@ function EditReportCardPage() {
         gradesService.bulkUpsert(id, gradesToSave),
         reportsService.update(id, {
           teacherComment: teacherComment || undefined,
+          conductRating: conduct || undefined,
           attendanceAbsent: absences !== '' ? Number(absences) : undefined,
           attendanceLate:   lates    !== '' ? Number(lates)    : undefined,
         }),
@@ -458,6 +462,21 @@ function EditReportCardPage() {
               placeholder="Observations générales sur l'élève… ou choisissez une appréciation type ci-dessus."
               onChange={(e) => { setComment(e.target.value); setDirty(true); }}
             />
+            {/* Conduite : à côté de l'observation, avec la proposition automatique */}
+            <div className="edit-report__conduct">
+              <label htmlFor="conduct">Conduite</label>
+              <select id="conduct" value={conduct} disabled={locked}
+                onChange={(e) => { setConduct(e.target.value); setDirty(true); }}>
+                <option value="">— Non renseignée —</option>
+                <option value="TRES_BIEN">{t('conduct.TRES_BIEN')}</option>
+                <option value="BIEN">{t('conduct.BIEN')}</option>
+                <option value="PASSABLE">{t('conduct.PASSABLE')}</option>
+                <option value="MEDIOCRE">{t('conduct.MEDIOCRE')}</option>
+              </select>
+              {!report?.conductRating && report?.conductSuggestion && conduct === report.conductSuggestion.rating && (
+                <span className="edit-report__conduct-auto">✨ Proposée d'après : {report.conductSuggestion.reason}. Enregistrez pour la confirmer.</span>
+              )}
+            </div>
           </Card>
 
           {/* Summary */}
@@ -487,7 +506,9 @@ function EditReportCardPage() {
         onConfirm={() => publishMutation.mutate()}
         loading={publishMutation.isPending}
         title="Publier le bulletin"
-        message="Publier ce bulletin ? Le PDF sera généré et envoyé aux parents selon leur statut de paiement. Cette action est irréversible."
+        message={(!report?.conductRating
+          ? '⚠️ La conduite n\'est pas enregistrée : elle restera vide sur le bulletin. Choisissez-la puis cliquez sur « Enregistrer » avant de publier. '
+          : '') + 'Publier ce bulletin ? Le PDF sera généré et envoyé aux parents selon leur statut de paiement. Cette action est irréversible.'}
         confirmLabel="Publier"
         variant="primary"
       />

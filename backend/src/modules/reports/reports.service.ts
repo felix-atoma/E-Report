@@ -10,7 +10,8 @@ import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import archiver = require('archiver');
 import { PrismaService } from '../../prisma/prisma.service';
 import { PdfService, isPrimaryLevel, primaryTotals, nextTermStart } from '../pdf/pdf.service';
-import { AttendanceService } from '../attendance/attendance.service';
+import { AttendanceService, resolveTermRange } from '../attendance/attendance.service';
+import { suggestConduct, ConductSuggestion } from './conduct-suggestion';
 import { AiService } from '../ai/ai.service';
 
 const CONDUCT_LABELS_FR: Record<string, string> = {
@@ -106,7 +107,7 @@ export class ReportsService {
     if (filters.academicYear) where.academicYear = filters.academicYear;
     if (filters.termNumber) where.termNumber = filters.termNumber;
 
-    return this.prisma.reportCard.findMany({
+    const reports = await this.prisma.reportCard.findMany({
       where,
       include: {
         student: { include: { user: { select: { name: true } } } },
@@ -115,6 +116,55 @@ export class ReportsService {
       },
       orderBy: [{ academicYear: 'desc' }, { termNumber: 'desc' }, { student: { admissionNumber: 'asc' } }],
     });
+
+    // Page du titulaire (une classe, un trimestre) : conduite proposée pour chaque élève
+    if ((role === Role.TEACHER || role === Role.ADMIN) && filters.classId && filters.termNumber && reports.length) {
+      const suggestions = await this.conductSuggestions(institutionId, reports);
+      return reports.map((r) => ({ ...r, conductSuggestion: suggestions.get(r.id) ?? null }));
+    }
+    return reports;
+  }
+
+  /**
+   * Conduite proposée par bulletin : absences non justifiées, retards et dossier disciplinaire
+   * de la période du bulletin. Proposition seulement : le titulaire décide.
+   */
+  private async conductSuggestions(
+    institutionId: string,
+    reports: Array<{ id: string; studentId: string; academicYear: string; termType: any; termNumber: number;
+      attendanceAbsent?: number | null; attendanceLateMinutes?: number | null; warnings?: number | null }>,
+  ): Promise<Map<string, ConductSuggestion>> {
+    const out = new Map<string, ConductSuggestion>();
+    if (!reports.length) return out;
+    const inst = await this.prisma.institution.findUnique({ where: { id: institutionId }, select: { academicSettings: true } });
+    // Période de chaque bulletin, puis dossier disciplinaire des élèves concernés sur l'ensemble
+    const ranges = new Map(reports.map((r) => [r.id,
+      resolveTermRange(inst?.academicSettings, r.academicYear, String(r.termType ?? 'TRIMESTRE'), r.termNumber)]));
+    const starts = [...ranges.values()].filter(Boolean).map((x) => x!.start.getTime());
+    const ends = [...ranges.values()].filter(Boolean).map((x) => x!.end.getTime());
+    const records = starts.length
+      ? await this.prisma.disciplinaryRecord.findMany({
+        where: {
+          institutionId,
+          studentId: { in: [...new Set(reports.map((r) => r.studentId))] },
+          date: { gte: new Date(Math.min(...starts)), lte: new Date(Math.max(...ends) + 86_400_000) },
+        },
+        select: { studentId: true, type: true, date: true },
+      })
+      : [];
+    for (const r of reports) {
+      const range = ranges.get(r.id);
+      const discipline = range
+        ? records.filter((d) => d.studentId === r.studentId && d.date >= range.start && d.date.getTime() < range.end.getTime() + 86_400_000)
+        : [];
+      out.set(r.id, suggestConduct({
+        absentDays: r.attendanceAbsent,
+        lateMinutes: r.attendanceLateMinutes,
+        warnings: r.warnings,
+        discipline,
+      }));
+    }
+    return out;
   }
 
   async findOne(id: string, institutionId: string, userId?: string, role?: Role) {
@@ -168,7 +218,10 @@ export class ReportsService {
       const inst = await this.prisma.institution.findUnique({ where: { id: institutionId }, select: { academicSettings: true } });
       nextTerm = nextTermStart(inst?.academicSettings, report.academicYear, report.termType, report.termNumber);
     }
-    return { ...report, classTeacherSignature, nextTerm };
+    const conductSuggestion = role === Role.TEACHER || role === Role.ADMIN
+      ? (await this.conductSuggestions(institutionId, [report as any])).get(report.id) ?? null
+      : null;
+    return { ...report, classTeacherSignature, nextTerm, conductSuggestion };
   }
 
   /**

@@ -124,6 +124,8 @@ export default function TitulaireEntryPage() {
     onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur lors de la publication'),
   });
   const [confirmPublish, setConfirmPublish] = useState(false);
+  // Bulletins à publier dont la conduite n'est pas encore enregistrée
+  const missingConduct = reports.filter((r) => r.status === 'REVIEW' && !r.conductRating).length;
 
   const students = useMemo(() => {
     return [...(cls?.students ?? [])].sort((a, b) => {
@@ -159,7 +161,7 @@ export default function TitulaireEntryPage() {
         warnings:            rc?.warnings            != null ? String(rc.warnings)            : '',
         commendations:       rc?.commendations       != null ? String(rc.commendations)       : '',
         honorCouncil:        rc?.honorCouncil        ?? false,
-        conductRating:       rc?.conductRating       ?? '',
+        conductRating:       rc?.conductRating       ?? rc?.conductSuggestion?.rating ?? '',
         teacherComment:      rc?.teacherComment      ?? '',
         ...(prev[studentId] ?? {}),
       },
@@ -270,7 +272,13 @@ export default function TitulaireEntryPage() {
             {status.reports.review > 0 && (
               confirmPublish ? (
                 <div className="tit__status-confirm">
-                  <span>Publier {status.reports.review} bulletin(s) et les envoyer aux parents ?</span>
+                  {missingConduct > 0 && (
+                    <span className="tit__conduct-warning">
+                      ⚠️ Conduite non enregistrée pour {missingConduct} élève(s). Vérifiez la colonne « Conduite »
+                      puis cliquez sur « Enregistrer » avant de publier, sinon elle restera vide sur le bulletin.
+                    </span>
+                  )}
+                  <span>Publier {status.reports.review} bulletin(s) et les envoyer aux parents{missingConduct > 0 ? ' quand même' : ''} ?</span>
                   <button type="button" className="tit__publish-btn" disabled={publishMutation.isPending}
                     onClick={() => { publishMutation.mutate(); setConfirmPublish(false); }}>
                     {publishMutation.isPending ? 'Publication…' : 'Oui, publier'}
@@ -401,6 +409,11 @@ export default function TitulaireEntryPage() {
                           <option key={o.value} value={o.value}>{o.label}</option>
                         ))}
                       </select>
+                      {!rc?.conductRating && rc?.conductSuggestion && e.conductRating === rc.conductSuggestion.rating && (
+                        <span className="tit__conduct-auto" title={rc.conductSuggestion.reason}>
+                          ✨ Proposée — {rc.conductSuggestion.reason}
+                        </span>
+                      )}
                     </td>
                     <td className="tit__td tit__td--comment">
                       <div className="tit__comment-cell">
