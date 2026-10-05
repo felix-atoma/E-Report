@@ -36,6 +36,7 @@
     "attendance":       "Attendance",
     "absencesLate":     "Absences & lateness",
     "dsList": "Supervised tests",
+    "paymentStatus": "Payment status by student",
     "examPapers": "My exam papers",
     "examPapersAdmin": "Exam papers to print",
     "dsFiches": "Supervised test sheets",

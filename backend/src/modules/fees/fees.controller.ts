@@ -15,6 +15,8 @@ import { FeesService } from './fees.service';
 import { CreateFeeDto } from './dto/create-fee.dto';
 import { AssignFeeDto } from './dto/assign-fee.dto';
 import { ImportArrearsDto } from './dto/import-arrears.dto';
+import { SendRemindersDto } from './dto/send-reminders.dto';
+import { FeeRemindersService } from './fee-reminders.service';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Role } from '../../common/enums/role.enum';
@@ -23,7 +25,7 @@ import { Role } from '../../common/enums/role.enum';
 @ApiBearerAuth()
 @Controller('fees')
 export class FeesController {
-  constructor(private readonly service: FeesService) {}
+  constructor(private readonly service: FeesService, private readonly reminders: FeeRemindersService) {}
 
   @Get()
   @Roles(Role.ADMIN, Role.BURSAR)
@@ -53,6 +55,22 @@ export class FeesController {
   @ApiOperation({ summary: 'Deactivate a fee structure (Admin only)' })
   deactivate(@Param('id') id: string, @CurrentUser() user: any) {
     return this.service.deactivate(id, user.institutionId);
+  }
+
+  @Get('students-status')
+  @Roles(Role.ADMIN, Role.BURSAR)
+  @ApiOperation({ summary: 'Situation des paiements de chaque élève inscrit (attendu, payé, reste, statut)' })
+  @ApiQuery({ name: 'academicYear', required: false })
+  @ApiQuery({ name: 'classId', required: false })
+  studentsPaymentStatus(@CurrentUser() user: any, @Query('academicYear') academicYear?: string, @Query('classId') classId?: string) {
+    return this.service.studentsPaymentStatus(user.institutionId, academicYear, classId);
+  }
+
+  @Post('reminders/send')
+  @Roles(Role.ADMIN, Role.BURSAR)
+  @ApiOperation({ summary: 'Envoyer tout de suite un rappel de paiement aux parents des élèves choisis' })
+  sendReminders(@CurrentUser() user: any, @Body() body: SendRemindersDto) {
+    return this.reminders.sendNow(user.institutionId, body.studentIds, body.academicYear);
   }
 
   @Get('collection-overview')

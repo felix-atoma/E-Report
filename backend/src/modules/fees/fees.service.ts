@@ -48,6 +48,82 @@ export class FeesService {
   }
 
   /**
+   * Situation des paiements de chaque élève inscrit pour l'année (y compris ceux qui n'ont rien
+   * payé) : attendu, payé, reste, statut, dernier paiement et contact du parent.
+   */
+  async studentsPaymentStatus(institutionId: string, academicYear?: string, classId?: string) {
+    const year = academicYear || (() => {
+      const now = new Date();
+      const y = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
+      return `${y}-${y + 1}`;
+    })();
+    const enrolments = await this.prisma.classStudent.findMany({
+      where: { academicYear: year, student: { institutionId }, ...(classId ? { classId } : {}) },
+      select: {
+        studentId: true,
+        class: { select: { id: true, name: true } },
+        student: {
+          select: {
+            admissionNumber: true,
+            user: { select: { name: true } },
+            parent: { select: { name: true, whatsappNumber: true, email: true } },
+          },
+        },
+      },
+    });
+    const ids = [...new Set(enrolments.map((e) => e.studentId))];
+    const [fees, payments] = await Promise.all([
+      this.prisma.studentFee.findMany({
+        where: { studentId: { in: ids }, academicYear: year },
+        select: { studentId: true, amountDue: true, isExempt: true },
+      }),
+      this.prisma.payment.findMany({
+        where: { institutionId, studentId: { in: ids }, academicYear: year },
+        select: { studentId: true, amount: true, paymentDate: true },
+        orderBy: { paymentDate: 'desc' },
+      }),
+    ]);
+    const due = new Map<string, number>();
+    const exempt = new Set<string>();
+    for (const f of fees) {
+      if (f.isExempt) { exempt.add(f.studentId); continue; }
+      due.set(f.studentId, (due.get(f.studentId) ?? 0) + Number(f.amountDue));
+    }
+    const paid = new Map<string, number>();
+    const last = new Map<string, { date: Date; amount: number }>();
+    for (const p of payments) {
+      paid.set(p.studentId, (paid.get(p.studentId) ?? 0) + Number(p.amount));
+      if (!last.has(p.studentId)) last.set(p.studentId, { date: p.paymentDate, amount: Number(p.amount) });
+    }
+    const seen = new Set<string>();
+    const rows = enrolments.filter((e) => !seen.has(e.studentId) && seen.add(e.studentId)).map((e) => {
+      const d = due.get(e.studentId) ?? 0;
+      const p = paid.get(e.studentId) ?? 0;
+      const balance = Math.max(0, d - p);
+      const status = exempt.has(e.studentId) && d === 0 ? 'EXEMPT'
+        : d === 0 ? 'NO_FEES'
+        : balance <= 0 ? 'PAID'
+        : p > 0 ? 'PARTIAL' : 'UNPAID';
+      return {
+        studentId: e.studentId,
+        name: e.student.user?.name ?? e.student.admissionNumber,
+        admissionNumber: e.student.admissionNumber,
+        classId: e.class.id,
+        className: e.class.name,
+        expected: d,
+        paid: p,
+        balance,
+        status,
+        lastPayment: last.get(e.studentId) ?? null,
+        parent: e.student.parent
+          ? { name: e.student.parent.name, phone: e.student.parent.whatsappNumber, email: e.student.parent.email }
+          : null,
+      };
+    });
+    return { academicYear: year, rows: rows.sort((a, b) => b.balance - a.balance || a.name.localeCompare(b.name, 'fr')) };
+  }
+
+  /**
    * Suivi du recouvrement d'une année scolaire, en temps réel : montant attendu, encaissé, reste à
    * recouvrer, taux de recouvrement, arriérés repris, situation par classe et élèves les plus en
    * retard de paiement.

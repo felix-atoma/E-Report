@@ -80,6 +80,7 @@ const ClassStatsPage         = lazy(() => import('../pages/teacher/ClassStatsPag
 const TitulaireEntryPage     = lazy(() => import('../pages/teacher/TitulaireEntryPage/TitulaireEntryPage'));
 const PrincipalCommentPage   = lazy(() => import('../pages/admin/PrincipalCommentPage/PrincipalCommentPage'));
 const MockExamsPage          = lazy(() => import('../pages/teacher/MockExamsPage/MockExamsPage'));
+const PaymentStatusPage      = lazy(() => import('../pages/shared/PaymentStatusPage/PaymentStatusPage'));
 const ExamPapersPage         = lazy(() => import('../pages/shared/ExamPapersPage/ExamPapersPage'));
 const ExamPaperEditorPage    = lazy(() => import('../pages/shared/ExamPaperEditorPage/ExamPaperEditorPage'));
 const MockExamGradePage      = lazy(() => import('../pages/teacher/MockExamGradePage/MockExamGradePage'));
@@ -201,6 +202,8 @@ function AppRouter() {
         {/* Bursar */}
         <Route path="/bursar"              element={<ProtectedRoute roles={['BURSAR']}><BursarDashboardPage /></ProtectedRoute>} />
         <Route path="/bursar/fees"         element={<ProtectedRoute roles={['BURSAR']}><FeesPage /></ProtectedRoute>} />
+        <Route path="/bursar/payment-status" element={<ProtectedRoute roles={['BURSAR']}><PaymentStatusPage /></ProtectedRoute>} />
+        <Route path="/admin/payment-status"  element={<ProtectedRoute roles={['ADMIN']}><PaymentStatusPage /></ProtectedRoute>} />
         <Route path="/bursar/payments"       element={<ProtectedRoute roles={['BURSAR']}><PaymentsPage /></ProtectedRoute>} />
         <Route path="/bursar/payment-plans" element={<ProtectedRoute roles={['BURSAR']}><PaymentPlansPage /></ProtectedRoute>} />
         <Route path="/bursar/notifications" element={<ProtectedRoute roles={['BURSAR']}><NotificationLogsPage /></ProtectedRoute>} />

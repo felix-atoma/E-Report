@@ -1,0 +1,30 @@
+.pst-filters { display: grid; grid-template-columns: 160px minmax(180px, 260px) minmax(180px, 1fr); gap: 0.75rem; align-items: end; margin-bottom: 0.75rem; }
+.pst-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.75rem; }
+.pst-chip { border: 1px solid var(--color-border, #e5e7eb); background: #fff; border-radius: 999px; padding: 0.35rem 0.85rem; font-size: 0.83rem; font-weight: 600; cursor: pointer; color: #334155; }
+.pst-chip--on { background: var(--color-primary, #1e3a8a); border-color: var(--color-primary, #1e3a8a); color: #fff; }
+.pst-totals { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.25rem; font-size: 0.9rem; color: #475569; margin-bottom: 0.75rem; }
+.pst-totals strong { color: #0f172a; }
+.pst-green { color: #15803d !important; }
+.pst-red { color: #b91c1c !important; }
+.pst-empty { padding: 2rem; text-align: center; color: #64748b; background: #fff; border: 1px dashed #cbd5e1; border-radius: 10px; }
+.pst-table-wrap { overflow-x: auto; background: #fff; border: 1px solid var(--color-border, #e5e7eb); border-radius: 12px; }
+.pst-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; min-width: 900px; }
+.pst-table th { text-align: left; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.4px; color: #64748b; padding: 0.65rem 0.75rem; border-bottom: 1px solid #e5e7eb; background: #f8fafc; white-space: nowrap; }
+.pst-table td { padding: 0.6rem 0.75rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+.pst-table tbody tr:hover td { background: #f8fafc; }
+.pst-num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pst-name { font-weight: 700; color: #0f172a; text-decoration: none; }
+a.pst-name:hover { color: var(--color-primary, #1e3a8a); text-decoration: underline; }
+.pst-sub { font-size: 0.75rem; color: #64748b; }
+.pst-status { display: inline-block; padding: 0.15rem 0.55rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
+.pst-status--paid { background: #dcfce7; color: #166534; }
+.pst-status--partial { background: #fef3c7; color: #92400e; }
+.pst-status--unpaid { background: #fee2e2; color: #991b1b; }
+.pst-status--exempt { background: #f1f5f9; color: #475569; }
+.pst-actions { white-space: nowrap; text-align: right; }
+.pst-actions button { border: 1px solid var(--color-border, #e5e7eb); background: #fff; border-radius: 8px; padding: 0.3rem 0.55rem; font-size: 0.78rem; font-weight: 600; cursor: pointer; margin-left: 0.3rem; }
+.pst-actions button:hover:not(:disabled) { background: #eff6ff; border-color: #93c5fd; }
+.pst-pay { display: flex; flex-direction: column; gap: 0.8rem; }
+.pst-pay__summary { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; font-size: 0.85rem; color: #475569; background: #f8fafc; border-radius: 8px; padding: 0.6rem 0.75rem; }
+.pst-pay__hint { margin: 0; font-size: 0.8rem; color: #64748b; }
+@media (max-width: 720px) { .pst-filters { grid-template-columns: 1fr; } }

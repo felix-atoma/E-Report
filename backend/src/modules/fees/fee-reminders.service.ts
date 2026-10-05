@@ -49,6 +49,51 @@ export class FeeRemindersService {
     return this.runReminders(severity);
   }
 
+  /**
+   * Rappel envoyé tout de suite (bouton « Rappeler » de la situation des paiements) aux parents des
+   * élèves choisis qui ont un solde : WhatsApp, SMS (si configuré) et e-mail. Ton « amical ».
+   */
+  async sendNow(institutionId: string, studentIds: string[], academicYear: string) {
+    const institution = await this.prisma.institution.findUnique({ where: { id: institutionId }, select: { name: true } });
+    const students = await this.prisma.student.findMany({
+      where: { id: { in: studentIds }, institutionId },
+      include: {
+        user: { select: { name: true } },
+        parent: { select: { name: true, email: true, whatsappNumber: true, language: true } },
+        studentFees: { where: { academicYear, isExempt: false }, select: { amountDue: true } },
+        payments: { where: { academicYear }, select: { amount: true } },
+      },
+    });
+    let sent = 0; let noBalance = 0; let noContact = 0;
+    for (const st of students) {
+      const balance = st.studentFees.reduce((s, f) => s + Number(f.amountDue), 0) - st.payments.reduce((s, p) => s + Number(p.amount), 0);
+      if (balance <= 0) { noBalance++; continue; }
+      const parent = st.parent;
+      const language = (parent?.language as 'FR' | 'EN' | undefined) ?? 'FR';
+      const studentName = st.user?.name ?? st.admissionNumber;
+      const balanceLabel = `${Math.round(balance).toLocaleString('fr-FR')} FCFA`;
+      let delivered = false;
+      if (parent?.whatsappNumber) {
+        const message = this.buildWhatsAppMessage({
+          severity: 'FRIENDLY', parentName: parent.name, studentName, balanceLabel, institutionName: institution?.name ?? '', language,
+        });
+        delivered = (await this.whatsapp.sendText(parent.whatsappNumber, message).catch(() => false)) || delivered;
+        if (this.sms.enabled) {
+          delivered = (await this.sms.sendText(parent.whatsappNumber, message.replace(/\*/g, '').replace(/\n+/g, ' ')).catch(() => false)) || delivered;
+        }
+      }
+      if (parent?.email) {
+        delivered = (await this.mail.sendFeeReminder({
+          to: parent.email, parentName: parent.name, studentName, balance: balanceLabel,
+          institutionName: institution?.name ?? '', severity: 'FRIENDLY', language,
+        }).catch(() => false)) || delivered;
+      }
+      if (delivered) sent++; else noContact++;
+    }
+    this.logger.log(`Rappels immédiats : ${sent} envoyé(s), ${noBalance} à jour, ${noContact} sans contact`);
+    return { sent, noBalance, noContact };
+  }
+
   private async runReminders(severity: Severity) {
     this.logger.log(`Running ${severity.toLowerCase()} fee reminders…`);
 
