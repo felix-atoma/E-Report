@@ -163,6 +163,26 @@ export class MailService {
     return this.send({ to: payload.to, subject, html, text });
   }
 
+  /** Envoi réel possible (SMTP configuré) ; sinon les e-mails sont seulement journalisés. */
+  get isConfigured(): boolean {
+    return this.provider === 'smtp' && !!this.smtpTransport;
+  }
+
+  // ─── Code de connexion administrateur (double authentification) ─────────────
+  async sendAdminLoginOtp(to: string, name: string, otp: string): Promise<boolean> {
+    const subject = `Votre code de connexion NovaBulletin : ${otp}`;
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;">
+        <h2 style="color:#1e3a8a;">Code de connexion</h2>
+        <p>Bonjour ${name ?? ''},</p>
+        <p>Voici votre code pour terminer la connexion à NovaBulletin (valable 10 minutes) :</p>
+        <p style="font-size:32px;font-weight:800;letter-spacing:8px;color:#1e3a8a;background:#eff6ff;border-radius:8px;padding:14px 0;text-align:center;">${otp}</p>
+        <p style="color:#6b7280;font-size:12px;">Si vous n'êtes pas à l'origine de cette connexion, changez votre mot de passe.</p>
+      </div>`;
+    const text = `Votre code de connexion NovaBulletin : ${otp} (valable 10 minutes).\nSi vous n'êtes pas à l'origine de cette connexion, changez votre mot de passe.`;
+    return this.send({ to, subject, html, text });
+  }
+
   // ─── Password reset ──────────────────────────────────────────────────────────
   async sendPasswordReset(to: string, resetUrl: string): Promise<boolean> {
     const subject = 'Reinitialisation de votre mot de passe - NovaBulletin';

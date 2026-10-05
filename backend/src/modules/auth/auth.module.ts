@@ -8,10 +8,12 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 import { JwtLogoutStrategy } from './strategies/jwt-logout.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
     PassportModule,
+    MailModule,
     JwtModule.register({}), // secrets injected per-call via ConfigService
   ],
   controllers: [AuthController],

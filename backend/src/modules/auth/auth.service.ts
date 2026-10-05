@@ -3,6 +3,7 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -10,6 +11,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import { PrismaService } from '../../prisma/prisma.service';
+import { MailService } from '../mail/mail.service';
 import { RegisterDto } from './dto/register.dto';
 
 @Injectable()
@@ -18,6 +20,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
+    private readonly mail: MailService,
   ) {}
 
   // ─── Validate email + password (used by LocalStrategy) ─────────────────
@@ -230,9 +233,11 @@ export class AuthService {
       data: { token, userId: user.id, expiresAt },
     });
 
-    // TODO: send actual email in Week 9 when EmailModule is wired
-    const resetUrl = `${this.config.get('FRONTEND_URL')}/reset-password?token=${token}`;
-    console.log(`[DEV] Password reset link for ${email}: ${resetUrl}`);
+    const frontend = String(this.config.get('FRONTEND_URL') ?? '').split(',')[0].trim().replace(/\/+$/, '');
+    const resetUrl = `${frontend}/reset-password?token=${token}`;
+    // Lien envoyé par e-mail (sans SMTP configuré, le service d'envoi le signale dans les journaux)
+    const sent = await this.mail.sendPasswordReset(user.email, resetUrl);
+    if (!sent) console.warn(`[Password reset] Envoi de l'e-mail impossible pour ${user.email}`);
 
     return { message: 'If that email exists, a reset link has been sent.' };
   }
@@ -378,12 +383,16 @@ export class AuthService {
       data: { otpHash, otpExpiresAt },
     });
 
-    const frontendUrl = this.config.get<string>('FRONTEND_URL', 'http://localhost:3000');
-    console.log(`[2FA OTP] To: ${user.email} | OTP: ${otp} | Expires: ${otpExpiresAt.toISOString()}`);
-    // In production this would send an email; for now the OTP is logged and can be viewed in server logs
-    void frontendUrl;
+    // Code envoyé par e-mail. Sans SMTP (développement local), il est écrit dans les journaux du serveur.
+    const sent = await this.mail.sendAdminLoginOtp(user.email, user.name, otp);
+    if (!sent || !this.mail.isConfigured) {
+      console.log(`[2FA OTP] To: ${user.email} | OTP: ${otp} | Expires: ${otpExpiresAt.toISOString()}`);
+    }
+    if (!sent) {
+      throw new ServiceUnavailableException("Le code de connexion n'a pas pu être envoyé par e-mail. Réessayez dans un instant.");
+    }
 
-    return { requiresOtp: true, email: user.email };
+    return { requiresOtp: true, email: user.email, emailSent: this.mail.isConfigured };
   }
 
   async verifyAdminLoginOtp(email: string, otp: string) {

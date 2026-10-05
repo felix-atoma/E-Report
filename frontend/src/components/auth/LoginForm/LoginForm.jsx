@@ -155,7 +155,7 @@ function LoginForm() {
         <div className="login-form__2fa-box">
           <p className="login-form__2fa-title">Vérification en deux étapes</p>
           <p className="login-form__2fa-desc">
-            Un code à 6 chiffres a été envoyé à l'adresse <strong>{form.email}</strong>. Vérifiez les logs du serveur en développement.
+            Un code à 6 chiffres vient d'être envoyé à <strong>{form.email}</strong>. Consultez votre boîte de réception (et le dossier Spam). Le code est valable 10 minutes.
           </p>
           <div className="login-form__field">
             <label htmlFor="otp" className="login-form__label">Code OTP *</label>
