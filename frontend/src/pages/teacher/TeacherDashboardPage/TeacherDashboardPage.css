@@ -335,3 +335,12 @@
 .teacher-dash__cm-link:hover { background: #ede9fe; }
 .teacher-dash__cm-link--main { background: #7c3aed; color: #fff; border-color: #7c3aed; }
 .teacher-dash__cm-link--main:hover { background: #6d28d9; }
+
+/* Devoirs surveillés (secondaire) : même carte, couleur verte des DS */
+.teacher-dash__cm--ds { border-left-color: #0f766e; background: #f0fdfa; }
+.teacher-dash__cm--ds .teacher-dash__cm-title { color: #134e4a; }
+.teacher-dash__cm--ds .teacher-dash__cm-sub { color: #115e59; }
+.teacher-dash__cm--ds .teacher-dash__cm-link { color: #0f766e; border-color: #5eead4; }
+.teacher-dash__cm--ds .teacher-dash__cm-link:hover { background: #ccfbf1; }
+.teacher-dash__cm--ds .teacher-dash__cm-link--main { background: #0f766e; color: #fff; border-color: #0f766e; }
+.teacher-dash__cm--ds .teacher-dash__cm-link--main:hover { background: #115e59; }
