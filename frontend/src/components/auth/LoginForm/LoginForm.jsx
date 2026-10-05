@@ -45,7 +45,8 @@ function LoginForm() {
       const msg = err.response?.data?.message ?? '';
       // If backend signals 2FA is needed it will return 401 from regular login
       // Try admin-2fa-request to see if this is an admin user
-      if (err.response?.status === 401) {
+      // Refus pour une autre raison (établissement suspendu, essai terminé) : afficher ce message tel quel
+      if (err.response?.status === 401 && /identifiants/i.test(msg)) {
         try {
           const res2fa = await authService.requestAdmin2fa(email, password);
           if (res2fa.data?.requiresOtp) {

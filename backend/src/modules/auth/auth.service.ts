@@ -75,40 +75,45 @@ export class AuthService {
     return { user, ...tokens };
   }
 
-  // ─── Login ───────────────────────────────────────────────────────────────
-  async login(user: any) {
+  /**
+   * Accès à l'établissement : refusé s'il est suspendu ; après la fin de l'essai (ou d'un abonnement)
+   * pour une école de 50 élèves ou plus, seul l'administrateur peut encore se connecter — pour payer
+   * l'abonnement et débloquer les autres utilisateurs.
+   */
+  private async assertInstitutionAccess(user: { role: string; institutionId?: string | null }) {
     // SUPERADMIN users have no institution — skip institution status check
-    if (user.role !== 'SUPERADMIN' && user.institutionId) {
-      const [institution, studentCount] = await Promise.all([
-        (this.prisma as any).institution.findUnique({
-          where: { id: user.institutionId },
-          select: { status: true, subscriptionStatus: true, trialEndsAt: true },
-        }),
-        this.prisma.student.count({ where: { institutionId: user.institutionId } }),
-      ]);
+    if (user.role === 'SUPERADMIN' || !user.institutionId) return;
+    const [institution, studentCount] = await Promise.all([
+      (this.prisma as any).institution.findUnique({
+        where: { id: user.institutionId },
+        select: { status: true, subscriptionStatus: true, trialEndsAt: true },
+      }),
+      this.prisma.student.count({ where: { institutionId: user.institutionId } }),
+    ]);
 
-      if (institution && ['SUSPENDED', 'REJECTED'].includes(institution.status as string)) {
+    if (institution && ['SUSPENDED', 'REJECTED'].includes(institution.status as string)) {
+      throw new UnauthorizedException(
+        'Votre établissement a été suspendu ou désactivé. Contactez le support.',
+      );
+    }
+
+    if (institution && studentCount >= 50 && user.role !== 'ADMIN') {
+      const trialExpired =
+        institution.subscriptionStatus === 'TRIAL' &&
+        institution.trialEndsAt &&
+        new Date(institution.trialEndsAt) < new Date();
+      const subExpired = institution.subscriptionStatus === 'EXPIRED';
+      if (trialExpired || subExpired) {
         throw new UnauthorizedException(
-          'Votre établissement a été suspendu ou désactivé. Contactez le support.',
+          "La période d'essai de votre établissement est terminée. L'administrateur de l'école doit souscrire un abonnement pour rétablir l'accès.",
         );
       }
-
-      // Block schools with ≥ 50 students whose trial or subscription has expired
-      if (institution && studentCount >= 50) {
-        const now = new Date();
-        const trialExpired =
-          institution.subscriptionStatus === 'TRIAL' &&
-          institution.trialEndsAt &&
-          new Date(institution.trialEndsAt) < now;
-        const subExpired = institution.subscriptionStatus === 'EXPIRED';
-
-        if (trialExpired || subExpired) {
-          throw new UnauthorizedException(
-            "Votre période d'essai est terminée. Souscrivez un abonnement pour continuer d'utiliser NovaBulletin.",
-          );
-        }
-      }
     }
+  }
+
+  // ─── Login ───────────────────────────────────────────────────────────────
+  async login(user: any) {
+    await this.assertInstitutionAccess(user);
 
     const tokens = await this.generateTokens(
       user.id,
@@ -371,6 +376,7 @@ export class AuthService {
     if (user.role !== 'ADMIN' && user.role !== 'BURSAR') {
       throw new UnauthorizedException('La double authentification est réservée aux administrateurs');
     }
+    await this.assertInstitutionAccess(user);
 
     // Generate 6-digit OTP
     const otp = String(Math.floor(100000 + Math.random() * 900000));
