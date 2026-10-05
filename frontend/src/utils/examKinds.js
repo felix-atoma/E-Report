@@ -68,7 +68,7 @@ export const KIND_TEXT = {
     fichesSubtitle: 'Saisie des notes des devoirs surveillés par matière et par professeur',
     resultsTitle: 'Résultats des devoirs surveillés',
     resultsSubtitle: 'Palmarès et relevés de notes des devoirs surveillés',
-    empty: 'Aucun devoir surveillé créé.',
+    empty: "Aucun devoir surveillé pour vos classes. L'administration doit d'abord le créer (tableau de bord admin → Devoirs surveillés → Créer).",
     listPath: '/teacher/devoirs-surveilles',
   },
   CM: {
@@ -78,7 +78,7 @@ export const KIND_TEXT = {
     fichesSubtitle: 'Saisie des notes des compositions mensuelles par matière (sur 10 ou sur 20)',
     resultsTitle: 'Résultats des compositions mensuelles',
     resultsSubtitle: 'Palmarès et relevés de notes des compositions mensuelles (moyenne sur 10)',
-    empty: 'Aucune composition mensuelle créée.',
+    empty: "Aucune composition mensuelle pour vos classes. L'administration doit d'abord la créer.",
     listPath: '/teacher/compositions-mensuelles',
   },
 };

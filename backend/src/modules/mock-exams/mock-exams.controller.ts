@@ -20,7 +20,7 @@ export class MockExamsController {
     @Query('classId') classId?: string,
     @Query('academicYear') academicYear?: string,
   ) {
-    return this.service.list(req.user.institutionId, classId, academicYear);
+    return this.service.list(req.user.institutionId, classId, academicYear, req.user.role, req.user.id);
   }
 
   @Roles(Role.ADMIN, Role.TEACHER)

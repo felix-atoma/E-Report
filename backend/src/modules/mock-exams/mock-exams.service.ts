@@ -42,8 +42,12 @@ export class MockExamsService {
   ) {}
 
   // ─── List exams for a class (or all for institution) ────────────────────────
-  async list(institutionId: string, classId?: string, academicYear?: string) {
+  async list(institutionId: string, classId?: string, academicYear?: string, role?: string, userId?: string) {
     const where: any = { institutionId };
+    // Professeur : uniquement les sessions des classes où il enseigne (ou dont il est titulaire)
+    if (role === 'TEACHER' && userId) {
+      where.class = { OR: [{ teacherId: userId }, { subjects: { some: { teacherId: userId } } }] };
+    }
     if (classId) where.classId = classId;
     if (academicYear) where.academicYear = academicYear;
 
