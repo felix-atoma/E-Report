@@ -396,19 +396,19 @@ const LMS_FEATURES = [
   { icon: '🎯', title: 'Quiz Interactifs', desc: 'Créez des quiz avec correction automatique. Les résultats sont disponibles immédiatement après la soumission.' },
   { icon: '📅', title: 'Emploi du Temps', desc: 'Emploi du temps de chaque classe accessible depuis l\'application. Mis à jour en temps réel par l\'administration.' },
   { icon: '📢', title: 'Annonces & Actualités', desc: 'Publiez des annonces ciblées aux parents, enseignants ou élèves. Chaque partie reçoit uniquement ce qui la concerne.' },
-  { icon: '🏆', title: 'Examens Blancs', desc: 'Organisez des examens blancs, saisissez les notes et publiez le palmarès complet de l\'établissement.' },
+  { icon: '🏆', title: 'Examens blancs, devoirs & compositions', desc: 'Examens blancs (CEPE, BEPC, BAC), devoirs surveillés et compositions mensuelles : saisie des notes, palmarès et relevés de notes en PDF.' },
 ];
 
 const STEPS = [
   { num: '01', icon: '🏫', title: 'Inscrivez votre école', desc: 'Formulaire en 2 minutes. Accès immédiat, sans attente. Compte activé gratuitement — 30 jours d\'essai offerts.', tags: ['Nom école','Type','Niveau','Contact'] },
   { num: '02', icon: '⚙️', title: 'Configurez en 30 min', desc: 'Ajoutez classes, matières, enseignants, élèves. Import CSV disponible. Paramétrez le système de périodes par cycle.', tags: ['Classes','Matières','Coefficients','Import CSV'] },
-  { num: '03', icon: '✏️', title: 'Saisie des notes', desc: 'Les professeurs saisissent les notes sur leur téléphone. Calcul automatique. Signature numérique de la fiche.', tags: ['Devoir','Composition','Appréciations','Signature'] },
-  { num: '04', icon: '🚀', title: 'Publiez & envoyez', desc: 'L\'admin publie. Chaque parent reçoit le bulletin PDF sur WhatsApp instantanément. Blocage auto si frais impayés.', tags: ['PDF auto','WhatsApp','Email','Blocage frais'] },
+  { num: '03', icon: '✏️', title: 'Saisie des notes', desc: 'Les professeurs saisissent les notes sur leur téléphone, même en mode paysage, puis signent leur fiche. Dès que toutes les fiches sont signées, les bulletins sont générés automatiquement.', tags: ['Devoir','Composition','Signature','Bulletins auto'] },
+  { num: '04', icon: '🚀', title: 'Le titulaire publie', desc: 'Le professeur titulaire relit les bulletins de sa classe, ajoute l\'observation et la conduite, puis publie. Chaque parent reçoit le bulletin PDF sur WhatsApp et par email. Blocage auto si frais impayés.', tags: ['Titulaire','PDF auto','WhatsApp','Blocage frais'] },
 ];
 
 const ROLES = [
-  { icon: '🏫', title: 'Administrateur', color: '#1E2A78', desc: 'Vision complète de votre établissement.', features: ['Tableau de bord analytique complet','Gestion classes, matières, enseignants','Bulletins PDF + publication en 1 clic','Paramétrage des frais scolaires','Compte Mobile Money de l\'école pour les paiements','Registre présences, santé, bibliothèque','Inventaire, alumni, examens nationaux','Documents officiels & profils du personnel','Exportation CSV de toutes les données'] },
-  { icon: '👨‍🏫', title: 'Enseignant', color: '#1E2A78', desc: 'Votre fiche de notes numérique toujours dans votre poche.', features: ['📝 Fiche numérique sur mobile','Saisie des notes en temps réel','Calcul automatique des moyennes','Appréciations par élève','Signature électronique de la fiche','Dépôt de cours et documents','Publication de devoirs et quiz','Correction examens blancs'] },
+  { icon: '🏫', title: 'Administrateur', color: '#1E2A78', desc: 'Vision complète de votre établissement.', features: ['Tableau de bord analytique complet','Gestion classes, matières, enseignants','Bulletins PDF sécurisés (QR code, filigrane)','Devoirs surveillés, compositions & examens blancs','Paramétrage des frais scolaires','Compte Mobile Money de l\'école pour les paiements','Registre présences, santé, bibliothèque','Inventaire, alumni, examens nationaux','Documents officiels & profils du personnel','Exportation CSV de toutes les données'] },
+  { icon: '👨‍🏫', title: 'Enseignant', color: '#1E2A78', desc: 'Votre fiche de notes numérique toujours dans votre poche.', features: ['📝 Fiche numérique sur mobile (mode paysage)','Calcul automatique des moyennes et des rangs','Signature manuscrite de la fiche (dessinée ou importée)','Devoirs surveillés, compositions & examens blancs','Appel à chaque séance : absences et retards','Épreuves transcrites en Word par l\'IA','Titulaire : observation, conduite et publication','Dépôt de cours, devoirs et quiz'] },
   { icon: '💼', title: 'Économe', color: '#FF7A59', desc: 'Gérez les frais sans paperasse.', features: ['Enregistrement paiements (TMoney, Flooz, cash)','Paiement en ligne Mobile Money (Notchpay)','Vue impayés en temps réel','Génération de reçus PDF','Suivi par cotisation et période','Rapport financier exportable','Statistiques de recouvrement','Bulletins retenus automatiquement','Accès multi-établissement'] },
   { icon: '👨‍👩‍👧', title: 'Parent', color: '#FF7A59', desc: 'Suivez la scolarité de vos enfants.', features: ['Bulletins sur WhatsApp & Email','Portail parent 24h/24','Progression trimestre par trimestre','Historique complet des bulletins','Paiement frais en ligne (Mobile Money)','Consulter cours et devoirs LMS','Annonces de l\'école','Notifications instantanées'] },
   { icon: '🎓', title: 'Élève', color: '#1E2A78', desc: 'Suivez vos résultats et progressez.', features: ['Consultation des bulletins PDF','Progression trimestre par trimestre','Classement, mention et appréciation','Accès aux cours et documents LMS','Devoirs et quiz en ligne','Emploi du temps de la classe','Annonces de l\'établissement','Notifications en temps réel'] },
@@ -447,7 +447,7 @@ const FAQS = [
   { q: 'Est-ce gratuit pour les petites écoles ?', a: 'Oui. Toute école ayant moins de 50 élèves inscrits bénéficie d\'un accès gratuit permanent à toutes les fonctionnalités de NovaBulletin — sans limite de durée, sans abonnement et sans carte bancaire. Le modèle payant ne s\'applique qu\'à partir de 50 élèves.' },
   { q: 'Combien coûte NovaBulletin après l\'essai gratuit ?', a: 'Le tarif dépend de votre effectif réel. STARTER (< 50 élèves) : GRATUIT ∞. BASIC (50–99 élèves) : 10 000 FCFA/mois ou 100 000 FCFA/an. PRO (100–199 élèves) : 20 000 FCFA/mois ou 200 000 FCFA/an. ENTERPRISE (200+ élèves) : 35 000 FCFA/mois ou 350 000 FCFA/an. Paiement par TMoney, Flooz ou virement.' },
   { q: 'Mon école est un complexe (primaire + collège + lycée). Est-ce compatible ?', a: 'Oui. NovaBulletin est conçu pour les établissements complexes multi-cycles. Vous pouvez configurer des systèmes de périodes différents par cycle : par exemple, trimestriel pour le primaire et le collège, et semestriel pour le lycée. Chaque bulletin est généré automatiquement avec le bon système de périodes selon le cycle de la classe.' },
-  { q: 'Comment fonctionnent les fiches numériques des enseignants ?', a: 'Chaque enseignant a accès à sa propre fiche de notes numérique depuis son téléphone. Il saisit les notes (interrogations, devoirs, compositions), les moyennes se calculent automatiquement, et il signe électroniquement la fiche. L\'administration voit tout en temps réel — aucune retranscription manuelle, aucune perte de fiche papier.' },
+  { q: 'Comment fonctionnent les fiches numériques des enseignants ?', a: 'Chaque enseignant a accès à sa propre fiche de notes numérique depuis son téléphone. Il saisit les notes (interrogations, devoirs, compositions), les moyennes se calculent automatiquement, et il signe la fiche avec sa signature manuscrite. Quand toutes les fiches de la classe sont signées, les bulletins sont générés automatiquement et le professeur titulaire les relit et les publie. Aucune retranscription manuelle, aucune perte de fiche papier.' },
   { q: 'NovaBulletin remplace-t-il tous les registres papier ?', a: 'Oui. NovaBulletin centralise 11 registres : présences, santé, bibliothèque, inventaire, anciens élèves, transferts, dossiers disciplinaires, examens nationaux, calendrier, documents officiels et profils du personnel. Chaque donnée est sécurisée, consultable instantanément et exportable en CSV.' },
   { q: 'Combien de temps faut-il pour configurer l\'école ?', a: 'Environ 30 minutes pour une école de taille moyenne. Vous pouvez importer vos élèves depuis un fichier Excel ou CSV en quelques clics. Notre équipe vous accompagne à chaque étape via WhatsApp.' },
   { q: 'Les enseignants doivent-ils être formés ?', a: 'L\'interface est conçue pour être intuitive sur mobile. La plupart des enseignants maîtrisent la plateforme en moins de 10 minutes. Nous fournissons un guide de démarrage rapide et un support WhatsApp dédié.' },
@@ -470,6 +470,8 @@ const COMPARISON = [
   { feature: 'LMS (cours, devoirs, quiz)', excel: '❌ Non', autres: '⚠️ Option payante', nova: '✅ Inclus' },
   { feature: 'Analytics tableau de bord', excel: '⚠️ Tableaux manuels', autres: '✅ Oui', nova: '✅ Temps réel' },
   { feature: 'Appréciations IA (bulletins)', excel: '❌ Non', autres: '❌ Non', nova: '✅ 1 clic avec Claude AI' },
+  { feature: 'Devoirs surveillés & compositions', excel: '❌ Fiches papier', autres: '⚠️ Partiel', nova: '✅ Saisie, palmarès, relevés PDF' },
+  { feature: 'Bulletin vérifiable (QR code)', excel: '❌ Non', autres: '❌ Non', nova: '✅ QR code + filigrane' },
   { feature: 'Mode hors ligne (PWA)', excel: '❌ Non', autres: '❌ Non', nova: '✅ Cache + synchronisation auto' },
   { feature: 'Relances frais impayés', excel: '❌ Appels manuels', autres: '❌ Non', nova: '✅ Auto : amical puis quotidien' },
   { feature: 'Exports CSV officiels', excel: '❌ Mise en forme manuelle', autres: '⚠️ Coût supplémentaire', nova: '✅ Auto, prêt pour l\'inspection' },
@@ -513,17 +515,17 @@ const LMS_FEATURES_EN = [
   { icon: '🎯', title: 'Interactive Quizzes', desc: 'Create quizzes with automatic correction. Results are available immediately after submission.' },
   { icon: '📅', title: 'Timetable', desc: 'Each class timetable accessible from the app. Updated in real time by the administration.' },
   { icon: '📢', title: 'Announcements & News', desc: 'Publish targeted announcements to parents, teachers or students. Each party receives only what concerns them.' },
-  { icon: '🏆', title: 'Mock Exams', desc: 'Organize mock exams, enter grades and publish the complete school rankings.' },
+  { icon: '🏆', title: 'Mock exams, tests & monthly tests', desc: 'Mock exams (CEPE, BEPC, BAC), supervised tests and monthly tests: grade entry, results lists and PDF transcripts.' },
 ];
 const STEPS_EN = [
   { num: '01', icon: '🏫', title: 'Register your school', desc: '2-minute form. Immediate access, no waiting. Account activated for free — 30-day trial included.', tags: ['School name','Type','Level','Contact'] },
   { num: '02', icon: '⚙️', title: 'Set up in 30 min', desc: 'Add classes, subjects, teachers, students. CSV import available. Configure term system per cycle.', tags: ['Classes','Subjects','Coefficients','CSV Import'] },
-  { num: '03', icon: '✏️', title: 'Grade entry', desc: 'Teachers enter grades on their phone. Automatic calculation. Digital signature on the sheet.', tags: ['Test','Exam','Comments','Signature'] },
-  { num: '04', icon: '🚀', title: 'Publish & send', desc: 'Admin publishes. Every parent receives the PDF report card on WhatsApp instantly. Auto block if fees unpaid.', tags: ['Auto PDF','WhatsApp','Email','Fee gate'] },
+  { num: '03', icon: '✏️', title: 'Grade entry', desc: 'Teachers enter grades on their phone, even in landscape mode, then sign their sheet. As soon as every sheet is signed, report cards are generated automatically.', tags: ['Test','Exam','Signature','Auto reports'] },
+  { num: '04', icon: '🚀', title: 'The form teacher publishes', desc: 'The form teacher reviews the class report cards, adds the comment and conduct, then publishes. Every parent receives the PDF on WhatsApp and by email. Auto block if fees unpaid.', tags: ['Form teacher','Auto PDF','WhatsApp','Fee gate'] },
 ];
 const ROLES_EN = [
-  { icon: '🏫', title: 'Administrator', color: '#1E2A78', desc: 'Complete view of your institution.', features: ['Full analytics dashboard','Manage classes, subjects, teachers','PDF reports + publish in 1 click','School fee configuration','School\'s own Mobile Money account for payments','Attendance, health, library registers','Inventory, alumni, national exams','Official documents & staff profiles','CSV export of all data'] },
-  { icon: '👨‍🏫', title: 'Teacher', color: '#1E2A78', desc: 'Your digital grade sheet always in your pocket.', features: ['📝 Digital grade sheet on mobile','Real-time grade entry','Automatic average calculation','Comments per student','Electronic signature of the sheet','Upload courses and documents','Publish homework and quizzes','Mark mock exams'] },
+  { icon: '🏫', title: 'Administrator', color: '#1E2A78', desc: 'Complete view of your institution.', features: ['Full analytics dashboard','Manage classes, subjects, teachers','Secure PDF reports (QR code, watermark)','Supervised tests, monthly tests & mock exams','School fee configuration','School\'s own Mobile Money account for payments','Attendance, health, library registers','Inventory, alumni, national exams','Official documents & staff profiles','CSV export of all data'] },
+  { icon: '👨‍🏫', title: 'Teacher', color: '#1E2A78', desc: 'Your digital grade sheet always in your pocket.', features: ['📝 Digital grade sheet on mobile (landscape mode)','Automatic averages and rankings','Handwritten signature on the sheet (drawn or imported)','Supervised tests, monthly tests & mock exams','Attendance each lesson: absences and lateness','Exam papers transcribed to Word by AI','Form teacher: comment, conduct and publishing','Upload courses, homework and quizzes'] },
   { icon: '💼', title: 'Bursar', color: '#FF7A59', desc: 'Manage fees without paperwork.', features: ['Record payments (TMoney, Flooz, cash)','Online Mobile Money payment (Notchpay)','Real-time unpaid view','Generate PDF receipts','Track by fee type and period','Exportable financial report','Collection statistics','Reports held automatically','Multi-school access'] },
   { icon: '👨‍👩‍👧', title: 'Parent', color: '#FF7A59', desc: 'Track your children\'s schooling.', features: ['Report cards on WhatsApp & Email','Parent portal 24/7','Term-by-term progress','Full report history','Pay fees online (Mobile Money)','View LMS courses and homework','School announcements','Instant notifications'] },
   { icon: '🎓', title: 'Student', color: '#1E2A78', desc: 'Track your grades and progress.', features: ['View PDF report cards','Term-by-term progress','Class rank, grade and comments','Access LMS courses and documents','Online homework and quizzes','Class timetable','School announcements','Real-time notifications'] },
@@ -546,7 +548,7 @@ const FAQS_EN = [
   { q: 'Is it free for small schools?', a: 'Yes. Any school with fewer than 50 enrolled students gets permanent free access to all NovaBulletin features — no time limit, no subscription, no credit card. The paid model only applies from 50 students upwards.' },
   { q: 'How much does NovaBulletin cost after the free trial?', a: 'Pricing depends on your actual enrolment. STARTER (< 50 students): FREE ∞. BASIC (50–99): 10,000 FCFA/month or 100,000 FCFA/year. PRO (100–199): 20,000 FCFA/month or 200,000 FCFA/year. ENTERPRISE (200+): 35,000 FCFA/month or 350,000 FCFA/year. Payment via TMoney, Flooz or bank transfer.' },
   { q: 'My school is a complex (primary + middle + high school). Is it compatible?', a: 'Yes. NovaBulletin is built for multi-cycle complexes. You can configure different term systems per cycle — for example, trimester for primary and middle school, and semester for high school. Each report card is automatically generated with the correct term system for its cycle.' },
-  { q: 'How do the teachers\' digital grade sheets work?', a: 'Each teacher accesses their own digital grade sheet from their phone. They enter grades (tests, homework, exams), averages calculate automatically, and they electronically sign the sheet. The administration sees everything in real time — no manual re-entry, no lost paper sheets.' },
+  { q: 'How do the teachers\' digital grade sheets work?', a: 'Each teacher accesses their own digital grade sheet from their phone. They enter grades (tests, homework, exams), averages calculate automatically, and they sign the sheet with their handwritten signature. Once every sheet in the class is signed, report cards are generated automatically and the form teacher reviews and publishes them. No manual re-entry, no lost paper sheets.' },
   { q: 'Does NovaBulletin replace all paper registers?', a: 'Yes. NovaBulletin centralizes 11 registers: attendance, health, library, inventory, alumni, transfers, disciplinary files, national exams, calendar, official documents and staff profiles. Every record is secured, instantly searchable and exportable to CSV.' },
   { q: 'How long does it take to set up the school?', a: 'About 30 minutes for a medium-sized school. You can import your students from an Excel or CSV file in a few clicks. Our team supports you at every step via WhatsApp.' },
   { q: 'Do teachers need training?', a: 'The interface is designed to be intuitive on mobile. Most teachers master the platform in under 10 minutes. We provide a quick-start guide and dedicated WhatsApp support.' },
@@ -559,12 +561,22 @@ const FEATURES_ROW3 = [
   { icon: '📡', color: '#fff3f0', iconColor: '#FF7A59', title: 'Mode hors ligne', desc: 'NovaBulletin fonctionne même sans internet. Les données sont mises en cache, la consultation reste possible et tout se synchronise automatiquement dès la reconnexion.' },
   { icon: '💸', color: '#eff6ff', iconColor: '#1E2A78', title: 'Relances automatiques des frais', desc: 'Rappel amical par WhatsApp et email après 1 mois d\'impayé, puis relance quotidienne avec avertissement de renvoi après 2 mois — sans aucune intervention manuelle.' },
   { icon: '📊', color: '#fff3f0', iconColor: '#FF7A59', title: 'Exports gouvernementaux', desc: 'Téléchargez en 1 clic les fichiers CSV prêts pour l\'inspection : effectifs élèves, résultats de classe, rapport des frais scolaires. Format Excel compatible.' },
+  { icon: '🖊️', color: '#eff6ff', iconColor: '#1E2A78', title: 'Devoirs surveillés & compositions mensuelles', desc: 'L\'administration crée la session, chaque professeur saisit et signe les notes de sa matière. Rangs, appréciations, palmarès et relevés de notes en PDF générés automatiquement.' },
+  { icon: '📄', color: '#fff3f0', iconColor: '#FF7A59', title: 'Épreuves transformées en Word', desc: 'Le professeur prend son sujet en photo ou l\'importe en PDF : l\'IA le transcrit en document Word à l\'en-tête de l\'école. Il corrige, puis le soumet à l\'administration pour l\'impression.' },
+  { icon: '🔒', color: '#eff6ff', iconColor: '#1E2A78', title: 'Bulletins sécurisés', desc: 'QR code de vérification, filigrane au nom de l\'école, signatures des professeurs et du titulaire, moyenne générale en lettres. Toujours sur une seule page A4.' },
+  { icon: '🧒', color: '#fff3f0', iconColor: '#FF7A59', title: 'Bulletin du primaire', desc: 'Modèle dédié du CI au CM2 : chaque matière notée sur 10 ou sur 20, total des points, moyenne sur 10 et date de la rentrée suivante pour préparer les parents.' },
+  { icon: '⏱️', color: '#eff6ff', iconColor: '#1E2A78', title: 'Absences, retards & conduite', desc: 'Chaque professeur fait l\'appel à chaque séance. Retards en heures et absences en jours reportés sur le bulletin, et conduite proposée automatiquement au titulaire.' },
 ];
 const FEATURES_ROW3_EN = [
   { icon: '✨', color: '#eff6ff', iconColor: '#1E2A78', title: 'AI-generated Comments', desc: 'Generate personalised report card comments in 1 click. AI analyses the average, grade and subject scores to write a professional, student-specific appreciation.' },
   { icon: '📡', color: '#fff3f0', iconColor: '#FF7A59', title: 'Offline Mode', desc: 'NovaBulletin works even without internet. Data is cached, browsing stays available and everything syncs automatically once reconnected.' },
   { icon: '💸', color: '#eff6ff', iconColor: '#1E2A78', title: 'Automatic Fee Reminders', desc: 'Friendly WhatsApp and email reminder after 1 month unpaid, then a daily follow-up with an exclusion warning after 2 months — fully automatic, no manual work.' },
   { icon: '📊', color: '#fff3f0', iconColor: '#FF7A59', title: 'Government Exports', desc: 'Download in 1 click inspection-ready CSV files: student census, class results, fee report. Excel-compatible format.' },
+  { icon: '🖊️', color: '#eff6ff', iconColor: '#1E2A78', title: 'Supervised tests & monthly tests', desc: 'The administration creates the session, each teacher enters and signs the grades for their subject. Rankings, comments, results lists and PDF transcripts are generated automatically.' },
+  { icon: '📄', color: '#fff3f0', iconColor: '#FF7A59', title: 'Exam papers turned into Word', desc: 'Teachers photograph or upload their exam paper as a PDF: AI transcribes it into a Word document with the school header. They correct it, then submit it to the administration for printing.' },
+  { icon: '🔒', color: '#eff6ff', iconColor: '#1E2A78', title: 'Secure report cards', desc: 'Verification QR code, school-name watermark, teachers\' and form teacher\'s signatures, overall average written in words. Always on a single A4 page.' },
+  { icon: '🧒', color: '#fff3f0', iconColor: '#FF7A59', title: 'Primary school report card', desc: 'A dedicated template from CI to CM2: each subject marked out of 10 or 20, points total, average out of 10 and the next term start date so parents can prepare.' },
+  { icon: '⏱️', color: '#eff6ff', iconColor: '#1E2A78', title: 'Absences, lateness & conduct', desc: 'Every teacher takes attendance each lesson. Lateness in hours and absences in days appear on the report card, and conduct is suggested automatically to the form teacher.' },
 ];
 
 const COMPARISON_EN = [
@@ -581,6 +593,8 @@ const COMPARISON_EN = [
   { feature: 'LMS (courses, homework, quizzes)', excel: '❌ No', autres: '⚠️ Paid option', nova: '✅ Included' },
   { feature: 'Dashboard analytics', excel: '⚠️ Manual charts', autres: '✅ Yes', nova: '✅ Real-time' },
   { feature: 'AI report card comments', excel: '❌ No', autres: '❌ No', nova: '✅ 1 click with Claude AI' },
+  { feature: 'Supervised & monthly tests', excel: '❌ Paper sheets', autres: '⚠️ Partial', nova: '✅ Entry, rankings, PDF transcripts' },
+  { feature: 'Verifiable report card (QR code)', excel: '❌ No', autres: '❌ No', nova: '✅ QR code + watermark' },
   { feature: 'Offline mode', excel: '❌ No', autres: '❌ No', nova: '✅ PWA with data cache' },
   { feature: 'Unpaid fee follow-ups', excel: '❌ Manual calls', autres: '❌ No', nova: '✅ Auto: friendly then daily' },
   { feature: 'Government CSV exports', excel: '❌ Manual formatting', autres: '⚠️ Extra cost', nova: '✅ Auto, inspection-ready' },
@@ -1209,22 +1223,22 @@ export default function LandingPage() {
         <div className="lp-container lp-fiche__inner">
           <div className="lp-fiche__badge">✨</div>
           <div className="lp-fiche__body">
-            <h3>{t('Nouvelles fonctionnalités — IA, hors ligne & exports','New features — AI, offline & exports')}</h3>
+            <h3>{t('Nouvelles fonctionnalités — évaluations, épreuves IA & bulletins sécurisés','New features — assessments, AI exam papers & secure report cards')}</h3>
             <p>{t(
-              <>NovaBulletin s'améliore en continu. Les dernières nouveautés apportent <strong>l'intelligence artificielle dans les bulletins</strong>, la continuité hors connexion, des rappels WhatsApp ciblés et des exports officiels prêts à remettre à l'inspection.</>,
-              <>NovaBulletin keeps improving. The latest updates bring <strong>AI-powered report comments</strong>, offline continuity, targeted WhatsApp payment reminders and official exports ready for the inspectorate.</>
+              <>NovaBulletin s'améliore en continu. Les dernières nouveautés couvrent <strong>toutes les évaluations de l'année</strong>, la préparation des épreuves avec l'IA et des bulletins plus sûrs, publiés par le titulaire.</>,
+              <>NovaBulletin keeps improving. The latest updates cover <strong>every assessment of the year</strong>, exam paper preparation with AI and safer report cards, published by the form teacher.</>
             )}</p>
             <div className="lp-fiche__points">
               {(isFr ? [
-                ['✨','IA génère l\'appréciation du bulletin en analysant les notes — 1 clic pour chaque élève'],
-                ['📡','Mode hors ligne : données en cache, synchronisation automatique à la reconnexion'],
-                ['💸','Rappel paiement WhatsApp : envoyez le solde impayé exact en 1 clic'],
-                ['📊','Exports CSV officiels : effectifs, résultats, frais — compatibles Excel & inspection'],
+                ['🖊️','Devoirs surveillés et compositions mensuelles : saisie, signature, palmarès et relevés PDF'],
+                ['📄','Épreuves : photo ou PDF du sujet transcrit en Word à l\'en-tête de l\'école'],
+                ['🔒','Bulletins avec QR code de vérification, filigrane et signature du titulaire'],
+                ['✨','Observation du titulaire rédigée par l\'IA et conduite proposée automatiquement'],
               ] : [
-                ['✨','AI generates report card comments by analysing grades — 1 click per student'],
-                ['📡','Offline mode: data cached, auto-sync on reconnection'],
-                ['💸','WhatsApp payment reminder: send exact outstanding balance in 1 click'],
-                ['📊','Official CSV exports: census, results, fees — Excel & inspectorate ready'],
+                ['🖊️','Supervised and monthly tests: grade entry, signature, results lists and PDF transcripts'],
+                ['📄','Exam papers: a photo or PDF of the paper transcribed to Word with the school header'],
+                ['🔒','Report cards with a verification QR code, watermark and form teacher signature'],
+                ['✨','Form teacher comment written by AI and conduct suggested automatically'],
               ]).map(([icon, text]) => (
                 <span key={text} className="lp-fiche__point"><span>{icon}</span>{text}</span>
               ))}
