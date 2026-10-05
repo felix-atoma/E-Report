@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { useLanguage } from '../../../context/LanguageContext';
 import logoIcon from '../../../assets/images/novaBulletin-icon.svg';
 import './LandingPage.css';
+import './LandingPage.night.css';
 
 const SITE_URL = import.meta.env.VITE_APP_URL ?? (typeof window !== 'undefined' ? window.location.origin : 'https://novabulletin.app');
 const SUPPORT_EMAIL = import.meta.env.VITE_SUPPORT_EMAIL ?? 'contact@novabulletin.app';
@@ -750,6 +751,9 @@ export default function LandingPage() {
   ];
   const [themeId, setThemeId] = useState(() => localStorage.getItem('lp-theme') ?? 'default');
   const [showThemes, setShowThemes] = useState(false);
+  // Habillage « Nuit » (par défaut) ou clair d'origine, mémorisé dans le navigateur
+  const [night, setNight] = useState(() => { try { return localStorage.getItem('lp-skin') !== 'light'; } catch { return true; } });
+  const toggleSkin = () => setNight((v) => { const next = !v; try { localStorage.setItem('lp-skin', next ? 'night' : 'light'); } catch { /* stockage indisponible */ } return next; });
   const currentTheme = LP_THEMES.find(t => t.id === themeId) ?? LP_THEMES[0];
   const applyTheme = (t) => {
     setThemeId(t.id);
@@ -803,7 +807,7 @@ export default function LandingPage() {
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
   return (
-    <div className="lp" style={{ zoom: ZOOM_LEVELS[fontIdx] }}>
+    <div className={`lp${night ? ' lp--night' : ''}`} style={{ zoom: ZOOM_LEVELS[fontIdx] }}>
 
       {/* ─── THEME OVERLAY ───────────────────────────────────────────── */}
       {showThemes && (
@@ -994,6 +998,16 @@ export default function LandingPage() {
                 <path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8S1 12 1 12z"/>
                 <circle cx="12" cy="12" r="3"/>
               </svg>
+            </button>
+
+            {/* Habillage sombre / clair */}
+            <button
+              className="lp-toolbar__btn"
+              onClick={toggleSkin}
+              aria-label={night ? t('Passer en mode clair','Switch to light mode') : t('Passer en mode sombre','Switch to dark mode')}
+              title={night ? t('Mode clair','Light mode') : t('Mode sombre','Dark mode')}
+            >
+              <span aria-hidden="true">{night ? '☀️' : '🌙'}</span>
             </button>
 
             {/* Search */}

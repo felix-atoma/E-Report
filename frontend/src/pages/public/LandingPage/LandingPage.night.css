@@ -1,0 +1,184 @@
+/* ════════════════════════════════════════════════════════════════════════
+   Habillage « Nuit » de la page d'accueil (par défaut) — fond bleu nuit à
+   trame de points, barre de navigation flottante en pilule, grand titre
+   centré en deux tons, sections et cartes sombres. Le contenu ne change pas :
+   seuls couleurs, typographie et disposition. Bouton ☀️ = habillage clair.
+   ════════════════════════════════════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap');
+
+.lp.lp--night {
+  --n-bg: #050a1c;
+  --n-surface: #0a1230;
+  --n-surface-2: #0e1838;
+  --n-border: rgba(255, 255, 255, 0.08);
+  --n-text: #e5e9f2;
+  --n-muted: #93a0b8;
+  --n-teal: #2bb5b0;
+  --n-orange: #ff7a59;
+  background-color: var(--n-bg);
+  background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 22px 22px;
+  color: var(--n-text);
+}
+
+/* Titres : grotesque très gras, serrée */
+.lp--night h1, .lp--night h2, .lp--night .lp-section-head h2 {
+  font-family: 'Bricolage Grotesque', var(--bulletin-font-family, system-ui), sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #fff;
+}
+.lp--night h3, .lp--night h4 { color: #fff; }
+.lp--night section p, .lp--night section li { color: var(--n-muted); }
+.lp--night section strong { color: #fff; }
+
+/* Toutes les sections : transparentes sur le fond nuit */
+.lp--night section, .lp--night .lp-hero, .lp--night .lp-fiche {
+  background: transparent !important;
+  border-color: var(--n-border);
+}
+.lp--night .lp-hero__bg, .lp--night .lp-lms__bg, .lp--night .lp-cta__bg, .lp--night .lp-blob { display: none; }
+
+/* ── Barre de navigation flottante en pilule ── */
+.lp--night .lp-nav {
+  position: sticky; top: 12px; z-index: 100;
+  max-width: 1240px; margin: 12px auto 0; width: calc(100% - 24px);
+  background: rgba(8, 15, 38, 0.72); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--n-border); border-radius: 22px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+}
+.lp--night .lp-nav--scrolled { background: rgba(8, 15, 38, 0.9); }
+.lp--night .lp-nav__brand span, .lp--night .lp-nav__links a { color: #e5e9f2; }
+.lp--night .lp-nav__links a:hover { color: var(--n-teal); }
+.lp--night .lp-nav__bottom { border-top-color: var(--n-border); }
+.lp--night .lp-toolbar__btn { background: rgba(255, 255, 255, 0.05); border-color: var(--n-border); color: #e5e9f2; }
+.lp--night .lp-lang__btn { color: #cbd5e1; }
+
+/* ── Boutons ── */
+.lp--night .lp-btn--cta, .lp--night .lp-btn--primary {
+  background: var(--n-teal); color: #04121a; border: none; border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(43, 181, 176, 0.25); font-weight: 800;
+}
+.lp--night .lp-btn--cta:hover, .lp--night .lp-btn--primary:hover { filter: brightness(1.08); }
+.lp--night .lp-btn--ghost, .lp--night .lp-btn--ghost-white {
+  color: #e5e9f2; border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 14px; background: rgba(255, 255, 255, 0.03);
+}
+
+/* ── Hero centré ── */
+.lp--night .lp-hero { padding-top: 3.5rem; }
+.lp--night .lp-hero__inner { grid-template-columns: 1fr; text-align: center; gap: 2.5rem; }
+.lp--night .lp-hero__left { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
+.lp--night .lp-hero__pill {
+  background: rgba(255, 255, 255, 0.03); border: 1px solid var(--n-border); border-radius: 999px;
+  color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.18em; font-size: 0.72rem; font-weight: 700;
+  padding: 0.55rem 1.1rem;
+}
+.lp--night .lp-hero h1 { font-size: clamp(2.5rem, 6.2vw, 5rem); line-height: 1.02; margin: 1.4rem 0 1.2rem; }
+.lp--night .lp-hero .lp-grad-text {
+  background: linear-gradient(90deg, var(--n-orange), #ffb38f); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.lp--night .lp-hero__desc { color: var(--n-muted); font-size: 1.12rem; max-width: 760px; }
+.lp--night .lp-hero__desc strong { color: #fff !important; }
+.lp--night .lp-hero__btns { justify-content: center; }
+.lp--night .lp-hero__badges { justify-content: center; }
+.lp--night .lp-hero__badges span { background: transparent; border: none; color: var(--n-muted); }
+.lp--night .lp-store-badges { justify-content: center; }
+/* Capture du tableau de bord sous le titre, dans un cadre sombre */
+.lp--night .lp-hero__right { max-width: 1000px; margin: 0 auto; width: 100%; }
+.lp--night .lp-hero__illus-wrap {
+  background: var(--n-surface); border: 1px solid var(--n-border); border-radius: 28px; padding: 18px;
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55);
+}
+.lp--night .lp-scroll-hint { display: none; }
+
+/* ── Bandeau de chiffres ── */
+.lp--night .lp-stats { border-top: 1px solid var(--n-border); border-bottom: 1px solid var(--n-border); }
+.lp--night .lp-anim-stat { background: transparent; box-shadow: none; border-right: 1px solid var(--n-border); }
+.lp--night .lp-anim-stat:last-child { border-right: none; }
+.lp--night .lp-anim-stat * { color: var(--n-muted); }
+.lp--night .lp-anim-stat strong, .lp--night .lp-anim-stat [class*="value"] { color: #fff; }
+
+/* ── Sur-titres de section : petites capitales espacées ── */
+.lp--night .lp-tag, .lp--night .lp-tag--light {
+  background: transparent; border: none; color: var(--n-teal);
+  text-transform: uppercase; letter-spacing: 0.25em; font-size: 0.75rem; font-weight: 800;
+}
+.lp--night .lp-section-head p { color: var(--n-muted); }
+
+/* ── Cartes sombres ── */
+.lp--night :is(.lp-feat-card, .lp-db-card, .lp-pain-item, .lp-price-tier, .lp-price-card, .lp-faq-item, .lp-role-panel,
+  .lp-how__step, .lp-lms__feat, .lp-carousel, .lp-table-wrap, .lp-db-banner, .lp-problem__vs > div, .lp-fiche__inner, .lp-role-tab) {
+  background: var(--n-surface) !important;
+  border: 1px solid var(--n-border) !important;
+  border-radius: 20px;
+  box-shadow: none;
+  color: var(--n-text);
+}
+.lp--night .lp-feat-card:hover, .lp--night .lp-db-card:hover { border-color: rgba(43, 181, 176, 0.45) !important; transform: translateY(-3px); }
+.lp--night .lp-feat-icon, .lp--night .lp-db-card__icon, .lp--night .lp-lms__feat-icon, .lp--night .lp-how__icon {
+  background: rgba(255, 255, 255, 0.05) !important; border: 1px solid var(--n-border); border-radius: 14px;
+}
+.lp--night .lp-role-tab { color: #cbd5e1; }
+.lp--night .lp-price-tier--popular { border-color: var(--n-teal) !important; }
+.lp--night .lp-faq-q { color: #fff; background: transparent; }
+.lp--night .lp-faq-a { color: var(--n-muted); }
+
+/* Tableau comparatif */
+.lp--night .lp-table { color: var(--n-text); }
+.lp--night .lp-table :is(th, td) { border-color: var(--n-border); background: transparent; color: var(--n-text); }
+.lp--night .lp-table thead th { background: var(--n-surface-2); }
+.lp--night .lp-table__nova-head, .lp--night .lp-table td:last-child { background: rgba(43, 181, 176, 0.08) !important; }
+
+/* Encadrés « Nouvelles fonctionnalités » / fiche : texte clair */
+.lp--night .lp-fiche__point { background: rgba(255, 255, 255, 0.04); border: 1px solid var(--n-border); color: var(--n-text); }
+.lp--night .lp-fiche__badge { background: rgba(255, 255, 255, 0.06); }
+
+/* Maquettes (cartes blanches) : on garde leurs couleurs d'origine, lisibles */
+.lp--night :is(.lp-fiche__mockup, .lp-float-card, .lp-search-modal) { color: #111827; }
+.lp--night :is(.lp-fiche__mockup, .lp-float-card, .lp-search-modal) :is(p, li, span, div, strong) { color: inherit; }
+.lp--night .lp-float-card p { color: #4b5563; }
+
+/* Appel final et pied de page */
+.lp--night .lp-cta { border-top: 1px solid var(--n-border); }
+.lp--night .lp-footer { background: #030716 !important; border-top: 1px solid var(--n-border); }
+
+/* Galerie / WhatsApp / vidéo : fonds transparents, cadres sombres */
+.lp--night .lp-gallery__item, .lp--night .lp-gallery__strip-item { border-color: var(--n-border); }
+
+/* ── Correctifs de lisibilité : tableau comparatif et tarifs (fonds blancs d'origine) ── */
+.lp--night .lp-table-wrap { overflow: hidden; }
+.lp--night .lp-table, .lp--night .lp-table tbody, .lp--night .lp-table tr { background: var(--n-surface) !important; }
+.lp--night .lp-table td {
+  background: var(--n-surface) !important; color: #dbe2ee !important; border-bottom-color: var(--n-border) !important;
+}
+.lp--night .lp-table td:first-child { color: #fff !important; font-weight: 700; }
+.lp--night .lp-table tbody tr:hover td { background: var(--n-surface-2) !important; }
+.lp--night .lp-table .lp-table__nova, .lp--night .lp-table tbody tr:hover .lp-table__nova {
+  background: rgba(43, 181, 176, 0.1) !important; color: #b9f3ee !important;
+}
+.lp--night .lp-price-promise { background: var(--n-surface-2); border-color: var(--n-border); color: var(--n-muted); }
+.lp--night .lp-price-promise strong { color: #fff; }
+.lp--night .lp-price-range { background: var(--n-surface-2); border-color: var(--n-border); }
+.lp--night .lp-price-range > p { color: var(--n-muted); }
+.lp--night .lp-price-range__amount { color: var(--n-teal) !important; }
+.lp--night .lp-price-include { color: var(--n-text); }
+.lp--night .lp-strike { color: var(--n-muted); }
+
+/* Cartes de l'équipe */
+.lp--night .lp-team-card {
+  background: var(--n-surface) !important; border: 1px solid var(--n-border) !important; box-shadow: none !important;
+}
+.lp--night [class*="lp-team"] h3, .lp--night [class*="lp-team"] [class*="name"] { color: #fff !important; }
+.lp--night [class*="lp-team"] [class*="role"] { color: var(--n-teal) !important; }
+.lp--night [class*="lp-team"] [class*="email"], .lp--night [class*="lp-team"] a { color: var(--n-muted); }
+
+/* ── Téléphone : la barre flottante tient sur une ligne (menu ☰ visible) ── */
+@media (max-width: 640px) {
+  .lp--night .lp-nav { margin: 8px auto 0; width: calc(100% - 16px); border-radius: 18px; }
+  .lp--night .lp-nav__top { padding: 0.5rem 0.75rem; gap: 0.4rem; }
+  .lp--night .lp-nav__brand span { display: none; }               /* logo seul */
+  .lp--night .lp-lang__btn span { display: none; }                /* drapeaux seuls */
+  .lp--night .lp-toolbar__btn { min-width: 26px; padding: 0 4px; }
+  .lp--night .lp-nav__hamburger span { background: #fff; }
+  .lp--night .lp-hero__pill { letter-spacing: 0.08em; font-size: 0.66rem; }
+}
