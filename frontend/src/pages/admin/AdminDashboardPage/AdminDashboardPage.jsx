@@ -10,6 +10,7 @@ import Card from '../../../components/common/Card/Card';
 import StatusPill from '../../../components/common/StatusPill/StatusPill';
 import Loading from '../../../components/common/Loading/Loading';
 import OnboardingWizard from '../../../components/common/OnboardingWizard/OnboardingWizard';
+import CollectionOverview from '../../../components/fees/CollectionOverview/CollectionOverview';
 import './AdminDashboardPage.css';
 
 const STAT_ICONS = {
@@ -217,6 +218,9 @@ function AdminDashboardPage() {
       </div>
 
       {/* ── Évaluations : l'administration crée, les professeurs saisissent et signent ── */}
+      {/* Recouvrement des frais de l'année, en temps réel */}
+      <CollectionOverview />
+
       <div className="dashboard-evals">
         <h3 className="dashboard-evals__title">Évaluations</h3>
         <div className="dashboard-evals__grid">

@@ -48,6 +48,77 @@ export class FeesService {
   }
 
   /**
+   * Suivi du recouvrement d'une année scolaire, en temps réel : montant attendu, encaissé, reste à
+   * recouvrer, taux de recouvrement, arriérés repris, situation par classe et élèves les plus en
+   * retard de paiement.
+   */
+  async collectionOverview(institutionId: string, academicYear?: string) {
+    const year = academicYear || (() => {
+      const now = new Date();
+      const y = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
+      return `${y}-${y + 1}`;
+    })();
+    const [studentFees, payments, enrolments] = await Promise.all([
+      this.prisma.studentFee.findMany({
+        where: { academicYear: year, isExempt: false, student: { institutionId } },
+        select: { studentId: true, amountDue: true, fee: { select: { name: true } } },
+      }),
+      this.prisma.payment.groupBy({
+        by: ['studentId'],
+        where: { institutionId, academicYear: year },
+        _sum: { amount: true },
+      }),
+      this.prisma.classStudent.findMany({
+        where: { academicYear: year, student: { institutionId } },
+        select: { studentId: true, class: { select: { id: true, name: true } }, student: { select: { admissionNumber: true, user: { select: { name: true } } } } },
+      }),
+    ]);
+
+    const due = new Map<string, number>();
+    let arrears = 0;
+    for (const sf of studentFees) {
+      due.set(sf.studentId, (due.get(sf.studentId) ?? 0) + Number(sf.amountDue));
+      if (sf.fee.name === 'Solde antérieur (arriérés)') arrears += Number(sf.amountDue);
+    }
+    const paid = new Map(payments.map((p) => [p.studentId, Number(p._sum.amount ?? 0)]));
+    const info = new Map(enrolments.map((e) => [e.studentId, e]));
+
+    let expected = 0; let collected = 0; let outstanding = 0;
+    const counts = { paid: 0, partial: 0, unpaid: 0 };
+    const byClass = new Map<string, { classId: string; name: string; expected: number; collected: number; students: number }>();
+    const debtors: { studentId: string; name: string; admissionNumber: string; className: string; due: number; paid: number; balance: number }[] = [];
+    for (const [studentId, d] of due) {
+      if (d <= 0) continue;
+      const p = Math.min(paid.get(studentId) ?? 0, d);
+      const balance = d - p;
+      expected += d; collected += p; outstanding += balance;
+      if (balance <= 0) counts.paid++; else if (p > 0) counts.partial++; else counts.unpaid++;
+      const e = info.get(studentId);
+      const cls = e?.class ?? { id: 'none', name: 'Sans classe' };
+      const c = byClass.get(cls.id) ?? { classId: cls.id, name: cls.name, expected: 0, collected: 0, students: 0 };
+      c.expected += d; c.collected += p; c.students++;
+      byClass.set(cls.id, c);
+      if (balance > 0) {
+        debtors.push({
+          studentId, name: e?.student.user?.name ?? e?.student.admissionNumber ?? '—',
+          admissionNumber: e?.student.admissionNumber ?? '', className: cls.name, due: d, paid: p, balance,
+        });
+      }
+    }
+    const rate = (a: number, b: number) => (b > 0 ? Math.round((a / b) * 1000) / 10 : 0);
+    return {
+      academicYear: year,
+      expected, collected, outstanding, arrears,
+      collectionRate: rate(collected, expected),
+      students: counts,
+      byClass: [...byClass.values()]
+        .map((c) => ({ ...c, rate: rate(c.collected, c.expected) }))
+        .sort((a, b) => a.rate - b.rate),
+      topDebtors: debtors.sort((a, b) => b.balance - a.balance).slice(0, 15),
+    };
+  }
+
+  /**
    * Reprise des soldes antérieurs (arriérés d'une période ou d'une année précédente) : chaque montant
    * devient une ligne « Solde antérieur » due par l'élève pour l'année indiquée. Il apparaît alors
    * dans le solde vu par le parent, dans les rappels et dans le suivi du recouvrement.

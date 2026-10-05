@@ -55,6 +55,14 @@ export class FeesController {
     return this.service.deactivate(id, user.institutionId);
   }
 
+  @Get('collection-overview')
+  @Roles(Role.ADMIN, Role.BURSAR)
+  @ApiOperation({ summary: "Suivi du recouvrement : attendu, encaissé, reste, taux, classes, plus gros soldes" })
+  @ApiQuery({ name: 'academicYear', required: false })
+  collectionOverview(@CurrentUser() user: any, @Query('academicYear') academicYear?: string) {
+    return this.service.collectionOverview(user.institutionId, academicYear);
+  }
+
   @Post('arrears/import')
   @Roles(Role.ADMIN, Role.BURSAR)
   @ApiOperation({ summary: 'Importer les soldes antérieurs (arriérés) par matricule' })

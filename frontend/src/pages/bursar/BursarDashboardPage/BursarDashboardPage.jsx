@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import DateInput from '../../../components/common/DateInput/DateInput';
+import CollectionOverview from '../../../components/fees/CollectionOverview/CollectionOverview';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -118,6 +119,9 @@ function BursarDashboardPage() {
       />
 
       {/* Date filter bar */}
+      {/* Recouvrement de l'année en temps réel */}
+      <CollectionOverview />
+
       <Card className="bursar-dash__filter-bar">
         <div className="bursar-dash__presets">
           {PRESETS.map((p) => (
