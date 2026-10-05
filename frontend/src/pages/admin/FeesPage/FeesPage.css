@@ -43,3 +43,13 @@
 }
 
 @media (max-width: 640px) { .fee-form__row { grid-template-columns: 1fr; } }
+
+/* ── Import des arriérés ── */
+.arrears { display: flex; flex-direction: column; gap: 0.75rem; }
+.arrears__intro { margin: 0; font-size: 0.88rem; color: #475569; line-height: 1.5; }
+.arrears__label { font-size: 0.85rem; font-weight: 600; }
+.arrears__text { font-family: ui-monospace, monospace; font-size: 0.85rem; border: 1px solid var(--color-border, #e5e7eb); border-radius: 8px; padding: 0.6rem; resize: vertical; }
+.arrears__summary { font-size: 0.85rem; color: #1e3a8a; background: #eff6ff; border-radius: 6px; padding: 0.5rem 0.7rem; }
+.arrears__error { font-size: 0.85rem; color: #991b1b; background: #fef2f2; border-radius: 6px; padding: 0.5rem 0.7rem; }
+.arrears__result { font-size: 0.9rem; color: #166534; background: #f0fdf4; border: 1px solid #86efac; border-radius: 6px; padding: 0.6rem 0.8rem; }
+.arrears__notfound { margin-top: 0.4rem; color: #92400e; }

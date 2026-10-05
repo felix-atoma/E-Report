@@ -47,6 +47,45 @@ export class FeesService {
     return this.prisma.fee.update({ where: { id }, data: { isActive: false } });
   }
 
+  /**
+   * Reprise des soldes antérieurs (arriérés d'une période ou d'une année précédente) : chaque montant
+   * devient une ligne « Solde antérieur » due par l'élève pour l'année indiquée. Il apparaît alors
+   * dans le solde vu par le parent, dans les rappels et dans le suivi du recouvrement.
+   * Réimporter le fichier remplace le montant (pas de doublon) ; un montant à 0 annule l'arriéré.
+   */
+  async importArrears(institutionId: string, academicYear: string, rows: { admissionNumber: string; amount: number; note?: string }[]) {
+    const label = 'Solde antérieur (arriérés)';
+    let fee = await this.prisma.fee.findFirst({ where: { institutionId, academicYear, name: label } });
+    if (!fee) {
+      fee = await this.prisma.fee.create({
+        data: { institutionId, academicYear, name: label, feeType: 'OTHER' as any, amount: 0 },
+      });
+    }
+    const students = await this.prisma.student.findMany({
+      where: { institutionId, admissionNumber: { in: rows.map((r) => r.admissionNumber.trim()) } },
+      select: { id: true, admissionNumber: true },
+    });
+    const byNumber = new Map(students.map((s) => [s.admissionNumber.trim().toLowerCase(), s.id]));
+
+    let imported = 0;
+    let cleared = 0;
+    const notFound: string[] = [];
+    for (const row of rows) {
+      const studentId = byNumber.get(row.admissionNumber.trim().toLowerCase());
+      if (!studentId) { notFound.push(row.admissionNumber); continue; }
+      const existing = await this.prisma.studentFee.findFirst({ where: { studentId, feeId: fee.id, academicYear, term: null } });
+      if (row.amount <= 0) {
+        if (existing) { await this.prisma.studentFee.delete({ where: { id: existing.id } }); cleared++; }
+        continue;
+      }
+      const data = { amountDue: row.amount };
+      if (existing) await this.prisma.studentFee.update({ where: { id: existing.id }, data });
+      else await this.prisma.studentFee.create({ data: { studentId, feeId: fee.id, academicYear, term: null, ...data } });
+      imported++;
+    }
+    return { imported, cleared, notFound, feeId: fee.id };
+  }
+
   async assignToClass(feeId: string, dto: AssignFeeDto, institutionId: string) {
     const fee = await this.prisma.fee.findFirst({ where: { id: feeId, institutionId } });
     if (!fee) throw new NotFoundException('Fee not found');

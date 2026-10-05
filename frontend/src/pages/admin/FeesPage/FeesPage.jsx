@@ -7,6 +7,7 @@ import { classesService } from '../../../services/classesService';
 import { useInstitution } from '../../../context/InstitutionContext';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
+import ArrearsImport from './ArrearsImport';
 import Table from '../../../components/common/Table/Table';
 import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
 import ConfirmDialog from '../../../components/common/ConfirmDialog/ConfirmDialog';
@@ -125,6 +126,7 @@ function FeesPage() {
   const [selected, setSelected] = useState(null);
   const [confirm, setConfirm]   = useState(null);
   const [assignFee, setAssign]  = useState(null);
+  const [arrearsOpen, setArrearsOpen] = useState(false);
   const [form, setForm]         = useState(EMPTY_FORM);
   const [errors, setErrors]     = useState({});
 
@@ -267,7 +269,12 @@ function FeesPage() {
       <PageHeader
         title={t('fees.pageTitle')}
         subtitle={t('fees.count', { count: fees.length })}
-        actions={<Button icon="+" onClick={openCreate}>{t('fees.newFee')}</Button>}
+        actions={(
+          <>
+            <Button variant="ghost" onClick={() => setArrearsOpen(true)}>📥 Importer les arriérés</Button>
+            <Button icon="+" onClick={openCreate}>{t('fees.newFee')}</Button>
+          </>
+        )}
       />
 
       <Table
@@ -311,6 +318,7 @@ function FeesPage() {
         confirmLabel={t('action.delete')}
         variant="danger"
       />
+      <ArrearsImport open={arrearsOpen} onClose={() => setArrearsOpen(false)} />
     </AppShell>
   );
 }

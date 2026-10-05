@@ -5,6 +5,7 @@ import { RecordPaymentDto } from './dto/record-payment.dto';
 import { NotchpayService } from './notchpay.service';
 import { CinetpayService } from './cinetpay.service';
 import { PdfService } from '../pdf/pdf.service';
+import { PaymentReceiptNotifier } from './payment-receipt-notifier.service';
 import { decryptSecret } from '../../common/utils/crypto.util';
 
 @Injectable()
@@ -16,6 +17,7 @@ export class PaymentsService {
     private readonly notchpay: NotchpayService,
     private readonly cinetpay: CinetpayService,
     private readonly pdf: PdfService,
+    private readonly receipts: PaymentReceiptNotifier,
   ) {}
 
   /** STUDENT: their own payment history */
@@ -114,6 +116,8 @@ export class PaymentsService {
 
     // Auto-release any held notifications if student is now fully paid
     await this.tryReleaseHeldNotifications(dto.studentId, academicYear, dto.term, institutionId);
+    // Reçu numérique au parent (WhatsApp, SMS, e-mail) avec le solde restant
+    this.receipts.notify(payment.id);
 
     return payment;
   }
@@ -292,6 +296,7 @@ export class PaymentsService {
     await this.tryReleaseHeldNotifications(
       intent.studentId, intent.academicYear, intent.term ?? undefined, intent.institutionId,
     );
+    this.receipts.notify(payment.id);
 
     this.logger.log(`Notchpay webhook processed: payment ${payment.id} for student ${intent.studentId}`);
     return { received: true };
@@ -381,6 +386,7 @@ export class PaymentsService {
     await this.tryReleaseHeldNotifications(
       intent.studentId, intent.academicYear, intent.term ?? undefined, intent.institutionId,
     );
+    this.receipts.notify(payment.id);
 
     this.logger.log(`CinetPay webhook processed: payment ${payment.id} for student ${intent.studentId}`);
     return { received: true };

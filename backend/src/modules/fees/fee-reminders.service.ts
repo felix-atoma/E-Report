@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { WhatsAppService } from '../whatsapp/whatsapp.service';
 import { MailService } from '../mail/mail.service';
+import { SmsService } from '../sms/sms.service';
 
 type Severity = 'FRIENDLY' | 'URGENT';
 
@@ -25,6 +26,7 @@ export class FeeRemindersService {
     private readonly prisma: PrismaService,
     private readonly whatsapp: WhatsAppService,
     private readonly mail: MailService,
+    private readonly sms: SmsService,
     private readonly config: ConfigService,
   ) {
     this.friendlyAfterMonths = Number(config.get('FEE_REMINDER_FRIENDLY_AFTER_MONTHS', '1'));
@@ -119,6 +121,12 @@ export class FeeRemindersService {
             });
             const ok = await this.whatsapp.sendText(parent.whatsappNumber, message).catch(() => false);
             delivered = delivered || ok;
+            // SMS en plus (parents sans WhatsApp ou sans internet), seulement si Twilio SMS est configuré
+            if (this.sms.enabled) {
+              const smsText = message.replace(/\*/g, '').replace(/\n+/g, ' ');
+              const smsOk = await this.sms.sendText(parent.whatsappNumber, smsText).catch(() => false);
+              delivered = delivered || smsOk;
+            }
           }
 
           if (parent?.email) {

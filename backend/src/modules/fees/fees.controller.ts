@@ -14,6 +14,7 @@ import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { FeesService } from './fees.service';
 import { CreateFeeDto } from './dto/create-fee.dto';
 import { AssignFeeDto } from './dto/assign-fee.dto';
+import { ImportArrearsDto } from './dto/import-arrears.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Role } from '../../common/enums/role.enum';
@@ -52,6 +53,13 @@ export class FeesController {
   @ApiOperation({ summary: 'Deactivate a fee structure (Admin only)' })
   deactivate(@Param('id') id: string, @CurrentUser() user: any) {
     return this.service.deactivate(id, user.institutionId);
+  }
+
+  @Post('arrears/import')
+  @Roles(Role.ADMIN, Role.BURSAR)
+  @ApiOperation({ summary: 'Importer les soldes antérieurs (arriérés) par matricule' })
+  importArrears(@Body() dto: ImportArrearsDto, @CurrentUser() user: any) {
+    return this.service.importArrears(user.institutionId, dto.academicYear, dto.rows);
   }
 
   @Post(':id/assign-to-class')

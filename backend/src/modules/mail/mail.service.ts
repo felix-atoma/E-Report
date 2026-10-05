@@ -168,6 +168,19 @@ export class MailService {
     return this.provider === 'smtp' && !!this.smtpTransport;
   }
 
+  // ─── Reçu de paiement (frais scolaires) ────────────────────────────────────
+  async sendPaymentReceipt(to: string, subject: string, lines: string[]): Promise<boolean> {
+    const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;">
+        ${lines.map((l, i) => (i === 0
+          ? `<h2 style="color:#15803d;">${esc(l)}</h2>`
+          : `<p style="font-size:15px;color:#111827;">${esc(l)}</p>`)).join('')}
+        <p style="color:#6b7280;font-size:12px;">Conservez ce message comme preuve de paiement.</p>
+      </div>`;
+    return this.send({ to, subject, html, text: lines.join('\n') });
+  }
+
   // ─── Code de connexion administrateur (double authentification) ─────────────
   async sendAdminLoginOtp(to: string, name: string, otp: string): Promise<boolean> {
     const subject = `Votre code de connexion NovaBulletin : ${otp}`;
