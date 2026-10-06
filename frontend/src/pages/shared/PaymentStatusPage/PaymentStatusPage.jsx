@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -33,12 +33,6 @@ const METHODS = [
 
 const money = (v) => `${Math.round(v ?? 0).toLocaleString('fr-FR')}`;
 const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('fr-FR') : '—');
-
-function currentYear() {
-  const now = new Date();
-  const y = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
-  return `${y}-${y + 1}`;
-}
 
 /** Export CSV (séparateur « ; », lisible directement par Excel en français) */
 function exportCsv(rows, year) {
@@ -99,7 +93,8 @@ export default function PaymentStatusPage() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
   const qc = useQueryClient();
-  const [year, setYear] = useState(currentYear());
+  // Vide au départ : le serveur choisit l'année (en cours, sinon la plus récente qui a des frais)
+  const [year, setYear] = useState('');
   const [classId, setClassId] = useState('');
   const [status, setStatus] = useState('');
   const [search, setSearch] = useState('');
@@ -110,8 +105,15 @@ export default function PaymentStatusPage() {
   const { data: classes = [] } = useQuery({ queryKey: ['classes'], queryFn: () => classesService.list().then((r) => r.data) });
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['students-status', year, classId],
-    queryFn: () => api.get('/fees/students-status', { params: { academicYear: year, classId: classId || undefined } }).then((r) => r.data),
+    queryFn: () => api.get('/fees/students-status', { params: { academicYear: year || undefined, classId: classId || undefined } }).then((r) => r.data),
   });
+  // Année choisie par le serveur : on la retient en réutilisant les données déjà reçues (pas de second chargement)
+  useEffect(() => {
+    if (!year && data?.academicYear) {
+      qc.setQueryData(['students-status', data.academicYear, classId], data);
+      setYear(data.academicYear);
+    }
+  }, [data, year, classId, qc]);
   const rows = data?.rows ?? [];
 
   const filtered = useMemo(() => {

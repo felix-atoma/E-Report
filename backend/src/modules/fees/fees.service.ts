@@ -48,15 +48,27 @@ export class FeesService {
   }
 
   /**
+   * Année affichée par défaut : l'année scolaire en cours si des frais y sont attribués, sinon la
+   * plus récente qui en a (sinon les écrans de suivi resteraient vides en début d'année).
+   */
+  private async defaultFeeYear(institutionId: string): Promise<string> {
+    const now = new Date();
+    const y = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
+    const current = `${y}-${y + 1}`;
+    const has = await this.prisma.studentFee.findFirst({ where: { academicYear: current, student: { institutionId } }, select: { id: true } });
+    if (has) return current;
+    const latest = await this.prisma.studentFee.findFirst({
+      where: { student: { institutionId } }, orderBy: { academicYear: 'desc' }, select: { academicYear: true },
+    });
+    return latest?.academicYear ?? current;
+  }
+
+  /**
    * Situation des paiements de chaque élève inscrit pour l'année (y compris ceux qui n'ont rien
    * payé) : attendu, payé, reste, statut, dernier paiement et contact du parent.
    */
   async studentsPaymentStatus(institutionId: string, academicYear?: string, classId?: string) {
-    const year = academicYear || (() => {
-      const now = new Date();
-      const y = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
-      return `${y}-${y + 1}`;
-    })();
+    const year = academicYear || await this.defaultFeeYear(institutionId);
     const enrolments = await this.prisma.classStudent.findMany({
       where: { academicYear: year, student: { institutionId }, ...(classId ? { classId } : {}) },
       select: {
@@ -129,11 +141,7 @@ export class FeesService {
    * retard de paiement.
    */
   async collectionOverview(institutionId: string, academicYear?: string) {
-    const year = academicYear || (() => {
-      const now = new Date();
-      const y = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
-      return `${y}-${y + 1}`;
-    })();
+    const year = academicYear || await this.defaultFeeYear(institutionId);
     const [studentFees, payments, enrolments] = await Promise.all([
       this.prisma.studentFee.findMany({
         where: { academicYear: year, isExempt: false, student: { institutionId } },
