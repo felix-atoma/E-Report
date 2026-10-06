@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import OffCanvas3DOrb from './OffCanvas3DOrb';
 import './OffCanvas.css';
 
@@ -17,7 +18,9 @@ function OffCanvas({ open, onClose, title, subtitle, children, size = 'md', foot
 
   if (!open) return null;
 
-  return (
+  // Rendu à la racine du document : un parent transformé ou animé (carte, mode paysage…) ne peut
+  // plus réduire ni couper le panneau, dont la barre de boutons du bas restait parfois hors écran.
+  return createPortal(
     <div className="offcanvas-overlay" onClick={onClose} role="dialog" aria-modal aria-label={title}>
       <div className={`offcanvas offcanvas--${size}`} onClick={(e) => e.stopPropagation()}>
 
@@ -41,7 +44,8 @@ function OffCanvas({ open, onClose, title, subtitle, children, size = 'md', foot
         <div className="offcanvas__body">{children}</div>
         {footer && <div className="offcanvas__footer">{footer}</div>}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

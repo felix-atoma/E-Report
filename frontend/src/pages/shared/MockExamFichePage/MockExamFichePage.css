@@ -266,3 +266,8 @@
 .mfiche-focus-wrap .mfiche-table thead { position: sticky; top: 0; z-index: 4; }
 .mfiche-focus-wrap .mfiche-input { width: 70px; min-height: 38px; font-size: 16px; }
 .mfiche-focus-wrap .mfiche-td--mat, .mfiche-focus-wrap .mfiche-th--mat { display: none; }
+
+/* Petit écran : le tableau défile dans son cadre au lieu d'élargir toute la page
+   (une page plus large que l'écran poussait hors champ le panneau de signature) */
+.mfiche-table-scroll { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+@media print { .mfiche-table-scroll { overflow: visible; } }

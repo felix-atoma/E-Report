@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { mockExamsService } from '../../../services/mockExamsService';
@@ -13,6 +14,11 @@ import { examScale } from '../../../utils/examKinds';
 // Mode saisie paysage et boutons : mêmes styles que la fiche de notes trimestrielle
 import '../../teacher/GradeEntryPage/GradeEntryPage.css';
 import './MockExamFichePage.css';
+
+/** Mode paysage : rendu à la racine du document pour couvrir tout l'écran (sinon coincé dans la fiche) */
+function FocusPortal({ active, children }) {
+  return active ? createPortal(children, document.body) : children;
+}
 
 function useMediaQuery(query) {
   const get = () => typeof window !== 'undefined' && window.matchMedia(query).matches;
@@ -358,6 +364,7 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
         </div>
       )}
 
+      <FocusPortal active={focusMode}>
       <div className={focusMode ? `fdn-focus${rotated ? ' fdn-focus--rotated' : ''}` : undefined}>
         {focusMode && (
           <div className="fdn-focus__bar">
@@ -389,7 +396,7 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
             <button type="button" className="fdn__btn fdn__btn--secondary" onClick={exitFocusMode}>Quitter</button>
           </div>
         )}
-      <div className={focusMode ? 'fdn__table-wrap mfiche-focus-wrap' : undefined} onKeyDown={handleGridKeyDown}>
+      <div className={focusMode ? 'fdn__table-wrap mfiche-focus-wrap' : 'mfiche-table-scroll'} onKeyDown={handleGridKeyDown}>
       {/* Grade table */}
       <table className="mfiche-table">
         <thead>
@@ -469,6 +476,7 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
       </table>
       </div>
       </div>
+      </FocusPortal>
 
       {/* Signature zone */}
       <div className="mfiche-sigs">
