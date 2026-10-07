@@ -74,6 +74,7 @@ export class InstitutionsService {
     if (dto.secondaryColor !== undefined)    mergedBranding.secondaryColor    = dto.secondaryColor;
     if (dto.faviconUrl !== undefined)        mergedBranding.faviconUrl        = dto.faviconUrl;
     if (dto.circonscription !== undefined)   mergedBranding.circonscription   = dto.circonscription;
+    if (dto.stampMode !== undefined)         mergedBranding.stampMode         = dto.stampMode;
     if (dto.bulletinFontFamily !== undefined) mergedBranding.bulletinFontFamily = dto.bulletinFontFamily;
     if (dto.bulletinFontSize   !== undefined) mergedBranding.bulletinFontSize   = dto.bulletinFontSize;
     if (dto.bulletinH1Size     !== undefined) mergedBranding.bulletinH1Size     = dto.bulletinH1Size;

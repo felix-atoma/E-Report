@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsObject, IsOptional, IsString } from 'class-validator';
+import { IsIn, IsObject, IsOptional, IsString } from 'class-validator';
 
 export class UpdateBrandingDto {
   @ApiPropertyOptional() @IsOptional() @IsString() logo?: string;
@@ -16,6 +16,9 @@ export class UpdateBrandingDto {
   @ApiPropertyOptional() @IsOptional() @IsString() phone?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() website?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() circonscription?: string;
+
+  /** Cachet sur les bulletins : MANUAL (case vide, tampon à la main) ou DIGITAL (image du cachet, bulletins publiés) */
+  @ApiPropertyOptional({ enum: ['MANUAL', 'DIGITAL'] }) @IsOptional() @IsIn(['MANUAL', 'DIGITAL']) stampMode?: 'MANUAL' | 'DIGITAL';
 
   @ApiPropertyOptional() @IsOptional() @IsString() bulletinFontFamily?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() bulletinFontSize?: string;

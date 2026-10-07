@@ -500,3 +500,8 @@
 /* Primaire : 5 colonnes seulement, texte plus grand */
 .pr-grades--primary td, .pr-grades--primary th { font-size: 1.1em; padding-top: 5px; padding-bottom: 5px; }
 .pr-grades--primary .pr-grades__col-moy { font-size: 1.2em; }
+
+/* Cachet numérique : posé par-dessus la case, comme un vrai tampon (la mise en page ne bouge pas) */
+.pr-sig--stamp { position: relative; }
+.pr-sig__area--stamped { visibility: hidden; }
+.pr-sig__stamp-img { position: absolute; left: 50%; bottom: 6px; width: 60px; height: 60px; object-fit: contain; transform: translateX(-50%) rotate(-8deg); mix-blend-mode: multiply; opacity: 0.92; pointer-events: none; }

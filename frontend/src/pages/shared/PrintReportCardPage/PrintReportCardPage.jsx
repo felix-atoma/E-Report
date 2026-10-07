@@ -233,6 +233,9 @@ export default function PrintReportCardPage() {
   const countryLine = [institution?.country, institution?.countryMotto].filter(Boolean).join(' — ');
   const circonscription = institution?.brandingSettings?.circonscription ?? null;
   const headerLogo = institution?.logo || institution?.crest || null;
+  // Cachet numérique : réglage de l'école, et uniquement sur un bulletin publié (comme le PDF)
+  const digitalStamp = institution?.brandingSettings?.stampMode === 'DIGITAL' && institution?.stamp && report?.status === 'PUBLISHED'
+    ? institution.stamp : null;
   const sex = report.student?.sex;
   const sexLabel = sex === 'F' ? 'Féminin' : sex === 'M' ? 'Masculin' : '—';
   const rankLabel = report.classRank != null
@@ -607,7 +610,8 @@ export default function PrintReportCardPage() {
             <div className="pr-sig__label">Le Professeur Principal</div>
           </div>
           <div className="pr-sig pr-sig--stamp">
-            <div className="pr-sig__area pr-sig__area--stamp" />
+            <div className={`pr-sig__area pr-sig__area--stamp${digitalStamp ? ' pr-sig__area--stamped' : ''}`} />
+            {digitalStamp && <img className="pr-sig__stamp-img" src={digitalStamp} alt="Cachet de l'établissement" />}
             <div className="pr-sig__label pr-sig__label--stamp">Cachet de l'établissement</div>
           </div>
           <div className="pr-sig">

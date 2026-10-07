@@ -163,6 +163,15 @@ export function countPdfPages(pdf: Buffer): number {
   return (pdf.toString('latin1').match(/\/Type\s*\/Page(?![a-zA-Z])/g) || []).length;
 }
 
+/**
+ * Cachet de l'établissement imprimé sur le bulletin ? Réglage de l'école (brandingSettings.stampMode) :
+ * « MANUAL » par défaut (case vide, cachet humide après impression) ou « DIGITAL » (image du cachet),
+ * l'image n'apparaissant alors que sur un bulletin publié.
+ */
+export function digitalStampFor(branding: unknown, stamp: string | null | undefined, status: string | null | undefined): boolean {
+  return (branding as Record<string, unknown> | null)?.stampMode === 'DIGITAL' && !!stamp && status === 'PUBLISHED';
+}
+
 /** Primaire (CI → CM2) : notes sur 10, sans coefficients. Les moyennes restent stockées sur 20. */
 export function isPrimaryLevel(level: string | null | undefined): boolean {
   return /^\s*(CI|CP\s*[12]?|CE\s*[12]|CM\s*[12])\s*$/i.test(level ?? '');
@@ -638,6 +647,9 @@ export class PdfService {
       serial: securityCode ?? fallbackSerial(report),
       classTeacherName: data.classTeacherName ?? '',
       classTeacherSignature: data.classTeacherSignature ?? null,
+      // Cachet numérique : seulement si l'école l'a choisi, et seulement sur un bulletin publié
+      // (jamais sur un brouillon). Sinon, case vide à tamponner à la main.
+      digitalStamp: digitalStampFor(branding, inst.stamp, report.status) ? pdfImage(inst.stamp) : null,
       verifyUrl: this.verifyUrl,
       // Moyenne générale en toutes lettres (sur l'échelle du bulletin : /10 au primaire, /20 sinon)
       // En lettres à partir du chiffre imprimé (même arrondi) : 5,83 → « Cinq virgule quatre-vingt-trois »
@@ -665,6 +677,8 @@ export interface ReportCardData {
     academicYear: string;
     termNumber: number;
     termType?: string | null;
+    /** DRAFT | REVIEW | PUBLISHED — le cachet numérique n'est imprimé que sur un bulletin publié */
+    status?: string | null;
     overallAverage: number | null;
     classRank: number | null;
     classSize: number | null;

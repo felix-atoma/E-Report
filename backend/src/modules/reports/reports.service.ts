@@ -549,6 +549,7 @@ export class ReportsService {
         annualAverage: (published as any).annualAverage ?? null,
         councilDecision: (published as any).councilDecision ?? null,
         securityCode: (published as any).securityCode ?? null,
+        status: published.status,
       },
       student: {
         admissionNumber: reportWithGrades.student.admissionNumber,
@@ -1115,6 +1116,7 @@ export class ReportsService {
               warnings: (r as any).warnings ?? null, annualAverage: (r as any).annualAverage ?? null,
               councilDecision: (r as any).councilDecision ?? null,
               securityCode: (r as any).securityCode ?? null,
+              status: (r as any).status,
             },
             student: { admissionNumber: r.student.admissionNumber, dateOfBirth: (r.student as any).dateOfBirth, sex: (r.student as any).sex ?? null, user: r.student.user },
             className: r.class.name,
@@ -1194,6 +1196,7 @@ export class ReportsService {
         commendations: r.commendations ?? null, warnings: r.warnings ?? null,
         annualAverage: r.annualAverage ?? null, councilDecision: r.councilDecision ?? null,
         securityCode: r.securityCode ?? null,
+        status: r.status,
       },
       student: { admissionNumber: r.student.admissionNumber, dateOfBirth: r.student.dateOfBirth, sex: r.student.sex ?? null, user: r.student.user },
       className: r.class.name,

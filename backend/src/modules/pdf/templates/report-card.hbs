@@ -244,6 +244,10 @@ body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .pr-sig--stamp { flex: 0 0 auto; width: 44px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
 .pr-sig--visa  { border: 1px solid #d1d5db; border-radius: 4px; padding: 3px 5px; background: #fafafa; }
 .pr-sig__label--stamp { margin-top: 2px; }
+/* Cachet numérique : posé par-dessus la case, comme un vrai tampon (la mise en page ne bouge pas) */
+.pr-sig--stamp { position: relative; }
+.pr-sig__area--stamped { visibility: hidden; }
+.pr-sig__stamp-img { position: absolute; left: 50%; bottom: 6px; width: 60px; height: 60px; object-fit: contain; transform: translateX(-50%) rotate(-8deg); mix-blend-mode: multiply; opacity: 0.92; pointer-events: none; }
 
 /* ── Pied de page ── */
 .pr-footer {
@@ -530,7 +534,8 @@ body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       <div class="pr-sig__label">Le Professeur Principal</div>
     </div>
     <div class="pr-sig pr-sig--stamp">
-      <div class="pr-sig__area pr-sig__area--stamp"></div>
+      <div class="pr-sig__area pr-sig__area--stamp{{#if digitalStamp}} pr-sig__area--stamped{{/if}}"></div>
+      {{#if digitalStamp}}<img class="pr-sig__stamp-img" src="{{digitalStamp}}" alt="Cachet de l'établissement" />{{/if}}
       <div class="pr-sig__label pr-sig__label--stamp">Cachet de l'établissement</div>
     </div>
     <div class="pr-sig">

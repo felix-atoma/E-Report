@@ -2293,6 +2293,11 @@
       "stampLabel":   "School stamp",
       "stampHint":    "PNG with transparent background · Max 2 MB",
       "stampCurrent": "Current stamp:",
+      "stampModeTitle": "Stamp on report cards",
+      "stampModeMANUAL": "Manual (recommended)",
+      "stampModeMANUALDesc": "An empty box is printed: the school applies its ink stamp after printing. This is what authorities expect (enrolment, exams, scholarships).",
+      "stampModeDIGITAL": "Digital",
+      "stampModeDIGITALDesc": "The stamp image is printed on published report cards only (never on drafts). Handy for report cards sent to parents; the QR code lets anyone check they are genuine.",
       "view":         "view"
     },
     "typo": {

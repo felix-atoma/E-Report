@@ -2375,6 +2375,11 @@
       "stampLabel":   "Tampon de l'établissement",
       "stampHint":    "PNG avec fond transparent · Max 2 Mo",
       "stampCurrent": "Tampon actuel :",
+      "stampModeTitle": "Cachet sur les bulletins",
+      "stampModeMANUAL": "Manuel (recommandé)",
+      "stampModeMANUALDesc": "Une case vide est imprimée : l'école appose son cachet humide après impression. C'est ce qu'attendent les administrations (inscriptions, examens, bourses).",
+      "stampModeDIGITAL": "Numérique",
+      "stampModeDIGITALDesc": "L'image du cachet est imprimée sur les bulletins publiés uniquement (jamais sur les brouillons). Pratique pour les bulletins envoyés aux parents ; le QR code permet de vérifier leur authenticité.",
       "view":         "voir"
     },
     "typo": {

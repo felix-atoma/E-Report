@@ -63,6 +63,7 @@ const DEFAULT_FORM = {
   logoUrl:          '',
   crestUrl:         '',
   stampUrl:         '',
+  stampMode:        'MANUAL',
   faviconUrl:       '',
   bulletinFontFamily: 'Arial',
   bulletinFontSize:   '10px',
@@ -106,6 +107,7 @@ function BrandingPage() {
       logoUrl:            institution.logo        ?? bs.logoUrl ?? '',
       crestUrl:           institution.crest       ?? '',
       stampUrl:           institution.stamp       ?? '',
+      stampMode:          bs.stampMode === 'DIGITAL' ? 'DIGITAL' : 'MANUAL',
       faviconUrl:         bs.faviconUrl           ?? '',
       bulletinFontFamily: bs.bulletinFontFamily   ?? DEFAULT_FORM.bulletinFontFamily,
       bulletinFontSize:   bs.bulletinFontSize     ?? DEFAULT_FORM.bulletinFontSize,
@@ -177,6 +179,7 @@ function BrandingPage() {
       if (uploads[2]) stampUrl = uploads[2].data.url;
       await institutionsService.updateBranding({
         logoUrl, crest: crestUrl || undefined, stamp: stampUrl || undefined, faviconUrl: form.faviconUrl || undefined,
+        stampMode: form.stampMode,
       });
       qc.invalidateQueries({ queryKey: ['institution-me'] });
       refreshInstitution();
@@ -381,6 +384,24 @@ function BrandingPage() {
             {form.stampUrl && !stampFile && (
               <p className="branding-section__current">{t('branding.images.stampCurrent')} <a href={form.stampUrl} target="_blank" rel="noreferrer">{t('branding.images.view')}</a></p>
             )}
+            {/* Cachet sur les bulletins : manuel par défaut (valeur officielle), numérique au choix */}
+            <fieldset className="branding-stamp-mode">
+              <legend className="branding-section__title">{t('branding.images.stampModeTitle')}</legend>
+              {['MANUAL', 'DIGITAL'].map((mode) => (
+                <label key={mode} className="branding-stamp-mode__option">
+                  <input
+                    type="radio" name="stampMode" value={mode}
+                    checked={form.stampMode === mode}
+                    disabled={mode === 'DIGITAL' && !stampFile && !form.stampUrl}
+                    onChange={() => set('stampMode', mode)}
+                  />
+                  <span>
+                    <strong>{t(`branding.images.stampMode${mode}`)}</strong>
+                    <small>{t(`branding.images.stampMode${mode}Desc`)}</small>
+                  </span>
+                </label>
+              ))}
+            </fieldset>
           </div>
         </div>
       </OffCanvas>

@@ -280,3 +280,12 @@
 @media (max-width: 480px) {
   .branding-page__grid { grid-template-columns: 1fr; }
 }
+
+/* Cachet sur les bulletins : manuel / numérique */
+.branding-stamp-mode { border: 1px solid var(--color-border, #e5e7eb); border-radius: 10px; padding: 0.75rem; margin-top: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; }
+.branding-stamp-mode legend { padding: 0 0.3rem; margin: 0; }
+.branding-stamp-mode__option { display: flex; gap: 0.6rem; align-items: flex-start; cursor: pointer; }
+.branding-stamp-mode__option input { margin-top: 0.2rem; }
+.branding-stamp-mode__option input:disabled + span { opacity: 0.5; }
+.branding-stamp-mode__option span { display: flex; flex-direction: column; gap: 0.15rem; }
+.branding-stamp-mode__option small { color: var(--color-text-muted, #64748b); font-size: 0.8rem; line-height: 1.35; }
