@@ -261,10 +261,10 @@ function AppRouter() {
         <Route path="/student/lms"              element={<ProtectedRoute roles={['STUDENT']}><StudentLMSPage /></ProtectedRoute>} />
         <Route path="/student/report-incident"  element={<ProtectedRoute roles={['STUDENT']}><ReportIncidentPage /></ProtectedRoute>} />
 
-        {/* Teacher â€” incident reporting */}
+        {/* Teacher — incident reporting */}
         <Route path="/teacher/report-incident"  element={<ProtectedRoute roles={['TEACHER']}><ReportIncidentPage /></ProtectedRoute>} />
 
-        {/* Admin â€” incident management */}
+        {/* Admin — incident management */}
         <Route path="/admin/incidents"          element={<ProtectedRoute roles={['ADMIN']}><IncidentsPage /></ProtectedRoute>} />
 
         {/* Shared */}

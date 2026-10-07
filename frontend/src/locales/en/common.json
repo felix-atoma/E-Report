@@ -78,7 +78,8 @@
     "TEACHER": "Teacher",
     "BURSAR":  "Bursar",
     "PARENT":  "Parent",
-    "STUDENT": "Student"
+    "STUDENT": "Student",
+    "SUPERADMIN": "Super admin"
   },
 
   "action": {
@@ -177,13 +178,13 @@
     "noChildren":       "No child linked to your account.",
     "pendingPayment":   "Pending payment",
     "studentsCount":    "{{count}} student",
-    "studentsCount_plural": "{{count}} students",
+    "studentsCount_other": "{{count}} students",
     "bulletinCount":    "Report",
-    "bulletinCount_plural": "Reports",
+    "bulletinCount_other": "Reports",
     "announcementCount": "Announcement",
-    "announcementCount_plural": "Announcements",
+    "announcementCount_other": "Announcements",
     "childCount":       "Child",
-    "childCount_plural": "Children"
+    "childCount_other": "Children"
   },
 
   "mention": {
@@ -252,7 +253,7 @@
       "error":    "Error"
     },
     "count": "{{count}} fee structure",
-    "count_plural": "{{count}} fee structures"
+    "count_other": "{{count}} fee structures"
   },
 
   "users": {

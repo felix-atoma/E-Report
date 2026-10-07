@@ -78,7 +78,8 @@
     "TEACHER": "Enseignant",
     "BURSAR":  "Économe",
     "PARENT":  "Parent",
-    "STUDENT": "Élève"
+    "STUDENT": "Élève",
+    "SUPERADMIN": "Super-administrateur"
   },
 
   "action": {
@@ -177,13 +178,13 @@
     "noChildren":       "Aucun enfant associé à votre compte.",
     "pendingPayment":   "En attente paiement",
     "studentsCount":    "{{count}} élève",
-    "studentsCount_plural": "{{count}} élèves",
+    "studentsCount_other": "{{count}} élèves",
     "bulletinCount":    "Bulletin",
-    "bulletinCount_plural": "Bulletins",
+    "bulletinCount_other": "Bulletins",
     "announcementCount": "Annonce",
-    "announcementCount_plural": "Annonces",
+    "announcementCount_other": "Annonces",
     "childCount":       "Enfant",
-    "childCount_plural": "Enfants"
+    "childCount_other": "Enfants"
   },
 
   "mention": {
@@ -252,7 +253,7 @@
       "error":    "Erreur"
     },
     "count": "{{count}} structure tarifaire",
-    "count_plural": "{{count}} structures tarifaires"
+    "count_other": "{{count}} structures tarifaires"
   },
 
   "users": {
