@@ -104,10 +104,15 @@ export class FeeRemindersService {
       });
 
       let sent = 0;
+      // Current school year only (Sept → Aug): earlier years' balances come in as « Solde antérieur »
+      // lines. Mixing years summed every year's fees against one year's payments.
+      const now = new Date();
+      const startYear = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
+      const currentYear = `${startYear}-${startYear + 1}`;
 
       for (const institution of institutions) {
         const studentFees = await this.prisma.studentFee.findMany({
-          where: { student: { institutionId: institution.id } },
+          where: { student: { institutionId: institution.id }, academicYear: currentYear, isExempt: false },
           include: {
             student: {
               include: {
@@ -127,7 +132,7 @@ export class FeeRemindersService {
         }
 
         for (const [studentId, fees] of grouped) {
-          const academicYear = fees[0].fee.academicYear;
+          const academicYear = currentYear;
           const elapsed = monthsSinceResumption(academicYear);
 
           const threshold = severity === 'URGENT' ? this.urgentAfterMonths : this.friendlyAfterMonths;

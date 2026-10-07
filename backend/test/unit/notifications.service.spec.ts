@@ -3,6 +3,7 @@ import { NotificationsService } from '../../src/modules/notifications/notificati
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { MailService } from '../../src/modules/mail/mail.service';
 import { WhatsAppService } from '../../src/modules/whatsapp/whatsapp.service';
+import { SmsService } from '../../src/modules/sms/sms.service';
 import { createPrismaMock, PrismaMock } from '../helpers/prisma-mock.helper';
 import {
   studentFixture,
@@ -28,6 +29,7 @@ describe('NotificationsService — fee-gate logic', () => {
         { provide: PrismaService, useValue: prisma },
         { provide: MailService, useValue: mail },
         { provide: WhatsAppService, useValue: whatsapp },
+        { provide: SmsService, useValue: { enabled: false, sendText: jest.fn() } },
       ],
     }).compile();
 

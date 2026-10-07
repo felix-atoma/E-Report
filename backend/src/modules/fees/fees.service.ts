@@ -246,7 +246,8 @@ export class FeesService {
     if (!fee) throw new NotFoundException('Fee not found');
 
     const enrollments = await this.prisma.classStudent.findMany({
-      where: { classId: dto.classId, academicYear: dto.academicYear },
+      // The class must belong to this school — otherwise a fee could be charged to another school's students.
+      where: { classId: dto.classId, academicYear: dto.academicYear, class: { institutionId } },
       select: { studentId: true },
     });
 
@@ -280,13 +281,13 @@ export class FeesService {
       select: { amount: true, academicYear: true, term: true, paymentDate: true },
     });
 
-    const totalDue = studentFees.reduce((sum, sf) => sum + sf.amountDue.toNumber(), 0);
-    const totalPaid = payments.reduce((sum, p) => sum + p.amount.toNumber(), 0);
+    const totalDue = studentFees.filter((sf) => !sf.isExempt).reduce((sum, sf) => sum + Number(sf.amountDue), 0);
+    const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount), 0);
     const balance = totalDue - totalPaid;
 
     const hasExemption = studentFees.some((sf) => sf.isExempt);
     const paymentStatus =
-      hasExemption ? 'EXEMPT' :
+      hasExemption && totalDue === 0 ? 'EXEMPT' :
       totalDue === 0 ? 'PAID' :
       totalPaid >= totalDue ? 'PAID' :
       totalPaid > 0 ? 'PARTIAL' : 'UNPAID';

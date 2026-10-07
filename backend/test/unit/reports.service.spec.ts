@@ -4,6 +4,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ReportsService } from '../../src/modules/reports/reports.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { PdfService } from '../../src/modules/pdf/pdf.service';
+import { AttendanceService } from '../../src/modules/attendance/attendance.service';
+import { AiService } from '../../src/modules/ai/ai.service';
 import { Role } from '../../src/common/enums/role.enum';
 import { createPrismaMock, PrismaMock } from '../helpers/prisma-mock.helper';
 import {
@@ -34,6 +36,8 @@ describe('ReportsService', () => {
         { provide: PrismaService, useValue: prisma },
         { provide: EventEmitter2, useValue: events },
         { provide: PdfService, useValue: pdf },
+        { provide: AttendanceService, useValue: { computeTermAttendance: jest.fn().mockResolvedValue(new Map()) } },
+        { provide: AiService, useValue: {} },
       ],
     }).compile();
 
@@ -247,8 +251,9 @@ describe('ReportsService', () => {
       expect(finalCall![0].data.classSize).toBe(2);
     });
 
-    it('throws ForbiddenException if role is not ADMIN', async () => {
+    it('throws ForbiddenException for a teacher who is not the titulaire of the class', async () => {
       prisma.reportCard.findFirst.mockResolvedValue({ ...reportCardFixture, status: 'REVIEW', grades: [] });
+      prisma.class.findFirst.mockResolvedValue({ teacherId: 'another-teacher' });
 
       await expect(
         service.publish(reportCardFixture.id, institutionFixture.id, teacherUserFixture.id, Role.TEACHER),

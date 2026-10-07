@@ -549,7 +549,7 @@ export class GradesService {
   // ─── Private helpers ─────────────────────────────────────────────────────
 
   private async assertReportAccess(report: { createdById: string | null; classId: string }, userId: string, role: Role) {
-    if (role === Role.ADMIN) return;
+    if (role === Role.ADMIN) return this.assertAdminOwnsClass(report.classId, userId);
     if (role === Role.TEACHER) {
       if (report.createdById === userId) return;
       const cls = await this.prisma.class.findFirst({
@@ -568,7 +568,7 @@ export class GradesService {
   }
 
   private async assertClassAccess(classId: string, userId: string, role: Role) {
-    if (role === Role.ADMIN) return;
+    if (role === Role.ADMIN) return this.assertAdminOwnsClass(classId, userId);
     if (role === Role.TEACHER) {
       const cls = await this.prisma.class.findFirst({
         where: { id: classId, OR: [{ teacherId: userId }, { subjects: { some: { teacherId: userId } } }] },
@@ -579,9 +579,20 @@ export class GradesService {
     throw new ForbiddenException('Access denied');
   }
 
+  // Admins can act on any class of their own school only (was: any class on the platform).
+  private async assertAdminOwnsClass(classId: string, userId: string) {
+    const [cls, user] = await Promise.all([
+      this.prisma.class.findUnique({ where: { id: classId }, select: { institutionId: true } }),
+      this.prisma.user.findUnique({ where: { id: userId }, select: { institutionId: true } }),
+    ]);
+    if (!cls || !user?.institutionId || cls.institutionId !== user.institutionId) {
+      throw new ForbiddenException('Access denied');
+    }
+  }
+
   // Teacher must be assigned to the specific subject (or be homeroom teacher) to write/sign
   private async assertSubjectAccess(classId: string, subjectId: string, userId: string, role: Role) {
-    if (role === Role.ADMIN) return;
+    if (role === Role.ADMIN) return this.assertAdminOwnsClass(classId, userId);
     if (role === Role.TEACHER) {
       const assigned = await this.prisma.classSubject.findFirst({
         where: { classId, subjectId, teacherId: userId },

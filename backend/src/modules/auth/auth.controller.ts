@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
@@ -23,6 +24,8 @@ import { JwtRefreshGuard } from '../../common/guards/jwt-refresh.guard';
 import { JwtLogoutGuard } from '../../common/guards/jwt-logout.guard';
 import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { Role } from '../../common/enums/role.enum';
 import { ConfigService } from '@nestjs/config';
 
 @ApiTags('auth')
@@ -33,10 +36,14 @@ export class AuthController {
     private readonly config: ConfigService,
   ) {}
 
-  @Public()
+  // Was public with a caller-chosen role and institution: anyone could create an ADMIN or SUPERADMIN.
+  // Schools sign up through /institutions (approval flow) and admins create their users in /users.
+  @ApiBearerAuth()
+  @Roles(Role.SUPERADMIN)
   @Post('register')
-  @ApiOperation({ summary: 'Register a new user' })
+  @ApiOperation({ summary: 'Create a user in a school (super-admin only)' })
   register(@Body() dto: RegisterDto) {
+    if (dto.role === Role.SUPERADMIN) throw new ForbiddenException('Cannot create a super-admin here');
     return this.authService.register(dto);
   }
 

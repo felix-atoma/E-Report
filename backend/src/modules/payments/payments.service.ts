@@ -89,12 +89,11 @@ export class PaymentsService {
     const student = await this.prisma.student.findFirst({ where: { id: dto.studentId, institutionId } });
     if (!student) throw new NotFoundException('Student not found');
 
-    const receiptNumber = await this.generateReceiptNumber(institutionId);
     const now = new Date();
     const defaultYear = `${now.getFullYear() - (now.getMonth() < 8 ? 1 : 0)}-${now.getFullYear() + (now.getMonth() >= 8 ? 1 : 0)}`;
     const academicYear = dto.academicYear || defaultYear;
 
-    const payment = await this.prisma.payment.create({
+    const payment = await this.createPaymentWithReceipt(institutionId, {
       data: {
         studentId: dto.studentId,
         academicYear,
@@ -102,7 +101,7 @@ export class PaymentsService {
         amount: new Prisma.Decimal(dto.amount),
         paymentMethod: dto.paymentMethod as any,
         referenceNumber: dto.referenceNumber,
-        receiptNumber,
+        receiptNumber: '',
         paymentDate: dto.paymentDate ? new Date(dto.paymentDate) : new Date(),
         notes: dto.notes,
         recordedById,
@@ -135,13 +134,15 @@ export class PaymentsService {
       select: { amount: true },
     });
 
-    const totalDue = studentFees.reduce((sum, sf) => sum + Number(sf.amountDue), 0);
+    // Exempted fee lines are not owed; the student is EXEMPT only when nothing else is due
+    // (one exempted fee used to mark the whole account EXEMPT and release held bulletins).
+    const totalDue = studentFees.filter((sf) => !sf.isExempt).reduce((sum, sf) => sum + Number(sf.amountDue), 0);
     const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount), 0);
     const balance = totalDue - totalPaid;
     const hasExemption = studentFees.some((sf) => sf.isExempt);
 
     const status =
-      hasExemption ? 'EXEMPT' :
+      hasExemption && totalDue === 0 ? 'EXEMPT' :
       totalDue === 0 ? 'PAID' :
       totalPaid >= totalDue ? 'PAID' :
       totalPaid > 0 ? 'PARTIAL' : 'UNPAID';
@@ -192,7 +193,7 @@ export class PaymentsService {
     parentEmail: string,
   ) {
     const student = await this.prisma.student.findFirst({
-      where: { id: studentId, institutionId },
+      where: { id: studentId, institutionId, parentId: parentUserId }, // only the parent's own child
     });
     if (!student) throw new NotFoundException('Student not found');
 
@@ -276,8 +277,7 @@ export class PaymentsService {
 
     await this.prisma.paymentIntent.update({ where: { id: intent.id }, data: { status: 'COMPLETED' } });
 
-    const receiptNumber = await this.generateReceiptNumber(intent.institutionId);
-    const payment = await this.prisma.payment.create({
+    const payment = await this.createPaymentWithReceipt(intent.institutionId, {
       data: {
         studentId: intent.studentId,
         institutionId: intent.institutionId,
@@ -285,7 +285,7 @@ export class PaymentsService {
         term: intent.term ?? undefined,
         amount,
         paymentMethod: 'MOBILE_MONEY_ONLINE',
-        receiptNumber,
+        receiptNumber: '',
         paymentDate: new Date(),
         notes: `Paiement en ligne Notchpay — ${reference}`,
         recordedById: intent.parentUserId,
@@ -311,7 +311,7 @@ export class PaymentsService {
     parentName: string,
     parentEmail: string,
   ) {
-    const student = await this.prisma.student.findFirst({ where: { id: studentId, institutionId } });
+    const student = await this.prisma.student.findFirst({ where: { id: studentId, institutionId, parentId: parentUserId } });
     if (!student) throw new NotFoundException('Student not found');
 
     const { status, balance } = await this.getStudentPaymentStatus(studentId, institutionId, academicYear, term);
@@ -366,8 +366,7 @@ export class PaymentsService {
 
     await this.prisma.paymentIntent.update({ where: { id: intent.id }, data: { status: 'COMPLETED' } });
 
-    const receiptNumber = await this.generateReceiptNumber(intent.institutionId);
-    const payment = await this.prisma.payment.create({
+    const payment = await this.createPaymentWithReceipt(intent.institutionId, {
       data: {
         studentId: intent.studentId,
         institutionId: intent.institutionId,
@@ -375,7 +374,7 @@ export class PaymentsService {
         term: intent.term ?? undefined,
         amount,
         paymentMethod: 'MOBILE_MONEY_ONLINE',
-        receiptNumber,
+        receiptNumber: '',
         paymentDate: new Date(),
         notes: `Paiement en ligne CinetPay — ${transactionId}`,
         recordedById: intent.parentUserId,
@@ -392,9 +391,13 @@ export class PaymentsService {
     return { received: true };
   }
 
-  async generateReceipt(id: string, institutionId: string): Promise<Buffer> {
+  async generateReceipt(id: string, institutionId: string, viewer?: { id: string; role: string }): Promise<Buffer> {
+    // Parents and students only get their own family's receipts.
+    const ownership =
+      viewer?.role === 'PARENT' ? { student: { parentId: viewer.id } } :
+      viewer?.role === 'STUDENT' ? { student: { userId: viewer.id } } : {};
     const payment = await this.prisma.payment.findFirst({
-      where: { id, institutionId },
+      where: { id, institutionId, ...ownership },
       include: {
         student: {
           include: {
@@ -412,15 +415,17 @@ export class PaymentsService {
     const date = new Date(payment.paymentDate).toLocaleDateString('fr-FR', {
       day: '2-digit', month: 'long', year: 'numeric',
     });
-    const studentName = payment.student.user?.name ?? payment.student.admissionNumber;
-    const className   = payment.student.classes?.[0]?.class?.name ?? '—';
-    const schoolName  = payment.institution.name;
+    // Everything typed by users is escaped before going into the HTML rendered by the PDF browser.
+    const esc = (v: unknown) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+    const studentName = esc(payment.student.user?.name ?? payment.student.admissionNumber);
+    const className   = esc(payment.student.classes?.[0]?.class?.name ?? '—');
+    const schoolName  = esc(payment.institution.name);
     const amount      = fmt(Number(payment.amount));
 
     const METHOD_LABELS: Record<string, string> = {
-      CASH: 'Espèces', BANK_TRANSFER: 'Virement bancaire',
-      MOMO: 'Mobile Money', CHECK: 'Chèque',
-      CARD: 'Carte bancaire', OTHER: 'Autre',
+      CASH: 'Espèces', BANK_TRANSFER: 'Virement bancaire', CHEQUE: 'Chèque',
+      MOBILE_MONEY_TMONEY: 'Mobile Money (T-Money)', MOBILE_MONEY_FLOOZ: 'Mobile Money (Flooz)',
+      MOBILE_MONEY_MOMO: 'Mobile Money (MoMo)', MOBILE_MONEY_ONLINE: 'Paiement en ligne', OTHER: 'Autre',
     };
 
     const html = `<!DOCTYPE html>
@@ -459,15 +464,15 @@ export class PaymentsService {
 <div class="page">
   <div class="header">
     <div class="header__left">
-      ${payment.institution.logo ? `<img class="header__logo" src="${payment.institution.logo}" />` : ''}
+      ${payment.institution.logo ? `<img class="header__logo" src="${esc(payment.institution.logo)}" />` : ''}
       <div>
         <div class="header__school">${schoolName}</div>
-        <div class="header__school-sub">${payment.institution.address ?? ''} ${payment.institution.phone ? '· ' + payment.institution.phone : ''}</div>
+        <div class="header__school-sub">${esc(payment.institution.address)} ${payment.institution.phone ? '· ' + esc(payment.institution.phone) : ''}</div>
       </div>
     </div>
     <div class="header__right">
       <div class="receipt-title">Reçu de paiement</div>
-      <div class="receipt-num">N° ${payment.receiptNumber}</div>
+      <div class="receipt-num">N° ${esc(payment.receiptNumber)}</div>
       <div class="receipt-num">${date}</div>
     </div>
   </div>
@@ -476,8 +481,8 @@ export class PaymentsService {
     <div class="section-title">Élève</div>
     <div class="row"><span class="row__label">Nom complet</span><span class="row__value">${studentName}</span></div>
     <div class="row"><span class="row__label">Classe</span><span class="row__value">${className}</span></div>
-    <div class="row"><span class="row__label">Année scolaire</span><span class="row__value">${payment.academicYear}</span></div>
-    ${payment.term ? `<div class="row"><span class="row__label">Trimestre</span><span class="row__value">${payment.term}</span></div>` : ''}
+    <div class="row"><span class="row__label">Année scolaire</span><span class="row__value">${esc(payment.academicYear)}</span></div>
+    ${payment.term ? `<div class="row"><span class="row__label">Trimestre</span><span class="row__value">${esc(payment.term)}</span></div>` : ''}
   </div>
 
   <div class="amount-box">
@@ -487,10 +492,10 @@ export class PaymentsService {
 
   <div class="section">
     <div class="section-title">Détails du paiement</div>
-    <div class="row"><span class="row__label">Mode de paiement</span><span class="row__value">${METHOD_LABELS[payment.paymentMethod] ?? payment.paymentMethod}</span></div>
-    ${payment.referenceNumber ? `<div class="row"><span class="row__label">Référence</span><span class="row__value">${payment.referenceNumber}</span></div>` : ''}
-    <div class="row"><span class="row__label">Enregistré par</span><span class="row__value">${payment.recordedBy?.name ?? '—'}</span></div>
-    ${payment.notes ? `<div class="row"><span class="row__label">Notes</span><span class="row__value">${payment.notes}</span></div>` : ''}
+    <div class="row"><span class="row__label">Mode de paiement</span><span class="row__value">${METHOD_LABELS[payment.paymentMethod] ?? esc(payment.paymentMethod)}</span></div>
+    ${payment.referenceNumber ? `<div class="row"><span class="row__label">Référence</span><span class="row__value">${esc(payment.referenceNumber)}</span></div>` : ''}
+    <div class="row"><span class="row__label">Enregistré par</span><span class="row__value">${esc(payment.recordedBy?.name ?? '—')}</span></div>
+    ${payment.notes ? `<div class="row"><span class="row__label">Notes</span><span class="row__value">${esc(payment.notes)}</span></div>` : ''}
   </div>
 
   <div class="stamp-zone">
@@ -510,12 +515,35 @@ export class PaymentsService {
     return this.pdf.generateFromHtml(html);
   }
 
-  private async generateReceiptNumber(institutionId: string): Promise<string> {
+  /**
+   * receiptNumber is unique across the whole platform, so each school gets its own prefix
+   * (REC-2026-3852-00001); otherwise the second school to record a payment in a year collided.
+   */
+  private async generateReceiptNumber(institutionId: string, offset = 0): Promise<string> {
     const year = new Date().getFullYear();
     const count = await this.prisma.payment.count({
       where: { institutionId, createdAt: { gte: new Date(`${year}-01-01`) } },
     });
-    const seq = String(count + 1).padStart(5, '0');
-    return `REC-${year}-${seq}`;
+    const seq = String(count + 1 + offset).padStart(5, '0');
+    return `REC-${year}-${institutionId.replace(/-/g, '').slice(0, 4).toUpperCase()}-${seq}`;
+  }
+
+  /** Creates a payment with a fresh receipt number, retrying if two payments were recorded at the same moment. */
+  private async createPaymentWithReceipt<T extends Prisma.PaymentCreateArgs>(
+    institutionId: string,
+    args: T,
+  ): Promise<Prisma.PaymentGetPayload<T>> {
+    for (let attempt = 0; ; attempt++) {
+      const receiptNumber = await this.generateReceiptNumber(institutionId, attempt);
+      try {
+        return (await this.prisma.payment.create({
+          ...args,
+          data: { ...args.data, receiptNumber },
+        } as any)) as any;
+      } catch (e: any) {
+        const receiptClash = e?.code === 'P2002' && String(e?.meta?.target ?? '').includes('receiptNumber');
+        if (!receiptClash || attempt >= 5) throw e;
+      }
+    }
   }
 }

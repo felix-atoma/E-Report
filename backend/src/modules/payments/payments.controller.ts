@@ -61,7 +61,7 @@ export class PaymentsController {
   @Roles(Role.ADMIN, Role.BURSAR, Role.PARENT, Role.STUDENT)
   @ApiOperation({ summary: 'Download payment receipt as PDF' })
   async getReceipt(@Param('id') id: string, @CurrentUser() user: any, @Res() res: Response) {
-    const buf = await this.service.generateReceipt(id, user.institutionId);
+    const buf = await this.service.generateReceipt(id, user.institutionId, user);
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="recu-${id}.pdf"`);
     res.send(buf);
