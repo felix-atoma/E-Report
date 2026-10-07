@@ -21,7 +21,9 @@ services:
         value: "true"
 
       # ── Database (set in Render dashboard) ───────────────────────────────────
-      # DATABASE_URL  → Supabase Transaction (pooled) connection string
+      # DATABASE_URL  → Supabase Session pooler, port 5432 (NOT the transaction pooler on 6543:
+      #                 measured ~1 s per query there vs ~0.2 s on 5432). No pgbouncer=true;
+      #                 keep connection_limit=5 (one Render instance).
       # DIRECT_URL    → Supabase Session (direct) connection string
       - key: DATABASE_URL
         sync: false

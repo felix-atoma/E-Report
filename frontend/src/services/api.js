@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { queryClient } from './queryClient';
 
 const baseURL = import.meta.env.VITE_API_URL;
 if (!baseURL) {
@@ -26,6 +27,11 @@ const processQueue = (error, token = null) => {
 
 api.interceptors.response.use(
   (res) => {
+    // A save went through: mark every cached screen stale (no immediate reload) so the next one
+    // shown fetches fresh data — screens keep their data 1 min otherwise (see queryClient.js).
+    if (res.config?.method && res.config.method.toLowerCase() !== 'get') {
+      queryClient.invalidateQueries({ refetchType: 'none' });
+    }
     // Unwrap the backend's global { success, data, timestamp } envelope
     if (res.data && typeof res.data === 'object' && 'success' in res.data && 'data' in res.data) {
       res.data = res.data.data;
