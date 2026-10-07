@@ -65,7 +65,7 @@ function SlotRow({ slot, index, subjects, teachers, onChange, onRemove, t }) {
         {teachers.map((tc) => <option key={tc.id} value={tc.id}>{tc.name}</option>)}
       </select>
       <input className="acd__tt-input" placeholder="Salle" value={slot.room} onChange={set('room')} />
-      <button type="button" className="acd__tt-remove" onClick={() => onRemove(index)} title={t('action.delete')}>âœ•</button>
+      <button type="button" className="acd__tt-remove" onClick={() => onRemove(index)} title={t('action.delete')}>✕</button>
     </div>
   );
 }
@@ -220,7 +220,7 @@ function FichesPanel({ classId, academicYear, t }) {
               <div className="acd__fiche-status">
                 {f.isSigned ? (
                   <span className="acd__fiche-badge acd__fiche-badge--signed">
-                    âœ… {f.signedByName}
+                    ✅ {f.signedByName}
                     {f.signedAt && (
                       <span className="acd__fiche-date"> · {new Date(f.signedAt).toLocaleDateString('fr-FR')}</span>
                     )}
