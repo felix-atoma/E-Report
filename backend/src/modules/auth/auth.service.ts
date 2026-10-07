@@ -9,7 +9,16 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { createHash } from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
+
+// Refresh tokens are stored as SHA-256. bcrypt only reads the first 72 bytes, which for a JWT is
+// the header + the start of the user's payload — every token of a user would match every row.
+const hashRefreshToken = (token: string) => createHash('sha256').update(token).digest('hex');
+// Legacy bcrypt rows ($2…) are only checked for legacy tokens (issued before jti existed), so a
+// new token can't slip through the 72-byte bcrypt prefix match. They expire within 7 days.
+const refreshTokenMatches = async (token: string, stored: string, legacyToken: boolean) =>
+  stored.startsWith('$2') ? legacyToken && bcrypt.compare(token, stored) : hashRefreshToken(token) === stored;
 import { PrismaService } from '../../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
 import { RegisterDto } from './dto/register.dto';
@@ -194,14 +203,20 @@ export class AuthService {
 
   // ─── Refresh tokens ──────────────────────────────────────────────────────
   async refreshTokens(userId: string, refreshToken: string) {
-    const stored = await this.prisma.refreshToken.findFirst({
+    // A user can have several live sessions (phone + PC, several tabs): find the one this token belongs to,
+    // not just any active row — otherwise every other session gets logged out on refresh.
+    const active = await this.prisma.refreshToken.findMany({
       where: { userId, revokedAt: null, expiresAt: { gt: new Date() } },
+      orderBy: { createdAt: 'desc' },
+      take: 20,
     });
 
+    const legacyToken = !(this.jwt.decode(refreshToken) as { jti?: string } | null)?.jti;
+    let stored: (typeof active)[number] | undefined;
+    for (const row of active) {
+      if (await refreshTokenMatches(refreshToken, row.token, legacyToken)) { stored = row; break; }
+    }
     if (!stored) throw new UnauthorizedException('Invalid refresh token');
-
-    const matches = await bcrypt.compare(refreshToken, stored.token);
-    if (!matches) throw new UnauthorizedException('Invalid refresh token');
 
     // Rotate: revoke old, issue new
     await this.prisma.refreshToken.update({
@@ -355,7 +370,7 @@ export class AuthService {
         secret: this.config.get<string>('JWT_SECRET'),
         expiresIn: this.config.get<string>('JWT_EXPIRES_IN', '15m'),
       }),
-      this.jwt.signAsync(payload, {
+      this.jwt.signAsync({ ...payload, jti: uuidv4() }, { // jti: two logins in the same second must not get identical tokens
         secret: this.config.get<string>('JWT_REFRESH_SECRET'),
         expiresIn: this.config.get<string>('JWT_REFRESH_EXPIRES_IN', '7d'),
       }),
@@ -465,7 +480,7 @@ export class AuthService {
   }
 
   private async saveRefreshToken(userId: string, refreshToken: string) {
-    const hashed = await bcrypt.hash(refreshToken, 10);
+    const hashed = hashRefreshToken(refreshToken);
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
     await this.prisma.refreshToken.create({

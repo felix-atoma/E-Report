@@ -10,13 +10,26 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
     if (!token) { setLoading(false); return; }
-    authService.me()
-      .then((res) => setUser(res.data))
-      .catch(() => {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-      })
-      .finally(() => setLoading(false));
+    // Only a real auth rejection ends the session. A network error or a 5xx (Render waking up,
+    // flaky connection) is retried instead of wiping the tokens and throwing the user out.
+    const loadMe = async (attempt = 0) => {
+      try {
+        const res = await authService.me();
+        setUser(res.data);
+      } catch (err) {
+        const status = err?.response?.status;
+        if (status === 401 || status === 403 || attempt >= 3) {
+          if (status === 401 || status === 403) {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+          }
+          return;
+        }
+        await new Promise((r) => setTimeout(r, 2000 * (attempt + 1)));
+        return loadMe(attempt + 1);
+      }
+    };
+    loadMe().finally(() => setLoading(false));
   }, []);
 
   const login = useCallback(async (email, password) => {

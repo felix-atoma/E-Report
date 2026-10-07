@@ -52,13 +52,15 @@ api.interceptors.response.use(
       }
       original._retry = true;
       isRefreshing = true;
+      const refreshToken = localStorage.getItem('refreshToken');
       try {
-        const refreshToken = localStorage.getItem('refreshToken');
         if (!refreshToken) throw new Error('No refresh token');
 
-        // Send the refreshToken as the Bearer token — matches JwtRefreshStrategy
+        // Send the refreshToken as the Bearer token — matches JwtRefreshStrategy.
+        // Must hit the backend (baseURL), not the frontend origin — on Vercel '/api/...' returns 405
+        // and every user was logged out when the 15-min access token expired.
         const { data: raw } = await axios.post(
-          '/api/auth/refresh',
+          `${baseURL ?? '/api'}/auth/refresh`,
           {},
           { headers: { Authorization: `Bearer ${refreshToken}` } },
         );
@@ -74,6 +76,19 @@ api.interceptors.response.use(
         original.headers.Authorization = `Bearer ${data.accessToken}`;
         return api(original);
       } catch (refreshErr) {
+        // Another tab refreshed first (tokens are shared through localStorage): use its new token.
+        const latest = localStorage.getItem('refreshToken');
+        if (latest && latest !== refreshToken) {
+          const token = localStorage.getItem('accessToken');
+          processQueue(null, token);
+          original.headers.Authorization = `Bearer ${token}`;
+          return api(original);
+        }
+        // Network error / server waking up: keep the session, just fail this request.
+        if (!refreshErr?.response && refreshToken) {
+          processQueue(refreshErr, null);
+          return Promise.reject(err);
+        }
         processQueue(refreshErr, null);
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');

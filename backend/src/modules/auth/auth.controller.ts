@@ -66,6 +66,8 @@ export class AuthController {
     return this.authService.logout(user.id);
   }
 
+  // Public = skip the global access-token guard; JwtRefreshGuard validates the refresh token instead.
+  @Public()
   @UseGuards(JwtRefreshGuard)
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
