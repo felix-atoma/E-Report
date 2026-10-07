@@ -123,15 +123,7 @@ export class MockExamsService {
     });
 
     // Students enrolled in class
-    const classStudents = await this.prisma.classStudent.findMany({
-      where: { classId: exam.classId },
-      include: {
-        student: {
-          include: { user: { select: { name: true } } },
-        },
-      },
-      orderBy: { student: { user: { name: 'asc' } } },
-    });
+    const classStudents = await this.enrolledStudents(exam.classId, exam.academicYear);
 
     // Existing grades for this exam
     const existingGrades = await this.prisma.mockExamGrade.findMany({
@@ -357,6 +349,8 @@ export class MockExamsService {
         throw new ForbiddenException('Cette fiche est signée. Annulez la signature avant de modifier les notes.');
       }
     }
+    this.assertValidEntries([...grades, { coefficient }]);
+    await this.assertStudentsInSheet(exam.classId, exam.academicYear, grades.map((g) => g.studentId));
     await this.assertWithinScale(exam.examType, grades.map((g) => ({ subjectId, score: g.score })));
     await this.prisma.$transaction(
       grades.map((g) =>
@@ -439,15 +433,37 @@ export class MockExamsService {
   }
 
   // ─── Save grades for an exam ─────────────────────────────────────────────────
-  async saveGrades(examId: string, dto: SaveMockExamGradesDto, institutionId: string) {
+  async saveGrades(examId: string, dto: SaveMockExamGradesDto, institutionId: string, userRole = 'TEACHER', userId?: string) {
     const exam = await this.findExamOrThrow(examId, institutionId);
     if (exam.status === 'PUBLISHED') {
       throw new ForbiddenException('Impossible de modifier un examen publié.');
     }
-    await this.assertWithinScale(exam.examType, dto.grades);
+    // Same rules as the per-subject fiche: a teacher only writes their own subjects, never on a signed fiche
+    // (this route used to let any teacher overwrite every subject, signed or not).
+    const subjectIds = [...new Set(dto.grades.map((g) => g.subjectId))];
+    for (const subjectId of subjectIds) {
+      await this.assertSubjectAccess(exam.classId, subjectId, userId, userRole);
+    }
+    let entries = dto.grades;
+    let skippedSigned = 0;
+    if (userRole !== 'ADMIN' && subjectIds.length) {
+      const signed = await this.prisma.mockExamSubjectFiche.findMany({
+        where: { mockExamId: examId, subjectId: { in: subjectIds }, signedAt: { not: null } },
+        select: { subjectId: true },
+      });
+      const signedIds = new Set(signed.map((s) => s.subjectId));
+      if (signedIds.size && signedIds.size === subjectIds.length) {
+        throw new ForbiddenException('Cette fiche est signée. Annulez la signature avant de modifier les notes.');
+      }
+      entries = dto.grades.filter((g) => !signedIds.has(g.subjectId));
+      skippedSigned = signedIds.size;
+    }
+    this.assertValidEntries(entries);
+    await this.assertStudentsInSheet(exam.classId, exam.academicYear, entries.map((g) => g.studentId));
+    await this.assertWithinScale(exam.examType, entries);
 
     await this.prisma.$transaction(
-      dto.grades.map((g) =>
+      entries.map((g) =>
         this.prisma.mockExamGrade.upsert({
           where: {
             mockExamId_studentId_subjectId: {
@@ -471,12 +487,25 @@ export class MockExamsService {
       ),
     );
 
-    return { message: 'Notes sauvegardées.' };
+    return {
+      message: skippedSigned
+        ? `Notes sauvegardées (${skippedSigned} matière(s) signée(s) laissée(s) telle(s) quelle(s)).`
+        : 'Notes sauvegardées.',
+    };
   }
 
   // ─── Update exam type ────────────────────────────────────────────────────────
   async updateType(examId: string, institutionId: string, examType: string) {
-    await this.findExamOrThrow(examId, institutionId);
+    if (!MockExamsService.TYPE_LABELS[examType]) throw new BadRequestException('Type de session inconnu');
+    const exam = await this.findExamOrThrow(examId, institutionId);
+    // Same level rules as at creation
+    const cls = await this.prisma.class.findUnique({ where: { id: exam.classId }, select: { level: true } });
+    if (examType === 'COMPOSITION_MENSUELLE' && !isPrimaryLevel(cls?.level)) {
+      throw new BadRequestException('Les compositions mensuelles concernent uniquement les classes du CI au CM2');
+    }
+    if (examType === 'DEVOIR_SURVEILLE' && !isSecondaryLevel(cls?.level)) {
+      throw new BadRequestException('Les devoirs surveillés concernent uniquement les classes de la 6ème à la Terminale');
+    }
     return this.prisma.mockExam.update({
       where: { id: examId },
       data: { examType: examType as any },
@@ -652,6 +681,44 @@ export class MockExamsService {
   }
 
   // ─── Private ─────────────────────────────────────────────────────────────────
+
+  /**
+   * Élèves de la classe pour l'année de la session (comme les fiches trimestrielles) — sinon les élèves
+   * des années précédentes s'ajoutaient à la fiche et faussaient rangs et effectif. Si personne n'est
+   * inscrit pour cette année (session créée avec une mauvaise année), on prend l'année la plus récente.
+   */
+  private async enrolledStudents(classId: string, academicYear: string) {
+    const all = await this.prisma.classStudent.findMany({
+      where: { classId },
+      include: { student: { include: { user: { select: { name: true } } } } },
+      orderBy: { student: { user: { name: 'asc' } } },
+    });
+    const years = [...new Set(all.map((e) => e.academicYear))].sort();
+    const year = years.includes(academicYear) ? academicYear : years[years.length - 1];
+    const seen = new Set<string>();
+    return all.filter((e) => e.academicYear === year && !seen.has(e.studentId) && seen.add(e.studentId));
+  }
+
+  /** Les notes ne peuvent viser que des élèves de la fiche (pas d'élève d'une autre classe ou école). */
+  private async assertStudentsInSheet(classId: string, academicYear: string, studentIds: string[]) {
+    const allowed = new Set((await this.enrolledStudents(classId, academicYear)).map((e) => e.studentId));
+    if (studentIds.some((id) => !allowed.has(id))) {
+      throw new BadRequestException("Un des élèves n'est pas inscrit dans cette classe.");
+    }
+  }
+
+  /** Note : nombre réel ou vide ; coefficient : entre 0 (exclu) et 20. */
+  private assertValidEntries(entries: { score?: number | null; coefficient?: number | null }[]) {
+    for (const e of entries) {
+      if (e.score != null && (typeof e.score !== 'number' || !Number.isFinite(e.score))) {
+        throw new BadRequestException('Note invalide : saisissez un nombre.');
+      }
+      if (e.coefficient != null && (typeof e.coefficient !== 'number' || !(e.coefficient > 0 && e.coefficient <= 20))) {
+        throw new BadRequestException('Coefficient invalide : il doit être supérieur à 0 et au plus 20.');
+      }
+    }
+  }
+
   private async findExamOrThrow(examId: string, institutionId: string) {
     const exam = await this.prisma.mockExam.findFirst({
       where: { id: examId, institutionId },

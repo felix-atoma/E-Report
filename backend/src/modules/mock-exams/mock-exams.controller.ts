@@ -87,7 +87,7 @@ export class MockExamsController {
     @Body() dto: SaveMockExamGradesDto,
     @Req() req: any,
   ) {
-    return this.service.saveGrades(id, dto, req.user.institutionId);
+    return this.service.saveGrades(id, dto, req.user.institutionId, req.user.role, req.user.id);
   }
 
   @Roles(Role.ADMIN, Role.TEACHER)

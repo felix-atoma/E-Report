@@ -126,7 +126,8 @@ export class ExamPapersService {
       where: {
         institutionId: actor.institutionId,
         // Le professeur voit ses épreuves ; l'administration voit celles qui lui ont été soumises
-        ...(isAdmin ? { status: status ? (status as any) : { not: 'DRAFT' } } : { authorId: actor.id, ...(status ? { status: status as any } : {}) }),
+        // (?status=DRAFT never shows the admin a teacher's drafts)
+        ...(isAdmin ? { status: status && status !== 'DRAFT' ? (status as any) : { not: 'DRAFT' } } : { authorId: actor.id, ...(status ? { status: status as any } : {}) }),
       },
       orderBy: [{ submittedAt: 'desc' }, { updatedAt: 'desc' }],
       select: {
