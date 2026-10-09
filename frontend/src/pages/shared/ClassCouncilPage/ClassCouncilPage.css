@@ -1,0 +1,50 @@
+.council-filters { display: grid; grid-template-columns: minmax(200px, 320px) 180px; gap: 0.75rem; align-items: end; margin-bottom: 0.75rem; }
+.council-empty { color: #64748b; padding: 1.5rem 0; }
+
+.council-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; margin-bottom: 0.75rem; }
+.council-toolbar__info { flex: 1 1 280px; font-size: 0.85rem; color: #475569; }
+.council-toolbar__check { display: flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; cursor: pointer; }
+
+.council-table-wrap { overflow-x: auto; background: #fff; border: 1px solid var(--color-border, #e5e7eb); border-radius: 12px; }
+.council-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; min-width: 760px; }
+.council-table th { text-align: center; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.3px; color: #64748b; padding: 0.6rem 0.5rem; border-bottom: 1px solid #e5e7eb; background: #f8fafc; white-space: nowrap; }
+.council-table td { padding: 0.5rem; border-bottom: 1px solid #f1f5f9; text-align: center; vertical-align: middle; font-variant-numeric: tabular-nums; }
+.council-table__name { text-align: left !important; font-weight: 600; color: #0f172a; }
+.council-table__decision { text-align: left !important; min-width: 220px; }
+.council-table__sub { display: block; font-size: 0.72rem; color: #64748b; font-weight: 400; font-style: normal; }
+.council-provisional { font-style: italic; color: #64748b; }
+.council-annual { font-weight: 800; }
+.council-pass { color: #15803d; }
+.council-fail { color: #b91c1c; }
+.council-row--locked td { background: #f8fafc; }
+.council-decision { width: 100%; padding: 0.35rem 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; font: inherit; }
+.council-decision--changed { border-color: #f59e0b; background: #fffbeb; }
+
+.council-summary { margin-top: 0.75rem; font-size: 0.88rem; display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; }
+.council-summary__item { color: #334155; }
+
+/* Procès-verbal (impression) */
+.print-only { display: none; }
+@media print {
+  .no-print { display: none !important; }
+  .print-only { display: block; }
+  /* Menu, barre du haut et boutons latéraux : pas sur le procès-verbal */
+  body:has(.council-table) aside, body:has(.council-table) .topbar, body:has(.council-table) .side-btn-wrapper { display: none !important; }
+  body:has(.council-table) .app-shell__main, body:has(.council-table) .app-shell__content { margin: 0 !important; padding: 0 !important; }
+  span.print-only { display: inline; }
+  .council-table-wrap { border: none; overflow: visible; }
+  .council-table { min-width: 0; font-size: 10pt; }
+  .council-table th, .council-table td { border: 1px solid #94a3b8; padding: 3px 5px; }
+  .council-row--locked td { background: none; }
+  .council-pv-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .council-pv-head__logo { width: 56px; height: 56px; object-fit: contain; }
+  .council-pv-head__school { font-size: 14pt; font-weight: 800; text-transform: uppercase; }
+  .council-pv-head__sub { font-size: 9pt; color: #475569; }
+  .council-pv-title { font-size: 12pt; text-align: center; margin: 8px 0 10px; text-transform: uppercase; }
+  .council-pv-sign { margin-top: 18px; font-size: 10pt; }
+  .council-pv-sign__row { display: flex; justify-content: space-between; margin-top: 10px; }
+  .council-pv-sign__row div { display: flex; flex-direction: column; align-items: center; width: 40%; }
+  .council-pv-sign__row span { font-weight: 700; margin-bottom: 50px; }
+}
+
+@media (max-width: 640px) { .council-filters { grid-template-columns: 1fr; } }

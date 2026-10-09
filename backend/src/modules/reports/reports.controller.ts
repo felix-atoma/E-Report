@@ -19,6 +19,7 @@ import { UpdateReportDto } from './dto/update-report.dto';
 import { TitulaireEntryDto } from './dto/titulaire-entry.dto';
 import { BulkZipDto } from './dto/bulk-zip.dto';
 import { CouncilDecisionDto } from './dto/council-decision.dto';
+import { SaveCouncilDto } from './dto/save-council.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Role } from '../../common/enums/role.enum';
@@ -143,6 +144,22 @@ export class ReportsController {
     @CurrentUser() user: any,
   ) {
     return this.service.getAnnualReport(studentId, academicYear, user.institutionId, user);
+  }
+
+  @Get('council')
+  @Roles(Role.ADMIN, Role.TEACHER)
+  @ApiOperation({ summary: 'Conseil de classe : moyennes des périodes, moyenne et rang annuels, décisions (admin ou titulaire)' })
+  @ApiQuery({ name: 'classId', required: true })
+  @ApiQuery({ name: 'academicYear', required: true })
+  councilSheet(@Query('classId') classId: string, @Query('academicYear') academicYear: string, @CurrentUser() user: any) {
+    return this.service.councilSheet(classId, academicYear, user.institutionId, user.id, user.role);
+  }
+
+  @Put('council')
+  @Roles(Role.ADMIN, Role.TEACHER)
+  @ApiOperation({ summary: 'Valider le conseil de classe : enregistre les décisions sur les bulletins de la dernière période' })
+  saveCouncil(@Body() dto: SaveCouncilDto, @CurrentUser() user: any) {
+    return this.service.saveCouncil(dto.classId, dto.academicYear, dto.decisions, user.institutionId, user.id, user.role);
   }
 
   @Patch(':id/council-decision')

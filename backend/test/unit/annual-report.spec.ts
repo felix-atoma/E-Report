@@ -175,6 +175,64 @@ describe('ReportsService.getAnnualReport', () => {
     });
   });
 
+  describe('class council (conseil de classe)', () => {
+    const rc = (studentId: string, termNumber: number, extra: any = {}) => ({
+      id: `${studentId}-t${termNumber}`, studentId, termNumber, termType: 'TRIMESTRE', status: 'PUBLISHED', overallAverage: 12,
+      attendanceAbsentHours: 2, warnings: null, councilDecision: null, councilDecisionManual: false, grades: [], ...extra,
+    });
+
+    beforeEach(() => {
+      prisma.class.findFirst.mockResolvedValue({ id: 'class-1', name: '3ème', level: '3EME', teacherId: 'tit-1', teacher: { id: 'tit-1', name: 'Titulaire' } });
+      prisma.classStudent.findMany.mockResolvedValue([
+        { studentId: 'a', student: { admissionNumber: 'A', sex: 'F', user: { name: 'Ama' } } },
+        { studentId: 'b', student: { admissionNumber: 'B', sex: 'M', user: { name: 'Kofi' } } },
+      ]);
+    });
+
+    it('uses the live average of an unpublished 3rd-term bulletin, ranks and proposes decisions', async () => {
+      prisma.reportCard.findMany.mockResolvedValue([
+        rc('a', 1, { overallAverage: 8 }), rc('a', 2, { overallAverage: 9 }),
+        // T3 en brouillon : moyenne calculée depuis les notes (14 × 2 + 10 × 1) / 3 = 12,67
+        rc('a', 3, { status: 'DRAFT', overallAverage: null, grades: [{ weightedScore: 28, coefficient: 2 }, { weightedScore: 10, coefficient: 1 }] }),
+        rc('b', 1, { overallAverage: 14 }), rc('b', 2, { overallAverage: 14 }), rc('b', 3, { overallAverage: 14 }),
+      ]);
+
+      const sheet = await service.councilSheet('class-1', '2026-2027', 'inst-1', 'tit-1', Role.TEACHER);
+      const a = sheet.rows.find((r) => r.studentId === 'a')!;
+
+      expect(a.terms[2]).toEqual({ termNumber: 3, average: 12.67, published: false });
+      expect(a.annualAverage).toBe(9.89);
+      expect(a.councilDecision).toBe(REDOUBLE);
+      expect(a.locked).toBe(false);
+      expect(sheet.rows[0].studentId).toBe('b'); // classé 1er
+      expect(sheet.rows.find((r) => r.studentId === 'b')!.locked).toBe(true); // T3 publié
+    });
+
+    it('saves decisions only on unpublished last-term bulletins', async () => {
+      prisma.reportCard.findMany.mockResolvedValue([
+        rc('a', 3, { status: 'REVIEW' }),
+        rc('b', 3, { status: 'PUBLISHED' }),
+      ]);
+      prisma.reportCard.update.mockImplementation((args: any) => args);
+
+      const res = await service.saveCouncil('class-1', '2026-2027', [
+        { studentId: 'a', decision: 'Admis(e) sous réserve' },
+        { studentId: 'b', decision: 'Exclu(e)' },
+      ], 'inst-1', 'tit-1', Role.TEACHER);
+
+      expect(res.saved).toBe(1);
+      expect(res.locked).toBe(1);
+      expect(prisma.reportCard.update).toHaveBeenCalledTimes(1);
+      expect(prisma.reportCard.update).toHaveBeenCalledWith({ where: { id: 'a-t3' }, data: { councilDecision: 'Admis(e) sous réserve', councilDecisionManual: true } });
+    });
+
+    it('refuses a teacher who is not the titulaire', async () => {
+      prisma.class.findFirst.mockResolvedValue({ teacherId: 'someone-else' });
+
+      await expect(service.councilSheet('class-1', '2026-2027', 'inst-1', 'tit-1', Role.TEACHER)).rejects.toThrow();
+    });
+  });
+
   it("limits a parent to their own child's annual report", async () => {
     prisma.student.findFirst.mockResolvedValue(null);
 
