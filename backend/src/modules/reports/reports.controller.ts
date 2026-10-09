@@ -79,13 +79,6 @@ export class ReportsController {
     return this.service.create(dto, user.institutionId, user.id);
   }
 
-  @Get(':id')
-  @Roles(Role.ADMIN, Role.TEACHER, Role.PARENT, Role.STUDENT)
-  @ApiOperation({ summary: 'Get a report card with all grades' })
-  findOne(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.service.findOne(id, user.institutionId, user.id, user.role);
-  }
-
   @Patch(':id')
   @Roles(Role.ADMIN, Role.TEACHER)
   @ApiOperation({ summary: 'Update report card metadata (comments, conduct, attendance)' })
@@ -157,6 +150,15 @@ export class ReportsController {
   @ApiOperation({ summary: 'Décision du conseil de classe (admin ou titulaire) ; vide = décision proposée' })
   setCouncilDecision(@Body() dto: CouncilDecisionDto, @CurrentUser() user: any) {
     return this.service.setCouncilDecision(dto.studentId, dto.academicYear, dto.decision, user.institutionId, user.id, user.role);
+  }
+
+  // Après « palmares » et « annual » : déclarée avant, cette route les prenait pour un identifiant
+  // de bulletin (« Report card not found ») — le bulletin annuel et le palmarès ne s'ouvraient pas.
+  @Get(':id')
+  @Roles(Role.ADMIN, Role.TEACHER, Role.PARENT, Role.STUDENT)
+  @ApiOperation({ summary: 'Get a report card with all grades' })
+  findOne(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.service.findOne(id, user.institutionId, user.id, user.role);
   }
 
   @Post('bulk-publish')
