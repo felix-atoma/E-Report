@@ -208,6 +208,17 @@ describe('ReportsService.getAnnualReport', () => {
       expect(sheet.rows.find((r) => r.studentId === 'b')!.locked).toBe(true); // T3 publié
     });
 
+    it('proposes no decision in the middle of the year (periods without average)', async () => {
+      prisma.reportCard.findMany.mockResolvedValue([rc('a', 1, { overallAverage: 15 })]);
+
+      const sheet = await service.councilSheet('class-1', '2026-2027', 'inst-1', 'tit-1', Role.TEACHER);
+      const a = sheet.rows.find((r) => r.studentId === 'a')!;
+
+      expect(a.complete).toBe(false);
+      expect(a.proposedDecision).toBeNull();
+      expect(a.councilDecision).toBeNull();
+    });
+
     it('saves decisions only on unpublished last-term bulletins', async () => {
       prisma.reportCard.findMany.mockResolvedValue([
         rc('a', 3, { status: 'REVIEW' }),

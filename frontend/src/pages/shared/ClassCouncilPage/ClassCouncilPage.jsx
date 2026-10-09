@@ -85,6 +85,7 @@ export default function ClassCouncilPage() {
   const editable = (sheet?.rows ?? []).filter((r) => !r.locked && r.lastReportId);
   const lockedCount = (sheet?.rows ?? []).filter((r) => r.locked).length;
   const missingCount = (sheet?.rows ?? []).filter((r) => !r.lastReportId).length;
+  const incompleteCount = (sheet?.rows ?? []).filter((r) => !r.complete).length;
   const dirty = Object.keys(edits).length > 0;
 
   const validate = () => save.mutate(editable.map((r) => ({ studentId: r.studentId, decision: decisionOf(r) || null })));
@@ -123,6 +124,7 @@ export default function ClassCouncilPage() {
               {sheet.weighting === 'LAST_DOUBLE' && ' · dernière période comptée double'}
               {lockedCount > 0 && ` · ${lockedCount} bulletin(s) publié(s) (décision verrouillée)`}
               {missingCount > 0 && ` · ${missingCount} élève(s) sans bulletin de fin d'année`}
+              {incompleteCount > 0 && ` · ${incompleteCount} moyenne(s) annuelle(s) provisoire(s) (en italique) : décision proposée une fois toutes les périodes notées`}
             </div>
             <label className="council-toolbar__check">
               <input type="checkbox" checked={onlyBorderline} onChange={(e) => setOnlyBorderline(e.target.checked)} />
@@ -177,7 +179,12 @@ export default function ClassCouncilPage() {
                           {fmt(scaled(t.average))}
                         </td>
                       ))}
-                      <td className={`council-annual ${failing ? 'council-fail' : 'council-pass'}`}>{fmt(scaled(r.annualAverage))}</td>
+                      <td
+                        className={`council-annual ${failing ? 'council-fail' : 'council-pass'}${r.complete ? '' : ' council-provisional'}`}
+                        title={r.complete ? '' : "Provisoire : toutes les périodes de l'année n'ont pas encore de moyenne"}
+                      >
+                        {fmt(scaled(r.annualAverage))}
+                      </td>
                       <td>{r.annualRank ?? '—'}</td>
                       <td className="no-print">{r.absences || '—'}</td>
                       <td className="council-table__decision">

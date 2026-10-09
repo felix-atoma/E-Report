@@ -1059,7 +1059,9 @@ export class ReportsService {
       });
       const annual = computeAnnualAverage(terms.map((t) => ({ termNumber: t.termNumber, overallAverage: t.average })), termCount, settings.weighting);
       const last = own.find((x) => x.termNumber === termCount) ?? null;
-      const proposed = proposedDecision(annual, settings.promotionThreshold);
+      // Pas de décision proposée tant que toutes les périodes n'ont pas de moyenne (en cours d'année)
+      const complete = terms.every((t) => t.average != null);
+      const proposed = complete ? proposedDecision(annual, settings.promotionThreshold) : null;
       const manual = !!last?.councilDecisionManual;
       return {
         studentId: e.studentId,
@@ -1068,6 +1070,7 @@ export class ReportsService {
         sex: e.student.sex ?? null,
         terms,
         annualAverage: annual,
+        complete,
         absences: own.reduce((s, r) => s + (r.attendanceAbsentHours ?? 0), 0),
         warnings: own.filter((r) => r.warnings).length,
         lastReportId: last?.id ?? null,
