@@ -82,6 +82,18 @@ export class UpdateAcademicSettingsDto {
   @Type(() => TermDateDto)
   termDates?: TermDateDto[];
 
+  @ApiPropertyOptional({ enum: ['EQUAL', 'LAST_DOUBLE'], description: 'Moyenne annuelle : moyenne simple des périodes, ou dernière période comptée double' })
+  @IsOptional()
+  @IsEnum(['EQUAL', 'LAST_DOUBLE'])
+  annualWeighting?: 'EQUAL' | 'LAST_DOUBLE';
+
+  @ApiPropertyOptional({ example: 10, description: 'Moyenne annuelle (sur 20) à partir de laquelle le passage est proposé' })
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(20)
+  promotionThreshold?: number;
+
   @ApiPropertyOptional({ example: '2027-09-13', description: "Rentrée de l'année scolaire suivante (AAAA-MM-JJ) — affichée sur les bulletins du dernier trimestre au primaire" })
   @IsOptional()
   @Matches(/^(\d{4}-\d{2}-\d{2})?$/, { message: 'Date au format AAAA-MM-JJ' })

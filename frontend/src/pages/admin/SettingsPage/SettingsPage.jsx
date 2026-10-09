@@ -26,6 +26,7 @@ const DEFAULT_ACADEMIC = {
   termSystemByCycle: { PRIMAIRE: 'TRIMESTRE', COLLEGE: 'TRIMESTRE', LYCEE: 'TRIMESTRE' },
   termDates: [],
   nextSchoolYearStart: '',
+  annualWeighting: 'EQUAL', promotionThreshold: '10',
 };
 
 const DEFAULT_PAYMENT = { notchpayPublicKey: '', notchpayHashKey: '' };
@@ -118,6 +119,8 @@ function SettingsPage() {
       termSystemByCycle: s.termSystemByCycle ?? { PRIMAIRE: 'TRIMESTRE', COLLEGE: 'TRIMESTRE', LYCEE: 'TRIMESTRE' },
       termDates:         Array.isArray(s.termDates) ? s.termDates : [],
       nextSchoolYearStart: s.nextSchoolYearStart ?? '',
+      annualWeighting:   s.annualWeighting === 'LAST_DOUBLE' ? 'LAST_DOUBLE' : 'EQUAL',
+      promotionThreshold: String(s.promotionThreshold ?? '10'),
     });
   }, [institution]);
 
@@ -190,6 +193,8 @@ function SettingsPage() {
       termSystemByCycle: academicForm.isComplex ? academicForm.termSystemByCycle : undefined,
       termDates:         (academicForm.termDates ?? []).filter((d) => d.start && d.end),
       nextSchoolYearStart: academicForm.nextSchoolYearStart || '',
+      annualWeighting:   academicForm.annualWeighting,
+      promotionThreshold: Number(academicForm.promotionThreshold) || 10,
     });
   }
 
@@ -318,6 +323,8 @@ function SettingsPage() {
             />
             <SummaryRow label={t('settings.maxScore')}     value={ac.maxScore ? `${ac.maxScore}` : '20'} />
             <SummaryRow label={t('settings.passMark')}     value={ac.passMark ? `${ac.passMark}` : '10'} />
+            <SummaryRow label={t('settings.annualWeighting')} value={ac.annualWeighting === 'LAST_DOUBLE' ? t('settings.annualWeightingLast') : t('settings.annualWeightingEqual')} />
+            <SummaryRow label={t('settings.promotionThreshold')} value={`${ac.promotionThreshold ?? 10} / 20`} />
             <div className="settings-summary__row">
               <span className="settings-summary__label">{t('settings.feeGateStatus')}</span>
               <span className={`settings-summary__badge ${ac.feeGateEnabled !== false ? 'settings-summary__badge--on' : 'settings-summary__badge--off'}`}>
@@ -529,6 +536,24 @@ function SettingsPage() {
               value={academicForm.passMark}
               onChange={(e) => setAcademic('passMark', e.target.value)}
               hint={t('settings.passMarkHint')}
+            />
+          </div>
+          {/* Bulletin annuel : poids des périodes et seuil de passage proposé */}
+          <div className="settings-row">
+            <Select
+              id="annualWeighting" label={t('settings.annualWeighting')}
+              value={academicForm.annualWeighting}
+              options={[
+                { value: 'EQUAL', label: t('settings.annualWeightingEqual') },
+                { value: 'LAST_DOUBLE', label: t('settings.annualWeightingLast') },
+              ]}
+              onChange={(e) => setAcademic('annualWeighting', e.target.value)}
+            />
+            <Input
+              id="promotionThreshold" label={t('settings.promotionThreshold')} type="number" min="1" max="20" step="0.25"
+              value={academicForm.promotionThreshold}
+              onChange={(e) => setAcademic('promotionThreshold', e.target.value)}
+              hint={t('settings.promotionThresholdHint')}
             />
           </div>
 

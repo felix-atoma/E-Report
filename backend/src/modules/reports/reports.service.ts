@@ -9,9 +9,12 @@
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import archiver = require('archiver');
 import { PrismaService } from '../../prisma/prisma.service';
-import { PdfService, isPrimaryLevel, primaryTotals, nextTermStart } from '../pdf/pdf.service';
+import { PdfService, isPrimaryLevel, primaryTotals, nextTermStart, primarySubjectMax } from '../pdf/pdf.service';
 import { AttendanceService, resolveTermRange } from '../attendance/attendance.service';
 import { suggestConduct, ConductSuggestion } from './conduct-suggestion';
+import {
+  annualSettings, annualAverage as computeAnnualAverage, proposedDecision, expectedTermCount as termCountFor, rankWithTies,
+} from './annual';
 import { AiService } from '../ai/ai.service';
 
 const CONDUCT_LABELS_FR: Record<string, string> = {
@@ -414,18 +417,29 @@ export class ReportsService {
     let councilDecision: string | null = null;
 
     if (isLastTerm && overallAverage !== null) {
-      const priorTerms = await this.prisma.reportCard.findMany({
-        where: {
-          studentId: report.studentId,
-          academicYear: report.academicYear,
-          status: 'PUBLISHED',
-          id: { not: id },
-        },
-        select: { overallAverage: true },
-      });
-      const allAvgs = [...priorTerms.map((t) => t.overallAverage ?? 0), overallAverage];
-      annualAverage = Math.round((allAvgs.reduce((a, b) => a + b, 0) / allAvgs.length) * 100) / 100;
-      councilDecision = annualAverage >= 10 ? 'Admis(e) en classe supérieure' : 'Redoublant(e)';
+      const [priorTerms, inst] = await Promise.all([
+        this.prisma.reportCard.findMany({
+          where: {
+            studentId: report.studentId,
+            academicYear: report.academicYear,
+            status: 'PUBLISHED',
+            id: { not: id },
+          },
+          select: { termNumber: true, overallAverage: true },
+        }),
+        this.prisma.institution.findUnique({ where: { id: institutionId }, select: { academicSettings: true } }),
+      ]);
+      // Règles de l'école (poids des périodes, seuil de passage) ; une période sans moyenne est ignorée
+      const settings = annualSettings(inst?.academicSettings);
+      annualAverage = computeAnnualAverage(
+        [...priorTerms, { termNumber: report.termNumber, overallAverage }],
+        expectedTermCount!,
+        settings.weighting,
+      );
+      // Une décision saisie par l'admin ou le titulaire n'est pas écrasée
+      councilDecision = (report as any).councilDecisionManual
+        ? (report as any).councilDecision
+        : proposedDecision(annualAverage, settings.promotionThreshold);
     }
 
     // Absences (jours) et retards (minutes) calculés depuis les saisies des professeurs.
@@ -776,9 +790,16 @@ export class ReportsService {
     return { total: reports.length, regenerated, failed };
   }
 
-  async getAnnualReport(studentId: string, academicYear: string, institutionId: string) {
+  async getAnnualReport(
+    studentId: string, academicYear: string, institutionId: string,
+    viewer?: { id: string; role: string },
+  ) {
+    // Parents et élèves : uniquement leur enfant / eux-mêmes (avant : n'importe quel élève de l'école)
+    const ownership =
+      viewer?.role === Role.PARENT ? { parentId: viewer.id } :
+      viewer?.role === Role.STUDENT ? { userId: viewer.id } : {};
     const student = await this.prisma.student.findFirst({
-      where: { id: studentId, institutionId },
+      where: { id: studentId, institutionId, ...ownership },
       include: { user: { select: { name: true, profileImage: true } } },
     });
     if (!student) throw new NotFoundException('Student not found');
@@ -786,7 +807,7 @@ export class ReportsService {
     const reports = await this.prisma.reportCard.findMany({
       where: { studentId, academicYear, status: 'PUBLISHED', class: { institutionId } },
       include: {
-        class: { select: { name: true, level: true, teacher: { select: { id: true, name: true } } } },
+        class: { select: { id: true, name: true, level: true, teacher: { select: { id: true, name: true } } } },
         grades: { include: { subject: { select: { nameFr: true, passMark: true, maxScore: true } } } },
       },
       orderBy: { termNumber: 'asc' },
@@ -799,10 +820,14 @@ export class ReportsService {
       select: { name: true, country: true, countryMotto: true, address: true, phone: true, email: true, website: true, motto: true, logo: true, crest: true, stamp: true, brandingSettings: true, academicSettings: true },
     });
 
-    // Build subject map: subjectId → { name, coef, termAverages }
-    const subjectMap = new Map<string, { nameFr: string; coefficient: number; passMark: number; termAverages: (number | null)[] }>();
-    const termCount = reports.length;
+    const lastTerm = reports[reports.length - 1];
+    const settings = annualSettings(institution?.academicSettings);
+    // Colonnes = toutes les périodes de l'année (T1, T2, T3), placées par numéro : un trimestre non
+    // publié laisse sa colonne vide (avant, sans T1 les notes du T3 disparaissaient).
+    const termCount = termCountFor(lastTerm.termType, reports.map((r) => r.termNumber));
+    const isPrimary = isPrimaryLevel(lastTerm.class?.level);
 
+    const subjectMap = new Map<string, { nameFr: string; coefficient: number; passMark: number; max: number; termAverages: (number | null)[] }>();
     for (const report of reports) {
       const idx = report.termNumber - 1;
       for (const g of report.grades) {
@@ -811,24 +836,42 @@ export class ReportsService {
             nameFr: g.subject.nameFr,
             coefficient: g.coefficient,
             passMark: g.subject.passMark,
+            // Barème de la matière : au primaire 10 ou 20 selon la matière, sinon 20
+            max: isPrimary ? primarySubjectMax(g.subject.maxScore) : 20,
             termAverages: Array(termCount).fill(null),
           });
         }
         const entry = subjectMap.get(g.subjectId)!;
         entry.coefficient = g.coefficient; // use latest coef
-        if (idx < termCount) entry.termAverages[idx] = g.moyenneMatiere ?? g.score ?? null;
+        if (idx >= 0 && idx < termCount) entry.termAverages[idx] = g.moyenneMatiere ?? g.score ?? null;
       }
     }
 
-    const subjects = Array.from(subjectMap.values()).map((s) => {
-      const validAvgs = s.termAverages.filter((a) => a !== null) as number[];
-      const annualAvg = validAvgs.length > 0
-        ? Math.round((validAvgs.reduce((a, b) => a + b, 0) / validAvgs.length) * 100) / 100
-        : null;
-      return { ...s, annualAverage: annualAvg };
-    }).sort((a, b) => b.coefficient - a.coefficient);
+    const subjects = Array.from(subjectMap.values()).map((s) => ({
+      ...s,
+      annualAverage: computeAnnualAverage(
+        s.termAverages.map((avg, i) => ({ termNumber: i + 1, overallAverage: avg })), termCount, settings.weighting,
+      ),
+    })).sort((a, b) => b.coefficient - a.coefficient);
 
-    const lastTerm = reports[reports.length - 1];
+    // Moyenne annuelle recalculée à chaque affichage (une correction du T1 ou du T2 est prise en compte)
+    const annualAvg = computeAnnualAverage(reports, termCount, settings.weighting);
+    const isComplete = Array.from({ length: termCount }, (_, i) => i + 1).every((n) => reports.some((r) => r.termNumber === n));
+
+    // Rang annuel dans la classe du dernier bulletin, mêmes règles pour tous les élèves
+    const classReports = await this.prisma.reportCard.findMany({
+      where: { classId: lastTerm.classId, academicYear, status: 'PUBLISHED' },
+      select: { studentId: true, termNumber: true, overallAverage: true },
+    });
+    const byStudent = new Map<string, { termNumber: number; overallAverage: number | null }[]>();
+    for (const r of classReports) byStudent.set(r.studentId, [...(byStudent.get(r.studentId) ?? []), r]);
+    const classAnnual = [...byStudent.entries()].map(([id, terms]) => ({ id, average: computeAnnualAverage(terms, termCount, settings.weighting) }));
+    const ranks = rankWithTies(classAnnual);
+    const classAverages = classAnnual.map((c) => c.average).filter((v): v is number => v != null);
+    const round2 = (v: number) => Math.round(v * 100) / 100;
+
+    const proposed = proposedDecision(annualAvg, settings.promotionThreshold);
+    const manual = !!(lastTerm as any).councilDecisionManual;
 
     return {
       student: {
@@ -836,9 +879,10 @@ export class ReportsService {
         name: student.user?.name ?? student.admissionNumber,
         admissionNumber: student.admissionNumber,
         dateOfBirth: student.dateOfBirth,
+        sex: student.sex ?? null,
         profileImage: student.user?.profileImage ?? null,
       },
-      class: reports[0].class,
+      class: lastTerm.class,
       institution,
       academicYear,
       termSystem: lastTerm.termType,
@@ -862,10 +906,57 @@ export class ReportsService {
         principalComment: r.principalComment,
       })),
       subjects,
-      annualAverage: lastTerm.annualAverage,
-      councilDecision: lastTerm.councilDecision,
-      mention: lastTerm.mention,
+      isPrimary,
+      termCount,
+      isComplete,
+      weighting: settings.weighting,
+      annualAverage: annualAvg,
+      annualRank: ranks.get(studentId) ?? null,
+      annualClassSize: ranks.size,
+      annualClassHighest: classAverages.length ? round2(Math.max(...classAverages)) : null,
+      annualClassLowest: classAverages.length ? round2(Math.min(...classAverages)) : null,
+      annualClassAverage: classAverages.length ? round2(classAverages.reduce((a, b) => a + b, 0) / classAverages.length) : null,
+      // Décision : celle saisie par l'admin / le titulaire, sinon celle proposée selon le seuil de l'école
+      councilDecision: manual ? lastTerm.councilDecision : proposed,
+      councilDecisionManual: manual,
+      proposedDecision: proposed,
+      promotionThreshold: settings.promotionThreshold,
+      mention: annualAvg != null ? computeMention(annualAvg) : null,
+      canEditDecision: viewer?.role === Role.ADMIN || (viewer?.role === Role.TEACHER && lastTerm.class?.teacher?.id === viewer.id),
     };
+  }
+
+  /**
+   * Décision du conseil de classe saisie par l'admin ou le titulaire (enregistrée sur le dernier
+   * bulletin publié de l'année). `decision` vide = revenir à la décision proposée selon le seuil.
+   */
+  async setCouncilDecision(
+    studentId: string, academicYear: string, decision: string | null | undefined,
+    institutionId: string, userId: string, role: Role,
+  ) {
+    const last = await this.prisma.reportCard.findFirst({
+      where: { studentId, academicYear, status: 'PUBLISHED', class: { institutionId } },
+      orderBy: { termNumber: 'desc' },
+      select: { id: true, classId: true },
+    });
+    if (!last) throw new NotFoundException('No published reports found for this year');
+    await this.assertTitulaireOrAdmin(last.classId, institutionId, userId, role);
+
+    const text = decision?.trim();
+    if (text) {
+      await this.prisma.reportCard.update({
+        where: { id: last.id },
+        data: { councilDecision: text.slice(0, 200), councilDecisionManual: true },
+      });
+    } else {
+      // Retour à la proposition automatique
+      const annual = await this.getAnnualReport(studentId, academicYear, institutionId);
+      await this.prisma.reportCard.update({
+        where: { id: last.id },
+        data: { councilDecision: annual.proposedDecision, councilDecisionManual: false },
+      });
+    }
+    return this.getAnnualReport(studentId, academicYear, institutionId, { id: userId, role });
   }
 
   async bulkPublish(

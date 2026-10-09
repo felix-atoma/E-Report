@@ -18,6 +18,7 @@ import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
 import { TitulaireEntryDto } from './dto/titulaire-entry.dto';
 import { BulkZipDto } from './dto/bulk-zip.dto';
+import { CouncilDecisionDto } from './dto/council-decision.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Role } from '../../common/enums/role.enum';
@@ -148,7 +149,14 @@ export class ReportsController {
     @Query('academicYear') academicYear: string,
     @CurrentUser() user: any,
   ) {
-    return this.service.getAnnualReport(studentId, academicYear, user.institutionId);
+    return this.service.getAnnualReport(studentId, academicYear, user.institutionId, user);
+  }
+
+  @Patch('annual/decision')
+  @Roles(Role.ADMIN, Role.TEACHER)
+  @ApiOperation({ summary: 'Décision du conseil de classe (admin ou titulaire) ; vide = décision proposée' })
+  setCouncilDecision(@Body() dto: CouncilDecisionDto, @CurrentUser() user: any) {
+    return this.service.setCouncilDecision(dto.studentId, dto.academicYear, dto.decision, user.institutionId, user.id, user.role);
   }
 
   @Post('bulk-publish')

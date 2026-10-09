@@ -100,3 +100,23 @@
   .ar-a4 { box-shadow: none; margin: 0; width: 100%; padding: 10mm; }
   body { margin: 0; }
 }
+
+/* Bulletin provisoire (toutes les périodes ne sont pas publiées) */
+.ar-notice { max-width: 210mm; margin: 0 auto 0.75rem; padding: 0.6rem 0.9rem; border-radius: 8px; background: #fef3c7; color: #92400e; font-size: 0.85rem; }
+
+/* Décision du conseil : saisie par l'admin / le titulaire */
+.ar-decision-meta { display: block; margin-top: 3px; font-size: 0.68rem; color: #64748b; font-weight: 500; }
+.ar-link { background: none; border: none; padding: 0; color: #2563eb; cursor: pointer; font: inherit; text-decoration: underline; }
+.ar-link:disabled { opacity: 0.5; cursor: default; }
+.ar-decision-edit { display: flex; flex-direction: column; gap: 4px; margin-top: 2px; }
+.ar-decision-edit input { width: 100%; padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.8rem; }
+.ar-decision-edit__actions { display: flex; gap: 4px; }
+.ar-decision-edit__actions .ar-btn { padding: 3px 8px; font-size: 0.75rem; }
+
+/* Statistiques annuelles de la classe */
+.ar-class-stats { font-size: 0.72rem; color: #475569; margin: -2mm 0 3mm; }
+
+/* Cachet numérique : posé par-dessus la case, comme sur les bulletins trimestriels */
+.ar-sig--stamp { position: relative; }
+.ar-sig__area--stamped { visibility: hidden; }
+.ar-sig__stamp-img { position: absolute; left: 50%; bottom: 14px; width: 70px; height: 70px; object-fit: contain; transform: translateX(-50%) rotate(-8deg); mix-blend-mode: multiply; opacity: 0.92; pointer-events: none; }
