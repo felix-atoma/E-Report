@@ -650,6 +650,20 @@ export class PdfService {
       // Cachet numérique : seulement si l'école l'a choisi, et seulement sur un bulletin publié
       // (jamais sur un brouillon). Sinon, case vide à tamponner à la main.
       digitalStamp: digitalStampFor(branding, inst.stamp, report.status) ? pdfImage(inst.stamp) : null,
+      // Rappel des périodes précédentes (2e et 3e trimestres) ; au dernier : moyenne annuelle + décision
+      recap: data.termRecap && (data.termRecap.previous.length || data.termRecap.isLastTerm)
+        ? {
+          previous: data.termRecap.previous.map((p) => ({
+            label: p.label,
+            value: p.average != null ? fmtScaled(p.average) : '—',
+            failing: p.average != null && p.average < data.termRecap!.promotionThreshold,
+          })),
+          isLastTerm: data.termRecap.isLastTerm,
+          annual: data.termRecap.annualAverage != null ? fmtScaled(data.termRecap.annualAverage) : '—',
+          annualFailing: data.termRecap.annualAverage != null && data.termRecap.annualAverage < data.termRecap.promotionThreshold,
+          decision: data.termRecap.councilDecision ?? '—',
+        }
+        : null,
       verifyUrl: this.verifyUrl,
       // Moyenne générale en toutes lettres (sur l'échelle du bulletin : /10 au primaire, /20 sinon)
       // En lettres à partir du chiffre imprimé (même arrondi) : 5,83 → « Cinq virgule quatre-vingt-trois »
@@ -714,6 +728,14 @@ export interface ReportCardData {
   classTeacherName?: string | null;
   /** Signature du titulaire — la même image que sur ses fiches de notes. */
   classTeacherSignature?: string | null;
+  /** Moyennes des périodes précédentes ; au dernier trimestre, moyenne annuelle et décision du conseil. */
+  termRecap?: {
+    previous: { termNumber: number; label: string; average: number | null }[];
+    isLastTerm: boolean;
+    annualAverage: number | null;
+    councilDecision: string | null;
+    promotionThreshold: number;
+  } | null;
   /** Niveau de la classe (CI, CP1…CM2, 6ème…) — détermine le modèle primaire ou secondaire. */
   classLevel?: string | null;
   grades: Array<{

@@ -505,3 +505,7 @@
 .pr-sig--stamp { position: relative; }
 .pr-sig__area--stamped { visibility: hidden; }
 .pr-sig__stamp-img { position: absolute; left: 50%; bottom: 6px; width: 60px; height: 60px; object-fit: contain; transform: translateX(-50%) rotate(-8deg); mix-blend-mode: multiply; opacity: 0.92; pointer-events: none; }
+.pr-annual-bar__cell--annual { background: #f1f5f9; }
+.pr-annual-bar--compact { width: fit-content; }
+.pr-annual-bar__decision > label { white-space: normal !important; max-width: 120px; line-height: 1.25; }
+.pr-annual-bar__decision strong.pr-annual-bar__decision-text { font-size: 1.05em; line-height: 1.2; }

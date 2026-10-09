@@ -215,6 +215,10 @@ body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .pr-annual-bar__cell { padding: 4px 8px; text-align: center; border-right: 1px solid #c7d0da; min-width: 80px; }
 .pr-annual-bar__cell label { display: block; font-size: 0.7em; font-weight: 800; color: #555; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 1px; }
 .pr-annual-bar__cell strong { font-size: 1.5em; font-weight: 900; display: block; }
+.pr-annual-bar__cell--annual { background: #f1f5f9; }
+.pr-annual-bar--compact { width: fit-content; }
+.pr-annual-bar__decision > label { white-space: normal !important; max-width: 120px; line-height: 1.25; }
+.pr-annual-bar__decision strong.pr-annual-bar__decision-text { font-size: 1.05em; line-height: 1.2; }
 .pr-annual-bar__decision { flex: 1; display: flex; align-items: center; gap: 6px; padding: 4px 12px; }
 .pr-annual-bar__decision label { font-size: 0.75em; font-weight: 800; color: #555; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
 .pr-annual-bar__decision strong { font-size: 1.3em; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -500,16 +504,25 @@ body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   </div>
   {{/if}}
 
-  {{#if scale.annualAverage}}
-  <div class="pr-annual-bar">
+  {{#if recap}}
+  <!-- Rappel des périodes précédentes ; au dernier trimestre : moyenne annuelle et décision -->
+  <div class="pr-annual-bar{{#unless recap.isLastTerm}} pr-annual-bar--compact{{/unless}}">
+    {{#each recap.previous}}
     <div class="pr-annual-bar__cell">
-      <label>Moyenne Annuelle</label>
-      <strong class="{{#if annualFailing}}pr-val--fail{{else}}pr-val--pass{{/if}}">{{scale.annualAverage}}<span class="pr-val-denom"> / {{scale.denom}}</span></strong>
+      <label>{{label}}</label>
+      <strong class="{{#if failing}}pr-val--fail{{else}}pr-val--pass{{/if}}">{{value}}<span class="pr-val-denom"> / {{../scale.denom}}</span></strong>
+    </div>
+    {{/each}}
+    {{#if recap.isLastTerm}}
+    <div class="pr-annual-bar__cell pr-annual-bar__cell--annual">
+      <label>Moyenne annuelle</label>
+      <strong class="{{#if recap.annualFailing}}pr-val--fail{{else}}pr-val--pass{{/if}}">{{recap.annual}}<span class="pr-val-denom"> / {{scale.denom}}</span></strong>
     </div>
     <div class="pr-annual-bar__decision">
-      <label>Décision du Conseil</label>
-      <strong class="{{#if annualFailing}}pr-val--fail{{else}}pr-val--pass{{/if}}">{{#if report.councilDecision}}{{report.councilDecision}}{{else}}—{{/if}}</strong>
+      <label>Décision du conseil des professeurs</label>
+      <strong class="pr-annual-bar__decision-text {{#if recap.annualFailing}}pr-val--fail{{else}}pr-val--pass{{/if}}">{{recap.decision}}</strong>
     </div>
+    {{/if}}
   </div>
   {{/if}}
 

@@ -204,6 +204,10 @@ export default function PrintReportCardPage() {
   const isPrimary = /^\s*(CI|CP\s*[12]?|CE\s*[12]|CM\s*[12])\s*$/i.test(report.class?.level ?? '');
   const denom = isPrimary ? 10 : 20;
   const fmtS = (v) => (v == null ? '—' : fmt(isPrimary ? v / 2 : v));
+  // Rappel des périodes précédentes / moyenne annuelle (calculés côté serveur, réglages de l'école)
+  const recap = report.termRecap ?? null;
+  const threshold = recap?.promotionThreshold ?? 10;
+  const annualFailing = recap?.annualAverage != null && recap.annualAverage < threshold;
   // Primaire : chaque matière garde son barème (« Noté sur » 10 ou 20) ; total = somme des notes sur
   // la somme des barèmes, moyenne /10 = total ÷ maximum × 10. Même calcul que primaryTotals() côté PDF.
   const subjectMax = (g) => ((g.subject?.maxScore ?? 20) <= 10 ? 10 : 20);
@@ -565,21 +569,32 @@ export default function PrintReportCardPage() {
           </div>
         )}
 
-        {/* ── Annual average + council decision (last term only) ─────────── */}
-        {report.annualAverage != null && (
-          <div className="pr-annual-bar">
-            <div className="pr-annual-bar__cell">
-              <label>Moyenne Annuelle</label>
-              <strong className={report.annualAverage >= 10 ? 'pr-val--pass' : 'pr-val--fail'}>
-                {fmtS(report.annualAverage)}<span className="pr-val-denom"> / {denom}</span>
-              </strong>
-            </div>
-            <div className="pr-annual-bar__decision">
-              <label>Décision du Conseil</label>
-              <strong className={report.annualAverage >= 10 ? 'pr-val--pass' : 'pr-val--fail'}>
-                {report.councilDecision ?? '—'}
-              </strong>
-            </div>
+        {/* ── Rappel des périodes précédentes (2e et 3e trimestres) ; au dernier trimestre :
+              moyenne annuelle et décision du conseil des professeurs ───────────────────── */}
+        {recap && (recap.previous.length > 0 || recap.isLastTerm) && (
+          <div className={`pr-annual-bar${recap.isLastTerm ? '' : ' pr-annual-bar--compact'}`}>
+            {recap.previous.map((p) => (
+              <div key={p.termNumber} className="pr-annual-bar__cell">
+                <label>{p.label}</label>
+                <strong className={p.average != null && p.average < threshold ? 'pr-val--fail' : 'pr-val--pass'}>
+                  {p.average != null ? fmtS(p.average) : '—'}<span className="pr-val-denom"> / {denom}</span>
+                </strong>
+              </div>
+            ))}
+            {recap.isLastTerm && (
+              <>
+                <div className="pr-annual-bar__cell pr-annual-bar__cell--annual">
+                  <label>Moyenne annuelle</label>
+                  <strong className={annualFailing ? 'pr-val--fail' : 'pr-val--pass'}>
+                    {recap.annualAverage != null ? fmtS(recap.annualAverage) : '—'}<span className="pr-val-denom"> / {denom}</span>
+                  </strong>
+                </div>
+                <div className="pr-annual-bar__decision">
+                  <label>Décision du conseil des professeurs</label>
+                  <strong className={`pr-annual-bar__decision-text ${annualFailing ? 'pr-val--fail' : 'pr-val--pass'}`}>{recap.councilDecision ?? '—'}</strong>
+                </div>
+              </>
+            )}
           </div>
         )}
 

@@ -113,6 +113,43 @@ describe('ReportsService.getAnnualReport', () => {
     expect(res.proposedDecision).toBe(REDOUBLE);
   });
 
+  describe('termRecap (previous terms on the term report card)', () => {
+    const current = (termNumber: number, extra: any = {}) => ({
+      studentId: 'stu-1', academicYear: '2026-2027', termNumber, termType: 'TRIMESTRE', overallAverage: 14, ...extra,
+    });
+
+    it('2nd term: shows the 1st term average, no annual average yet', async () => {
+      prisma.reportCard.findMany.mockResolvedValueOnce([{ termNumber: 1, termType: 'TRIMESTRE', overallAverage: 11 }]);
+
+      const r = await service.termRecap(current(2), 'inst-1');
+
+      expect(r.previous).toEqual([{ termNumber: 1, label: 'Moyenne du 1er trimestre', average: 11 }]);
+      expect(r.isLastTerm).toBe(false);
+      expect(r.annualAverage).toBeNull();
+    });
+
+    it('3rd term: 1st and 2nd averages, annual average and proposed decision', async () => {
+      prisma.reportCard.findMany.mockResolvedValueOnce([
+        { termNumber: 1, termType: 'TRIMESTRE', overallAverage: 10 },
+        { termNumber: 2, termType: 'TRIMESTRE', overallAverage: 12 },
+      ]);
+
+      const r = await service.termRecap(current(3), 'inst-1');
+
+      expect(r.previous.map((p) => p.label)).toEqual(['Moyenne du 1er trimestre', 'Moyenne du 2e trimestre']);
+      expect(r.annualAverage).toBe(12);
+      expect(r.councilDecision).toBe(ADMIS);
+    });
+
+    it('3rd term: keeps the decision typed by the school', async () => {
+      prisma.reportCard.findMany.mockResolvedValueOnce([]);
+
+      const r = await service.termRecap(current(3, { councilDecision: 'Exclu(e)', councilDecisionManual: true }), 'inst-1');
+
+      expect(r.councilDecision).toBe('Exclu(e)');
+    });
+  });
+
   it("limits a parent to their own child's annual report", async () => {
     prisma.student.findFirst.mockResolvedValue(null);
 

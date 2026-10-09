@@ -210,6 +210,11 @@ export class ReportsService {
         throw new ForbiddenException('You do not have access to this report');
       }
     }
+    // Parents et élèves : uniquement leurs bulletins (avant : n'importe quel bulletin de l'école)
+    if ((role === Role.PARENT && report.student?.parentId !== userId) ||
+        (role === Role.STUDENT && report.student?.userId !== userId)) {
+      throw new NotFoundException('Report card not found');
+    }
 
     // Signature du titulaire (celle de ses fiches de notes) pour le bas du bulletin
     const classTeacherSignature = await this.titulaireSignature(
@@ -224,7 +229,51 @@ export class ReportsService {
     const conductSuggestion = role === Role.TEACHER || role === Role.ADMIN
       ? (await this.conductSuggestions(institutionId, [report as any])).get(report.id) ?? null
       : null;
-    return { ...report, classTeacherSignature, nextTerm, conductSuggestion };
+    const termRecap = await this.termRecap(report, institutionId);
+    return { ...report, classTeacherSignature, nextTerm, conductSuggestion, termRecap };
+  }
+
+  /**
+   * Rappel des périodes précédentes sur le bulletin : au 2e trimestre la moyenne du 1er ; au 3e celles
+   * du 1er et du 2e, puis la moyenne annuelle et la décision du conseil des professeurs (calculées
+   * comme le bulletin annuel : réglages de l'école, décision saisie à la main prioritaire).
+   */
+  async termRecap(
+    report: {
+      studentId: string; academicYear: string; termNumber: number; termType?: string | null;
+      overallAverage: number | null; councilDecision?: string | null; councilDecisionManual?: boolean | null;
+    },
+    institutionId: string,
+  ) {
+    const [previousReports, inst] = await Promise.all([
+      this.prisma.reportCard.findMany({
+        where: {
+          studentId: report.studentId, academicYear: report.academicYear, status: 'PUBLISHED',
+          termNumber: { lt: report.termNumber }, class: { institutionId },
+        },
+        orderBy: { termNumber: 'asc' },
+        select: { termNumber: true, termType: true, overallAverage: true },
+      }),
+      this.prisma.institution.findUnique({ where: { id: institutionId }, select: { academicSettings: true } }),
+    ]);
+    const isSemester = report.termType === 'SEMESTRE';
+    const label = (n: number) => `Moyenne du ${n === 1 ? '1er' : `${n}e`} ${isSemester ? 'semestre' : 'trimestre'}`;
+    const previous = Array.from({ length: Math.max(0, report.termNumber - 1) }, (_, i) => i + 1).map((n) => ({
+      termNumber: n,
+      label: label(n),
+      average: previousReports.find((r) => r.termNumber === n)?.overallAverage ?? null,
+    }));
+
+    const expected = report.termType === 'TRIMESTRE' ? 3 : report.termType === 'SEMESTRE' ? 2 : null;
+    const isLastTerm = expected != null && report.termNumber === expected;
+    const settings = annualSettings(inst?.academicSettings);
+    const annual = isLastTerm
+      ? computeAnnualAverage([...previousReports, { termNumber: report.termNumber, overallAverage: report.overallAverage }], expected!, settings.weighting)
+      : null;
+    const councilDecision = isLastTerm
+      ? (report.councilDecisionManual ? report.councilDecision ?? null : proposedDecision(annual, settings.promotionThreshold))
+      : null;
+    return { previous, isLastTerm, annualAverage: annual, councilDecision, promotionThreshold: settings.promotionThreshold };
   }
 
   /**
@@ -535,6 +584,7 @@ export class ReportsService {
     if (!institution) return;
 
     const pdfUrl = await this.pdf.generateReportCardPdf({
+      termRecap: await this.termRecap(published as any, institutionId),
       report: {
         id: published.id,
         termName: published.termName,
@@ -1193,6 +1243,7 @@ export class ReportsService {
           const ficheKey = `${r.classId}|${r.academicYear}|${r.termNumber}`;
           const ficheMap = fichesByCombo.get(ficheKey) ?? new Map();
           const buf = await this.pdf.generateReportCardPdfBuffer({
+            termRecap: await this.termRecap(r as any, institutionId),
             report: {
               id: r.id, termName: (r as any).termName, academicYear: r.academicYear, termNumber: r.termNumber, termType: (r as any).termType,
               overallAverage: (r as any).overallAverage, classRank: (r as any).classRank, classSize: (r as any).classSize,
@@ -1275,6 +1326,7 @@ export class ReportsService {
 
     const r = report as any;
     const buffer = await this.pdf.generateReportCardPdfBuffer({
+      termRecap: await this.termRecap(r as any, institutionId),
       report: {
         id: r.id, termName: r.termName, academicYear: r.academicYear, termNumber: r.termNumber, termType: (r as any).termType,
         overallAverage: r.overallAverage, classRank: r.classRank, classSize: r.classSize,
