@@ -145,11 +145,11 @@ export class ReportsController {
     return this.service.getAnnualReport(studentId, academicYear, user.institutionId, user);
   }
 
-  @Patch('annual/decision')
+  @Patch(':id/council-decision')
   @Roles(Role.ADMIN, Role.TEACHER)
-  @ApiOperation({ summary: 'Décision du conseil de classe (admin ou titulaire) ; vide = décision proposée' })
-  setCouncilDecision(@Body() dto: CouncilDecisionDto, @CurrentUser() user: any) {
-    return this.service.setCouncilDecision(dto.studentId, dto.academicYear, dto.decision, user.institutionId, user.id, user.role);
+  @ApiOperation({ summary: 'Décision du conseil des professeurs sur le bulletin de la dernière période (admin ou titulaire) ; vide = décision proposée' })
+  setCouncilDecision(@Param('id') id: string, @Body() dto: CouncilDecisionDto, @CurrentUser() user: any) {
+    return this.service.setCouncilDecision(id, dto.decision, user.institutionId, user.id, user.role);
   }
 
   // Après « palmares » et « annual » : déclarée avant, cette route les prenait pour un identifiant

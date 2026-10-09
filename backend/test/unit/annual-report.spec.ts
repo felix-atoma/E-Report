@@ -150,6 +150,31 @@ describe('ReportsService.getAnnualReport', () => {
     });
   });
 
+  describe('setCouncilDecision (on the last-term report card)', () => {
+    const t = (termNumber: number) => ({
+      id: 'r' + termNumber, classId: 'class-1', studentId: 'stu-1', academicYear: '2026-2027', termNumber, termType: 'TRIMESTRE',
+      overallAverage: 12, councilDecision: null, councilDecisionManual: false,
+    });
+
+    it('saves the decision typed by the admin on the 3rd-term report card, even unpublished', async () => {
+      prisma.reportCard.findFirst.mockResolvedValue(t(3));
+      prisma.reportCard.update.mockResolvedValue({});
+      prisma.reportCard.findMany.mockResolvedValue([]);
+
+      const r = await service.setCouncilDecision('r3', 'Admis(e) sous réserve', 'inst-1', 'admin-1', Role.ADMIN);
+
+      expect(prisma.reportCard.update).toHaveBeenCalledWith({ where: { id: 'r3' }, data: { councilDecision: 'Admis(e) sous réserve', councilDecisionManual: true } });
+      expect(r.councilDecision).toBe('Admis(e) sous réserve');
+      expect(r.councilDecisionManual).toBe(true);
+    });
+
+    it('refuses a decision on a 1st or 2nd term report card', async () => {
+      prisma.reportCard.findFirst.mockResolvedValue(t(2));
+
+      await expect(service.setCouncilDecision('r2', 'Admis', 'inst-1', 'admin-1', Role.ADMIN)).rejects.toThrow('dernière période');
+    });
+  });
+
   it("limits a parent to their own child's annual report", async () => {
     prisma.student.findFirst.mockResolvedValue(null);
 

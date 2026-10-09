@@ -289,11 +289,6 @@ function ReportCardsPage() {
               {downloadingId === r.id ? t('reportCardsFull.downloading') : t('reportCardsFull.pdfBtn')}
             </Button>
           )}
-          {r.status === 'PUBLISHED' && r.academicYear && (
-            <Link to={`/reports/annual/${r.studentId}/${r.academicYear}`} target="_blank" rel="noreferrer">
-              <Button size="sm" variant="ghost" title={t('reportCardsFull.annual')}>{t('reportCardsFull.annual')}</Button>
-            </Link>
-          )}
         </div>
       ),
     },

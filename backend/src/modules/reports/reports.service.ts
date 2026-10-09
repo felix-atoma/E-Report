@@ -270,10 +270,13 @@ export class ReportsService {
     const annual = isLastTerm
       ? computeAnnualAverage([...previousReports, { termNumber: report.termNumber, overallAverage: report.overallAverage }], expected!, settings.weighting)
       : null;
-    const councilDecision = isLastTerm
-      ? (report.councilDecisionManual ? report.councilDecision ?? null : proposedDecision(annual, settings.promotionThreshold))
-      : null;
-    return { previous, isLastTerm, annualAverage: annual, councilDecision, promotionThreshold: settings.promotionThreshold };
+    const proposed = isLastTerm ? proposedDecision(annual, settings.promotionThreshold) : null;
+    const decisionManual = isLastTerm && !!report.councilDecisionManual;
+    const councilDecision = decisionManual ? report.councilDecision ?? null : proposed;
+    return {
+      previous, isLastTerm, annualAverage: annual, councilDecision, promotionThreshold: settings.promotionThreshold,
+      proposedDecision: proposed, councilDecisionManual: decisionManual,
+    };
   }
 
   /**
@@ -977,36 +980,31 @@ export class ReportsService {
   }
 
   /**
-   * Décision du conseil de classe saisie par l'admin ou le titulaire (enregistrée sur le dernier
-   * bulletin publié de l'année). `decision` vide = revenir à la décision proposée selon le seuil.
+   * Décision du conseil des professeurs saisie par l'admin ou le titulaire, sur le bulletin de la
+   * dernière période (3e trimestre / 2e semestre), publié ou non. `decision` vide = revenir à la
+   * décision proposée selon le seuil de passage de l'école.
    */
-  async setCouncilDecision(
-    studentId: string, academicYear: string, decision: string | null | undefined,
-    institutionId: string, userId: string, role: Role,
-  ) {
-    const last = await this.prisma.reportCard.findFirst({
-      where: { studentId, academicYear, status: 'PUBLISHED', class: { institutionId } },
-      orderBy: { termNumber: 'desc' },
-      select: { id: true, classId: true },
+  async setCouncilDecision(reportId: string, decision: string | null | undefined, institutionId: string, userId: string, role: Role) {
+    const report = await this.prisma.reportCard.findFirst({
+      where: { id: reportId, class: { institutionId } },
+      select: {
+        id: true, classId: true, studentId: true, academicYear: true, termNumber: true, termType: true,
+        overallAverage: true, councilDecision: true, councilDecisionManual: true,
+      },
     });
-    if (!last) throw new NotFoundException('No published reports found for this year');
-    await this.assertTitulaireOrAdmin(last.classId, institutionId, userId, role);
+    if (!report) throw new NotFoundException('Report card not found');
+    await this.assertTitulaireOrAdmin(report.classId, institutionId, userId, role);
+    const expected = report.termType === 'TRIMESTRE' ? 3 : report.termType === 'SEMESTRE' ? 2 : null;
+    if (report.termNumber !== expected) {
+      throw new BadRequestException("La décision du conseil se saisit sur le bulletin de la dernière période de l'année.");
+    }
 
     const text = decision?.trim();
-    if (text) {
-      await this.prisma.reportCard.update({
-        where: { id: last.id },
-        data: { councilDecision: text.slice(0, 200), councilDecisionManual: true },
-      });
-    } else {
-      // Retour à la proposition automatique
-      const annual = await this.getAnnualReport(studentId, academicYear, institutionId);
-      await this.prisma.reportCard.update({
-        where: { id: last.id },
-        data: { councilDecision: annual.proposedDecision, councilDecisionManual: false },
-      });
-    }
-    return this.getAnnualReport(studentId, academicYear, institutionId, { id: userId, role });
+    const data = text
+      ? { councilDecision: text.slice(0, 200), councilDecisionManual: true }
+      : { councilDecision: (await this.termRecap({ ...report, councilDecisionManual: false }, institutionId)).councilDecision, councilDecisionManual: false };
+    await this.prisma.reportCard.update({ where: { id: report.id }, data });
+    return this.termRecap({ ...report, ...data }, institutionId);
   }
 
   async bulkPublish(

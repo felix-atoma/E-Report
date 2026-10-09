@@ -508,3 +508,14 @@
 .pr-annual-bar--compact { width: fit-content; }
 .pr-annual-bar__decision > label { white-space: normal !important; max-width: 120px; line-height: 1.25; }
 .pr-annual-bar__decision strong.pr-annual-bar__decision-text { font-size: 1.05em; line-height: 1.2; }
+
+/* Décision du conseil : modification par l'admin / le titulaire (écran seulement) */
+.pr-annual-bar__decision { flex-wrap: wrap; }
+.pr-decision-meta { flex-basis: 100%; font-size: 0.68em; color: #64748b; }
+.pr-decision-meta button { background: none; border: none; padding: 0; color: #2563eb; text-decoration: underline; cursor: pointer; font: inherit; }
+.pr-decision-meta button:disabled { opacity: 0.5; cursor: default; }
+.pr-decision-edit { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; font-size: 0.8em; }
+.pr-decision-edit input { flex: 1; min-width: 180px; padding: 3px 6px; border: 1px solid #cbd5e1; border-radius: 6px; font: inherit; }
+.pr-decision-edit button { padding: 3px 8px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; cursor: pointer; font: inherit; }
+.pr-decision-edit button:first-of-type { background: var(--color-primary, #1e3a8a); border-color: transparent; color: #fff; }
+.pr-decision-edit button:disabled { opacity: 0.5; cursor: default; }

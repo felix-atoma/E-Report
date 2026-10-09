@@ -14,7 +14,7 @@ export const reportsService = {
   classStatus: (params) => api.get('/reports/class-status', { params }),
   aiComment: (id) => api.post(`/reports/${id}/ai-comment`),
   getAnnualReport: (studentId, academicYear) => api.get('/reports/annual', { params: { studentId, academicYear } }),
-  // decision vide = revenir à la décision proposée selon le seuil de l'école
-  setCouncilDecision: (studentId, academicYear, decision) => api.patch('/reports/annual/decision', { studentId, academicYear, decision }),
+  // Décision du conseil (bulletin de la dernière période) ; decision vide = revenir à la décision proposée
+  setCouncilDecision: (reportId, decision) => api.patch(`/reports/${reportId}/council-decision`, { decision }),
   palmares: (params) => api.get('/reports/palmares', { params }),
 };

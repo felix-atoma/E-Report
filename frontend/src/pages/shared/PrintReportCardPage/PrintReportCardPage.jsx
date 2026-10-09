@@ -1,7 +1,9 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import QRCode from 'qrcode';
+import toast from 'react-hot-toast';
+import { useAuth } from '../../../context/AuthContext';
 import { reportsService } from '../../../services/reportsService';
 import { institutionsService } from '../../../services/institutionsService';
 import { gradesService } from '../../../services/gradesService';
@@ -72,8 +74,54 @@ function fmtNote(v) {
   return Number(v).toFixed(0);
 }
 
+const DECISION_CHOICES = ['Admis(e) en classe supérieure', 'Redoublant(e)', 'Admis(e) sous réserve', 'Exclu(e)'];
+
+/**
+ * Décision du conseil des professeurs (bulletin de la dernière période) : l'admin ou le titulaire
+ * peut remplacer la décision proposée, ou y revenir. Affiché à l'écran seulement, jamais imprimé.
+ */
+function CouncilDecisionEditor({ reportId, recap }) {
+  const qc = useQueryClient();
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState('');
+  const mutation = useMutation({
+    mutationFn: (decision) => reportsService.setCouncilDecision(reportId, decision).then((r) => r.data),
+    onSuccess: (termRecap) => {
+      qc.setQueryData(['report', reportId], (old) => (old ? { ...old, termRecap } : old));
+      setEditing(false);
+      toast.success('Décision enregistrée');
+    },
+    onError: (err) => toast.error(err?.response?.data?.message ?? "Impossible d'enregistrer la décision"),
+  });
+
+  if (editing) {
+    return (
+      <span className="pr-decision-edit no-print">
+        <input
+          list="pr-decision-choices" value={draft} maxLength={200} autoFocus
+          onChange={(e) => setDraft(e.target.value)} placeholder="Décision du conseil"
+        />
+        <datalist id="pr-decision-choices">
+          {DECISION_CHOICES.map((c) => <option key={c} value={c} />)}
+        </datalist>
+        <button type="button" disabled={mutation.isPending || !draft.trim()} onClick={() => mutation.mutate(draft)}>Enregistrer</button>
+        <button type="button" onClick={() => setEditing(false)}>Annuler</button>
+      </span>
+    );
+  }
+  return (
+    <span className="pr-decision-meta no-print">
+      {recap.councilDecisionManual
+        ? <>Saisie par l'établissement · <button type="button" disabled={mutation.isPending} onClick={() => mutation.mutate(null)}>revenir à la proposition ({recap.proposedDecision ?? '—'})</button></>
+        : 'Proposée selon la moyenne annuelle'}
+      {' · '}<button type="button" onClick={() => { setDraft(recap.councilDecision ?? ''); setEditing(true); }}>modifier</button>
+    </span>
+  );
+}
+
 export default function PrintReportCardPage() {
   const { id } = useParams();
+  const { user } = useAuth();
 
   const { data: report, isLoading: loadingReport } = useQuery({
     queryKey: ['report', id],
@@ -208,6 +256,8 @@ export default function PrintReportCardPage() {
   const recap = report.termRecap ?? null;
   const threshold = recap?.promotionThreshold ?? 10;
   const annualFailing = recap?.annualAverage != null && recap.annualAverage < threshold;
+  // Admin ou titulaire de la classe : peut modifier la décision du conseil
+  const canEditDecision = user?.role === 'ADMIN' || (user?.role === 'TEACHER' && report.class?.teacher?.id === user?.id);
   // Primaire : chaque matière garde son barème (« Noté sur » 10 ou 20) ; total = somme des notes sur
   // la somme des barèmes, moyenne /10 = total ÷ maximum × 10. Même calcul que primaryTotals() côté PDF.
   const subjectMax = (g) => ((g.subject?.maxScore ?? 20) <= 10 ? 10 : 20);
@@ -585,6 +635,7 @@ export default function PrintReportCardPage() {
               <div className="pr-annual-bar__decision">
                 <label>Décision du conseil des professeurs</label>
                 <strong className={`pr-annual-bar__decision-text ${annualFailing ? 'pr-val--fail' : 'pr-val--pass'}`}>{recap.councilDecision ?? '—'}</strong>
+                {canEditDecision && <CouncilDecisionEditor reportId={id} recap={recap} />}
               </div>
             )}
           </div>
