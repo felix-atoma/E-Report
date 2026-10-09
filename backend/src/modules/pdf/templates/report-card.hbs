@@ -210,12 +210,11 @@ body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .pr-next-term__date { font-size: 1.05em; font-weight: 900; color: #115e59; }
 .pr-next-term__hint { font-size: 0.8em; font-weight: 600; font-style: italic; color: #475569; }
 
-/* ── Moyenne annuelle + décision ── */
+/* ── Moyennes des trimestres précédents + décision du conseil ── */
 .pr-annual-bar { display: flex; border: 2px solid var(--bulletin-primary); border-radius: 3px; margin-bottom: 4px; flex-shrink: 0; overflow: hidden; }
 .pr-annual-bar__cell { padding: 4px 8px; text-align: center; border-right: 1px solid #c7d0da; min-width: 80px; }
 .pr-annual-bar__cell label { display: block; font-size: 0.7em; font-weight: 800; color: #555; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 1px; }
 .pr-annual-bar__cell strong { font-size: 1.5em; font-weight: 900; display: block; }
-.pr-annual-bar__cell--annual { background: #f1f5f9; }
 .pr-annual-bar--compact { width: fit-content; }
 .pr-annual-bar__decision > label { white-space: normal !important; max-width: 120px; line-height: 1.25; }
 .pr-annual-bar__decision strong.pr-annual-bar__decision-text { font-size: 1.05em; line-height: 1.2; }
@@ -514,10 +513,6 @@ body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     </div>
     {{/each}}
     {{#if recap.isLastTerm}}
-    <div class="pr-annual-bar__cell pr-annual-bar__cell--annual">
-      <label>Moyenne annuelle</label>
-      <strong class="{{#if recap.annualFailing}}pr-val--fail{{else}}pr-val--pass{{/if}}">{{recap.annual}}<span class="pr-val-denom"> / {{scale.denom}}</span></strong>
-    </div>
     <div class="pr-annual-bar__decision">
       <label>Décision du conseil des professeurs</label>
       <strong class="pr-annual-bar__decision-text {{#if recap.annualFailing}}pr-val--fail{{else}}pr-val--pass{{/if}}">{{recap.decision}}</strong>

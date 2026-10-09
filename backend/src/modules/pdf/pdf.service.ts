@@ -659,7 +659,6 @@ export class PdfService {
             failing: p.average != null && p.average < data.termRecap!.promotionThreshold,
           })),
           isLastTerm: data.termRecap.isLastTerm,
-          annual: data.termRecap.annualAverage != null ? fmtScaled(data.termRecap.annualAverage) : '—',
           annualFailing: data.termRecap.annualAverage != null && data.termRecap.annualAverage < data.termRecap.promotionThreshold,
           decision: data.termRecap.councilDecision ?? '—',
         }

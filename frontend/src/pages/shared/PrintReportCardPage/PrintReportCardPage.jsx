@@ -582,18 +582,10 @@ export default function PrintReportCardPage() {
               </div>
             ))}
             {recap.isLastTerm && (
-              <>
-                <div className="pr-annual-bar__cell pr-annual-bar__cell--annual">
-                  <label>Moyenne annuelle</label>
-                  <strong className={annualFailing ? 'pr-val--fail' : 'pr-val--pass'}>
-                    {recap.annualAverage != null ? fmtS(recap.annualAverage) : '—'}<span className="pr-val-denom"> / {denom}</span>
-                  </strong>
-                </div>
-                <div className="pr-annual-bar__decision">
-                  <label>Décision du conseil des professeurs</label>
-                  <strong className={`pr-annual-bar__decision-text ${annualFailing ? 'pr-val--fail' : 'pr-val--pass'}`}>{recap.councilDecision ?? '—'}</strong>
-                </div>
-              </>
+              <div className="pr-annual-bar__decision">
+                <label>Décision du conseil des professeurs</label>
+                <strong className={`pr-annual-bar__decision-text ${annualFailing ? 'pr-val--fail' : 'pr-val--pass'}`}>{recap.councilDecision ?? '—'}</strong>
+              </div>
             )}
           </div>
         )}
