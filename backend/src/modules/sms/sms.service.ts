@@ -1,6 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
+import { toE164 } from '../../common/utils/phone.util';
+
+export { toE164 };
 
 export interface SmsBulletinPayload {
   toPhone: string;
@@ -12,6 +15,8 @@ export interface SmsBulletinPayload {
   pdfUrl: string | null;
   institutionName: string;
   language?: 'FR' | 'EN';
+  /** Pays de l'école : indicatif ajouté aux numéros saisis sans indicatif */
+  country?: string | null;
 }
 
 /**
@@ -49,15 +54,16 @@ export class SmsService {
   }
 
   async sendBulletinReady(payload: SmsBulletinPayload): Promise<boolean> {
-    return this.send(payload.toPhone, this.buildBulletinMessage(payload));
+    return this.send(payload.toPhone, this.buildBulletinMessage(payload), payload.country);
   }
 
-  async sendText(toPhone: string, message: string): Promise<boolean> {
-    return this.send(toPhone, toGsm(message));
+  /** country : pays de l'école, pour les numéros saisis sans indicatif */
+  async sendText(toPhone: string, message: string, country?: string | null): Promise<boolean> {
+    return this.send(toPhone, toGsm(message), country);
   }
 
-  private async send(toPhone: string, message: string): Promise<boolean> {
-    const to = toE164(toPhone);
+  private async send(toPhone: string, message: string, country?: string | null): Promise<boolean> {
+    const to = toE164(toPhone, country);
     if (!to) {
       this.logger.warn(`SMS skipped — invalid phone number "${toPhone}"`);
       return false;
@@ -114,12 +120,3 @@ export function toGsm(text: string): string {
     .replace(/[^\x20-\x7E\n]/g, '');
 }
 
-/** Numéro au format E.164 (+228…). Les numéros togolais à 8 chiffres reçoivent l'indicatif 228. */
-export function toE164(phone: string): string | null {
-  let digits = (phone ?? '').replace(/^whatsapp:/, '').replace(/[\s\-().]/g, '');
-  if (digits.startsWith('+')) digits = digits.slice(1);
-  else if (digits.startsWith('00')) digits = digits.slice(2);
-  if (!/^\d+$/.test(digits)) return null;
-  if (/^[279]\d{7}$/.test(digits)) digits = `228${digits}`;
-  return digits.length >= 10 && digits.length <= 15 ? `+${digits}` : null;
-}

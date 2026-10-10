@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
+import { toE164 } from '../../common/utils/phone.util';
 
 export interface WhatsAppBulletinPayload {
   toPhone: string;
@@ -12,6 +13,8 @@ export interface WhatsAppBulletinPayload {
   pdfUrl: string | null;
   institutionName: string;
   language?: 'FR' | 'EN';
+  /** Pays de l'école : indicatif ajouté aux numéros saisis sans indicatif */
+  country?: string | null;
 }
 
 @Injectable()
@@ -55,7 +58,7 @@ export class WhatsAppService {
 
   async sendBulletinReady(payload: WhatsAppBulletinPayload): Promise<boolean> {
     const message = this.buildMessage(payload);
-    return this.send(payload.toPhone, message);
+    return this.send(payload.toPhone, message, payload.country);
   }
 
   async sendSchoolRegistration(schoolName: string, city: string): Promise<boolean> {
@@ -70,8 +73,9 @@ export class WhatsAppService {
     return this.send(this.ownerWhatsapp, message);
   }
 
-  async sendText(toPhone: string, message: string): Promise<boolean> {
-    return this.send(toPhone, message);
+  /** country : pays de l'école, pour les numéros saisis sans indicatif */
+  async sendText(toPhone: string, message: string, country?: string | null): Promise<boolean> {
+    return this.send(toPhone, message, country);
   }
 
   async sendDocumentMessage(toPhone: string, documentUrl: string, caption: string): Promise<boolean> {
@@ -87,8 +91,8 @@ export class WhatsAppService {
   }
 
   // ─── Private send dispatcher ──────────────────────────────────────────────
-  private async send(toPhone: string, message: string): Promise<boolean> {
-    const phone = this.normalizePhone(toPhone);
+  private async send(toPhone: string, message: string, country?: string | null): Promise<boolean> {
+    const phone = this.normalizePhone(toPhone, country);
 
     if (this.provider === 'NONE') {
       this.logger.log(`[DEV WHATSAPP] → ${phone}: ${message}`);
@@ -174,9 +178,8 @@ export class WhatsAppService {
     return lines.join('\n');
   }
 
-  private normalizePhone(phone: string): string {
-    let cleaned = phone.replace(/[\s\-().+]/g, '');
-    if (/^[279]\d{7}$/.test(cleaned)) cleaned = `228${cleaned}`;
-    return cleaned;
+  /** Chiffres au format international sans « + » (indicatif du pays de l'école si absent) */
+  private normalizePhone(phone: string, country?: string | null): string {
+    return toE164(phone, country)?.slice(1) ?? phone.replace(/[\s\-().+]/g, '');
   }
 }

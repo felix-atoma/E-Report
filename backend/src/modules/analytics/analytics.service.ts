@@ -129,7 +129,7 @@ export class AnalyticsService {
 
     const institution = await this.prisma.institution.findUnique({
       where: { id: institutionId },
-      select: { name: true },
+      select: { name: true, country: true },
     });
     const schoolName = institution?.name ?? 'l\'établissement';
 
@@ -185,7 +185,7 @@ export class AnalyticsService {
       const fmt = (n: number) => n.toLocaleString('fr-FR');
       const message = this.buildReminderMessage(schoolName, studentName, year, due, paid, remaining, fmt);
 
-      const ok = await this.whatsapp.sendText(phone, message);
+      const ok = await this.whatsapp.sendText(phone, message, institution?.country);
       if (ok) sent++; else failed++;
     }
 

@@ -54,7 +54,7 @@ export class FeeRemindersService {
    * élèves choisis qui ont un solde : WhatsApp, SMS (si configuré) et e-mail. Ton « amical ».
    */
   async sendNow(institutionId: string, studentIds: string[], academicYear: string) {
-    const institution = await this.prisma.institution.findUnique({ where: { id: institutionId }, select: { name: true } });
+    const institution = await this.prisma.institution.findUnique({ where: { id: institutionId }, select: { name: true, country: true } });
     const students = await this.prisma.student.findMany({
       where: { id: { in: studentIds }, institutionId },
       include: {
@@ -77,9 +77,9 @@ export class FeeRemindersService {
         const message = this.buildWhatsAppMessage({
           severity: 'FRIENDLY', parentName: parent.name, studentName, balanceLabel, institutionName: institution?.name ?? '', language,
         });
-        delivered = (await this.whatsapp.sendText(parent.whatsappNumber, message).catch(() => false)) || delivered;
+        delivered = (await this.whatsapp.sendText(parent.whatsappNumber, message, institution?.country).catch(() => false)) || delivered;
         if (this.sms.enabled) {
-          delivered = (await this.sms.sendText(parent.whatsappNumber, message.replace(/\*/g, '').replace(/\n+/g, ' ')).catch(() => false)) || delivered;
+          delivered = (await this.sms.sendText(parent.whatsappNumber, message.replace(/\*/g, '').replace(/\n+/g, ' '), institution?.country).catch(() => false)) || delivered;
         }
       }
       if (parent?.email) {
@@ -100,7 +100,7 @@ export class FeeRemindersService {
     try {
       const institutions = await this.prisma.institution.findMany({
         where: { status: 'ACTIVE' as any },
-        select: { id: true, name: true },
+        select: { id: true, name: true, country: true },
       });
 
       let sent = 0;
@@ -169,12 +169,12 @@ export class FeeRemindersService {
               institutionName: institution.name,
               language,
             });
-            const ok = await this.whatsapp.sendText(parent.whatsappNumber, message).catch(() => false);
+            const ok = await this.whatsapp.sendText(parent.whatsappNumber, message, institution.country).catch(() => false);
             delivered = delivered || ok;
             // SMS en plus (parents sans WhatsApp ou sans internet), seulement si Twilio SMS est configuré
             if (this.sms.enabled) {
               const smsText = message.replace(/\*/g, '').replace(/\n+/g, ' ');
-              const smsOk = await this.sms.sendText(parent.whatsappNumber, smsText).catch(() => false);
+              const smsOk = await this.sms.sendText(parent.whatsappNumber, smsText, institution.country).catch(() => false);
               delivered = delivered || smsOk;
             }
           }

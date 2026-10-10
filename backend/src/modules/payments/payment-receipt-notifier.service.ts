@@ -30,7 +30,7 @@ export class PaymentReceiptNotifier {
     const payment = await this.prisma.payment.findUnique({
       where: { id: paymentId },
       include: {
-        institution: { select: { name: true } },
+        institution: { select: { name: true, country: true } },
         student: {
           include: {
             user: { select: { name: true } },
@@ -79,8 +79,10 @@ export class PaymentReceiptNotifier {
 
     const sent: string[] = [];
     if (parent.whatsappNumber) {
-      if (await this.whatsapp.sendText(parent.whatsappNumber, lines.join('\n')).catch(() => false)) sent.push('WhatsApp');
-      if (this.sms.enabled && await this.sms.sendText(parent.whatsappNumber, lines.join(' ')).catch(() => false)) sent.push('SMS');
+      // Pays de l'école : indicatif des numéros saisis sans indicatif
+      const country = payment.institution.country;
+      if (await this.whatsapp.sendText(parent.whatsappNumber, lines.join('\n'), country).catch(() => false)) sent.push('WhatsApp');
+      if (this.sms.enabled && await this.sms.sendText(parent.whatsappNumber, lines.join(' '), country).catch(() => false)) sent.push('SMS');
     }
     if (parent.email) {
       if (await this.mail.sendPaymentReceipt(parent.email, `${en ? 'Payment receipt' : 'Reçu de paiement'} ${payment.receiptNumber} — ${school}`, lines).catch(() => false)) sent.push('e-mail');

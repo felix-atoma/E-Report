@@ -179,7 +179,7 @@ export class NotificationsService {
         student: {
           include: {
             user: { select: { name: true } },
-            institution: { select: { name: true } },
+            institution: { select: { name: true, country: true } },
           },
         },
         recipient: {
@@ -205,6 +205,8 @@ export class NotificationsService {
     for (const log of pending) {
       const studentName = log.student?.user?.name ?? 'Élève';
       const institutionName = (log.student as any)?.institution?.name ?? 'NovaBulletin';
+      // Pays de l'école : indicatif ajouté aux numéros saisis sans indicatif
+      const country = (log.student as any)?.institution?.country ?? null;
       const average = log.reportCard?.overallAverage != null
         ? log.reportCard.overallAverage.toFixed(2).replace('.', ',')
         : '—';
@@ -224,13 +226,13 @@ export class NotificationsService {
           success = await this.whatsapp.sendBulletinReady({
             toPhone: log.recipient.whatsappNumber, studentName, termName,
             academicYear, average, mention, pdfUrl, institutionName,
-            language: (log.recipient as any).language ?? 'FR',
+            language: (log.recipient as any).language ?? 'FR', country,
           });
         } else if (log.channel === 'SMS' && log.recipient.whatsappNumber) {
           success = await this.sms.sendBulletinReady({
             toPhone: log.recipient.whatsappNumber, studentName, termName,
             academicYear, average, mention, pdfUrl, institutionName,
-            language: (log.recipient as any).language ?? 'FR',
+            language: (log.recipient as any).language ?? 'FR', country,
           });
         }
       } catch (err) {
@@ -266,6 +268,7 @@ export class NotificationsService {
           include: {
             user:   { select: { name: true } },
             parent: { select: { name: true, whatsappNumber: true } },
+            institution: { select: { country: true } },
           },
         },
       },
@@ -298,7 +301,7 @@ export class NotificationsService {
     lines.push('', 'Veuillez régulariser votre situation auprès de l\'administration de l\'école pour recevoir le bulletin.');
     lines.push('Merci.');
 
-    const sent = await this.whatsapp.sendText(parent.whatsappNumber, lines.join('\n'));
+    const sent = await this.whatsapp.sendText(parent.whatsappNumber, lines.join('\n'), (log.student as any)?.institution?.country);
     if (!sent) throw new BadRequestException("Échec de l'envoi WhatsApp — vérifiez la configuration");
     return { success: true };
   }
