@@ -42,14 +42,36 @@ function MockExamPalmaresPage() {
   const isDs = isNonExamType(exam.examType);
   const scale = examScale(exam.examType); // 10 pour les compositions mensuelles
   const pass = scale / 2;
+  // Composition d'anglais : palmarès entièrement en anglais (décimales avec un point)
+  const en = isCaType(exam.examType);
+  const T = en ? {
+    back: '← Back', titleBar: 'Results', print: '🖨 Print', title: 'RESULTS', type: 'English Test',
+    className: 'Class', year: 'School year', coefTotal: 'Total coef.', rank: 'Position', name: 'Full name',
+    adm: 'Adm.', total: 'Total', pts: 'Pts', avg: 'Avg.', mention: 'Remark', result: 'Result',
+    passed: 'PASSED', below: 'BELOW AVERAGE', size: 'Total pupils', reached: `Average ≥ ${pass}%`,
+    belowCount: 'Below average', rate: 'Pass rate', unranked: 'Not ranked', podium: 'Overall ranking',
+    head: 'Head Teacher', headSign: 'Signature and stamp', jury: 'Class Teacher', sign: 'Signature',
+  } : {
+    back: '← Retour', titleBar: 'Proclamation des résultats', print: '🖨 Imprimer', title: 'PROCLAMATION DES RÉSULTATS',
+    type: TYPE_LABELS[exam.examType] ?? exam.examType,
+    className: 'Classe', year: 'Année scolaire', coefTotal: 'Coeff. total', rank: 'Rang', name: 'Nom et Prénoms',
+    adm: 'Matr.', total: 'Total', pts: 'Pts', avg: 'Moy.', mention: 'Mention', result: 'Résultat',
+    passed: 'MOYENNE ATTEINTE', below: 'SOUS LA MOYENNE', size: 'Effectif total', reached: isDs ? `Moyenne ≥ ${pass}` : `Admis(e)s ≥${pass}`,
+    belowCount: isDs ? 'Sous la moyenne' : 'Ajournés', rate: 'Taux de réussite', unranked: 'Non classés', podium: 'Classement général',
+    head: 'Le Directeur / La Directrice', headSign: 'Signature et cachet', jury: 'Jury / Responsable pédagogique', sign: 'Signature',
+  };
+  const num = (v) => (en ? v.toFixed(2) : v.toFixed(2).replace('.', ','));
+  const ordinal = (r) => (en
+    ? `${r}${(r % 100 >= 11 && r % 100 <= 13) ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' })[r % 10] ?? 'th'}`
+    : r === 1 ? '1er' : `${r}e`);
 
   function getResult(avg, sex) {
     const f = sex === 'F';
     if (avg == null) return { label: '—', cls: '' };
     if (isDs) {
       return avg >= pass
-        ? { label: 'MOYENNE ATTEINTE', cls: 'mpal-td--pass' }
-        : { label: 'SOUS LA MOYENNE', cls: 'mpal-td--fail' };
+        ? { label: T.passed, cls: 'mpal-td--pass' }
+        : { label: T.below, cls: 'mpal-td--fail' };
     }
     if (avg >= pass) return { label: f ? 'ADMISE' : 'ADMIS', cls: 'mpal-td--pass' };
     if (isBac && avg >= 9) return { label: 'ADMISSIBLE', cls: 'mpal-td--admis' };
@@ -60,13 +82,13 @@ function MockExamPalmaresPage() {
     <div className="mpal-page">
       {/* Screen toolbar */}
       <div className="mpal-toolbar no-print">
-        <Link to="#" onClick={() => history.back()} className="mpal-toolbar__back">← Retour</Link>
+        <Link to="#" onClick={() => history.back()} className="mpal-toolbar__back">{T.back}</Link>
         <div className="mpal-toolbar__center">
-          <span className="mpal-toolbar__title">Proclamation des résultats — {exam.label}</span>
+          <span className="mpal-toolbar__title">{T.titleBar} — {exam.label}</span>
         </div>
         <PrintFormatPicker defaultFormat="A4 landscape" />
         <button className="mpal-print-btn" onClick={() => window.print()}>
-          🖨 Imprimer
+          {T.print}
         </button>
       </div>
 
@@ -90,13 +112,13 @@ function MockExamPalmaresPage() {
             </div>
           </div>
           <div className="mpal-header__right">
-            <div className="mpal-doc-title">PROCLAMATION DES RÉSULTATS</div>
-            <div className="mpal-exam-type">{TYPE_LABELS[exam.examType] ?? exam.examType}</div>
+            <div className="mpal-doc-title">{T.title}</div>
+            <div className="mpal-exam-type">{T.type}</div>
             <div className="mpal-exam-label">{exam.label}</div>
             <div className="mpal-exam-meta">
-              <span>Classe : <strong>{exam.class?.name}</strong></span>
-              <span>Année scolaire : <strong>{exam.academicYear}</strong></span>
-              <span>Coeff. total : <strong>{totalCoeff}</strong></span>
+              <span>{T.className} : <strong>{exam.class?.name}</strong></span>
+              <span>{T.year} : <strong>{exam.academicYear}</strong></span>
+              <span>{T.coefTotal} : <strong>{totalCoeff}</strong></span>
             </div>
             {fmtSessionDates(exam.examDate, exam.examEndDate) && (
               <div className="mpal-exam-date">{fmtSessionDates(exam.examDate, exam.examEndDate)}</div>
@@ -111,18 +133,18 @@ function MockExamPalmaresPage() {
           <table className="mpal-table">
             <thead>
               <tr>
-                <th className="mpal-th mpal-th--rank" rowSpan={2}>Rang</th>
-                <th className="mpal-th mpal-th--name" rowSpan={2}>Nom et Prénoms</th>
-                <th className="mpal-th mpal-th--num" rowSpan={2}>Matr.</th>
+                <th className="mpal-th mpal-th--rank" rowSpan={2}>{T.rank}</th>
+                <th className="mpal-th mpal-th--name" rowSpan={2}>{T.name}</th>
+                <th className="mpal-th mpal-th--num" rowSpan={2}>{T.adm}</th>
                 {subjects.map((subj) => (
                   <th key={subj.id} className="mpal-th mpal-th--subj">
                     {subj.nameFr}
                   </th>
                 ))}
-                <th className="mpal-th mpal-th--total" rowSpan={2}>Total<br />Pts</th>
-                <th className="mpal-th mpal-th--avg" rowSpan={2}>Moy.<br />{isCaType(exam.examType) ? '%' : `/${scale}`}</th>
-                <th className="mpal-th mpal-th--mention" rowSpan={2}>Mention</th>
-                <th className="mpal-th mpal-th--result" rowSpan={2}>Résultat</th>
+                <th className="mpal-th mpal-th--total" rowSpan={2}>{T.total}<br />{T.pts}</th>
+                <th className="mpal-th mpal-th--avg" rowSpan={2}>{T.avg}<br />{isCaType(exam.examType) ? '%' : `/${scale}`}</th>
+                <th className="mpal-th mpal-th--mention" rowSpan={2}>{T.mention}</th>
+                <th className="mpal-th mpal-th--result" rowSpan={2}>{T.result}</th>
               </tr>
               <tr>
                 {subjects.map((subj) => (
@@ -154,7 +176,7 @@ function MockExamPalmaresPage() {
                     <td className="mpal-td mpal-td--rank">
                       {rank != null ? (
                         <span className={`mpal-rank mpal-rank--${rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : 'default'}`}>
-                          {rank === 1 ? '🥇 1er' : rank === 2 ? '🥈 2e' : rank === 3 ? '🥉 3e' : rank}
+                          {rank === 1 ? `🥇 ${ordinal(1)}` : rank === 2 ? `🥈 ${ordinal(2)}` : rank === 3 ? `🥉 ${ordinal(3)}` : rank}
                         </span>
                       ) : '—'}
                     </td>
@@ -170,16 +192,16 @@ function MockExamPalmaresPage() {
                           key={subj.id}
                           className={`mpal-td mpal-td--score${low ? ' mpal-td--low' : ''}`}
                         >
-                          {score != null ? score.toFixed(2).replace('.', ',') : '—'}
+                          {score != null ? num(score) : '—'}
                         </td>
                       );
                     })}
 
                     <td className="mpal-td mpal-td--total mpal-td--bold">
-                      {totalPts > 0 ? totalPts.toFixed(2).replace('.', ',') : '—'}
+                      {totalPts > 0 ? num(totalPts) : '—'}
                     </td>
                     <td className={`mpal-td mpal-td--avg${result.cls ? ` ${result.cls}` : ''}`}>
-                      {student.average != null ? student.average.toFixed(2).replace('.', ',') : '—'}
+                      {student.average != null ? num(student.average) : '—'}
                     </td>
                     <td className="mpal-td mpal-td--mention">
                       {student.appreciation || '—'}
@@ -197,11 +219,11 @@ function MockExamPalmaresPage() {
         {/* Summary stats */}
         <div className="mpal-summary">
           <div className="mpal-summary__item">
-            <span className="mpal-summary__label">Effectif total</span>
+            <span className="mpal-summary__label">{T.size}</span>
             <span className="mpal-summary__value">{summary.total}</span>
           </div>
           <div className="mpal-summary__item">
-            <span className="mpal-summary__label">{isDs ? `Moyenne ≥ ${pass}` : `Admis(e)s ≥${pass}`}</span>
+            <span className="mpal-summary__label">{T.reached}</span>
             <span className="mpal-summary__value mpal-summary__value--pass">{summary.admitted}</span>
           </div>
           {summary.isBac && (
@@ -211,15 +233,15 @@ function MockExamPalmaresPage() {
             </div>
           )}
           <div className="mpal-summary__item">
-            <span className="mpal-summary__label">{isDs ? 'Sous la moyenne' : 'Ajournés'}</span>
+            <span className="mpal-summary__label">{T.belowCount}</span>
             <span className="mpal-summary__value mpal-summary__value--fail">{summary.ajourne ?? (summary.withGrades - summary.admitted)}</span>
           </div>
           <div className="mpal-summary__item">
-            <span className="mpal-summary__label">Taux de réussite</span>
+            <span className="mpal-summary__label">{T.rate}</span>
             <span className="mpal-summary__value">{summary.passingRate}%</span>
           </div>
           <div className="mpal-summary__item">
-            <span className="mpal-summary__label">Non classés</span>
+            <span className="mpal-summary__label">{T.unranked}</span>
             <span className="mpal-summary__value">{summary.total - summary.withGrades}</span>
           </div>
         </div>
@@ -232,13 +254,13 @@ function MockExamPalmaresPage() {
           const medals = { 1: '🥇', 2: '🥈', 3: '🥉' };
           return (
             <div className="mpal-podium no-print">
-              <div className="mpal-podium__title">Classement général</div>
+              <div className="mpal-podium__title">{T.podium}</div>
               <div className="mpal-podium__list">
                 {top.map((s) => (
                   <div key={s.studentId} className={`mpal-podium__item mpal-podium__item--${s.rank === 1 ? 'gold' : s.rank === 2 ? 'silver' : 'bronze'}`}>
                     <span className="mpal-podium__medal">{medals[s.rank]}</span>
                     <span className="mpal-podium__sname">{s.studentName}</span>
-                    <span className="mpal-podium__avg">{fmtAvg(s.average, exam.examType)}</span>
+                    <span className="mpal-podium__avg">{en && s.average != null ? `${num(s.average)} %` : fmtAvg(s.average, exam.examType)}</span>
                   </div>
                 ))}
               </div>
@@ -249,14 +271,14 @@ function MockExamPalmaresPage() {
         {/* Signatures */}
         <div className="mpal-sigs">
           <div className="mpal-sig">
-            <div className="mpal-sig__title">Le Directeur / La Directrice</div>
+            <div className="mpal-sig__title">{T.head}</div>
             <div className="mpal-sig__space" />
-            <div className="mpal-sig__name">Signature et cachet</div>
+            <div className="mpal-sig__name">{T.headSign}</div>
           </div>
           <div className="mpal-sig">
-            <div className="mpal-sig__title">Jury / Responsable pédagogique</div>
+            <div className="mpal-sig__title">{T.jury}</div>
             <div className="mpal-sig__space" />
-            <div className="mpal-sig__name">Signature</div>
+            <div className="mpal-sig__name">{T.sign}</div>
           </div>
         </div>
       </div>

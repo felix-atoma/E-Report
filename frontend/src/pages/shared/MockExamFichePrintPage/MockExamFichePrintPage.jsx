@@ -5,7 +5,7 @@ import PrintFormatPicker from '../../../components/common/PrintFormatPicker/Prin
 import { subjectApprec } from '../../../utils/subjectApprec';
 import { fmtSessionDates } from '../../../utils/fmtSessionDates';
 import './MockExamFichePrintPage.css';
-import { examScale } from '../../../utils/examKinds';
+import { examScale, isCaType } from '../../../utils/examKinds';
 
 const TYPE_LABELS = {
   BLANC: 'Examen Blanc',
@@ -23,11 +23,11 @@ function fmtDate(iso) {
   return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
-function ScorePill({ score, scale = 20 }) {
+function ScorePill({ score, scale = 20, en = false }) {
   if (score == null) return <span className="mfp-score mfp-score--empty">—</span>;
   const v20 = (score * 20) / scale; // seuils définis sur 20
   const cls = v20 >= 14 ? 'mfp-score--high' : v20 >= 10 ? 'mfp-score--mid' : 'mfp-score--low';
-  return <span className={`mfp-score ${cls}`}>{score.toFixed(2).replace('.', ',')}</span>;
+  return <span className={`mfp-score ${cls}`}>{en ? score.toFixed(2) : score.toFixed(2).replace('.', ',')}</span>;
 }
 
 function RankBadge({ rank }) {
@@ -40,6 +40,23 @@ function SubjectPrintFiche({ subject, students, institution, exam }) {
   // Barème de la matière : aux compositions mensuelles, « Noté sur » de la matière (10 ou 20) ;
   // ailleurs, celui de la session (20)
   const scale = subject?.maxScore ?? examScale(exam?.examType);
+  // Composition d'anglais : fiche entièrement en anglais (décimales avec un point)
+  const en = isCaType(exam?.examType);
+  const T = en ? {
+    badge: 'MARK SHEET', type: 'English Test', className: 'Class', year: 'Year', coef: 'Coef.', teacher: 'Teacher',
+    signed: 'Signed', name: 'Full name', adm: 'Admission No.', mark: 'Mark', rank: 'Position', appr: 'Remark',
+    size: 'Pupils', avg: 'Average', sd: 'Std. dev.', max: 'Highest', min: 'Lowest', passed: 'Passed', rate: 'Rate',
+    teacherSign: "Teacher's signature", signedOn: 'Signed on', teacherName: "Teacher's name",
+    head: "Head Teacher's approval", stamp: 'Signature and stamp',
+  } : {
+    badge: 'FICHE DE NOTES', type: TYPE_LABELS[exam.examType] ?? exam.examType, className: 'Classe', year: 'Année',
+    coef: 'Coeff.', teacher: 'Prof', signed: 'Signé', name: 'Nom et Prénoms', adm: 'Matricule', mark: 'Note',
+    rank: 'Rang', appr: 'Appréciation', size: 'Effectif', avg: 'Moyenne', sd: 'Écart-type', max: 'Maximum',
+    min: 'Minimum', passed: 'Admis', rate: 'Taux', teacherSign: 'Signature du professeur', signedOn: 'Signé le',
+    teacherName: 'Nom du professeur', head: 'Visa du Directeur / de la Directrice', stamp: 'Signature et cachet',
+  };
+  const num = (v) => (en ? v.toFixed(2) : v.toFixed(2).replace('.', ','));
+  const dateOf = (iso) => (en ? new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }) : fmtDate(iso));
   const gradeMap = new Map();
   students.forEach((s) => {
     const g = s.grades.find((g) => g.subjectId === subject.id);
@@ -86,12 +103,12 @@ function SubjectPrintFiche({ subject, students, institution, exam }) {
           </div>
         </div>
         <div className="mfp-doc-header__title">
-          <div className="mfp-doc-badge">FICHE DE NOTES</div>
-          <div className="mfp-doc-exam-type">{TYPE_LABELS[exam.examType] ?? exam.examType}</div>
+          <div className="mfp-doc-badge">{T.badge}</div>
+          <div className="mfp-doc-exam-type">{T.type}</div>
           <div className="mfp-doc-label">{exam.label}</div>
           <div className="mfp-doc-meta">
-            <span>Classe&nbsp;: <strong>{exam.class?.name}</strong></span>
-            <span>Année&nbsp;: <strong>{exam.academicYear}</strong></span>
+            <span>{T.className}&nbsp;: <strong>{exam.class?.name}</strong></span>
+            <span>{T.year}&nbsp;: <strong>{exam.academicYear}</strong></span>
             {fmtSessionDates(exam.examDate, exam.examEndDate) && (
                 <span>{fmtSessionDates(exam.examDate, exam.examEndDate)}</span>
               )}
@@ -105,13 +122,13 @@ function SubjectPrintFiche({ subject, students, institution, exam }) {
       <div className="mfp-subj-banner">
         <div className="mfp-subj-banner__left">
           <span className="mfp-subj-title">{subject.nameFr}</span>
-          <span className="mfp-coeff-badge">Coeff.&nbsp;<span className="mfp-coeff-blank" /></span>
-          {subject.teacherName && <span className="mfp-teacher-tag">Prof : {subject.teacherName}</span>}
+          <span className="mfp-coeff-badge">{T.coef}&nbsp;<span className="mfp-coeff-blank" /></span>
+          {subject.teacherName && <span className="mfp-teacher-tag">{T.teacher} : {subject.teacherName}</span>}
         </div>
         {subject.isSigned && (
           <div className="mfp-signed-tag">
-            ✅ Signé{subject.signedByName ? ` · ${subject.signedByName}` : ''}
-            {subject.signedAt ? ` · ${fmtDate(subject.signedAt)}` : ''}
+            ✅ {T.signed}{subject.signedByName ? ` · ${subject.signedByName}` : ''}
+            {subject.signedAt ? ` · ${dateOf(subject.signedAt)}` : ''}
           </div>
         )}
       </div>
@@ -121,11 +138,11 @@ function SubjectPrintFiche({ subject, students, institution, exam }) {
         <thead>
           <tr>
             <th className="mfp-th mfp-th--n">N°</th>
-            <th className="mfp-th mfp-th--name">Nom et Prénoms</th>
-            <th className="mfp-th mfp-th--mat">Matricule</th>
-            <th className="mfp-th mfp-th--note">Note /{scale}</th>
-            <th className="mfp-th mfp-th--rang">Rang</th>
-            <th className="mfp-th mfp-th--appr">Appréciation</th>
+            <th className="mfp-th mfp-th--name">{T.name}</th>
+            <th className="mfp-th mfp-th--mat">{T.adm}</th>
+            <th className="mfp-th mfp-th--note">{T.mark} /{scale}</th>
+            <th className="mfp-th mfp-th--rang">{T.rank}</th>
+            <th className="mfp-th mfp-th--appr">{T.appr}</th>
           </tr>
         </thead>
         <tbody>
@@ -133,7 +150,7 @@ function SubjectPrintFiche({ subject, students, institution, exam }) {
             const g = gradeMap.get(student.studentId);
             const score = g?.score ?? null;
             const rank  = rankMap.get(student.studentId) ?? null;
-            const appr  = score != null ? subjectApprec(score, subject) : '';
+            const appr  = score == null ? '' : en ? (g?.appreciation ?? '') : subjectApprec(score, subject);
             const v20 = score == null ? null : (score * 20) / scale;
             const apprCls = v20 == null ? '' : v20 >= 14 ? 'appr--high' : v20 >= 10 ? 'appr--mid' : 'appr--low';
             return (
@@ -141,7 +158,7 @@ function SubjectPrintFiche({ subject, students, institution, exam }) {
                 <td className="mfp-td mfp-td--n">{i + 1}</td>
                 <td className="mfp-td mfp-td--name">{student.studentName}</td>
                 <td className="mfp-td mfp-td--mat">{student.admissionNumber}</td>
-                <td className="mfp-td mfp-td--note"><ScorePill scale={scale} score={score} /></td>
+                <td className="mfp-td mfp-td--note"><ScorePill scale={scale} score={score} en={en} /></td>
                 <td className="mfp-td mfp-td--rang"><RankBadge rank={rank} /></td>
                 <td className={`mfp-td mfp-td--appr ${apprCls}`}>{appr || '—'}</td>
               </tr>
@@ -153,31 +170,31 @@ function SubjectPrintFiche({ subject, students, institution, exam }) {
       {/* ── Statistics band ── */}
       <div className="mfp-stats-band">
         <div className="mfp-stat-chip mfp-stat-chip--neutral">
-          <span className="mfp-stat-chip__label">Effectif</span>
+          <span className="mfp-stat-chip__label">{T.size}</span>
           <span className="mfp-stat-chip__val">{filled.length}<small>/{students.length}</small></span>
         </div>
         <div className="mfp-stat-chip mfp-stat-chip--blue">
-          <span className="mfp-stat-chip__label">Moyenne</span>
-          <span className="mfp-stat-chip__val">{avg != null ? avg.toFixed(2).replace('.', ',') : '—'}<small>/{scale}</small></span>
+          <span className="mfp-stat-chip__label">{T.avg}</span>
+          <span className="mfp-stat-chip__val">{avg != null ? num(avg) : '—'}<small>/{scale}</small></span>
         </div>
         <div className="mfp-stat-chip mfp-stat-chip--slate">
-          <span className="mfp-stat-chip__label">Écart-type</span>
-          <span className="mfp-stat-chip__val">{stddev != null ? stddev.toFixed(2).replace('.', ',') : '—'}</span>
+          <span className="mfp-stat-chip__label">{T.sd}</span>
+          <span className="mfp-stat-chip__val">{stddev != null ? num(stddev) : '—'}</span>
         </div>
         <div className="mfp-stat-chip mfp-stat-chip--green">
-          <span className="mfp-stat-chip__label">Maximum</span>
-          <span className="mfp-stat-chip__val">{best != null ? best.toFixed(2).replace('.', ',') : '—'}</span>
+          <span className="mfp-stat-chip__label">{T.max}</span>
+          <span className="mfp-stat-chip__val">{best != null ? num(best) : '—'}</span>
         </div>
         <div className="mfp-stat-chip mfp-stat-chip--red">
-          <span className="mfp-stat-chip__label">Minimum</span>
-          <span className="mfp-stat-chip__val">{worst != null ? worst.toFixed(2).replace('.', ',') : '—'}</span>
+          <span className="mfp-stat-chip__label">{T.min}</span>
+          <span className="mfp-stat-chip__val">{worst != null ? num(worst) : '—'}</span>
         </div>
         <div className="mfp-stat-chip mfp-stat-chip--green">
-          <span className="mfp-stat-chip__label">Admis</span>
+          <span className="mfp-stat-chip__label">{T.passed}</span>
           <span className="mfp-stat-chip__val">{passing}<small>/{filled.length}</small></span>
         </div>
         <div className="mfp-stat-chip mfp-stat-chip--teal">
-          <span className="mfp-stat-chip__label">Taux</span>
+          <span className="mfp-stat-chip__label">{T.rate}</span>
           <span className="mfp-stat-chip__val">{passRate != null ? `${passRate}%` : '—'}</span>
         </div>
       </div>
@@ -185,7 +202,7 @@ function SubjectPrintFiche({ subject, students, institution, exam }) {
       {/* ── Signature zone ── */}
       <div className="mfp-sigs">
         <div className="mfp-sig">
-          <div className="mfp-sig__label">Signature du professeur</div>
+          <div className="mfp-sig__label">{T.teacherSign}</div>
           {subject.isSigned && subject.signatureData && subject.signatureData !== 'ADMIN_VERIFIED' ? (
             <div className="mfp-sig__stamp">
               {/* Signature manuscrite du professeur */}
@@ -195,17 +212,17 @@ function SubjectPrintFiche({ subject, students, institution, exam }) {
           ) : subject.isSigned && subject.signedAt ? (
             <div className="mfp-sig__stamp">
               <div className="mfp-sig__stamp-name">{subject.signedByName || subject.teacherName || '—'}</div>
-              <div className="mfp-sig__stamp-date">Signé le {fmtDate(subject.signedAt)}</div>
+              <div className="mfp-sig__stamp-date">{T.signedOn} {dateOf(subject.signedAt)}</div>
             </div>
           ) : (
             <div className="mfp-sig__line" />
           )}
-          <div className="mfp-sig__name">{subject.teacherName || 'Nom du professeur'}</div>
+          <div className="mfp-sig__name">{subject.teacherName || T.teacherName}</div>
         </div>
         <div className="mfp-sig">
-          <div className="mfp-sig__label">Visa du Directeur / de la Directrice</div>
+          <div className="mfp-sig__label">{T.head}</div>
           <div className="mfp-sig__line" />
-          <div className="mfp-sig__name">Signature et cachet</div>
+          <div className="mfp-sig__name">{T.stamp}</div>
         </div>
       </div>
 

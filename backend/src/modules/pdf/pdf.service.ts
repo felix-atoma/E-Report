@@ -236,6 +236,43 @@ export function primaryTotals(grades: Array<{ moyenneMatiere?: number | null; sc
   };
 }
 
+/** Textes du relevé de notes : français, ou anglais pour les compositions d'anglais. */
+const RELEVE_LABELS_FR = {
+  title: 'Relevé de notes', name: 'Nom et prénoms', admission: 'N° Matricule', sex: 'Sexe', male: 'Masculin', female: 'Féminin',
+  dob: 'Date de naissance', className: 'Classe', year: 'Année scolaire', session: 'Session', date: 'Date',
+  average: 'Moyenne', rank: 'Rang', subjects: 'Matières', mark: 'Note', coef: 'Coef.', points: 'Points',
+  appreciation: 'Appréciation', totals: 'TOTAUX', resultCm: 'Résultat de la composition', resultDs: 'Résultat du devoir',
+  result: 'Résultat', passed: 'MOYENNE ATTEINTE', belowAverage: 'SOUS LA MOYENNE', scaleTitle: 'Barème des appréciations',
+  results: 'Résultats', gradedSubjects: 'Matières notées', teacherCm: 'Le Maître / La Maîtresse',
+  teacher: 'Le Professeur Principal', nameSign: '(Nom et signature)', head: "Le Directeur de l'École",
+  stampSign: '(Cachet et signature)', doneOn: 'Fait le', parents: 'Visa des Parents', readApproved: '(Lu et approuvé)',
+  seenOn: 'Vu le :', generated: 'Généré le', verifyAlt: 'Code de vérification',
+  scale20: '16 à 20 : Très Bien · 14 à 15,99 : Bien · 12 à 13,99 : Assez Bien · 10 à 11,99 : Passable · 0 à 9,99 : Insuffisant',
+  scale10: '8 à 10 : Très Bien · 7 à 7,99 : Bien · 6 à 6,99 : Assez Bien · 5 à 5,99 : Passable · 0 à 4,99 : Insuffisant',
+  scalePercent: '80 à 100 % : Très Bien · 70 à 79 % : Bien · 60 à 69 % : Assez Bien · 50 à 59 % : Passable · 0 à 49 % : Insuffisant',
+};
+const RELEVE_LABELS_EN: typeof RELEVE_LABELS_FR = {
+  title: 'Report sheet', name: 'Full name', admission: 'Admission No.', sex: 'Sex', male: 'Male', female: 'Female',
+  dob: 'Date of birth', className: 'Class', year: 'School year', session: 'Test', date: 'Date',
+  average: 'Average', rank: 'Position', subjects: 'Subjects', mark: 'Mark', coef: 'Coef.', points: 'Points',
+  appreciation: 'Remark', totals: 'TOTAL', resultCm: 'Test result', resultDs: 'Test result',
+  result: 'Result', passed: 'PASSED', belowAverage: 'BELOW AVERAGE', scaleTitle: 'Grading scale',
+  results: 'Results', gradedSubjects: 'Subjects marked', teacherCm: 'Class Teacher',
+  teacher: 'Class Teacher', nameSign: '(Name and signature)', head: 'Head Teacher',
+  stampSign: '(Stamp and signature)', doneOn: 'Date', parents: "Parent's signature", readApproved: '(Read and approved)',
+  seenOn: 'Seen on:', generated: 'Generated on', verifyAlt: 'Verification code',
+  scale20: '16–20: Very Good · 14–15.99: Good · 12–13.99: Fairly Good · 10–11.99: Satisfactory · 0–9.99: Insufficient',
+  scale10: '8–10: Very Good · 7–7.99: Good · 6–6.99: Fairly Good · 5–5.99: Satisfactory · 0–4.99: Insufficient',
+  scalePercent: '80–100%: Very Good · 70–79%: Good · 60–69%: Fairly Good · 50–59%: Satisfactory · 0–49%: Insufficient',
+};
+
+/** 1st, 2nd, 3rd, 4th … 11th, 12th, 13th, 21st … */
+export function englishOrdinal(n: number): string {
+  const s = n % 100;
+  if (s >= 11 && s <= 13) return `${n}th`;
+  return `${n}${({ 1: 'st', 2: 'nd', 3: 'rd' } as Record<number, string>)[n % 10] ?? 'th'}`;
+}
+
 /** Classes du secondaire : 6ème → Terminale (devoirs surveillés). */
 export function isSecondaryLevel(level: string | null | undefined): boolean {
   return /^\s*([3-6]\s*(e|è|eme|ème)|2\s*nde|seconde|1\s*(re|ere|ère)|premi[eè]re|tle|terminale)\s*$/i.test(level ?? '');
@@ -416,6 +453,9 @@ export class PdfService {
     const isCm = exam.examType === 'COMPOSITION_MENSUELLE' || exam.examType === 'COMPOSITION_ANGLAIS';
     // Composition d'anglais : moyenne en pourcentage
     const isPercent = exam.examType === 'COMPOSITION_ANGLAIS';
+    // Composition d'anglais : relevé entièrement en anglais (textes, dates, décimales avec un point)
+    const en = isPercent;
+    const num = (v: number | null | undefined) => (en ? formatScore(v).replace(',', '.') : formatScore(v));
     const isDs = exam.examType === 'DEVOIR_SURVEILLE' || isCm;
     const isBac = exam.examType === 'BAC1' || exam.examType === 'BAC2';
     const female = student.sex === 'F';
@@ -428,8 +468,8 @@ export class PdfService {
       return {
         ...r,
         max,
-        scoreLabel: formatScore(r.score),
-        pointsLabel: r.score != null ? formatScore(r.score * r.coefficient) : '—',
+        scoreLabel: num(r.score),
+        pointsLabel: r.score != null ? num(r.score * r.coefficient) : '—',
         passed: on20 == null || on20 >= 10,
         levelClass: on20 == null ? '' : on20 >= 14 ? 'lvl-good' : on20 >= 10 ? 'lvl-pass' : 'lvl-fail',
       };
@@ -440,17 +480,21 @@ export class PdfService {
     // Points possibles (compositions mensuelles : chaque matière sur 10 ou 20)
     const totalMax = graded.reduce((s, r) => s + r.max * r.coefficient, 0);
 
+    const L = en ? RELEVE_LABELS_EN : RELEVE_LABELS_FR;
+
     // Examen : admis / admissible (BAC ≥ 9) / ajourné — Devoir surveillé : moyenne atteinte ou non
     const avg = data.average;
     const result = avg == null ? { text: '—', cls: '' }
-      : isDs ? (avg >= pass ? { text: 'MOYENNE ATTEINTE', cls: 'pass' } : { text: 'SOUS LA MOYENNE', cls: 'fail' })
+      : isDs ? (avg >= pass ? { text: L.passed, cls: 'pass' } : { text: L.belowAverage, cls: 'fail' })
       : avg >= pass ? { text: female ? 'ADMISE' : 'ADMIS', cls: 'pass' }
       : isBac && avg >= 9 ? { text: 'ADMISSIBLE', cls: 'admissible' }
       : { text: female ? 'AJOURNÉE' : 'AJOURNÉ', cls: 'fail' };
 
-    const fmtDate = (d?: Date | string | null) => (d ? new Date(d).toLocaleDateString('fr-FR') : null);
+    const fmtDate = (d?: Date | string | null) => (d ? new Date(d).toLocaleDateString(en ? 'en-GB' : 'fr-FR') : null);
     const dates = [fmtDate(exam.examDate), fmtDate(exam.examEndDate)].filter(Boolean).join(' → ') || '—';
-    const rankLabel = data.rank != null ? (data.rank === 1 ? (female ? '1ère' : '1er') : `${data.rank}e`) : null;
+    const rankLabel = data.rank == null ? null
+      : en ? englishOrdinal(data.rank)
+      : (data.rank === 1 ? (female ? '1ère' : '1er') : `${data.rank}e`);
 
     // QR code : ouvre la page de vérification avec le code du relevé
     let qrDataUri: string | null = null;
@@ -477,19 +521,20 @@ export class PdfService {
       student: {
         ...student,
         photo: pdfImage((student as any).photo),
-        sexLabel: student.sex === 'F' ? 'Féminin' : student.sex === 'M' ? 'Masculin' : '—',
+        sexLabel: student.sex === 'F' ? L.female : student.sex === 'M' ? L.male : '—',
         // Facultatives : la ligne et le cadre disparaissent quand l'école ne les fournit pas
         dateOfBirth: fmtDate(student.dateOfBirth),
       },
       rows,
       gradedCount: graded.length,
       totalCoef,
-      totalPointsLabel: formatScore(Math.round(totalPoints * 100) / 100),
+      totalPointsLabel: num(Math.round(totalPoints * 100) / 100),
       totalMax,
-      averageLabel: avg != null ? formatScore(avg) : null,
+      averageLabel: avg != null ? num(avg) : null,
       isPassing: (avg ?? 0) >= pass,
       scale,
       isPrimaryScale: scale === 10,
+      isPercentScale: isPercent,
       isCm,
       qrDataUri,
       verifyCode: data.verifyCode ?? null,
@@ -501,8 +546,10 @@ export class PdfService {
       classSize: data.classSize,
       result,
       isDs,
+      L,
+      lang: en ? 'en' : 'fr',
       watermark: buildWatermark(institution.name),
-      generatedAt: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }),
+      generatedAt: new Date().toLocaleDateString(en ? 'en-GB' : 'fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }),
     });
     return this.renderOnePagePdf(html);
   }

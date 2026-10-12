@@ -147,6 +147,10 @@ describe('MockExamsService', () => {
       expect(s1.average).toBe(25);   // (4 + 6) / 40 × 100
       expect(s2.rank).toBe(1);
       expect(s1.rank).toBe(2);
+      // Composition d'anglais : appréciations en anglais
+      expect(s2.appreciation).toBe('Very Good');       // 82,5 % → 16,5/20
+      expect(s1.appreciation).toBe('Insufficient');    // 25 %
+      expect(s2.grades.find((g: any) => g.subjectId === 'rc')!.appreciation).toBe('Good'); // 15/20
     });
 
     it('refuses an English composition for a secondary class', async () => {

@@ -28,15 +28,23 @@ export function subjectScale(examType: string | null | undefined, subjectMaxScor
   return isPrimaryComposition(examType) ? primarySubjectMax(subjectMaxScore) : examScale(examType);
 }
 
-/** Appréciation d'une note exprimée sur `scale` (seuils définis sur 20). */
-function appreciation(raw: number | null, scale = 20): string {
+/** Composition d'anglais : tous ses documents sont en anglais (relevé, appréciations, palmarès). */
+export function isEnglishSession(examType: string | null | undefined): boolean {
+  return examType === 'COMPOSITION_ANGLAIS';
+}
+
+/** Appréciation d'une note exprimée sur `scale` (seuils définis sur 20) ; en anglais pour l'anglais. */
+function appreciation(raw: number | null, scale = 20, en = false): string {
   if (raw == null) return '';
   const score = (raw * 20) / scale;
-  if (score >= 16) return 'Très Bien';
-  if (score >= 14) return 'Bien';
-  if (score >= 12) return 'Assez Bien';
-  if (score >= 10) return 'Passable';
-  return 'Insuffisant';
+  const [vg, g, fg, s, i] = en
+    ? ['Very Good', 'Good', 'Fairly Good', 'Satisfactory', 'Insufficient']
+    : ['Très Bien', 'Bien', 'Assez Bien', 'Passable', 'Insuffisant'];
+  if (score >= 16) return vg;
+  if (score >= 14) return g;
+  if (score >= 12) return fg;
+  if (score >= 10) return s;
+  return i;
 }
 
 function round2(v: number) { return Math.round(v * 100) / 100; }
@@ -181,7 +189,7 @@ export class MockExamsService {
           coefficient: g?.coefficient ?? subj.coefficient,
           maxScore: subj.maxScore,
           score: g?.score ?? null,
-          appreciation: appreciation(g?.score ?? null, subj.maxScore),
+          appreciation: appreciation(g?.score ?? null, subj.maxScore, isEnglishSession(exam.examType)),
         };
       });
 
@@ -200,7 +208,7 @@ export class MockExamsService {
         sex: student.sex ?? null,
         grades: gradesForStudent,
         average,
-        appreciation: appreciation(average, scale),
+        appreciation: appreciation(average, scale, isEnglishSession(exam.examType)),
       };
     });
 
@@ -695,7 +703,7 @@ export class MockExamsService {
         label: sheet.exam.label,
         examType: sheet.exam.examType,
         scale: examScale(sheet.exam.examType),
-        typeLabel: MockExamsService.TYPE_LABELS[sheet.exam.examType] ?? sheet.exam.examType,
+        typeLabel: isEnglishSession(sheet.exam.examType) ? 'English Test' : (MockExamsService.TYPE_LABELS[sheet.exam.examType] ?? sheet.exam.examType),
         className: sheet.exam.class?.name ?? '',
         academicYear: sheet.exam.academicYear,
         examDate: sheet.exam.examDate,
