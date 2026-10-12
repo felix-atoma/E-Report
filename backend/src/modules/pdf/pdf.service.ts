@@ -186,15 +186,25 @@ export function primarySubjectMax(maxScore: number | null | undefined): number {
 }
 
 /**
+ * Primaire : l'anglais est une discipline notée à part — encadré à côté du tableau des notes,
+ * sans compter dans le total des points, la moyenne ni le rang.
+ */
+export function isPrimaryEnglish(subject: { nameFr?: string | null } | null | undefined): boolean {
+  return /anglais|english/i.test(subject?.nameFr ?? '');
+}
+
+/**
  * Totaux du primaire, à la togolaise : somme des notes (chacune sur son barème) sur la somme des
  * barèmes ; moyenne sur 10 = total ÷ maximum × 10. Les matières non notées sont ignorées.
  */
-export function primaryTotals(grades: Array<{ moyenneMatiere?: number | null; score?: number | null; subject?: { maxScore?: number | null } | null }>) {
+export function primaryTotals(grades: Array<{ moyenneMatiere?: number | null; score?: number | null; subject?: { maxScore?: number | null; nameFr?: string | null } | null }>) {
   let total = 0;
   let max = 0;
   for (const g of grades) {
     const moy20 = g.moyenneMatiere ?? g.score;
     if (moy20 == null) continue;
+    // L'anglais est noté à part au primaire : hors total, moyenne et rang
+    if (isPrimaryEnglish(g.subject)) continue;
     const m = primarySubjectMax(g.subject?.maxScore);
     total += (moy20 * m) / 20;
     max += m;
@@ -637,7 +647,9 @@ export class PdfService {
         totalCoef,
         totalPoints: Math.round(totalPoints * 100) / 100,
       },
-      grades: enrichedGrades,
+      // Primaire : l'anglais sort du tableau (hors total) et passe dans l'encadré à côté
+      grades: isPrimary ? enrichedGrades.filter((g) => !isPrimaryEnglish(g.subject)) : enrichedGrades,
+      primaryEnglish: isPrimary ? enrichedGrades.filter((g) => isPrimaryEnglish(g.subject)) : [],
       generatedAt: new Date().toLocaleDateString('fr-FR', {
         day: '2-digit', month: 'long', year: 'numeric',
       }),

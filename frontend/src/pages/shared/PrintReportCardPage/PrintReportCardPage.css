@@ -500,6 +500,17 @@
 /* Primaire : 5 colonnes seulement, texte plus grand */
 .pr-grades--primary td, .pr-grades--primary th { font-size: 1.1em; padding-top: 5px; padding-bottom: 5px; }
 .pr-grades--primary .pr-grades__col-moy { font-size: 1.2em; }
+/* Primaire : anglais noté à part, encadré à droite du tableau (hors total et moyenne) — comme le PDF */
+.pr-primary-row { display: flex; gap: 6px; align-items: flex-start; }
+.pr-primary-row > .pr-grades { flex: 1; min-width: 0; }
+.pr-extra { width: 118px; flex-shrink: 0; background: #fff; border: 1.5px solid var(--bulletin-primary, #1e3a8a); border-radius: 3px; overflow: hidden; text-align: center; }
+.pr-extra__title { background: var(--bulletin-primary, #1e3a8a); color: #fff; font-weight: 900; font-size: 0.95em; padding: 3px 2px; letter-spacing: 0.5px; }
+.pr-extra__item { padding: 4px 3px; }
+.pr-extra__item + .pr-extra__item { border-top: 1px solid #e5e7eb; }
+.pr-extra__lbl { font-size: 0.72em; color: #6b7280; text-transform: uppercase; letter-spacing: 0.3px; }
+.pr-extra__note { font-size: 1.35em; font-weight: 900; }
+.pr-extra__val { font-weight: 800; font-size: 0.95em; }
+.pr-extra__hint { font-size: 0.65em; color: #6b7280; font-style: italic; padding: 3px; border-top: 1px solid #e5e7eb; }
 
 /* Cachet numérique : posé par-dessus la case, comme un vrai tampon (la mise en page ne bouge pas) */
 .pr-sig--stamp { position: relative; }

@@ -1037,7 +1037,7 @@ export class ReportsService {
       }),
       this.prisma.reportCard.findMany({
         where: { classId, academicYear },
-        include: { grades: { include: { subject: { select: { maxScore: true } } } } },
+        include: { grades: { include: { subject: { select: { maxScore: true, nameFr: true } } } } },
       }),
     ]);
     if (!cls) throw new NotFoundException('Class not found');

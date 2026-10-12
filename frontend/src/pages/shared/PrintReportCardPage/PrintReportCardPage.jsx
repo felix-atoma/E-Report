@@ -261,9 +261,14 @@ export default function PrintReportCardPage() {
   // Primaire : chaque matière garde son barème (« Noté sur » 10 ou 20) ; total = somme des notes sur
   // la somme des barèmes, moyenne /10 = total ÷ maximum × 10. Même calcul que primaryTotals() côté PDF.
   const subjectMax = (g) => ((g.subject?.maxScore ?? 20) <= 10 ? 10 : 20);
+  // L'anglais est noté à part au primaire : encadré à côté du tableau, hors total, moyenne et rang
+  // (même règle que isPrimaryEnglish() côté PDF)
+  const isEnglish = (g) => /anglais|english/i.test(g.subject?.nameFr ?? '');
+  const primaryGrades = isPrimary ? grades.filter((g) => !isEnglish(g)) : grades;
+  const englishGrades = isPrimary ? grades.filter(isEnglish) : [];
   let primaryTotal = 0;
   let primaryTotalMax = 0;
-  grades.forEach((g) => {
+  primaryGrades.forEach((g) => {
     const m20 = g.moyenneMatiere ?? g.score;
     if (m20 == null) return;
     primaryTotal += (m20 * subjectMax(g)) / 20;
@@ -428,6 +433,7 @@ export default function PrintReportCardPage() {
         {/* ── Grades table ───────────────────────────────────────────────── */}
         <div className="pr-grades-wrap">
           {isPrimary ? (
+          <div className="pr-primary-row">
           <table className="pr-grades pr-grades--primary">
             <thead>
               <tr className="pr-grades__head-top">
@@ -439,7 +445,7 @@ export default function PrintReportCardPage() {
               </tr>
             </thead>
             <tbody>
-              {grades.map((g, i) => {
+              {primaryGrades.map((g, i) => {
                 const moy = g.moyenneMatiere ?? g.score;
                 const fail = moy != null && moy < 10;   // moitié du barème de la matière
                 return (
@@ -465,6 +471,30 @@ export default function PrintReportCardPage() {
               </tr>
             </tfoot>
           </table>
+          {englishGrades.length > 0 && (
+            <div className="pr-extra">
+              <div className="pr-extra__title">ANGLAIS</div>
+              {englishGrades.map((g) => {
+                const moy = g.moyenneMatiere ?? g.score;
+                const fail = moy != null && moy < 10;
+                return (
+                  <div className="pr-extra__item" key={g.subjectId ?? g.id}>
+                    <div className="pr-extra__lbl">Note</div>
+                    <div className={`pr-extra__note${fail ? ' pr-grades__fail' : ' pr-grades__pass'}`}>
+                      {moy == null ? '—' : fmt((moy * subjectMax(g)) / 20)}
+                      <span className="pr-val-denom"> / {subjectMax(g)}</span>
+                    </div>
+                    <div className="pr-extra__lbl">Rang</div>
+                    <div className="pr-extra__val">{g.rangMatiere ?? '—'}</div>
+                    <div className="pr-extra__lbl">Appréciation</div>
+                    <div className="pr-extra__val">{g.appreciation ?? '—'}</div>
+                  </div>
+                );
+              })}
+              <div className="pr-extra__hint">Hors total et moyenne</div>
+            </div>
+          )}
+          </div>
           ) : (
           <table className="pr-grades">
             <thead>
