@@ -2603,6 +2603,7 @@
   },
 
   "mockExamGrade": {
+    "notInAverage": "Hors moyenne",
     "title": "Saisie des notes",
     "back": "← Retour aux relevés",
     "statusPublished": "Publié",

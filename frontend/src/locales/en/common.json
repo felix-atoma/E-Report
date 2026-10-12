@@ -2521,6 +2521,7 @@
   },
 
   "mockExamGrade": {
+    "notInAverage": "Not in average",
     "title": "Grade entry",
     "back": "← Back to exams",
     "statusPublished": "Published",

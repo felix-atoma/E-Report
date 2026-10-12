@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
 import archiver = require('archiver');
 import { PrismaService } from '../../prisma/prisma.service';
-import { PdfService, ReleveData, isPrimaryLevel, isSecondaryLevel, primarySubjectMax } from '../pdf/pdf.service';
+import { PdfService, ReleveData, isPrimaryLevel, isSecondaryLevel, primarySubjectMax, isPrimaryEnglish } from '../pdf/pdf.service';
 import { CreateMockExamDto } from './dto/create-mock-exam.dto';
 import { SaveMockExamGradesDto } from './dto/save-grades.dto';
 
@@ -118,7 +118,7 @@ export class MockExamsService {
     // Subjects assigned to this class
     const classSubjects = await this.prisma.classSubject.findMany({
       where: { classId: exam.classId },
-      include: { subject: { select: { id: true, nameFr: true, nameEn: true, code: true, maxScore: true } } },
+      include: { subject: { select: { id: true, nameFr: true, nameEn: true, code: true, maxScore: true, category: true } } },
       orderBy: { subject: { nameFr: 'asc' } },
     });
 
@@ -150,6 +150,8 @@ export class MockExamsService {
       coefficient: subjectCoeffMap.get(cs.subject.id) ?? 1,
       // Barème de la matière pour cette session (/10 ou /20 aux compositions mensuelles)
       maxScore: subjectScale(exam.examType, cs.subject.maxScore),
+      // Composition mensuelle (primaire) : l'anglais est noté à part — hors total, moyenne et rang
+      english: exam.examType === 'COMPOSITION_MENSUELLE' && isPrimaryEnglish(cs.subject),
     }));
 
     const scale = examScale(exam.examType);
@@ -161,6 +163,7 @@ export class MockExamsService {
           subjectId: subj.id,
           coefficient: g?.coefficient ?? subj.coefficient,
           maxScore: subj.maxScore,
+          english: subj.english,
           score: g?.score ?? null,
           appreciation: appreciation(g?.score ?? null, subj.maxScore),
         };
@@ -169,7 +172,7 @@ export class MockExamsService {
       // Total et moyenne : points obtenus sur points possibles, ramenés au barème de la session.
       // Toutes les matières sur 20 → moyenne pondérée classique ; compositions mensuelles → total des
       // notes (chacune sur 10 ou 20) ÷ total des barèmes × 10.
-      const filled = gradesForStudent.filter((g) => g.score != null);
+      const filled = gradesForStudent.filter((g) => g.score != null && !g.english);
       const totalMax = filled.reduce((s, g) => s + g.maxScore * g.coefficient, 0);
       const totalPoints = filled.reduce((s, g) => s + (g.score ?? 0) * g.coefficient, 0);
       const average = totalMax > 0 ? round2((totalPoints / totalMax) * scale) : null;
@@ -636,6 +639,7 @@ export class MockExamsService {
         coefficient: g.coefficient,
         max: g.maxScore,
         appreciation: g.appreciation,
+        english: g.english,
       })),
       average: s.average,
       appreciation: s.appreciation,

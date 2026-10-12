@@ -79,6 +79,20 @@ body {
 .grades .c-note { font-weight:800; font-size:11.5px; color:var(--c-primary-text); }
 .grades .c-note.fail { color:var(--c-fail); }
 .grades .c-note .c-max { font-size:8.5px; font-weight:600; color:#6b7280; }
+/* Composition mensuelle (primaire) : partie anglaise notée à part, à droite du tableau (hors totaux) */
+.grades-row { display:flex; gap:6px; align-items:flex-start; }
+.grades-row > .grades { flex:1; min-width:0; }
+.extra { width:200px; flex-shrink:0; background:#fff; border:1.5px solid var(--c-primary); border-radius:3px; overflow:hidden; }
+.extra-title { background:var(--c-primary); color:#fff; font-weight:900; font-size:11px; padding:4px 2px; text-align:center; letter-spacing:.5px; }
+.extra table { width:100%; border-collapse:collapse; font-size:10px; }
+.extra th { font-size:8.5px; color:#6b7280; font-weight:800; padding:3px; border-bottom:1px solid #e5e7eb; }
+.extra td { text-align:center; padding:4px 3px; border-bottom:1px solid #f1f5f9; font-weight:800; }
+.extra .x-mat { text-align:left; }
+.extra td.fail { color:var(--c-fail); }
+.extra tfoot td { background:#f1f5f9; font-weight:900; border-bottom:0; }
+.grades-row .grades .c-note, .extra td.x-note { white-space:nowrap; }
+.grades-row .grades .c-note .c-max, .extra .c-max { font-size:8px; }
+.extra-hint { font-size:8px; color:#6b7280; font-style:italic; padding:3px; text-align:center; border-top:1px solid #e5e7eb; }
 .grades .c-pts { font-weight:700; }
 .grades .c-appr { text-align:left; font-weight:700; }
 .grades .lvl-good { color:var(--c-good); }
@@ -213,6 +227,7 @@ body {
     </tr>
   </table>
 
+  <div class="grades-row">
   <table class="grades">
     <colgroup>
       <col style="width:6%" /><col style="width:36%" /><col style="width:13%" />
@@ -233,7 +248,7 @@ body {
       <tr>
         <td class="c-num">{{inc @index}}</td>
         <td class="c-mat">{{this.subject}}</td>
-        <td class="c-note{{#unless this.passed}} fail{{/unless}}">{{this.scoreLabel}}{{#if ../isCm}}<small class="c-max"> / {{this.max}}</small>{{/if}}</td>
+        <td class="c-note{{#unless this.passed}} fail{{/unless}}">{{this.scoreLabel}}{{#if ../isCm}}<small class="c-max">/{{this.max}}</small>{{/if}}</td>
         <td>{{this.coefficient}}</td>
         <td class="c-pts">{{this.pointsLabel}}</td>
         <td class="c-appr {{this.levelClass}}">{{this.appreciation}}</td>
@@ -249,6 +264,26 @@ body {
       </tr>
     </tfoot>
   </table>
+  {{#if englishRows.length}}
+  <div class="extra">
+    <div class="extra-title">ANGLAIS</div>
+    <table>
+      <thead><tr><th class="x-mat">Matière</th><th>Note</th><th>Appr.</th></tr></thead>
+      <tbody>
+        {{#each englishRows}}
+        <tr>
+          <td class="x-mat">{{this.subject}}</td>
+          <td class="x-note{{#unless this.passed}} fail{{/unless}}">{{this.scoreLabel}}<small class="c-max">/{{this.max}}</small></td>
+          <td>{{this.appreciation}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+      {{#if englishTotal.multiple}}<tfoot><tr><td class="x-mat">Total</td><td colspan="2">{{englishTotal.total}} / {{englishTotal.max}}</td></tr></tfoot>{{/if}}
+    </table>
+    <div class="extra-hint">Hors total et moyenne</div>
+  </div>
+  {{/if}}
+  </div>
 
   <div class="bottom">
     <div class="bottom-left">

@@ -430,7 +430,15 @@ export class PdfService {
         levelClass: on20 == null ? '' : on20 >= 14 ? 'lvl-good' : on20 >= 10 ? 'lvl-pass' : 'lvl-fail',
       };
     });
-    const graded = rows.filter((r) => r.score != null);
+    // Composition mensuelle : la partie anglaise passe dans l'encadré à côté, hors totaux
+    const englishRows = rows.filter((r) => r.english);
+    const graded = rows.filter((r) => r.score != null && !r.english);
+    const englishGraded = englishRows.filter((r) => r.score != null);
+    const englishTotal = {
+      total: formatScore(englishGraded.reduce((s, r) => s + (r.score as number), 0)),
+      max: englishGraded.reduce((s, r) => s + r.max, 0),
+      multiple: englishRows.length > 1 && englishGraded.length > 0,
+    };
     const totalCoef = graded.reduce((s, r) => s + r.coefficient, 0);
     const totalPoints = graded.reduce((s, r) => s + (r.score as number) * r.coefficient, 0);
     // Points possibles (compositions mensuelles : chaque matière sur 10 ou 20)
@@ -465,7 +473,9 @@ export class PdfService {
         // Facultatives : la ligne et le cadre disparaissent quand l'école ne les fournit pas
         dateOfBirth: fmtDate(student.dateOfBirth),
       },
-      rows,
+      rows: rows.filter((r) => !r.english),
+      englishRows,
+      englishTotal,
       gradedCount: graded.length,
       totalCoef,
       totalPointsLabel: formatScore(Math.round(totalPoints * 100) / 100),
@@ -821,7 +831,8 @@ export interface ReleveData {
     dateOfBirth?: Date | string | null; photo?: string | null;
   };
   /** max : barème de la matière (/10 ou /20 aux compositions mensuelles ; sinon celui de la session) */
-  rows: Array<{ subject: string; score: number | null; coefficient: number; max?: number; appreciation: string }>;
+  /** english : composition mensuelle du primaire — matière de la partie anglaise, hors total et moyenne */
+  rows: Array<{ subject: string; score: number | null; coefficient: number; max?: number; appreciation: string; english?: boolean }>;
   average: number | null;
   appreciation: string;
   rank: number | null;

@@ -142,7 +142,8 @@ function MockExamPalmaresPage() {
                 let totalPts = 0;
                 subjects.forEach((subj) => {
                   const g = gradeMap.get(subj.id);
-                  if (g?.score != null) totalPts += g.score * subj.coefficient;
+                  // Partie anglaise (composition mensuelle) : hors total
+                  if (g?.score != null && !subj.english) totalPts += g.score * subj.coefficient;
                 });
 
                 return (

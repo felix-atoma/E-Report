@@ -32,6 +32,8 @@ function apprec(score, scale = 20) {
 function computeAvg(gradesRow, subjects, scale = 20) {
   let totalPts = 0, totalMax = 0;
   subjects.forEach((subj) => {
+    // Composition mensuelle : la partie anglaise est notée à part (hors moyenne), comme le serveur
+    if (subj.english) return;
     const raw = gradesRow[subj.id];
     if (raw == null || raw === '') return;
     const v = parseFloat(raw);
@@ -223,6 +225,7 @@ function MockExamGradePage() {
                   <th key={subj.id} className="meg-th meg-th--subject">
                     <div className="meg-subject-name">{subj.nameFr}</div>
                     <div className="meg-subject-coeff">{t('mockExamGrade.columns.coeff')} {subj.coefficient}</div>
+                    {subj.english && <div className="meg-subject-coeff">{t('mockExamGrade.notInAverage')}</div>}
                   </th>
                 ))}
                 <th className="meg-th meg-th--avg" rowSpan={2}>{t('mockExamGrade.columns.average')}</th>
