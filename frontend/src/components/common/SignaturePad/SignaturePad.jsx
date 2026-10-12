@@ -11,13 +11,12 @@ export default function SignaturePad({ onChange, width = 480, height = 180 }) {
   const [importError, setImportError] = useState('');
   const [imported, setImported] = useState(false);
 
-  // Normalise event coords relative to canvas
+  // Coordonnées du pointeur (souris, doigt ou stylet) dans le repère du canvas
   function getPos(e) {
     const rect = canvasRef.current.getBoundingClientRect();
-    const src = e.touches ? e.touches[0] : e;
     return {
-      x: (src.clientX - rect.left) * (canvasRef.current.width / rect.width),
-      y: (src.clientY - rect.top)  * (canvasRef.current.height / rect.height),
+      x: (e.clientX - rect.left) * (canvasRef.current.width / rect.width),
+      y: (e.clientY - rect.top)  * (canvasRef.current.height / rect.height),
     };
   }
 
@@ -74,53 +73,69 @@ export default function SignaturePad({ onChange, width = 480, height = 180 }) {
     ctx.lineCap     = 'round';
     ctx.lineJoin    = 'round';
 
+    // Pointer Events : souris, doigt et stylet (écran tactile, tablette graphique) avec le même code.
+    // Stylet : l'épaisseur suit la pression ; le pointeur est « capturé » pour que le trait continue
+    // même si le stylet sort un instant du cadre.
+    let last = null;
+    const widthFor = (e) => (e.pointerType === 'pen' && e.pressure > 0 ? 1 + e.pressure * 2.5 : 2);
+
     function start(e) {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
       e.preventDefault();
+      canvas.setPointerCapture?.(e.pointerId);
       drawing.current = true;
-      const { x, y } = getPos(e);
+      last = getPos(e);
+      // Un simple point (tap) laisse aussi une trace
       ctx.beginPath();
-      ctx.moveTo(x, y);
+      ctx.arc(last.x, last.y, widthFor(e) / 2, 0, Math.PI * 2);
+      ctx.fillStyle = ctx.strokeStyle;
+      ctx.fill();
     }
 
     function move(e) {
-      e.preventDefault();
       if (!drawing.current) return;
-      const { x, y } = getPos(e);
-      ctx.lineTo(x, y);
-      ctx.stroke();
+      e.preventDefault();
+      // Points intermédiaires fournis par le navigateur : trait fluide même en écrivant vite
+      const points = e.getCoalescedEvents?.() ?? [];
+      for (const p of points.length ? points : [e]) {
+        const pos = getPos(p);
+        ctx.lineWidth = widthFor(p);
+        ctx.beginPath();
+        ctx.moveTo(last.x, last.y);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        last = pos;
+      }
       setIsEmpty(false);
     }
 
     function stop(e) {
-      e.preventDefault();
       if (!drawing.current) return;
+      e.preventDefault();
       drawing.current = false;
+      last = null;
+      canvas.releasePointerCapture?.(e.pointerId);
+      setIsEmpty(false);
       emit();
     }
 
-    canvas.addEventListener('mousedown',  start);
-    canvas.addEventListener('mousemove',  move);
-    canvas.addEventListener('mouseup',    stop);
-    canvas.addEventListener('mouseleave', stop);
-    canvas.addEventListener('touchstart', start, { passive: false });
-    canvas.addEventListener('touchmove',  move,  { passive: false });
-    canvas.addEventListener('touchend',   stop);
+    canvas.addEventListener('pointerdown',   start);
+    canvas.addEventListener('pointermove',   move);
+    canvas.addEventListener('pointerup',     stop);
+    canvas.addEventListener('pointercancel', stop);
 
     return () => {
-      canvas.removeEventListener('mousedown',  start);
-      canvas.removeEventListener('mousemove',  move);
-      canvas.removeEventListener('mouseup',    stop);
-      canvas.removeEventListener('mouseleave', stop);
-      canvas.removeEventListener('touchstart', start);
-      canvas.removeEventListener('touchmove',  move);
-      canvas.removeEventListener('touchend',   stop);
+      canvas.removeEventListener('pointerdown',   start);
+      canvas.removeEventListener('pointermove',   move);
+      canvas.removeEventListener('pointerup',     stop);
+      canvas.removeEventListener('pointercancel', stop);
     };
   }, [emit]);
 
   return (
     <div className="sig-pad">
       <div className="sig-pad__instructions">
-        Signez dans le cadre ci-dessous à l'aide de votre souris ou de votre doigt,
+        Signez dans le cadre ci-dessous avec la souris, le doigt ou un stylet (écran tactile, tablette),
         ou importez votre signature (PNG, JPG ou PDF).
       </div>
       <div className="sig-pad__import">
