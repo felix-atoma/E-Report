@@ -414,6 +414,7 @@
       "LETTRES":    "Humanities",
       "MATHS":      "Mathematics",
       "LANGUES":    "Languages",
+      "ANGLAIS":    "English section (primary, not in average)",
       "ARTS":       "Arts",
       "EPS":        "PE",
       "TECHNIQUES": "Technical",

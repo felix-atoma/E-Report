@@ -263,9 +263,18 @@ export default function PrintReportCardPage() {
   const subjectMax = (g) => ((g.subject?.maxScore ?? 20) <= 10 ? 10 : 20);
   // L'anglais est noté à part au primaire : encadré à côté du tableau, hors total, moyenne et rang
   // (même règle que isPrimaryEnglish() côté PDF)
-  const isEnglish = (g) => /anglais|english/i.test(g.subject?.nameFr ?? '');
+  // (catégorie « Section anglaise » dans Matières, ou nom contenant « anglais » / « english »)
+  const isEnglish = (g) => g.subject?.category === 'ANGLAIS' || /anglais|english/i.test(g.subject?.nameFr ?? '');
   const primaryGrades = isPrimary ? grades.filter((g) => !isEnglish(g)) : grades;
   const englishGrades = isPrimary ? grades.filter(isEnglish) : [];
+  let englishTotal = 0;
+  let englishTotalMax = 0;
+  englishGrades.forEach((g) => {
+    const m20 = g.moyenneMatiere ?? g.score;
+    if (m20 == null) return;
+    englishTotal += (m20 * subjectMax(g)) / 20;
+    englishTotalMax += subjectMax(g);
+  });
   let primaryTotal = 0;
   let primaryTotalMax = 0;
   primaryGrades.forEach((g) => {
@@ -474,23 +483,30 @@ export default function PrintReportCardPage() {
           {englishGrades.length > 0 && (
             <div className="pr-extra">
               <div className="pr-extra__title">ANGLAIS</div>
-              {englishGrades.map((g) => {
-                const moy = g.moyenneMatiere ?? g.score;
-                const fail = moy != null && moy < 10;
-                return (
-                  <div className="pr-extra__item" key={g.subjectId ?? g.id}>
-                    <div className="pr-extra__lbl">Note</div>
-                    <div className={`pr-extra__note${fail ? ' pr-grades__fail' : ' pr-grades__pass'}`}>
-                      {moy == null ? '—' : fmt((moy * subjectMax(g)) / 20)}
-                      <span className="pr-val-denom"> / {subjectMax(g)}</span>
-                    </div>
-                    <div className="pr-extra__lbl">Rang</div>
-                    <div className="pr-extra__val">{g.rangMatiere ?? '—'}</div>
-                    <div className="pr-extra__lbl">Appréciation</div>
-                    <div className="pr-extra__val">{g.appreciation ?? '—'}</div>
-                  </div>
-                );
-              })}
+              <table className="pr-extra__table">
+                <thead><tr><th className="pr-extra__subj">Matière</th><th>Note</th><th>Rang</th></tr></thead>
+                <tbody>
+                  {englishGrades.map((g) => {
+                    const moy = g.moyenneMatiere ?? g.score;
+                    const fail = moy != null && moy < 10;
+                    return (
+                      <tr key={g.subjectId ?? g.id}>
+                        <td className="pr-extra__subj">{g.subject?.nameFr ?? '—'}</td>
+                        <td className={`pr-extra__note${fail ? ' pr-grades__fail' : ' pr-grades__pass'}`}>
+                          {moy == null ? '—' : fmt((moy * subjectMax(g)) / 20)}
+                          <span className="pr-val-denom">/{subjectMax(g)}</span>
+                        </td>
+                        <td>{g.rangMatiere ?? '—'}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+                {englishGrades.length > 1 && englishTotalMax > 0 && (
+                  <tfoot>
+                    <tr><td className="pr-extra__subj">Total</td><td colSpan={2}>{fmt(englishTotal)} / {englishTotalMax}</td></tr>
+                  </tfoot>
+                )}
+              </table>
               <div className="pr-extra__hint">Hors total et moyenne</div>
             </div>
           )}

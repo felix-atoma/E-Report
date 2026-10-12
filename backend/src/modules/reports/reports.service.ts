@@ -189,7 +189,7 @@ export class ReportsService {
         },
         createdBy: { select: { id: true, name: true } },
         grades: {
-          include: { subject: { select: { id: true, nameFr: true, nameEn: true, code: true, passMark: true, maxScore: true } } },
+          include: { subject: { select: { id: true, nameFr: true, nameEn: true, code: true, passMark: true, maxScore: true, category: true } } },
           orderBy: { coefficient: 'desc' },
         },
       },
@@ -387,7 +387,7 @@ export class ReportsService {
       where: { id, class: { institutionId } },
       include: {
         grades: {
-          include: { subject: { select: { nameFr: true, passMark: true, maxScore: true } } },
+          include: { subject: { select: { nameFr: true, passMark: true, maxScore: true, category: true } } },
         },
         student: {
           include: {
@@ -549,7 +549,7 @@ export class ReportsService {
       where: { id },
       include: {
         grades: {
-          include: { subject: { select: { nameFr: true, passMark: true, maxScore: true } } },
+          include: { subject: { select: { nameFr: true, passMark: true, maxScore: true, category: true } } },
           orderBy: { coefficient: 'desc' },
         },
         student: {
@@ -650,7 +650,7 @@ export class ReportsService {
         teacherName: g.teacherName,
         ficheSignedAt: g.ficheSignedAt ?? null,
         signatureData: g.signatureData ?? null,
-        subject: { nameFr: g.subject.nameFr, passMark: g.subject.passMark, maxScore: g.subject.maxScore },
+        subject: { nameFr: g.subject.nameFr, passMark: g.subject.passMark, maxScore: g.subject.maxScore, category: (g.subject as any).category ?? null },
       })),
       institution,
     });
@@ -774,7 +774,7 @@ export class ReportsService {
       where: { id, class: { institutionId }, status: 'PUBLISHED' },
       include: {
         grades: {
-          include: { subject: { select: { nameFr: true, passMark: true, maxScore: true } } },
+          include: { subject: { select: { nameFr: true, passMark: true, maxScore: true, category: true } } },
           orderBy: { coefficient: 'desc' },
         },
         student: {
@@ -866,7 +866,7 @@ export class ReportsService {
       where: { studentId, academicYear, status: 'PUBLISHED', class: { institutionId } },
       include: {
         class: { select: { id: true, name: true, level: true, teacher: { select: { id: true, name: true } } } },
-        grades: { include: { subject: { select: { nameFr: true, passMark: true, maxScore: true } } } },
+        grades: { include: { subject: { select: { nameFr: true, passMark: true, maxScore: true, category: true } } } },
       },
       orderBy: { termNumber: 'asc' },
     });
@@ -1037,7 +1037,7 @@ export class ReportsService {
       }),
       this.prisma.reportCard.findMany({
         where: { classId, academicYear },
-        include: { grades: { include: { subject: { select: { maxScore: true, nameFr: true } } } } },
+        include: { grades: { include: { subject: { select: { maxScore: true, nameFr: true, category: true } } } } },
       }),
     ]);
     if (!cls) throw new NotFoundException('Class not found');
@@ -1263,7 +1263,7 @@ export class ReportsService {
       include: {
         student: { select: { sex: true, admissionNumber: true, user: { select: { name: true } } } },
         class: { select: { name: true, level: true, teacher: { select: { id: true, name: true } } } },
-        grades: { include: { subject: { select: { nameFr: true, maxScore: true } } }, orderBy: { coefficient: 'desc' } },
+        grades: { include: { subject: { select: { nameFr: true, maxScore: true, category: true } } }, orderBy: { coefficient: 'desc' } },
       },
     });
     if (!report) throw new NotFoundException('Report card not found');
@@ -1322,7 +1322,7 @@ export class ReportsService {
       include: {
         student: { include: { user: { select: { name: true, profileImage: true } } } },
         class: { select: { name: true, level: true, teacher: { select: { id: true, name: true } } } },
-        grades: { include: { subject: { select: { nameFr: true, passMark: true, maxScore: true } } } },
+        grades: { include: { subject: { select: { nameFr: true, passMark: true, maxScore: true, category: true } } } },
       },
       orderBy: [{ class: { name: 'asc' } }, { student: { admissionNumber: 'asc' } }],
     });
@@ -1390,7 +1390,7 @@ export class ReportsService {
               appreciation: g.appreciation, teacherComment: g.teacherComment, teacherName: g.teacherName,
               ficheSignedAt: ficheMap.get(g.subjectId)?.signedAt ?? null,
               signatureData: ficheMap.get(g.subjectId)?.signatureData ?? null,
-              subject: { nameFr: g.subject.nameFr, passMark: g.subject.passMark, maxScore: g.subject.maxScore },
+              subject: { nameFr: g.subject.nameFr, passMark: g.subject.passMark, maxScore: g.subject.maxScore, category: (g.subject as any).category ?? null },
             })),
             institution,
           });
@@ -1412,7 +1412,7 @@ export class ReportsService {
       where: { id, class: { institutionId }, status: 'PUBLISHED' },
       include: {
         grades: {
-          include: { subject: { select: { nameFr: true, passMark: true, maxScore: true } } },
+          include: { subject: { select: { nameFr: true, passMark: true, maxScore: true, category: true } } },
           orderBy: { coefficient: 'desc' },
         },
         student: { include: { user: { select: { name: true, profileImage: true } } } },
@@ -1471,7 +1471,7 @@ export class ReportsService {
         appreciation: g.appreciation, teacherComment: g.teacherComment, teacherName: g.teacherName,
         ficheSignedAt: ficheMap.get(g.subjectId)?.signedAt ?? null,
         signatureData: ficheMap.get(g.subjectId)?.signatureData ?? null,
-        subject: { nameFr: g.subject.nameFr, passMark: g.subject.passMark, maxScore: g.subject.maxScore },
+        subject: { nameFr: g.subject.nameFr, passMark: g.subject.passMark, maxScore: g.subject.maxScore, category: (g.subject as any).category ?? null },
       })),
       institution,
     });

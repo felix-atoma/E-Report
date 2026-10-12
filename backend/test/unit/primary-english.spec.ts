@@ -10,6 +10,9 @@ describe('primary school — English graded separately', () => {
     expect(isPrimaryEnglish({ nameFr: 'English' })).toBe(true);
     expect(isPrimaryEnglish({ nameFr: 'Français' })).toBe(false);
     expect(isPrimaryEnglish(null)).toBe(false);
+    // Section anglaise choisie dans Matières : Reading Comprehension, Dictation…
+    expect(isPrimaryEnglish({ nameFr: 'Reading Comprehension', category: 'ANGLAIS' })).toBe(true);
+    expect(isPrimaryEnglish({ nameFr: 'Reading Comprehension', category: 'LANGUES' })).toBe(false);
   });
 
   it('leaves English out of the total and the average', () => {
@@ -45,9 +48,23 @@ describe('primary school — English graded separately', () => {
       expect(table).not.toContain('Anglais');
       const box = out.slice(out.indexOf('class="pr-extra"'));
       expect(box).toContain('18');
-      expect(box).toContain('Très bien');
       expect(table).toContain('14,00 / 20'); // total des points : le français seul
       expect(table).toContain('7,00 / 10');  // moyenne sans l'anglais (18/20 l'aurait relevée)
+    });
+
+    it('several English subjects: listed in the box with their own total', async () => {
+      const d: any = data('CM2');
+      d.grades = [
+        grade('Français', 14),
+        grade('English Grammar', 16),
+        { ...grade('Reading Comprehension', 12), subject: { nameFr: 'Reading Comprehension', maxScore: 20, category: 'ANGLAIS' } },
+      ];
+      const out = await html(d);
+      const box = out.slice(out.indexOf('class="pr-extra"'));
+      expect(box).toContain('English Grammar');
+      expect(box).toContain('Reading Comprehension');
+      expect(box).toContain('28,00 / 40');           // total de la partie anglaise
+      expect(out).toContain('7,00 / 10');            // moyenne : le français seul
     });
 
     it('secondary school: English stays a normal subject in the table', async () => {

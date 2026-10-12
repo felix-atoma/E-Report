@@ -17,7 +17,8 @@ import Badge from '../../../components/common/Badge/Badge';
 import SearchBar from '../../../components/common/SearchBar/SearchBar';
 import './SubjectsPage.css';
 
-const CATEGORY_KEYS = ['SCIENCES', 'LETTRES', 'MATHS', 'LANGUES', 'ARTS', 'EPS', 'TECHNIQUES', 'AUTRE'];
+// ANGLAIS : au primaire, matières notées à part (encadré « Anglais » du bulletin, hors moyenne)
+const CATEGORY_KEYS = ['SCIENCES', 'LETTRES', 'MATHS', 'LANGUES', 'ANGLAIS', 'ARTS', 'EPS', 'TECHNIQUES', 'AUTRE'];
 
 const CATEGORY_VARIANT = {
   SCIENCES: 'info', LETTRES: 'success', MATHS: 'warning',

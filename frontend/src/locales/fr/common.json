@@ -460,6 +460,7 @@
       "LETTRES":    "Lettres",
       "MATHS":      "Mathématiques",
       "LANGUES":    "Langues",
+      "ANGLAIS":    "Section anglaise (primaire, hors moyenne)",
       "ARTS":       "Arts",
       "EPS":        "EPS",
       "TECHNIQUES": "Techniques",

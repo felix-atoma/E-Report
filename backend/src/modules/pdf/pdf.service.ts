@@ -189,15 +189,34 @@ export function primarySubjectMax(maxScore: number | null | undefined): number {
  * Primaire : l'anglais est une discipline notée à part — encadré à côté du tableau des notes,
  * sans compter dans le total des points, la moyenne ni le rang.
  */
-export function isPrimaryEnglish(subject: { nameFr?: string | null } | null | undefined): boolean {
-  return /anglais|english/i.test(subject?.nameFr ?? '');
+export function isPrimaryEnglish(subject: { nameFr?: string | null; category?: string | null } | null | undefined): boolean {
+  // Catégorie « Section anglaise » choisie dans Matières (English Grammar, Reading Comprehension,
+  // Dictation…), ou nom contenant « anglais » / « english »
+  return subject?.category === 'ANGLAIS' || /anglais|english/i.test(subject?.nameFr ?? '');
+}
+
+/** Total de la partie anglaise du primaire (affiché dans son encadré quand elle a plusieurs matières). */
+export function englishTotals(grades: Parameters<typeof primaryTotals>[0]) {
+  let total = 0;
+  let max = 0;
+  let count = 0;
+  for (const g of grades) {
+    if (!isPrimaryEnglish(g.subject)) continue;
+    count++;
+    const moy20 = g.moyenneMatiere ?? g.score;
+    if (moy20 == null) continue;
+    const m = primarySubjectMax(g.subject?.maxScore);
+    total += (moy20 * m) / 20;
+    max += m;
+  }
+  return { total: formatScore(Math.round(total * 100) / 100), max, multiple: count > 1 && max > 0 };
 }
 
 /**
  * Totaux du primaire, à la togolaise : somme des notes (chacune sur son barème) sur la somme des
  * barèmes ; moyenne sur 10 = total ÷ maximum × 10. Les matières non notées sont ignorées.
  */
-export function primaryTotals(grades: Array<{ moyenneMatiere?: number | null; score?: number | null; subject?: { maxScore?: number | null; nameFr?: string | null } | null }>) {
+export function primaryTotals(grades: Array<{ moyenneMatiere?: number | null; score?: number | null; subject?: { maxScore?: number | null; nameFr?: string | null; category?: string | null } | null }>) {
   let total = 0;
   let max = 0;
   for (const g of grades) {
@@ -650,6 +669,7 @@ export class PdfService {
       // Primaire : l'anglais sort du tableau (hors total) et passe dans l'encadré à côté
       grades: isPrimary ? enrichedGrades.filter((g) => !isPrimaryEnglish(g.subject)) : enrichedGrades,
       primaryEnglish: isPrimary ? enrichedGrades.filter((g) => isPrimaryEnglish(g.subject)) : [],
+      englishTotals: isPrimary ? englishTotals(enrichedGrades) : null,
       generatedAt: new Date().toLocaleDateString('fr-FR', {
         day: '2-digit', month: 'long', year: 'numeric',
       }),
@@ -768,7 +788,7 @@ export interface ReportCardData {
     teacherName: string | null;
     ficheSignedAt: Date | null;
     signatureData: string | null;
-    subject: { nameFr: string; passMark: number; maxScore?: number | null };
+    subject: { nameFr: string; passMark: number; maxScore?: number | null; category?: string | null };
   }>;
   institution: {
     name: string;
