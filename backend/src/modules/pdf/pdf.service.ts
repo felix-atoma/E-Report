@@ -452,6 +452,18 @@ export class PdfService {
     const dates = [fmtDate(exam.examDate), fmtDate(exam.examEndDate)].filter(Boolean).join(' → ') || '—';
     const rankLabel = data.rank != null ? (data.rank === 1 ? (female ? '1ère' : '1er') : `${data.rank}e`) : null;
 
+    // QR code : ouvre la page de vérification avec le code du relevé
+    let qrDataUri: string | null = null;
+    if (data.verifyCode) {
+      try {
+        qrDataUri = await QRCode.toDataURL(`${this.verifyUrl}?code=${encodeURIComponent(data.verifyCode)}`, {
+          margin: 0, width: 220, errorCorrectionLevel: 'M',
+        });
+      } catch (err) {
+        this.logger.warn(`QR generation failed: ${err}`);
+      }
+    }
+
     const html = this.releveTemplate({
       institution: {
         ...institution,
@@ -479,6 +491,9 @@ export class PdfService {
       scale,
       isPrimaryScale: scale === 10,
       isCm,
+      qrDataUri,
+      verifyCode: data.verifyCode ?? null,
+      verifyUrl: this.verifyUrl,
       // « 12,50 / 20 », « 6,25 / 10 » ou « 72,50 % » (composition d'anglais)
       avgSuffix: isPercent ? ' %' : ` / ${scale}`,
       appreciation: data.appreciation,
@@ -811,6 +826,8 @@ export interface ReportCardData {
 
 /** Données d'un relevé de notes (examen blanc ou devoir surveillé) pour un élève. */
 export interface ReleveData {
+  /** Code de vérification du relevé (imprimé et encodé dans le QR code) */
+  verifyCode?: string;
   institution: {
     name: string; country?: string | null; countryMotto?: string | null; address?: string | null;
     phone?: string | null; email?: string | null; website?: string | null; motto?: string | null;

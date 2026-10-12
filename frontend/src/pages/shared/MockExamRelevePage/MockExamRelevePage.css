@@ -161,3 +161,10 @@
 .mrel-download-btn { background: #15803d; }
 .mrel-download-btn:hover:not(:disabled) { background: #166534; }
 .mrel-download-btn:disabled { opacity: .65; cursor: wait; }
+
+/* QR code de vérification et photo de l'élève (si fournie) */
+.mrel-header__id { display: flex; align-items: flex-end; gap: 8px; flex-shrink: 0; }
+.mrel-verify { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.mrel-qr { width: 64px; height: 64px; image-rendering: pixelated; }
+.mrel-code { font-size: 0.55rem; color: #6b7280; letter-spacing: 0.2px; white-space: nowrap; }
+.mrel-photo { width: 64px; height: 78px; object-fit: cover; border: 2px solid #1e3a8a; border-radius: 3px; }

@@ -4,6 +4,7 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { Public } from '../../common/decorators/public.decorator';
 import { Role } from '../../common/enums/role.enum';
 import { MockExamsService } from './mock-exams.service';
 import { CreateMockExamDto } from './dto/create-mock-exam.dto';
@@ -12,6 +13,13 @@ import { SaveMockExamGradesDto } from './dto/save-grades.dto';
 @Controller('mock-exams')
 export class MockExamsController {
   constructor(private readonly service: MockExamsService) {}
+
+  /** Public : vérification d'un relevé par son code (QR code imprimé sur le relevé). Avant « :id ». */
+  @Public()
+  @Get('verify/:code')
+  verifyReleve(@Param('code') code: string) {
+    return this.service.verifyReleve(code);
+  }
 
   @Roles(Role.ADMIN, Role.TEACHER)
   @Get()

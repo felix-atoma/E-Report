@@ -56,6 +56,10 @@ body {
   display:flex; align-items:center; justify-content:center;
 }
 .hd-photo img { width:100%; height:100%; object-fit:cover; }
+/* QR code de vérification du relevé */
+.hd-verify { flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:2px; align-self:flex-end; }
+.hd-qr { width:62px; height:62px; display:block; image-rendering:pixelated; }
+.hd-code { font-size:7px; color:#6b7280; letter-spacing:.2px; white-space:nowrap; }
 .hd-photo svg { width:48px; height:48px; fill:#cbd5e1; }
 
 .info { width:100%; border-collapse:collapse; font-size:11px; margin:0 0 6px; }
@@ -175,6 +179,7 @@ body {
       </ul>
       <div class="hd-title">Relevé de notes &mdash; <span class="term">{{exam.typeLabel}}</span></div>
     </div>
+    {{#if qrDataUri}}<div class="hd-verify"><img src="{{qrDataUri}}" alt="Code de vérification" class="hd-qr" /><div class="hd-code">{{verifyCode}}</div></div>{{/if}}
     {{#if student.photo}}<div class="hd-photo"><img src="{{student.photo}}" alt="Photo" /></div>{{/if}}
   </div>
 

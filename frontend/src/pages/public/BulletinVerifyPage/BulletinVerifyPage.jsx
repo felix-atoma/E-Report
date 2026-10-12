@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import api from '../../../services/api';
 import './BulletinVerifyPage.css';
@@ -20,13 +20,16 @@ export default function BulletinVerifyPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
 
-  const handleVerify = async (e) => {
-    e.preventDefault();
-    const trimmed = code.trim().toUpperCase();
+  const verify = async (value) => {
+    const trimmed = value.trim().toUpperCase();
     if (!trimmed) return;
     setLoading(true); setError(''); setResult(null);
     try {
-      const res = await api.get(`/reports/verify/${encodeURIComponent(trimmed)}`);
+      // « R-… » : relevé de composition / devoir / examen blanc ; sinon : bulletin
+      const url = trimmed.startsWith('R-')
+        ? `/mock-exams/verify/${encodeURIComponent(trimmed)}`
+        : `/reports/verify/${encodeURIComponent(trimmed)}`;
+      const res = await api.get(url);
       setResult(res.data);
     } catch {
       setError('Erreur de connexion. Vérifiez votre réseau.');
@@ -35,14 +38,24 @@ export default function BulletinVerifyPage() {
     }
   };
 
+  const handleVerify = (e) => {
+    e.preventDefault();
+    verify(code);
+  };
+
+  // Ouvert depuis le QR code (?code=…) : vérification immédiate
+  useEffect(() => {
+    if (searchParams.get('code')) verify(searchParams.get('code'));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <div className="bv-page">
       <div className="bv-card">
         <div className="bv-header">
           <div className="bv-header__icon">🔐</div>
-          <div className="bv-header__title">Vérification de bulletin</div>
+          <div className="bv-header__title">Vérification de bulletin ou de relevé</div>
           <div className="bv-header__sub">
-            Entrez le numéro de sécurité imprimé sur le bulletin pour confirmer son authenticité.
+            Scannez le QR code, ou entrez le numéro imprimé sur le bulletin ou le relevé, pour confirmer son authenticité.
           </div>
         </div>
 
@@ -51,8 +64,8 @@ export default function BulletinVerifyPage() {
             className="bv-input"
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
-            placeholder="Ex : 2425T1-AB3K-MNPQ"
-            maxLength={16}
+            placeholder="Ex : 2425T1-AB3K-MNPQ ou R-…"
+            maxLength={28}
             autoFocus
             spellCheck={false}
           />
@@ -64,7 +77,51 @@ export default function BulletinVerifyPage() {
         {error && <div className="bv-error">{error}</div>}
 
         {result && (
-          result.valid ? (
+          result.valid && result.kind === 'RELEVE' ? (
+            <div className="bv-valid">
+              <div className="bv-valid__badge">✅ Relevé authentique</div>
+              <div className="bv-valid__grid">
+                <div className="bv-valid__row">
+                  <span className="bv-valid__label">Élève</span>
+                  <span className="bv-valid__val bv-valid__val--big">{result.studentName}</span>
+                </div>
+                <div className="bv-valid__row">
+                  <span className="bv-valid__label">Matricule</span>
+                  <span className="bv-valid__val">{result.admissionNumber ?? '—'}</span>
+                </div>
+                <div className="bv-valid__row">
+                  <span className="bv-valid__label">École</span>
+                  <span className="bv-valid__val">{result.institutionName}</span>
+                </div>
+                <div className="bv-valid__row">
+                  <span className="bv-valid__label">Classe</span>
+                  <span className="bv-valid__val">{result.className} · {result.academicYear}</span>
+                </div>
+                <div className="bv-valid__row">
+                  <span className="bv-valid__label">Évaluation</span>
+                  <span className="bv-valid__val">{result.typeLabel} — {result.examLabel}</span>
+                </div>
+                <div className="bv-valid__row">
+                  <span className="bv-valid__label">Moyenne</span>
+                  <span className={`bv-valid__val bv-valid__val--avg ${(result.average ?? 0) >= result.scale / 2 ? 'bv-pass' : 'bv-fail'}`}>
+                    {result.average == null ? '—' : result.examType === 'COMPOSITION_ANGLAIS' ? `${fmt(result.average)} %` : `${fmt(result.average)} / ${result.scale}`}
+                  </span>
+                </div>
+                <div className="bv-valid__row">
+                  <span className="bv-valid__label">Appréciation</span>
+                  <span className="bv-valid__val">{result.appreciation || '—'}</span>
+                </div>
+                <div className="bv-valid__row">
+                  <span className="bv-valid__label">Rang</span>
+                  <span className="bv-valid__val">{result.rank ?? '—'} / {result.classSize ?? '—'}</span>
+                </div>
+                <div className="bv-valid__row">
+                  <span className="bv-valid__label">Code</span>
+                  <span className="bv-valid__val bv-valid__val--code">{result.code}</span>
+                </div>
+              </div>
+            </div>
+          ) : result.valid ? (
             <div className="bv-valid">
               <div className="bv-valid__badge">✅ Bulletin authentique</div>
               <div className="bv-valid__grid">

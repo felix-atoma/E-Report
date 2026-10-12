@@ -138,6 +138,8 @@ function AppRouter() {
         <Route path="/set-password"       element={<SetPasswordPage />} />
         <Route path="/auth/callback"      element={<GoogleCallbackPage />} />
         <Route path="/verify-bulletin"    element={<BulletinVerifyPage />} />
+        {/* Adresse imprimée en pied de bulletin et de relevé */}
+        <Route path="/verify"             element={<BulletinVerifyPage />} />
         <Route path="/legal/:type"        element={<LegalPage />} />
         <Route path="/unauthorized"       element={<UnauthorizedPage />} />
         <Route path="/error"             element={<ErrorPage />} />

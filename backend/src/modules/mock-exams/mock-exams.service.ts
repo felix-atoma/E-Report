@@ -3,6 +3,7 @@ import archiver = require('archiver');
 import { PrismaService } from '../../prisma/prisma.service';
 import { PdfService, ReleveData, isPrimaryLevel, isSecondaryLevel, primarySubjectMax, isPrimaryEnglish } from '../pdf/pdf.service';
 import { byStudentName } from '../../common/utils/student-order.util';
+import { releveCode, parseReleveCode, releveCodeMatches } from './releve-code.util';
 import { CreateMockExamDto } from './dto/create-mock-exam.dto';
 import { SaveMockExamGradesDto } from './dto/save-grades.dto';
 
@@ -583,6 +584,12 @@ export class MockExamsService {
     const students = studentId
       ? sheet.students.filter((s) => s.studentId === studentId)
       : sheet.students;
+    // Photo (si l'élève en a une) et code de vérification (QR code) de chaque relevé
+    const photos = await this.prisma.student.findMany({
+      where: { id: { in: students.map((s) => s.studentId) } },
+      select: { id: true, user: { select: { profileImage: true } } },
+    });
+    const photoById = new Map(photos.map((p) => [p.id, p.user?.profileImage ?? null]));
 
     return {
       institution: {
@@ -594,8 +601,60 @@ export class MockExamsService {
       },
       exam: sheet.exam,
       subjects: sheet.subjects,
-      students,
+      students: students.map((s) => ({
+        ...s,
+        photo: photoById.get(s.studentId) ?? null,
+        verifyCode: releveCode(examId, s.studentId),
+      })),
     };
+  }
+
+  /**
+   * Vérification publique d'un relevé (QR code ou code imprimé) : retrouve la session et l'élève,
+   * contrôle la signature du code et renvoie les résultats à comparer avec le document papier.
+   */
+  async verifyReleve(code: string) {
+    const invalid = { valid: false, message: 'Code invalide : ce relevé ne correspond à aucun document du système' };
+    const parsed = parseReleveCode(code);
+    if (!parsed) return invalid;
+    const exams = await this.prisma.mockExam.findMany({
+      where: { id: { startsWith: parsed.examPrefix } },
+      select: { id: true, institutionId: true },
+      take: 5,
+    });
+    for (const exam of exams) {
+      const enrolled = await this.prisma.student.findMany({
+        where: { id: { startsWith: parsed.studentPrefix }, institutionId: exam.institutionId },
+        select: { id: true },
+        take: 5,
+      });
+      const student = enrolled.find((st) => releveCodeMatches(code, exam.id, st.id));
+      if (!student) continue;
+      const sheet = await this.getGradeSheet(exam.id, exam.institutionId);
+      const row = sheet.students.find((s) => s.studentId === student.id);
+      if (!row) return invalid;
+      const institution = await this.prisma.institution.findUnique({ where: { id: exam.institutionId }, select: { name: true } });
+      return {
+        valid: true,
+        kind: 'RELEVE',
+        institutionName: institution?.name ?? '',
+        studentName: row.studentName,
+        admissionNumber: row.admissionNumber,
+        className: sheet.exam.class?.name ?? '',
+        academicYear: sheet.exam.academicYear,
+        examLabel: sheet.exam.label,
+        typeLabel: MockExamsService.TYPE_LABELS[sheet.exam.examType] ?? sheet.exam.examType,
+        examType: sheet.exam.examType,
+        scale: sheet.exam.scale,
+        average: row.average,
+        appreciation: row.appreciation,
+        rank: row.rank,
+        classSize: row.classSize,
+        published: sheet.exam.status === 'PUBLISHED',
+        code: releveCode(exam.id, student.id),
+      };
+    }
+    return invalid;
   }
 
   // ─── Relevés en PDF (même charte que les bulletins) ──────────────────────────
@@ -649,6 +708,7 @@ export class MockExamsService {
         dateOfBirth: detailById.get(s.studentId)?.dateOfBirth ?? null,
         photo: detailById.get(s.studentId)?.user?.profileImage ?? null,
       },
+      verifyCode: releveCode(examId, s.studentId),
       rows: s.grades.map((g) => ({
         subject: subjectName.get(g.subjectId) ?? '—',
         score: g.score,

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import QRCode from 'qrcode';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { mockExamsService } from '../../../services/mockExamsService';
@@ -71,6 +72,16 @@ function StudentCard({ student, subjects, exam, institution }) {
   const mention = apprec(avg, scale);
   const result = getResult(avg, exam.examType, student.sex);
 
+  // QR code : ouvre la page de vérification avec le code du relevé (comme sur le PDF)
+  const [qrDataUri, setQrDataUri] = useState(null);
+  useEffect(() => {
+    if (!student.verifyCode) return;
+    QRCode.toDataURL(`${window.location.origin}/verify?code=${encodeURIComponent(student.verifyCode)}`,
+      { margin: 0, width: 220, errorCorrectionLevel: 'M' })
+      .then(setQrDataUri)
+      .catch(() => setQrDataUri(null));
+  }, [student.verifyCode]);
+
   return (
     <div className="mrel-card">
       {/* ── Header ── */}
@@ -105,6 +116,18 @@ function StudentCard({ student, subjects, exam, institution }) {
             <div className="mrel-exam-date">{fmtSessionDates(exam.examDate, exam.examEndDate)}</div>
           )}
         </div>
+        {/* QR code de vérification, et photo si l'élève en a une */}
+        {(qrDataUri || student.photo) && (
+          <div className="mrel-header__id">
+            {qrDataUri && (
+              <div className="mrel-verify">
+                <img src={qrDataUri} alt="Code de vérification" className="mrel-qr" />
+                <div className="mrel-code">{student.verifyCode}</div>
+              </div>
+            )}
+            {student.photo && <img src={student.photo} alt="Photo" className="mrel-photo" />}
+          </div>
+        )}
       </div>
 
       <div className="mrel-divider" />
