@@ -303,7 +303,7 @@ export class StudentsService {
           const student = await tx.student.create({
             data: {
               admissionNumber,
-              dateOfBirth: new Date(dto.dateOfBirth),
+              dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : null,
               enrollmentDate: dto.enrollmentDate ? new Date(dto.enrollmentDate) : undefined,
               sex: dto.sex,
               parentId,
@@ -443,7 +443,8 @@ export class StudentsService {
         where: { id },
         data: {
           ...(dto.admissionNumber && { admissionNumber: dto.admissionNumber }),
-          ...(dto.dateOfBirth && { dateOfBirth: new Date(dto.dateOfBirth) }),
+          // '' efface la date (facultative)
+          ...(dto.dateOfBirth !== undefined && { dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : null }),
           ...(dto.sex !== undefined && { sex: dto.sex }),
           ...(parentId !== undefined && { parentId }),
           // Extended profile fields
@@ -540,7 +541,7 @@ export class StudentsService {
   }
 
   async bulkImport(
-    rows: Array<{ name: string; dateOfBirth: string; sex?: string; admissionNumber?: string; email?: string; className?: string }>,
+    rows: Array<{ name: string; dateOfBirth?: string; sex?: string; admissionNumber?: string; email?: string; className?: string }>,
     institutionId: string,
   ) {
     // Pre-build a class name lookup map (case-insensitive) for this institution
@@ -568,7 +569,7 @@ export class StudentsService {
         await this.create(
           {
             name: row.name,
-            dateOfBirth: row.dateOfBirth,
+            dateOfBirth: row.dateOfBirth || undefined,
             sex: row.sex as 'M' | 'F' | undefined,
             admissionNumber: row.admissionNumber || undefined,
             email: row.email || undefined,

@@ -13,8 +13,9 @@ export class UpdateStudentDto {
   @IsString()
   admissionNumber?: string;
 
-  @ApiPropertyOptional({ example: '2010-03-15' })
+  @ApiPropertyOptional({ example: '2010-03-15', description: 'Empty string clears the date' })
   @IsOptional()
+  @ValidateIf((_, v) => v !== '')
   @IsDateString()
   dateOfBirth?: string;
 

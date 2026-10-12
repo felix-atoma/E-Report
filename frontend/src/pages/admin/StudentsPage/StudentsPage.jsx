@@ -475,7 +475,7 @@ function StudentsPage() {
     const txt = (v) => (isEdit ? (v ?? '').trim() : (v?.trim() || undefined));
     const payload = {
       name:        form.name.trim(),
-      dateOfBirth: form.dateOfBirth || undefined,
+      dateOfBirth: isEdit ? (form.dateOfBirth || '') : (form.dateOfBirth || undefined),
       sex:         form.sex         || undefined,
       classId:     form.classId     || undefined,
       parentEmail: txt(form.parentEmail),

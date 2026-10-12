@@ -175,9 +175,7 @@ body {
       </ul>
       <div class="hd-title">Relevé de notes &mdash; <span class="term">{{exam.typeLabel}}</span></div>
     </div>
-    <div class="hd-photo">
-      {{#if student.photo}}<img src="{{student.photo}}" alt="Photo" />{{else}}<svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-4.3 0-9 2.2-9 5v3h18v-3c0-2.8-4.7-5-9-5z"/></svg>{{/if}}
-    </div>
+    {{#if student.photo}}<div class="hd-photo"><img src="{{student.photo}}" alt="Photo" /></div>{{/if}}
   </div>
 
   <table class="info">
@@ -185,6 +183,7 @@ body {
       <td class="lbl">Nom et prénoms</td><td class="sep">:</td><td class="val">{{student.name}}</td>
       <td class="lbl">N° Matricule</td><td class="sep">:</td><td class="val">{{student.admissionNumber}}</td>
     </tr>
+    {{#if student.dateOfBirth}}
     <tr>
       <td class="lbl">Sexe</td><td class="sep">:</td><td class="val">{{student.sexLabel}}</td>
       <td class="lbl">Date de naissance</td><td class="sep">:</td><td class="val">{{student.dateOfBirth}}</td>
@@ -197,6 +196,17 @@ body {
       <td class="lbl">Session</td><td class="sep">:</td><td class="val">{{exam.label}}</td>
       <td class="lbl">Date</td><td class="sep">:</td><td class="val">{{exam.dates}}</td>
     </tr>
+    {{else}}
+    {{!-- Sans date de naissance : une ligne de moins, la date de l'épreuve suit la session --}}
+    <tr>
+      <td class="lbl">Sexe</td><td class="sep">:</td><td class="val">{{student.sexLabel}}</td>
+      <td class="lbl">Classe</td><td class="sep">:</td><td class="val">{{exam.className}}</td>
+    </tr>
+    <tr>
+      <td class="lbl">Année scolaire</td><td class="sep">:</td><td class="val">{{exam.academicYear}}</td>
+      <td class="lbl">Session</td><td class="sep">:</td><td class="val">{{exam.label}} ({{exam.dates}})</td>
+    </tr>
+    {{/if}}
     <tr>
       <td class="lbl">Moyenne</td><td class="sep">:</td><td class="val val--strong{{#unless isPassing}} val--fail{{/unless}}">{{#if averageLabel}}{{averageLabel}} / {{scale}}{{else}}&mdash;{{/if}}</td>
       <td class="lbl">Rang</td><td class="sep">:</td><td class="val val--strong">{{#if rankLabel}}{{rankLabel}}{{#if classSize}} / {{classSize}}{{/if}}{{else}}&mdash;{{/if}}</td>

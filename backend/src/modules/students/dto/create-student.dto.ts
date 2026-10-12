@@ -12,9 +12,10 @@ export class CreateStudentDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({ example: '2010-03-15', description: 'Date of birth (YYYY-MM-DD)' })
+  @ApiPropertyOptional({ example: '2010-03-15', description: 'Date of birth (YYYY-MM-DD) — optional, left off the report card when empty' })
+  @IsOptional()
   @IsDateString()
-  dateOfBirth: string;
+  dateOfBirth?: string;
 
   @ApiPropertyOptional({ enum: ['M', 'F'], description: 'M = Masculin, F = Féminin' })
   @IsOptional()

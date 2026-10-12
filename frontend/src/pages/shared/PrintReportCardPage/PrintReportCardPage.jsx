@@ -278,9 +278,11 @@ export default function PrintReportCardPage() {
     : null;
 
   const studentName = report.student?.user?.name ?? report.student?.admissionNumber ?? '—';
+  // Date de naissance et photo facultatives : absentes du bulletin quand l'école ne les fournit pas
   const dob = report.student?.dateOfBirth
     ? new Date(report.student.dateOfBirth).toLocaleDateString('fr-FR')
-    : '—';
+    : null;
+  const photo = report.student?.user?.profileImage ?? null;
   const termLabel = report.termName ?? `Trimestre ${report.termNumber}`;
 
   const watermark = buildWatermark(institution?.name);
@@ -371,11 +373,7 @@ export default function PrintReportCardPage() {
               {qrDataUri && <img src={qrDataUri} alt="Code de vérification" className="prh__qr" />}
               <div className="prh__serial">N° {report.securityCode ?? fallbackSerial(report)}</div>
             </div>
-            <div className="prh__photo">
-              {report.student?.user?.profileImage
-                ? <img src={report.student.user.profileImage} alt="Photo élève" />
-                : ICONS.user}
-            </div>
+            {photo && <div className="prh__photo"><img src={photo} alt="Photo élève" /></div>}
           </div>
         </div>
 
@@ -389,14 +387,24 @@ export default function PrintReportCardPage() {
               <td className="prh__lbl">Nom et prénoms</td><td className="prh__sep">:</td><td className="prh__val">{studentName}</td>
               <td className="prh__lbl">N° Matricule</td><td className="prh__sep">:</td><td className="prh__val">{report.student?.admissionNumber ?? '—'}</td>
             </tr>
-            <tr>
-              <td className="prh__lbl">Sexe</td><td className="prh__sep">:</td><td className="prh__val">{sexLabel}</td>
-              <td className="prh__lbl">Date de naissance</td><td className="prh__sep">:</td><td className="prh__val">{dob}</td>
-            </tr>
-            <tr>
-              <td className="prh__lbl">Classe</td><td className="prh__sep">:</td><td className="prh__val">{report.class?.name ?? '—'}</td>
-              <td className="prh__lbl">Effectif</td><td className="prh__sep">:</td><td className="prh__val">{report.classSize ? `${report.classSize} élèves` : '—'}</td>
-            </tr>
+            {dob ? (
+              <>
+                <tr>
+                  <td className="prh__lbl">Sexe</td><td className="prh__sep">:</td><td className="prh__val">{sexLabel}</td>
+                  <td className="prh__lbl">Date de naissance</td><td className="prh__sep">:</td><td className="prh__val">{dob}</td>
+                </tr>
+                <tr>
+                  <td className="prh__lbl">Classe</td><td className="prh__sep">:</td><td className="prh__val">{report.class?.name ?? '—'}</td>
+                  <td className="prh__lbl">Effectif</td><td className="prh__sep">:</td><td className="prh__val">{report.classSize ? `${report.classSize} élèves` : '—'}</td>
+                </tr>
+              </>
+            ) : (
+              // Sans date de naissance : Sexe et Classe sur une ligne ; l'effectif reste lisible dans le rang (12e / 45)
+              <tr>
+                <td className="prh__lbl">Sexe</td><td className="prh__sep">:</td><td className="prh__val">{sexLabel}</td>
+                <td className="prh__lbl">Classe</td><td className="prh__sep">:</td><td className="prh__val">{report.class?.name ?? '—'}</td>
+              </tr>
+            )}
             <tr>
               <td className="prh__lbl">Rang</td><td className="prh__sep">:</td>
               <td className="prh__val prh__val--strong">{rankLabel ? `${rankLabel}${report.classSize ? ` / ${report.classSize}` : ''}` : '—'}</td>

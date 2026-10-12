@@ -11,7 +11,7 @@ class BulkDeleteDto {
 
 class BulkImportStudentRowDto {
   @IsString() @IsNotEmpty() name: string;
-  @IsString() @IsNotEmpty() dateOfBirth: string;
+  @IsOptional() @IsString() dateOfBirth?: string;
   @IsOptional() @IsString() sex?: string;
   @IsOptional() @IsString() admissionNumber?: string;
   @IsOptional() @IsString() email?: string;

@@ -105,7 +105,7 @@ function StudentImport({ t }) {
     setResult(null);
     const reader = new FileReader();
     reader.onload = (e) => {
-      const parsed = parseCSV(e.target.result).map(toStudentRow).filter((r) => r.name && r.dateOfBirth);
+      const parsed = parseCSV(e.target.result).map(toStudentRow).filter((r) => r.name); // date de naissance facultative
       setRows(parsed.length ? parsed : null);
     };
     reader.readAsText(file, 'UTF-8');
@@ -127,7 +127,8 @@ function StudentImport({ t }) {
         <strong>{t('bulkImport.students.example')}</strong>
         <pre>{`nom,date_naissance,sexe,classe,numero_admission,email
 Kofi Mensah,2010-05-15,M,6ème A,,
-Ama Dzo,2011-03-22,F,5ème B,,ama@example.tg`}</pre>
+Ama Dzo,2011-03-22,F,5ème B,,ama@example.tg
+Yao Agbeko,,M,6ème A,,`}</pre>
         {classNames.length > 0 && (
           <div className="imp-classes-hint">
             <strong>{t('bulkImport.students.availableClasses')}</strong>{' '}
@@ -166,9 +167,9 @@ Ama Dzo,2011-03-22,F,5ème B,,ama@example.tg`}</pre>
               </thead>
               <tbody>
                 {rows.slice(0, 12).map((r, i) => (
-                  <tr key={i} className={!r.dateOfBirth ? 'imp-table__row--warn' : ''}>
+                  <tr key={i}>
                     <td className="imp-td--name">{r.name}</td>
-                    <td>{r.dateOfBirth || <span className="imp-warn">{t('bulkImport.missing')}</span>}</td>
+                    <td>{r.dateOfBirth || '—'}</td>
                     <td>{r.sex || '—'}</td>
                     <td>
                       {r.className

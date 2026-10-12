@@ -303,7 +303,8 @@ Informations disponibles par employé :
         steps: [
           'Allez dans le menu → Élèves.',
           'Cliquez sur « + Nouvel élève ».',
-          'Renseignez : nom complet, date de naissance, genre, classe d\'inscription.',
+          'Renseignez : nom complet, genre, classe d\'inscription.',
+          'Date de naissance et photo sont facultatives : fournies, elles apparaissent sur le bulletin ; sinon, elles n\'y figurent pas.',
           'Ajoutez les informations optionnelles : numéro d\'admission, contact parent, groupe sanguin.',
           'Cliquez sur « Enregistrer ».',
           'Un numéro d\'admission est généré automatiquement si vous n\'en fournissez pas.',

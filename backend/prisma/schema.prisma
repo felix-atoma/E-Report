@@ -384,7 +384,7 @@ model ClassSubject {
 model Student {
   id              String   @id @default(uuid())
   admissionNumber String   @unique
-  dateOfBirth     DateTime
+  dateOfBirth     DateTime? // facultative : absente du bulletin si l école ne la fournit pas
   enrollmentDate  DateTime @default(now())
   sex             Sex?
 

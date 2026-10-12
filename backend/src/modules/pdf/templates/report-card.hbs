@@ -303,9 +303,7 @@ body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         {{#if qrDataUri}}<img src="{{qrDataUri}}" alt="Code de vérification" class="prh__qr" />{{/if}}
         <div class="prh__serial">N° {{serial}}</div>
       </div>
-      <div class="prh__photo">
-        {{#if student.photo}}<img src="{{student.photo}}" alt="Photo élève" />{{else}}<svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-4.3 0-9 2.2-9 5v3h18v-3c0-2.8-4.7-5-9-5z"/></svg>{{/if}}
-      </div>
+      {{#if student.photo}}<div class="prh__photo"><img src="{{student.photo}}" alt="Photo élève" /></div>{{/if}}
     </div>
   </div>
 
@@ -317,6 +315,7 @@ body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         <td class="prh__lbl">Nom et prénoms</td><td class="prh__sep">:</td><td class="prh__val">{{student.name}}</td>
         <td class="prh__lbl">N° Matricule</td><td class="prh__sep">:</td><td class="prh__val">{{#if student.admissionNumber}}{{student.admissionNumber}}{{else}}—{{/if}}</td>
       </tr>
+      {{#if student.dateOfBirth}}
       <tr>
         <td class="prh__lbl">Sexe</td><td class="prh__sep">:</td><td class="prh__val">{{student.sexLabel}}</td>
         <td class="prh__lbl">Date de naissance</td><td class="prh__sep">:</td><td class="prh__val">{{student.dateOfBirth}}</td>
@@ -325,6 +324,13 @@ body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         <td class="prh__lbl">Classe</td><td class="prh__sep">:</td><td class="prh__val">{{#if class.name}}{{class.name}}{{else}}—{{/if}}</td>
         <td class="prh__lbl">Effectif</td><td class="prh__sep">:</td><td class="prh__val">{{#if report.classSize}}{{report.classSize}} élèves{{else}}—{{/if}}</td>
       </tr>
+      {{else}}
+      {{!-- Sans date de naissance : Sexe et Classe sur une ligne ; l'effectif reste lisible dans le rang (12e / 45) --}}
+      <tr>
+        <td class="prh__lbl">Sexe</td><td class="prh__sep">:</td><td class="prh__val">{{student.sexLabel}}</td>
+        <td class="prh__lbl">Classe</td><td class="prh__sep">:</td><td class="prh__val">{{#if class.name}}{{class.name}}{{else}}—{{/if}}</td>
+      </tr>
+      {{/if}}
       <tr>
         <td class="prh__lbl">Rang</td><td class="prh__sep">:</td>
         <td class="prh__val prh__val--strong">{{#if report.rankLabel}}{{report.rankLabel}}{{#if report.classSize}} / {{report.classSize}}{{/if}}{{else}}—{{/if}}</td>

@@ -433,7 +433,8 @@ export class PdfService {
         ...student,
         photo: pdfImage((student as any).photo),
         sexLabel: student.sex === 'F' ? 'Féminin' : student.sex === 'M' ? 'Masculin' : '—',
-        dateOfBirth: fmtDate(student.dateOfBirth) ?? '—',
+        // Facultatives : la ligne et le cadre disparaissent quand l'école ne les fournit pas
+        dateOfBirth: fmtDate(student.dateOfBirth),
       },
       rows,
       gradedCount: graded.length,
@@ -599,9 +600,10 @@ export class PdfService {
         name: student.user?.name ?? '—',
         sexLabel,
         admissionNumber: student.admissionNumber,
+        // Facultatives : la ligne et le cadre disparaissent quand l'école ne les fournit pas
         dateOfBirth: student.dateOfBirth
           ? new Date(student.dateOfBirth).toLocaleDateString('fr-FR')
-          : '—',
+          : null,
         photo: pdfImage(student.user?.profileImage),
       },
       class: { name: data.className },
@@ -718,7 +720,7 @@ export interface ReportCardData {
   };
   student: {
     admissionNumber: string;
-    dateOfBirth: Date;
+    dateOfBirth: Date | null;
     sex?: string | null;
     user: { name: string; profileImage?: string | null } | null;
   };
