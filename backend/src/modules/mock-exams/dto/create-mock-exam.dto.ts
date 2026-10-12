@@ -10,6 +10,7 @@ export enum MockExamType {
   // Mêmes valeurs que l'enum Prisma MockExamType
   DEVOIR_SURVEILLE      = 'DEVOIR_SURVEILLE',       // devoirs surveillés (6ème → Terminale)
   COMPOSITION_MENSUELLE = 'COMPOSITION_MENSUELLE',  // compositions mensuelles (CI → CM2)
+  COMPOSITION_ANGLAIS   = 'COMPOSITION_ANGLAIS',    // compositions d'anglais (CI → CM2), moyenne en %
 }
 
 /** Date laissée vide dans le formulaire ("") : traitée comme absente au lieu d'être refusée. */

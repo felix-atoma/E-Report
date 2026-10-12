@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { classesService } from '../../../services/classesService';
-import { isSecondaryLevel } from '../../../utils/examKinds';
+import { isSecondaryLevel, isPrimaryLevel } from '../../../utils/examKinds';
 import { useAuth } from '../../../context/AuthContext';
 import { useInstitution } from '../../../context/InstitutionContext';
 import Avatar from '../../common/Avatar/Avatar';
@@ -35,6 +35,9 @@ const NAV = {
     { to: '/admin/compositions-mensuelles',           icon: 'exam',     labelKey: 'nav.cmList' },
     { to: '/admin/compositions-mensuelles/fiches',    icon: 'fichexam', labelKey: 'nav.cmFiches' },
     { to: '/admin/compositions-mensuelles/resultats', icon: 'trophy',   labelKey: 'nav.cmResults' },
+    { to: '/admin/compositions-anglais',           icon: 'exam',     labelKey: 'nav.caList' },
+    { to: '/admin/compositions-anglais/fiches',    icon: 'fichexam', labelKey: 'nav.caFiches' },
+    { to: '/admin/compositions-anglais/resultats', icon: 'trophy',   labelKey: 'nav.caResults' },
     { to: '/admin/epreuves',           icon: 'fichexam',  labelKey: 'nav.examPapersAdmin' },
     { to: '/teacher/lms',              icon: 'lms',       labelKey: 'nav.lms' },
     { divider: true,              sectionKey: 'section.finance' },
@@ -85,7 +88,9 @@ const NAV = {
     { to: '/teacher/devoirs-surveilles',           icon: 'exam',     labelKey: 'nav.dsList', secondaryOnly: true },
     { to: '/teacher/devoirs-surveilles/fiches',    icon: 'fichexam', labelKey: 'nav.dsFiches', secondaryOnly: true },
     { to: '/teacher/devoirs-surveilles/resultats', icon: 'trophy',   labelKey: 'nav.dsResults', secondaryOnly: true },
-    { to: '/teacher/epreuves',           icon: 'fichexam',  labelKey: 'nav.examPapers' },
+    { to: '/teacher/compositions-anglais/fiches',    icon: 'fichexam', labelKey: 'nav.caFiches', primaryOnly: true },
+    { to: '/teacher/compositions-anglais/resultats', icon: 'trophy',   labelKey: 'nav.caResults', primaryOnly: true },
+    { to: '/teacher/epreuves',          icon: 'fichexam',  labelKey: 'nav.examPapers' },
     { to: '/teacher/lms',                icon: 'lms',       labelKey: 'nav.lms' },
     { divider: true,              sectionKey: 'section.other' },
     { to: '/teacher/report-incident',    icon: 'flag',      labelKey: 'nav.reportIncident' },
@@ -387,7 +392,10 @@ function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
     enabled: user?.role === 'TEACHER',
   });
   const hasSecondary = !myClasses || myClasses.some((c) => isSecondaryLevel(c.level));
-  const items = (NAV[user?.role] ?? []).filter((item) => !item.secondaryOnly || hasSecondary);
+  // Compositions d'anglais : primaire uniquement — masquées pour les professeurs du secondaire
+  const hasPrimary = !myClasses || myClasses.some((c) => isPrimaryLevel(c.level));
+  const items = (NAV[user?.role] ?? []).filter((item) =>
+    (!item.secondaryOnly || hasSecondary) && (!item.primaryOnly || hasPrimary));
 
   return (
     <>

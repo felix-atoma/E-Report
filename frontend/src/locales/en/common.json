@@ -44,6 +44,9 @@
     "cmList": "Monthly tests (primary)",
     "cmFiches": "Monthly test sheets",
     "cmResults": "Monthly test results",
+    "caList": "English tests (primary)",
+    "caFiches": "English test sheets",
+    "caResults": "English test results",
     "staff":            "Staff",
     "calendar":         "Calendar",
     "disciplinary":     "Disciplinary",
@@ -2521,7 +2524,6 @@
   },
 
   "mockExamGrade": {
-    "notInAverage": "Not in average",
     "title": "Grade entry",
     "back": "← Back to exams",
     "statusPublished": "Published",

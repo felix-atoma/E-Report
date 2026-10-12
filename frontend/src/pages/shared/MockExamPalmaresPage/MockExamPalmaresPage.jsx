@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { mockExamsService } from '../../../services/mockExamsService';
 import PrintFormatPicker from '../../../components/common/PrintFormatPicker/PrintFormatPicker';
 import { fmtSessionDates } from '../../../utils/fmtSessionDates';
-import { examScale, isNonExamType } from '../../../utils/examKinds';
+import { examScale, isNonExamType, isCaType, fmtAvg } from '../../../utils/examKinds';
 import './MockExamPalmaresPage.css';
 
 const TYPE_LABELS = {
@@ -14,6 +14,7 @@ const TYPE_LABELS = {
   BAC2:  'Baccalauréat — Deuxième Partie',
   DEVOIR_SURVEILLE: 'Devoir surveillé',
   COMPOSITION_MENSUELLE: 'Composition mensuelle',
+  COMPOSITION_ANGLAIS: "Composition d'anglais",
 };
 
 function fmtDate(iso) {
@@ -119,7 +120,7 @@ function MockExamPalmaresPage() {
                   </th>
                 ))}
                 <th className="mpal-th mpal-th--total" rowSpan={2}>Total<br />Pts</th>
-                <th className="mpal-th mpal-th--avg" rowSpan={2}>Moy.<br />/{scale}</th>
+                <th className="mpal-th mpal-th--avg" rowSpan={2}>Moy.<br />{isCaType(exam.examType) ? '%' : `/${scale}`}</th>
                 <th className="mpal-th mpal-th--mention" rowSpan={2}>Mention</th>
                 <th className="mpal-th mpal-th--result" rowSpan={2}>Résultat</th>
               </tr>
@@ -142,8 +143,7 @@ function MockExamPalmaresPage() {
                 let totalPts = 0;
                 subjects.forEach((subj) => {
                   const g = gradeMap.get(subj.id);
-                  // Partie anglaise (composition mensuelle) : hors total
-                  if (g?.score != null && !subj.english) totalPts += g.score * subj.coefficient;
+                  if (g?.score != null) totalPts += g.score * subj.coefficient;
                 });
 
                 return (
@@ -238,7 +238,7 @@ function MockExamPalmaresPage() {
                   <div key={s.studentId} className={`mpal-podium__item mpal-podium__item--${s.rank === 1 ? 'gold' : s.rank === 2 ? 'silver' : 'bronze'}`}>
                     <span className="mpal-podium__medal">{medals[s.rank]}</span>
                     <span className="mpal-podium__sname">{s.studentName}</span>
-                    <span className="mpal-podium__avg">{s.average != null ? s.average.toFixed(2).replace('.', ',') : '—'}/{scale}</span>
+                    <span className="mpal-podium__avg">{fmtAvg(s.average, exam.examType)}</span>
                   </div>
                 ))}
               </div>

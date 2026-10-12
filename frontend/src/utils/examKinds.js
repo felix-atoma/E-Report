@@ -28,11 +28,36 @@ export const CM_TYPE_CFG = {
 
 export const isCmType = (examType) => examType === CM_TYPE;
 
-/** Séances qui ne sont pas des examens : pas d'« admis / ajourné ». */
-export const isNonExamType = (examType) => isDsType(examType) || isCmType(examType);
+// Compositions d'anglais : primaire, matières anglaises seulement (l'anglais est une discipline à part),
+// chaque matière sur son barème, moyenne en pourcentage, rang et palmarès d'anglais
+export const CA_TYPE = 'COMPOSITION_ANGLAIS';
 
-/** Barème des notes de la session : 10 pour les compositions mensuelles, 20 sinon. */
-export const examScale = (examType) => (isCmType(examType) ? 10 : 20);
+export const CA_TYPE_CFG = {
+  value: CA_TYPE,
+  label: "Composition d'anglais",
+  full: "Composition d'anglais — primaire (CI au CM2), matières anglaises seulement, moyenne en %",
+  color: '#b45309', bg: '#fffbeb', border: '#fcd34d',
+  icon: '🇬🇧',
+  desc: "Compositions d'anglais",
+};
+
+export const isCaType = (examType) => examType === CA_TYPE;
+
+/** Compositions du primaire (mensuelle, anglais) : chaque matière sur son barème (10 ou 20). */
+export const isPrimaryCompoType = (examType) => isCmType(examType) || isCaType(examType);
+
+/** Séances qui ne sont pas des examens : pas d'« admis / ajourné ». */
+export const isNonExamType = (examType) => isDsType(examType) || isPrimaryCompoType(examType);
+
+/** Barème de la moyenne de la session : 10 (composition mensuelle), 100 (composition d'anglais, en %), 20 sinon. */
+export const examScale = (examType) => (isCmType(examType) ? 10 : isCaType(examType) ? 100 : 20);
+
+/** Moyenne affichée : « 12,50/20 », « 6,25/10 » ou « 72,50 % » (composition d'anglais). */
+export const fmtAvg = (avg, examType, sep = '/') => {
+  if (avg == null) return '—';
+  const v = Number(avg).toFixed(2).replace('.', ',');
+  return isCaType(examType) ? `${v} %` : `${v}${sep}${examScale(examType)}`;
+};
 
 /** Note ramenée sur 20 (les seuils d'appréciation sont définis sur 20). */
 export const to20 = (value, examType) => (value == null ? null : (value * 20) / examScale(examType));
@@ -47,6 +72,7 @@ export const isSecondaryLevel = (level) =>
 export function typesForKind(kind, examTypes) {
   if (kind === 'DS') return [DS_TYPE_CFG];
   if (kind === 'CM') return [CM_TYPE_CFG];
+  if (kind === 'CA') return [CA_TYPE_CFG];
   return examTypes;
 }
 
@@ -80,5 +106,15 @@ export const KIND_TEXT = {
     resultsSubtitle: 'Palmarès et relevés de notes des compositions mensuelles (moyenne sur 10)',
     empty: "Aucune composition mensuelle pour vos classes. L'administration doit d'abord la créer.",
     listPath: '/teacher/compositions-mensuelles',
+  },
+  CA: {
+    listTitle: "Compositions d'anglais",
+    listSubtitle: "Primaire (CI au CM2) : l'anglais est une discipline à part. Créez une composition d'anglais par classe ; elle ne contient que les matières anglaises (catégorie « Section anglaise » ou nom avec « English / Anglais »)",
+    fichesTitle: "Fiches de notes — Compositions d'anglais",
+    fichesSubtitle: "Saisie des notes d'anglais par matière (sur 10 ou sur 20)",
+    resultsTitle: "Résultats des compositions d'anglais",
+    resultsSubtitle: "Palmarès et relevés d'anglais (moyenne en pourcentage, rang et classement)",
+    empty: "Aucune composition d'anglais pour vos classes. L'administration doit d'abord la créer.",
+    listPath: '/teacher/compositions-anglais',
   },
 };

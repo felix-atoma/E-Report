@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { analyticsService } from '../../../services/analyticsService';
 import { mockExamsService } from '../../../services/mockExamsService';
-import { isDsType, isCmType } from '../../../utils/examKinds';
+import { isDsType, isCmType, isCaType } from '../../../utils/examKinds';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Card from '../../../components/common/Card/Card';
@@ -82,10 +82,15 @@ const EVALUATION_KINDS = [
     base: '/admin/compositions-mensuelles', match: (t) => isCmType(t), directCreate: true,
   },
   {
+    key: 'CA', title: "Compositions d'anglais", icon: '🇬🇧', color: '#b45309', bg: '#fffbeb', border: '#fcd34d',
+    desc: 'Primaire (CI au CM2) · matières anglaises · moyenne en %',
+    base: '/admin/compositions-anglais', match: (t) => isCaType(t), directCreate: true,
+  },
+  {
     key: 'ESSAI', title: 'Examens blancs', icon: '📝', color: '#1d4ed8', bg: '#eff6ff', border: '#93c5fd',
     desc: 'CEPE · BEPC · BAC 1 · BAC 2',
     base: '/admin/mock-exams', fiches: '/admin/mock-exam-fiches', results: '/admin/mock-exam-results',
-    match: (t) => !isDsType(t) && !isCmType(t), directCreate: false,
+    match: (t) => !isDsType(t) && !isCmType(t) && !isCaType(t), directCreate: false,
   },
 ];
 

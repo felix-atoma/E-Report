@@ -161,16 +161,3 @@
 .mrel-download-btn { background: #15803d; }
 .mrel-download-btn:hover:not(:disabled) { background: #166534; }
 .mrel-download-btn:disabled { opacity: .65; cursor: wait; }
-
-/* Composition mensuelle (primaire) : partie anglaise notée à part, à droite du tableau */
-.mrel-tables { display: flex; gap: 8px; align-items: flex-start; }
-.mrel-tables > .mrel-table { flex: 1; min-width: 0; }
-.mrel-english { width: 210px; flex-shrink: 0; border: 1.5px solid #1e3a8a; border-radius: 4px; overflow: hidden; background: #fff; }
-.mrel-english__title { background: #1e3a8a; color: #fff; font-weight: 800; text-align: center; padding: 4px; letter-spacing: 0.5px; font-size: 0.85rem; }
-.mrel-english__table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
-.mrel-english__table th { color: #6b7280; font-size: 0.7rem; padding: 3px; border-bottom: 1px solid #e5e7eb; }
-.mrel-english__table td { text-align: center; padding: 4px 3px; border-bottom: 1px solid #f1f5f9; font-weight: 700; }
-.mrel-english__subj { text-align: left !important; }
-.mrel-english__note { white-space: nowrap; }
-.mrel-english__table tfoot td { background: #f1f5f9; font-weight: 800; }
-.mrel-english__hint { font-size: 0.65rem; color: #6b7280; font-style: italic; text-align: center; padding: 3px; border-top: 1px solid #e5e7eb; }

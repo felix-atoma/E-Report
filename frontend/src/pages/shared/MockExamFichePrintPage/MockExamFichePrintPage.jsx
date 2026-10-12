@@ -15,6 +15,7 @@ const TYPE_LABELS = {
   BAC2:  'Baccalauréat — Deuxième Partie',
   DEVOIR_SURVEILLE: 'Devoir surveillé',
   COMPOSITION_MENSUELLE: 'Composition mensuelle',
+  COMPOSITION_ANGLAIS: "Composition d'anglais",
 };
 
 function fmtDate(iso) {

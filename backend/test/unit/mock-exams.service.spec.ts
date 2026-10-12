@@ -107,40 +107,59 @@ describe('MockExamsService', () => {
     });
   });
 
-  describe('composition mensuelle — English graded separately', () => {
+  describe('primary: English is its own composition', () => {
     const cs = (id: string, nameFr: string, maxScore: number, category: string | null = null) =>
       ({ subject: { id, nameFr, nameEn: nameFr, code: id, maxScore, category } });
     const grade = (studentId: string, subjectId: string, score: number) => ({ studentId, subjectId, score, coefficient: 1 });
+    const primaryExam = (examType: string) => ({ ...exam, examType, class: { name: 'CM2' } });
 
     beforeEach(() => {
-      prisma.mockExam.findFirst.mockResolvedValue({ ...exam, examType: 'COMPOSITION_MENSUELLE', class: { name: 'CM2' } });
       prisma.classSubject.findMany.mockResolvedValue([
         cs('fr', 'Français', 20), cs('calc', 'Calcul', 10),
         cs('eg', 'English Grammar', 20), cs('rc', 'Reading Comprehension', 20, 'ANGLAIS'),
       ]);
       // stu-1 meilleur en français/calcul, stu-2 bien meilleur en anglais
       prisma.mockExamGrade.findMany.mockResolvedValue([
-        grade('stu-1', 'fr', 16), grade('stu-1', 'calc', 8), grade('stu-1', 'eg', 4), grade('stu-1', 'rc', 4),
-        grade('stu-2', 'fr', 12), grade('stu-2', 'calc', 6), grade('stu-2', 'eg', 20), grade('stu-2', 'rc', 20),
+        grade('stu-1', 'fr', 16), grade('stu-1', 'calc', 8), grade('stu-1', 'eg', 4), grade('stu-1', 'rc', 6),
+        grade('stu-2', 'fr', 12), grade('stu-2', 'calc', 6), grade('stu-2', 'eg', 18), grade('stu-2', 'rc', 15),
       ]);
     });
 
-    it('flags the English section and leaves it out of the average and the rank', async () => {
+    it('composition mensuelle: no English subject, average on 10 without English', async () => {
+      prisma.mockExam.findFirst.mockResolvedValue(primaryExam('COMPOSITION_MENSUELLE'));
       const sheet = await service.getGradeSheet(exam.id, INST);
 
-      expect(sheet.subjects.filter((s: any) => s.english).map((s: any) => s.id)).toEqual(['eg', 'rc']);
+      expect(sheet.subjects.map((s: any) => s.id)).toEqual(['fr', 'calc']);
       const s1 = sheet.students.find((s) => s.studentId === 'stu-1')!;
-      const s2 = sheet.students.find((s) => s.studentId === 'stu-2')!;
-      expect(s1.average).toBe(8);   // (16 + 8) / 30 × 10 — l'anglais ne compte pas
-      expect(s2.average).toBe(6);   // (12 + 6) / 30 × 10
+      expect(s1.average).toBe(8);   // (16 + 8) / 30 × 10
       expect(s1.rank).toBe(1);
-      expect(s2.rank).toBe(2);
     });
 
-    it('a devoir surveillé keeps English as a normal subject', async () => {
+    it('composition anglais: only English subjects, average in %, own rank', async () => {
+      prisma.mockExam.findFirst.mockResolvedValue(primaryExam('COMPOSITION_ANGLAIS'));
+      const sheet = await service.getGradeSheet(exam.id, INST);
+
+      expect(sheet.exam.scale).toBe(100);
+      expect(sheet.subjects.map((s: any) => s.id)).toEqual(['eg', 'rc']);
+      const s1 = sheet.students.find((s) => s.studentId === 'stu-1')!;
+      const s2 = sheet.students.find((s) => s.studentId === 'stu-2')!;
+      expect(s2.average).toBe(82.5); // (18 + 15) / 40 × 100
+      expect(s1.average).toBe(25);   // (4 + 6) / 40 × 100
+      expect(s2.rank).toBe(1);
+      expect(s1.rank).toBe(2);
+    });
+
+    it('refuses an English composition for a secondary class', async () => {
+      prisma.class.findFirst.mockResolvedValue({ id: 'class-1', level: '3ème' });
+      await expect(service.create(
+        { classId: 'class-1', examType: 'COMPOSITION_ANGLAIS', label: 'x', academicYear: '2026-2027' } as any, 'u1', INST,
+      )).rejects.toThrow(BadRequestException);
+    });
+
+    it('a devoir surveillé keeps every subject', async () => {
       prisma.mockExam.findFirst.mockResolvedValue(exam);
       const sheet = await service.getGradeSheet(exam.id, INST);
-      expect(sheet.subjects.some((s: any) => s.english)).toBe(false);
+      expect(sheet.subjects).toHaveLength(4);
     });
   });
 

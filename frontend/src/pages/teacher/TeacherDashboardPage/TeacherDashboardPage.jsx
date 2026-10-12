@@ -142,6 +142,12 @@ function TeacherDashboardPage() {
             <Link to="/teacher/compositions-mensuelles" className="teacher-dash__cm-link">📋 Compositions</Link>
             <Link to="/teacher/compositions-mensuelles/resultats" className="teacher-dash__cm-link">🏆 Résultats et relevés</Link>
           </div>
+          {/* L'anglais est une discipline à part : ses compositions ont leurs propres fiches et résultats */}
+          <div className="teacher-dash__cm-links">
+            <Link to="/teacher/compositions-anglais/fiches" className="teacher-dash__cm-link">🇬🇧 Notes d'anglais</Link>
+            <Link to="/teacher/compositions-anglais" className="teacher-dash__cm-link">📋 Compositions d'anglais</Link>
+            <Link to="/teacher/compositions-anglais/resultats" className="teacher-dash__cm-link">🏆 Résultats d'anglais</Link>
+          </div>
         </Card>
       )}
 

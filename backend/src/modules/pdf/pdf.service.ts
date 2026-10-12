@@ -412,7 +412,11 @@ export class PdfService {
     const branding = (institution.brandingSettings as Record<string, unknown>) ?? {};
     const inst = institution as any;
     // Devoir surveillé et composition mensuelle : pas d'« admis / ajourné » (ce ne sont pas des examens)
-    const isDs = exam.examType === 'DEVOIR_SURVEILLE' || exam.examType === 'COMPOSITION_MENSUELLE';
+    // Compositions du primaire (mensuelle, anglais) : chaque matière sur son barème (10 ou 20)
+    const isCm = exam.examType === 'COMPOSITION_MENSUELLE' || exam.examType === 'COMPOSITION_ANGLAIS';
+    // Composition d'anglais : moyenne en pourcentage
+    const isPercent = exam.examType === 'COMPOSITION_ANGLAIS';
+    const isDs = exam.examType === 'DEVOIR_SURVEILLE' || isCm;
     const isBac = exam.examType === 'BAC1' || exam.examType === 'BAC2';
     const female = student.sex === 'F';
     const scale = exam.scale ?? 20;          // 10 pour les compositions mensuelles (primaire)
@@ -430,15 +434,7 @@ export class PdfService {
         levelClass: on20 == null ? '' : on20 >= 14 ? 'lvl-good' : on20 >= 10 ? 'lvl-pass' : 'lvl-fail',
       };
     });
-    // Composition mensuelle : la partie anglaise passe dans l'encadré à côté, hors totaux
-    const englishRows = rows.filter((r) => r.english);
-    const graded = rows.filter((r) => r.score != null && !r.english);
-    const englishGraded = englishRows.filter((r) => r.score != null);
-    const englishTotal = {
-      total: formatScore(englishGraded.reduce((s, r) => s + (r.score as number), 0)),
-      max: englishGraded.reduce((s, r) => s + r.max, 0),
-      multiple: englishRows.length > 1 && englishGraded.length > 0,
-    };
+    const graded = rows.filter((r) => r.score != null);
     const totalCoef = graded.reduce((s, r) => s + r.coefficient, 0);
     const totalPoints = graded.reduce((s, r) => s + (r.score as number) * r.coefficient, 0);
     // Points possibles (compositions mensuelles : chaque matière sur 10 ou 20)
@@ -473,9 +469,7 @@ export class PdfService {
         // Facultatives : la ligne et le cadre disparaissent quand l'école ne les fournit pas
         dateOfBirth: fmtDate(student.dateOfBirth),
       },
-      rows: rows.filter((r) => !r.english),
-      englishRows,
-      englishTotal,
+      rows,
       gradedCount: graded.length,
       totalCoef,
       totalPointsLabel: formatScore(Math.round(totalPoints * 100) / 100),
@@ -484,7 +478,9 @@ export class PdfService {
       isPassing: (avg ?? 0) >= pass,
       scale,
       isPrimaryScale: scale === 10,
-      isCm: exam.examType === 'COMPOSITION_MENSUELLE',
+      isCm,
+      // « 12,50 / 20 », « 6,25 / 10 » ou « 72,50 % » (composition d'anglais)
+      avgSuffix: isPercent ? ' %' : ` / ${scale}`,
       appreciation: data.appreciation,
       rankLabel,
       classSize: data.classSize,
@@ -831,8 +827,7 @@ export interface ReleveData {
     dateOfBirth?: Date | string | null; photo?: string | null;
   };
   /** max : barème de la matière (/10 ou /20 aux compositions mensuelles ; sinon celui de la session) */
-  /** english : composition mensuelle du primaire — matière de la partie anglaise, hors total et moyenne */
-  rows: Array<{ subject: string; score: number | null; coefficient: number; max?: number; appreciation: string; english?: boolean }>;
+  rows: Array<{ subject: string; score: number | null; coefficient: number; max?: number; appreciation: string }>;
   average: number | null;
   appreciation: string;
   rank: number | null;

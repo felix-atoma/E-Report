@@ -6,10 +6,17 @@ import { byStudentName } from '../../common/utils/student-order.util';
 import { CreateMockExamDto } from './dto/create-mock-exam.dto';
 import { SaveMockExamGradesDto } from './dto/save-grades.dto';
 
-/** Barème de la moyenne de la session : compositions mensuelles (primaire) sur 10, le reste sur 20.
- *  Chaque matière garde son propre barème : voir subjectScale(). */
+/** Compositions du primaire (CI → CM2) : composition mensuelle et composition d'anglais. */
+export function isPrimaryComposition(examType: string | null | undefined): boolean {
+  return examType === 'COMPOSITION_MENSUELLE' || examType === 'COMPOSITION_ANGLAIS';
+}
+
+/** Barème de la moyenne de la session : composition mensuelle sur 10, composition d'anglais en
+ *  pourcentage (sur 100), le reste sur 20. Chaque matière garde son propre barème : voir subjectScale(). */
 export function examScale(examType: string | null | undefined): number {
-  return examType === 'COMPOSITION_MENSUELLE' ? 10 : 20;
+  if (examType === 'COMPOSITION_MENSUELLE') return 10;
+  if (examType === 'COMPOSITION_ANGLAIS') return 100;
+  return 20;
 }
 
 /**
@@ -17,7 +24,7 @@ export function examScale(examType: string | null | undefined): number {
  * (« Noté sur » 10 ou 20, réglé dans Matières) ; ailleurs, celui de la session (sur 20).
  */
 export function subjectScale(examType: string | null | undefined, subjectMaxScore: number | null | undefined): number {
-  return examType === 'COMPOSITION_MENSUELLE' ? primarySubjectMax(subjectMaxScore) : examScale(examType);
+  return isPrimaryComposition(examType) ? primarySubjectMax(subjectMaxScore) : examScale(examType);
 }
 
 /** Appréciation d'une note exprimée sur `scale` (seuils définis sur 20). */
@@ -87,6 +94,9 @@ export class MockExamsService {
     if (dto.examType === ('COMPOSITION_MENSUELLE' as any) && !isPrimaryLevel(cls.level)) {
       throw new BadRequestException('Les compositions mensuelles concernent uniquement les classes du CI au CM2');
     }
+    if (dto.examType === ('COMPOSITION_ANGLAIS' as any) && !isPrimaryLevel(cls.level)) {
+      throw new BadRequestException("Les compositions d'anglais concernent uniquement les classes du CI au CM2");
+    }
     // Les devoirs surveillés sont propres au secondaire (6ème → Terminale)
     if (dto.examType === ('DEVOIR_SURVEILLE' as any) && !isSecondaryLevel(cls.level)) {
       throw new BadRequestException('Les devoirs surveillés concernent uniquement les classes de la 6ème à la Terminale');
@@ -122,6 +132,13 @@ export class MockExamsService {
       include: { subject: { select: { id: true, nameFr: true, nameEn: true, code: true, maxScore: true, category: true } } },
       orderBy: { subject: { nameFr: 'asc' } },
     });
+    // Primaire : l'anglais est une discipline à part — la composition d'anglais ne contient que les
+    // matières anglaises, la composition mensuelle toutes les autres
+    const sessionSubjects = exam.examType === 'COMPOSITION_ANGLAIS'
+      ? classSubjects.filter((cs) => isPrimaryEnglish(cs.subject))
+      : exam.examType === 'COMPOSITION_MENSUELLE'
+        ? classSubjects.filter((cs) => !isPrimaryEnglish(cs.subject))
+        : classSubjects;
 
     // Students enrolled in class
     const classStudents = await this.enrolledStudents(exam.classId, exam.academicYear);
@@ -143,7 +160,7 @@ export class MockExamsService {
       }
     });
 
-    const subjects = classSubjects.map((cs) => ({
+    const subjects = sessionSubjects.map((cs) => ({
       id: cs.subject.id,
       nameFr: cs.subject.nameFr,
       nameEn: cs.subject.nameEn,
@@ -151,8 +168,6 @@ export class MockExamsService {
       coefficient: subjectCoeffMap.get(cs.subject.id) ?? 1,
       // Barème de la matière pour cette session (/10 ou /20 aux compositions mensuelles)
       maxScore: subjectScale(exam.examType, cs.subject.maxScore),
-      // Composition mensuelle (primaire) : l'anglais est noté à part — hors total, moyenne et rang
-      english: exam.examType === 'COMPOSITION_MENSUELLE' && isPrimaryEnglish(cs.subject),
     }));
 
     const scale = examScale(exam.examType);
@@ -164,7 +179,6 @@ export class MockExamsService {
           subjectId: subj.id,
           coefficient: g?.coefficient ?? subj.coefficient,
           maxScore: subj.maxScore,
-          english: subj.english,
           score: g?.score ?? null,
           appreciation: appreciation(g?.score ?? null, subj.maxScore),
         };
@@ -173,7 +187,7 @@ export class MockExamsService {
       // Total et moyenne : points obtenus sur points possibles, ramenés au barème de la session.
       // Toutes les matières sur 20 → moyenne pondérée classique ; compositions mensuelles → total des
       // notes (chacune sur 10 ou 20) ÷ total des barèmes × 10.
-      const filled = gradesForStudent.filter((g) => g.score != null && !g.english);
+      const filled = gradesForStudent.filter((g) => g.score != null);
       const totalMax = filled.reduce((s, g) => s + g.maxScore * g.coefficient, 0);
       const totalPoints = filled.reduce((s, g) => s + (g.score ?? 0) * g.coefficient, 0);
       const average = totalMax > 0 ? round2((totalPoints / totalMax) * scale) : null;
@@ -504,8 +518,8 @@ export class MockExamsService {
     const exam = await this.findExamOrThrow(examId, institutionId);
     // Same level rules as at creation
     const cls = await this.prisma.class.findUnique({ where: { id: exam.classId }, select: { level: true } });
-    if (examType === 'COMPOSITION_MENSUELLE' && !isPrimaryLevel(cls?.level)) {
-      throw new BadRequestException('Les compositions mensuelles concernent uniquement les classes du CI au CM2');
+    if (isPrimaryComposition(examType) && !isPrimaryLevel(cls?.level)) {
+      throw new BadRequestException('Les compositions du primaire concernent uniquement les classes du CI au CM2');
     }
     if (examType === 'DEVOIR_SURVEILLE' && !isSecondaryLevel(cls?.level)) {
       throw new BadRequestException('Les devoirs surveillés concernent uniquement les classes de la 6ème à la Terminale');
@@ -590,6 +604,7 @@ export class MockExamsService {
     BLANC: 'Examen blanc', CEPE: 'CEPE blanc', BEPC: 'BEPC blanc',
     BAC1: 'BAC 1re partie blanc', BAC2: 'BAC 2e partie blanc', DEVOIR_SURVEILLE: 'Devoir surveillé',
     COMPOSITION_MENSUELLE: 'Composition mensuelle',
+    COMPOSITION_ANGLAIS: "Composition d'anglais",
   };
 
   /** Données prêtes pour le gabarit PDF, pour un élève ou pour toute la classe. */
@@ -640,7 +655,6 @@ export class MockExamsService {
         coefficient: g.coefficient,
         max: g.maxScore,
         appreciation: g.appreciation,
-        english: g.english,
       })),
       average: s.average,
       appreciation: s.appreciation,

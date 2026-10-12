@@ -13,7 +13,7 @@ import Input from '../../../components/common/Input/Input';
 import Select from '../../../components/common/Select/Select';
 import Button from '../../../components/common/Button/Button';
 import { fmtSessionDates } from '../../../utils/fmtSessionDates';
-import { DS_TYPE_CFG, CM_TYPE_CFG, KIND_TEXT, isNonExamType, isCmType, isDsType, isPrimaryLevel, isSecondaryLevel, typesForKind } from '../../../utils/examKinds';
+import { DS_TYPE_CFG, CM_TYPE_CFG, CA_TYPE_CFG, KIND_TEXT, isNonExamType, isPrimaryCompoType, isDsType, isPrimaryLevel, isSecondaryLevel, typesForKind } from '../../../utils/examKinds';
 import './MockExamsPage.css';
 
 /* ── Config per exam type (proper nouns — not translated) ─────────────────── */
@@ -68,9 +68,9 @@ function fmtDate(iso) {
 /* ── Create form ──────────────────────────────────────────────────────────── */
 function CreateForm({ examType, classes, classesLoading, onClose, onCreate, serverError, isSaving }) {
   const { t } = useTranslation();
-  const type = [...EXAM_TYPES, DS_TYPE_CFG, CM_TYPE_CFG].find((et) => et.value === examType);
-  // Compositions mensuelles : primaire (CI → CM2) ; devoirs surveillés : secondaire (6ème → Terminale)
-  const eligibleClasses = isCmType(examType) ? classes.filter((c) => isPrimaryLevel(c.level))
+  const type = [...EXAM_TYPES, DS_TYPE_CFG, CM_TYPE_CFG, CA_TYPE_CFG].find((et) => et.value === examType);
+  // Compositions mensuelles et d'anglais : primaire (CI → CM2) ; devoirs surveillés : secondaire (6ème → Terminale)
+  const eligibleClasses = isPrimaryCompoType(examType) ? classes.filter((c) => isPrimaryLevel(c.level))
     : isDsType(examType) ? classes.filter((c) => isSecondaryLevel(c.level))
     : classes;
   // Année scolaire en cours : elle commence en septembre (en octobre 2026 → « 2026-2027 »)
@@ -120,7 +120,7 @@ function CreateForm({ examType, classes, classesLoading, onClose, onCreate, serv
         <div className="mex-alert">
           {isDsType(examType)
             ? 'Aucune classe de la 6ème à la Terminale. Vérifiez le niveau des classes dans « Classes ».'
-            : isCmType(examType)
+            : isPrimaryCompoType(examType)
               ? 'Aucune classe du CI au CM2. Vérifiez le niveau des classes dans « Classes ».'
               : 'Aucune classe. Créez d’abord vos classes dans « Classes ».'}
         </div>
@@ -381,7 +381,7 @@ function MockExamsPage({ kind = 'ESSAI' }) {
   const { user } = useAuth();
   const qc = useQueryClient();
   const isAdmin = user?.role === 'ADMIN';
-  const isDs = kind === 'DS' || kind === 'CM';   // séances hors examen (DS, compositions mensuelles)
+  const isDs = kind === 'DS' || kind === 'CM' || kind === 'CA';   // séances hors examen (DS, compositions du primaire)
   const text = KIND_TEXT[kind] ?? KIND_TEXT.ESSAI;
   const types = typesForKind(kind, EXAM_TYPES);
   // L'administrateur crée et gère toutes les sessions ; les professeurs saisissent et signent leurs notes
@@ -432,6 +432,8 @@ function MockExamsPage({ kind = 'ESSAI' }) {
             ? (isDs ? text.listSubtitle : t('mockExams.subtitle'))
             : kind === 'CM'
               ? "Les compositions mensuelles sont créées par l'administration. Saisissez et signez les notes dans « Fiches » (sur 10 ou sur 20 selon la matière)."
+            : kind === 'CA'
+              ? "Les compositions d'anglais sont créées par l'administration. Saisissez et signez les notes d'anglais dans « Fiches d'anglais »."
             : isDs
               ? "Les devoirs surveillés sont créés par l'administration. Saisissez et signez les notes de votre matière dans « Fiches des DS »."
               : "Les examens blancs sont créés par l'administration. Saisissez et signez les notes de votre matière dans « Fiches d'examen »."

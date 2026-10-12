@@ -5,7 +5,7 @@ import { mockExamsService } from '../../../services/mockExamsService';
 import PrintFormatPicker from '../../../components/common/PrintFormatPicker/PrintFormatPicker';
 import { fmtSessionDates } from '../../../utils/fmtSessionDates';
 import './MockExamRelevePage.css';
-import { examScale, isNonExamType, isCmType } from '../../../utils/examKinds';
+import { examScale, isNonExamType, isPrimaryCompoType, fmtAvg } from '../../../utils/examKinds';
 
 const TYPE_LABELS = {
   BLANC: 'Examen Blanc',
@@ -15,6 +15,7 @@ const TYPE_LABELS = {
   BAC2:  'Baccalauréat — Deuxième Partie',
   DEVOIR_SURVEILLE: 'Devoir surveillé',
   COMPOSITION_MENSUELLE: 'Composition mensuelle',
+  COMPOSITION_ANGLAIS: "Composition d'anglais",
 };
 
 /** Appréciation d'une note sur `scale` (seuils définis sur 20). */
@@ -50,11 +51,8 @@ function getResult(avg, examType, sex) {
 // Single student card (one per print page)
 function StudentCard({ student, subjects, exam, institution }) {
   const scale = examScale(exam?.examType); // 10 pour les compositions mensuelles
-  const isCm = isCmType(exam?.examType);
-  // Composition mensuelle (primaire) : la partie anglaise est notée à part, hors total et moyenne
-  const mainSubjects = subjects.filter((subj) => !subj.english);
-  const englishSubjects = subjects.filter((subj) => subj.english);
-  const totalCoeff = mainSubjects.reduce((s, subj) => s + subj.coefficient, 0);
+  const isCm = isPrimaryCompoType(exam?.examType); // chaque matière sur son barème (10 ou 20)
+  const totalCoeff = subjects.reduce((s, subj) => s + subj.coefficient, 0);
   const gradeMap = new Map(student.grades.map((g) => [g.subjectId, g]));
 
   // Points obtenus ÷ points possibles, ramenés au barème de la session (compositions mensuelles :
@@ -62,7 +60,7 @@ function StudentCard({ student, subjects, exam, institution }) {
   const subjMax = (subj) => subj.maxScore ?? scale;
   let totalPts = 0;
   let filledMax = 0;
-  mainSubjects.forEach((subj) => {
+  subjects.forEach((subj) => {
     const g = gradeMap.get(subj.id);
     if (g?.score != null) {
       totalPts += g.score * subj.coefficient;
@@ -132,7 +130,6 @@ function StudentCard({ student, subjects, exam, institution }) {
       </div>
 
       {/* ── Grade table ── */}
-      <div className="mrel-tables">
       <table className="mrel-table">
         <thead>
           <tr>
@@ -144,7 +141,7 @@ function StudentCard({ student, subjects, exam, institution }) {
           </tr>
         </thead>
         <tbody>
-          {mainSubjects.map((subj, i) => {
+          {subjects.map((subj, i) => {
             const g = gradeMap.get(subj.id);
             const score = g?.score ?? null;
             const pts = score != null ? score * subj.coefficient : null;
@@ -177,48 +174,13 @@ function StudentCard({ student, subjects, exam, institution }) {
           </tr>
         </tfoot>
       </table>
-      {englishSubjects.length > 0 && (() => {
-        let engPts = 0;
-        let engMax = 0;
-        englishSubjects.forEach((subj) => {
-          const sc = gradeMap.get(subj.id)?.score;
-          if (sc != null) { engPts += sc; engMax += subjMax(subj); }
-        });
-        return (
-          <div className="mrel-english">
-            <div className="mrel-english__title">ANGLAIS</div>
-            <table className="mrel-english__table">
-              <thead><tr><th>Matière</th><th>Note</th><th>Appr.</th></tr></thead>
-              <tbody>
-                {englishSubjects.map((subj) => {
-                  const score = gradeMap.get(subj.id)?.score ?? null;
-                  return (
-                    <tr key={subj.id}>
-                      <td className="mrel-english__subj">{subj.nameFr}</td>
-                      <td className="mrel-english__note">
-                        {score != null ? score.toFixed(2).replace('.', ',') : '—'}<small className="mrel-max">/{subjMax(subj)}</small>
-                      </td>
-                      <td>{apprec(score, subjMax(subj))}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-              {englishSubjects.length > 1 && engMax > 0 && (
-                <tfoot><tr><td className="mrel-english__subj">Total</td><td colSpan={2}>{engPts.toFixed(2).replace('.', ',')} / {engMax}</td></tr></tfoot>
-              )}
-            </table>
-            <div className="mrel-english__hint">Hors total et moyenne</div>
-          </div>
-        );
-      })()}
-      </div>
 
       {/* ── Result summary ── */}
       <div className="mrel-result">
         <div className="mrel-result__item">
           <span className="mrel-result__label">Moyenne générale</span>
           <span className="mrel-result__value mrel-result__value--avg">
-            {avg != null ? avg.toFixed(2).replace('.', ',') + ` / ${scale}` : '—'}
+            {fmtAvg(avg, exam.examType, ' / ')}
           </span>
         </div>
         <div className="mrel-result__item">

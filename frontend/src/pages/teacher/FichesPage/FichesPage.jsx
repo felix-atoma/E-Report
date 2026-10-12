@@ -8,7 +8,7 @@ import Loading from '../../../components/common/Loading/Loading';
 import { classesService } from '../../../services/classesService';
 import { gradesService } from '../../../services/gradesService';
 import { mockExamsService } from '../../../services/mockExamsService';
-import { isDsType, isCmType } from '../../../utils/examKinds';
+import { isDsType, isCmType, isCaType } from '../../../utils/examKinds';
 import './FichesPage.css';
 
 const TERM_VALUES = [1, 2, 3];
@@ -24,7 +24,7 @@ function PendingEvaluations({ classes }) {
     queryFn: () => mockExamsService.list({}).then((r) => r.data),
   });
   const pending = exams.filter((e) =>
-    (isDsType(e.examType) || isCmType(e.examType)) && e.status !== 'PUBLISHED' && classIds.has(e.classId));
+    (isDsType(e.examType) || isCmType(e.examType) || isCaType(e.examType)) && e.status !== 'PUBLISHED' && classIds.has(e.classId));
   if (!pending.length) return null;
   return (
     <div className="fp__evals">
@@ -32,7 +32,7 @@ function PendingEvaluations({ classes }) {
       <div className="fp__evals-list">
         {pending.map((e) => (
           <Link key={e.id} to={`/mock-exams/${e.id}/fiche`} className="fp__eval">
-            <span className="fp__eval-kind">{isCmType(e.examType) ? 'Composition mensuelle' : 'Devoir surveillé'}</span>
+            <span className="fp__eval-kind">{isCmType(e.examType) ? 'Composition mensuelle' : isCaType(e.examType) ? "Composition d'anglais" : 'Devoir surveillé'}</span>
             <strong>{e.label}</strong>
             <span className="fp__eval-class">🏫 {e.class?.name}</span>
             <span className="fp__eval-cta">Saisir les notes →</span>
