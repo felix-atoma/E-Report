@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, Logger, NotFoundException, ForbiddenEx
 import archiver = require('archiver');
 import { PrismaService } from '../../prisma/prisma.service';
 import { PdfService, ReleveData, isPrimaryLevel, isSecondaryLevel, primarySubjectMax, isPrimaryEnglish } from '../pdf/pdf.service';
+import { byStudentName } from '../../common/utils/student-order.util';
 import { CreateMockExamDto } from './dto/create-mock-exam.dto';
 import { SaveMockExamGradesDto } from './dto/save-grades.dto';
 
@@ -695,8 +696,9 @@ export class MockExamsService {
     const all = await this.prisma.classStudent.findMany({
       where: { classId },
       include: { student: { include: { user: { select: { name: true } } } } },
-      orderBy: { student: { user: { name: 'asc' } } },
     });
+    // Fiche de notes : élèves par ordre alphabétique (accents et majuscules ignorés)
+    all.sort(byStudentName((e) => ({ name: e.student.user?.name, admissionNumber: e.student.admissionNumber })));
     const years = [...new Set(all.map((e) => e.academicYear))].sort();
     const year = years.includes(academicYear) ? academicYear : years[years.length - 1];
     const seen = new Set<string>();

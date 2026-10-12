@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Role } from '../../common/enums/role.enum';
+import { byStudentName } from '../../common/utils/student-order.util';
 import { BulkGradesDto } from './dto/bulk-grades.dto';
 import { SaveClassGradesDto } from './dto/save-class-grades.dto';
 
@@ -145,8 +146,9 @@ export class GradesService {
           },
         },
       },
-      orderBy: { student: { admissionNumber: 'asc' } },
     });
+    // Fiche de notes : élèves par ordre alphabétique (accents et majuscules ignorés)
+    enrollments.sort(byStudentName((e) => ({ name: e.student.user?.name, admissionNumber: e.student.admissionNumber })));
 
     // Get subject info
     const subject = await this.prisma.subject.findUnique({
