@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
 import archiver = require('archiver');
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PdfService, ReleveData, isPrimaryLevel, isSecondaryLevel, primarySubjectMax, isPrimaryEnglish } from '../pdf/pdf.service';
 import { byStudentName } from '../../common/utils/student-order.util';
@@ -765,6 +766,62 @@ export class MockExamsService {
     const exam = all[0].exam;
     const safe = (v: string) => v.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '');
     return { buffer, filename: `releves-${safe(exam.className)}-${safe(exam.label)}.zip` };
+  }
+
+  /**
+   * Tous les relevés de la session, deux par feuille A4 (l'un au-dessus de l'autre, chacun sur une
+   * demi-feuille A5 paysage), avec un trait de découpe au milieu : on imprime puis on coupe la feuille
+   * en deux — moitié moins de papier. Chaque relevé est rendu directement au format demi-feuille.
+   */
+  async releveDuo(examId: string, institutionId: string): Promise<{ buffer: Buffer; filename: string }> {
+    const all = await this.buildReleveData(examId, institutionId);
+    const out = await PDFDocument.create();
+    const A4: [number, number] = [595.28, 841.89];
+    const halfHeight = A4[1] / 2;
+    const en = isEnglishSession(all[0]?.exam.examType);
+    const font = await out.embedFont(StandardFonts.Helvetica);
+    let page = null as ReturnType<typeof out.addPage> | null;
+    let slot = 0;
+    // Séquentiel : un seul navigateur Puppeteer, mémoire maîtrisée
+    for (const d of all) {
+      let single: Buffer;
+      try {
+        single = await this.pdf.generateRelevePdfBuffer(d, true);
+      } catch (err: any) {
+        this.logger.error(`Relevés 2 par page : élève ${d.student.admissionNumber} ignoré — ${err?.message ?? err}`);
+        continue;
+      }
+      const [embedded] = await out.embedPdf(single, [0]);
+      if (!page || slot === 2) {
+        page = out.addPage(A4);
+        slot = 0;
+        // Trait de découpe au milieu de la feuille
+        page.drawLine({
+          start: { x: 8, y: halfHeight }, end: { x: A4[0] - 8, y: halfHeight },
+          thickness: 0.6, color: rgb(0.6, 0.6, 0.6), dashArray: [4, 4],
+        });
+        const cut = en ? 'cut here' : 'couper ici';
+        page.drawText(cut, {
+          x: A4[0] / 2 - font.widthOfTextAtSize(cut, 6) / 2, y: halfHeight + 2,
+          size: 6, font, color: rgb(0.6, 0.6, 0.6),
+        });
+      }
+      // Demi-feuille : en haut pour le 1er relevé, en bas pour le 2e
+      const scale = Math.min(A4[0] / embedded.width, halfHeight / embedded.height);
+      const w = embedded.width * scale;
+      const h = embedded.height * scale;
+      page.drawPage(embedded, {
+        x: (A4[0] - w) / 2,
+        y: (slot === 0 ? halfHeight : 0) + (halfHeight - h) / 2,
+        width: w, height: h,
+      });
+      slot++;
+    }
+    if (!out.getPageCount()) throw new NotFoundException('Aucun relevé à imprimer');
+    const buffer = Buffer.from(await out.save());
+    const exam = all[0].exam;
+    const safe = (v: string) => v.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '');
+    return { buffer, filename: `releves-2-par-page-${safe(exam.className)}-${safe(exam.label)}.pdf` };
   }
 
   // ─── Private ─────────────────────────────────────────────────────────────────

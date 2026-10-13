@@ -162,6 +162,19 @@ export class MockExamsController {
     res.end(buffer);
   }
 
+  /** Tous les relevés, deux par feuille A4 (à couper en deux après impression). */
+  @Roles(Role.ADMIN, Role.TEACHER)
+  @Get(':id/releve/duo')
+  async releveDuo(@Param('id') id: string, @Req() req: any, @Res() res: Response) {
+    const { buffer, filename } = await this.service.releveDuo(id, req.user.institutionId);
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+      'Content-Length': buffer.length,
+    });
+    res.end(buffer);
+  }
+
   // Tous les relevés de la session dans un ZIP (un PDF par élève)
   @Roles(Role.ADMIN, Role.TEACHER)
   @Get(':id/releve/zip')

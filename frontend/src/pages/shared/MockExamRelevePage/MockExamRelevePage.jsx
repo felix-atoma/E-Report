@@ -290,14 +290,17 @@ function MockExamRelevePage() {
 
   // Téléchargement en PDF (même charte que les bulletins) : l'élève choisi, ou tous en ZIP
   const [downloading, setDownloading] = useState(false);
-  async function handleDownload() {
-    setDownloading(true);
+  // duo : tous les relevés deux par feuille A4, à couper en deux après impression
+  async function handleDownload(duo = false) {
+    setDownloading(duo ? 'duo' : true);
     try {
-      const res = selected
-        ? await mockExamsService.downloadRelevePdf(id, selected)
-        : await mockExamsService.downloadReleveZip(id);
+      const res = duo
+        ? await mockExamsService.downloadReleveDuo(id)
+        : selected
+          ? await mockExamsService.downloadRelevePdf(id, selected)
+          : await mockExamsService.downloadReleveZip(id);
       const disposition = res.headers?.['content-disposition'] ?? '';
-      const filename = /filename="([^"]+)"/.exec(disposition)?.[1] ?? (selected ? 'releve.pdf' : 'releves.zip');
+      const filename = /filename="([^"]+)"/.exec(disposition)?.[1] ?? (duo || selected ? 'releves.pdf' : 'releves.zip');
       const url = URL.createObjectURL(res.data);
       const a = document.createElement('a');
       a.href = url;
@@ -336,11 +339,21 @@ function MockExamRelevePage() {
           </select>
         </div>
         <PrintFormatPicker defaultFormat="A4 portrait" />
-        <button className="mrel-print-btn mrel-download-btn" onClick={handleDownload} disabled={downloading}>
-          {downloading
+        <button className="mrel-print-btn mrel-download-btn" onClick={() => handleDownload()} disabled={!!downloading}>
+          {downloading === true
             ? (selected ? 'Préparation du PDF…' : 'Préparation des relevés…')
             : (selected ? '⬇ Télécharger le PDF' : `⬇ Tous les relevés (ZIP, ${students.length})`)}
         </button>
+        {!selected && (
+          <button
+            className="mrel-print-btn mrel-download-btn"
+            onClick={() => handleDownload(true)}
+            disabled={!!downloading}
+            title="Deux relevés par feuille A4 : imprimez puis coupez la feuille en deux"
+          >
+            {downloading === 'duo' ? 'Préparation…' : `✂ 2 relevés par feuille (PDF, ${Math.ceil(students.length / 2)} feuilles)`}
+          </button>
+        )}
         <button className="mrel-print-btn" onClick={() => window.print()}>
           🖨 Imprimer
         </button>

@@ -16,6 +16,9 @@ export const mockExamsService = {
     api.get(`/mock-exams/${id}/releve/pdf`, { params: { studentId }, responseType: 'blob' }),
   downloadReleveZip: (id) =>
     api.get(`/mock-exams/${id}/releve/zip`, { responseType: 'blob', timeout: 10 * 60 * 1000 }),
+  // Tous les relevés, deux par feuille A4 (à couper en deux) : moitié moins de papier
+  downloadReleveDuo: (id) =>
+    api.get(`/mock-exams/${id}/releve/duo`, { responseType: 'blob', timeout: 10 * 60 * 1000 }),
   getFicheData: (id) => api.get(`/mock-exams/${id}/fiche`),
   saveSubjectGrades: (id, subjectId, grades, coefficient) =>
     api.patch(`/mock-exams/${id}/fiche/${subjectId}`, { grades, coefficient }),

@@ -348,11 +348,16 @@ export class PdfService {
    * imprimable, on réduit l'échelle juste assez ; puis on vérifie le nombre de pages du PDF et
    * on réduit encore un peu si besoin. Un bulletin court garde sa taille normale (échelle 1).
    */
-  private async renderOnePagePdf(html: string): Promise<Buffer> {
+  /** half : demi-feuille A4 (A5 paysage, 210 × 148,5 mm) — relevés imprimés deux par feuille. */
+  private async renderOnePagePdf(html: string, half = false): Promise<Buffer> {
     const MM = 96 / 25.4;                       // px par mm à 96 dpi
-    const margin = { top: 15, bottom: 15, left: 12, right: 12 };
-    const printableW = Math.floor((210 - margin.left - margin.right) * MM);
-    const printableH = Math.floor((297 - margin.top - margin.bottom) * MM);
+    const sheet = half ? { w: 210, h: 148.5 } : { w: 210, h: 297 };
+    const margin = half ? { top: 6, bottom: 6, left: 8, right: 8 } : { top: 15, bottom: 15, left: 12, right: 12 };
+    const printableW = Math.floor((sheet.w - margin.left - margin.right) * MM);
+    const printableH = Math.floor((sheet.h - margin.top - margin.bottom) * MM);
+    // Demi-feuille : le gabarit déclare une page A4 (@page) que Chrome réduirait en plus pour la faire
+    // tenir sur la demi-feuille — on la remplace par le vrai format
+    if (half) html = html.replace('</head>', '<style>@page { size: 210mm 148.5mm; margin: 6mm 8mm; }</style></head>');
 
     const browser = await getBrowser();
     const page = await browser.newPage();
@@ -379,12 +384,13 @@ export class PdfService {
       });
       // On ne réduit que si le bulletin dépasse vraiment une page (marge de sécurité de 2 % dans ce cas)
       let scale = contentH > printableH ? (printableH / contentH) * 0.98 : 1;
-      scale = Math.max(0.5, Math.floor(scale * 100) / 100);
+      scale = Math.max(half ? 0.35 : 0.5, Math.floor(scale * 100) / 100);
 
       let buf = Buffer.alloc(0);
       for (let attempt = 0; attempt < 6; attempt++) {
         buf = Buffer.from(await page.pdf({
-          format: 'A4',
+          width: `${sheet.w}mm`,
+          height: `${sheet.h}mm`,
           printBackground: true,
           scale,
           margin: {
@@ -392,8 +398,8 @@ export class PdfService {
             left: `${margin.left}mm`, right: `${margin.right}mm`,
           },
         }));
-        if (countPdfPages(buf) <= 1 || scale <= 0.5) break;
-        scale = Math.max(0.5, Math.round(scale * 0.94 * 100) / 100);
+        if (countPdfPages(buf) <= 1 || scale <= (half ? 0.35 : 0.5)) break;
+        scale = Math.max(half ? 0.35 : 0.5, Math.round(scale * 0.94 * 100) / 100);
       }
       if (scale < 1) this.logger.debug(`Bulletin ajusté à une page (échelle ${scale})`);
       return buf;
@@ -444,7 +450,8 @@ export class PdfService {
    * Relevé de notes d'un examen blanc ou d'un devoir surveillé : même charte, même filigrane
    * et même mise sur une page que le bulletin.
    */
-  async generateRelevePdfBuffer(data: ReleveData): Promise<Buffer> {
+  /** half : relevé au format demi-feuille (A5 paysage), pour l'impression deux par feuille. */
+  async generateRelevePdfBuffer(data: ReleveData, half = false): Promise<Buffer> {
     const { institution, exam, student } = data;
     const branding = (institution.brandingSettings as Record<string, unknown>) ?? {};
     const inst = institution as any;
@@ -551,7 +558,7 @@ export class PdfService {
       watermark: buildWatermark(institution.name),
       generatedAt: new Date().toLocaleDateString(en ? 'en-GB' : 'fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }),
     });
-    return this.renderOnePagePdf(html);
+    return this.renderOnePagePdf(html, half);
   }
 
   async generateReportCardPdfBuffer(reportData: ReportCardData): Promise<Buffer> {
