@@ -23,6 +23,9 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
 import { RegisterDto } from './dto/register.dto';
 
+/** École bloquée par le super-admin : message affiché à ses utilisateurs. */
+export const INSTITUTION_BLOCKED_MESSAGE = 'Votre établissement a été bloqué. Contactez NovaBulletin.';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -85,38 +88,18 @@ export class AuthService {
   }
 
   /**
-   * Accès à l'établissement : refusé s'il est suspendu ; après la fin de l'essai (ou d'un abonnement)
-   * pour une école de 50 élèves ou plus, seul l'administrateur peut encore se connecter — pour payer
-   * l'abonnement et débloquer les autres utilisateurs.
+   * Accès à l'établissement : refusé seulement s'il a été bloqué par le super-admin (suspendu) ou
+   * refusé. Il n'y a plus de blocage à la fin d'un essai ou d'un abonnement.
    */
   private async assertInstitutionAccess(user: { role: string; institutionId?: string | null }) {
     // SUPERADMIN users have no institution — skip institution status check
     if (user.role === 'SUPERADMIN' || !user.institutionId) return;
-    const [institution, studentCount] = await Promise.all([
-      (this.prisma as any).institution.findUnique({
-        where: { id: user.institutionId },
-        select: { status: true, subscriptionStatus: true, trialEndsAt: true },
-      }),
-      this.prisma.student.count({ where: { institutionId: user.institutionId } }),
-    ]);
-
+    const institution = await this.prisma.institution.findUnique({
+      where: { id: user.institutionId },
+      select: { status: true },
+    });
     if (institution && ['SUSPENDED', 'REJECTED'].includes(institution.status as string)) {
-      throw new UnauthorizedException(
-        'Votre établissement a été suspendu ou désactivé. Contactez le support.',
-      );
-    }
-
-    if (institution && studentCount >= 50 && user.role !== 'ADMIN') {
-      const trialExpired =
-        institution.subscriptionStatus === 'TRIAL' &&
-        institution.trialEndsAt &&
-        new Date(institution.trialEndsAt) < new Date();
-      const subExpired = institution.subscriptionStatus === 'EXPIRED';
-      if (trialExpired || subExpired) {
-        throw new UnauthorizedException(
-          "La période d'essai de votre établissement est terminée. L'administrateur de l'école doit souscrire un abonnement pour rétablir l'accès.",
-        );
-      }
+      throw new UnauthorizedException(INSTITUTION_BLOCKED_MESSAGE);
     }
   }
 
@@ -307,31 +290,14 @@ export class AuthService {
     if (!user) return { error: 'no_account' as const };
     if (!user.isActive) return { error: 'inactive' as const };
 
-    // Block institution users whose institution is not ACTIVE
+    // École bloquée par le super-admin (ou refusée) : pas de connexion
     if (user.role !== 'SUPERADMIN' && user.institutionId) {
-      const [institution, studentCount] = await Promise.all([
-        (this.prisma as any).institution.findUnique({
-          where: { id: user.institutionId },
-          select: { status: true, subscriptionStatus: true, trialEndsAt: true },
-        }),
-        this.prisma.student.count({ where: { institutionId: user.institutionId } }),
-      ]);
-
+      const institution = await this.prisma.institution.findUnique({
+        where: { id: user.institutionId },
+        select: { status: true },
+      });
       if (institution && ['SUSPENDED', 'REJECTED'].includes(institution.status as string)) {
         return { error: 'inactive' as const };
-      }
-
-      if (institution && studentCount >= 50) {
-        const now = new Date();
-        const trialExpired =
-          institution.subscriptionStatus === 'TRIAL' &&
-          institution.trialEndsAt &&
-          new Date(institution.trialEndsAt) < now;
-        const subExpired = institution.subscriptionStatus === 'EXPIRED';
-
-        if (trialExpired || subExpired) {
-          return { error: 'trial_expired' as const };
-        }
       }
     }
 

@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PrismaService } from '../../../prisma/prisma.service';
+import { INSTITUTION_BLOCKED_MESSAGE } from '../auth.service';
 
 export interface JwtPayload {
   sub: string;
@@ -43,6 +44,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
         institutionId: true,
         isActive: true,
         language: true,
+        institution: { select: { status: true } },
       },
     });
 
@@ -50,9 +52,15 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       JwtStrategy.cache.delete(payload.sub);
       throw new UnauthorizedException('User not found or inactive');
     }
+    // École bloquée par le super-admin : déconnexion à la requête suivante, sans attendre la fin du jeton
+    const { institution, ...profile } = user as typeof user & { institution: { status: string } | null };
+    if (user.role !== 'SUPERADMIN' && institution && ['SUSPENDED', 'REJECTED'].includes(institution.status)) {
+      JwtStrategy.cache.delete(payload.sub);
+      throw new UnauthorizedException(INSTITUTION_BLOCKED_MESSAGE);
+    }
 
     if (JwtStrategy.cache.size > 5000) JwtStrategy.cache.clear();
-    JwtStrategy.cache.set(payload.sub, { user, until: Date.now() + JwtStrategy.TTL_MS });
-    return user;
+    JwtStrategy.cache.set(payload.sub, { user: profile, until: Date.now() + JwtStrategy.TTL_MS });
+    return profile;
   }
 }

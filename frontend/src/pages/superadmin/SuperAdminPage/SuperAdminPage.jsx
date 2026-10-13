@@ -9,7 +9,7 @@ import './SuperAdminPage.css';
 const STATUS_CONFIG = {
   PENDING:   { label: 'En attente',  cls: 'sa-badge--pending'   },
   ACTIVE:    { label: 'Active',      cls: 'sa-badge--active'    },
-  SUSPENDED: { label: 'Suspendue',   cls: 'sa-badge--suspended' },
+  SUSPENDED: { label: 'Bloquée',     cls: 'sa-badge--suspended' },
   REJECTED:  { label: 'Rejetée',     cls: 'sa-badge--rejected'  },
 };
 
@@ -73,11 +73,9 @@ function CountChip({ icon, label, value, alert }) {
 
 // ─── Expanded school profile panel ────────────────────────────────────────────
 const ACCESS_LABEL = {
-  OPEN:      { text: 'Accès ouvert',  cls: 'sa-access--open' },
-  BLOCKED:   { text: 'Bloquée (essai / abonnement terminé)', cls: 'sa-access--blocked' },
-  SUSPENDED: { text: 'Suspendue',     cls: 'sa-access--suspended' },
+  OPEN:      { text: 'Accès ouvert', cls: 'sa-access--open' },
+  SUSPENDED: { text: 'Bloquée',      cls: 'sa-access--suspended' },
 };
-const SUB_LABEL = { TRIAL: "Période d'essai", ACTIVE: 'Abonnement actif', EXPIRED: 'Expiré', SUSPENDED: 'Suspendu' };
 
 export function AccessBadge({ access }) {
   const a = ACCESS_LABEL[access];
@@ -85,13 +83,10 @@ export function AccessBadge({ access }) {
 }
 
 /**
- * Accès et abonnement d'une école, modifiables sans toucher au code : prolonger l'essai, activer
- * l'abonnement, suspendre ou réactiver. Règle : une école de 50 élèves ou plus dont l'essai ou
- * l'abonnement est terminé est bloquée (seul son administrateur peut se connecter, pour payer).
+ * Accès d'une école : le super-admin la bloque ou la débloque. Une école bloquée perd l'accès pour
+ * tous ses utilisateurs (administrateur compris), immédiatement. Plus d'expiration d'essai ni d'abonnement.
  */
 function AccessPanel({ inst, onChanged }) {
-  const [days, setDays] = useState(30);
-  const [months, setMonths] = useState(12);
   const [busy, setBusy] = useState('');
 
   const run = async (body, confirmText) => {
@@ -111,40 +106,25 @@ function AccessPanel({ inst, onChanged }) {
 
   return (
     <div className="sa-access-panel">
-      <div className="sa-profile__field-label">Accès et abonnement</div>
+      <div className="sa-profile__field-label">Accès</div>
       <div className="sa-access-panel__state">
         <AccessBadge access={inst.access} />
-        <span>{SUB_LABEL[inst.subscriptionStatus] ?? inst.subscriptionStatus ?? '—'}</span>
-        {inst.subscriptionStatus === 'TRIAL' && <span>· fin d'essai : <strong>{fmtDateTime(inst.trialEndsAt)}</strong></span>}
-        {inst.subscriptionStatus === 'ACTIVE' && <span>· abonnement jusqu'au <strong>{fmtDate(inst.subscriptionExpiry)}</strong></span>}
-        {inst.actualStudentCount < 50 && <span className="sa-access-panel__hint">· moins de 50 élèves : gratuit, jamais bloquée</span>}
+        <span className="sa-access-panel__hint">
+          {suspended
+            ? '· plus aucun utilisateur de cette école ne peut se connecter'
+            : '· accès normal pour tous les utilisateurs'}
+        </span>
       </div>
       <div className="sa-access-panel__actions">
-        <span className="sa-access-panel__group">
-          <select value={days} onChange={(e) => setDays(Number(e.target.value))} className="sa-plan-select" aria-label="Durée de prolongation">
-            {[7, 15, 30, 60, 90].map((d) => <option key={d} value={d}>{d} jours</option>)}
-          </select>
-          <button className="sa-save-btn" disabled={!!busy} onClick={() => run({ action: 'extendTrial', days })}>
-            {busy === 'extendTrial' ? '...' : "Prolonger l'essai"}
-          </button>
-        </span>
-        <span className="sa-access-panel__group">
-          <select value={months} onChange={(e) => setMonths(Number(e.target.value))} className="sa-plan-select" aria-label="Durée d'abonnement">
-            {[1, 3, 6, 12].map((m) => <option key={m} value={m}>{m} mois</option>)}
-          </select>
-          <button className="sa-save-btn" disabled={!!busy}
-            onClick={() => run({ action: 'activate', months }, `Activer l'abonnement de « ${inst.name} » pour ${months} mois ?`)}>
-            {busy === 'activate' ? '...' : "Activer l'abonnement"}
-          </button>
-        </span>
         {suspended ? (
-          <button className="sa-action-btn sa-action-btn--approve" disabled={!!busy} onClick={() => run({ action: 'reactivate' })}>
-            {busy === 'reactivate' ? '...' : 'Réactiver l’école'}
+          <button className="sa-action-btn sa-action-btn--approve" disabled={!!busy}
+            onClick={() => run({ action: 'reactivate' }, `Débloquer « ${inst.name} » ? Ses utilisateurs pourront de nouveau se connecter.`)}>
+            {busy === 'reactivate' ? '...' : 'Débloquer l’école'}
           </button>
         ) : (
           <button className="sa-action-btn sa-action-btn--suspend" disabled={!!busy}
-            onClick={() => run({ action: 'suspend' }, `Suspendre « ${inst.name} » ? Plus aucun de ses utilisateurs ne pourra se connecter, administrateur compris.`)}>
-            {busy === 'suspend' ? '...' : 'Suspendre l’école'}
+            onClick={() => run({ action: 'suspend' }, `Bloquer « ${inst.name} » ? Tous ses utilisateurs, administrateur compris, sont déconnectés immédiatement et ne peuvent plus se connecter.`)}>
+            {busy === 'suspend' ? '...' : 'Bloquer l’école'}
           </button>
         )}
       </div>
@@ -510,7 +490,6 @@ function SuperAdminPage() {
     totalBulletins: institutions.reduce((s, i) => s + (i.bulletinCount ?? 0), 0),
   }), [institutions]);
 
-  const subStats = networkStats?.subscription ?? {};
 
   // ── Filtered + searched list ────────────────────────────────────────────────
   const filtered = useMemo(() => {
@@ -647,38 +626,11 @@ function SuperAdminPage() {
           <StatCard label="Total écoles"   value={stats.total}          cls="sa-stat--total" />
           <StatCard label="En attente"     value={stats.pending}        cls="sa-stat--pending" />
           <StatCard label="Actives"        value={stats.active}         cls="sa-stat--active" />
-          <StatCard label="Suspendues"     value={stats.suspended}      cls="sa-stat--suspended" />
+          <StatCard label="Bloquées"       value={stats.suspended}      cls="sa-stat--suspended" />
           <StatCard label="Élèves (total)" value={stats.totalStudents}  cls="sa-stat--students" />
           <StatCard label="Bulletins émis" value={stats.totalBulletins} cls="sa-stat--bulletins" />
         </div>
 
-        {/* Stats row — subscription lifecycle */}
-        <div className="sa-stats-row sa-stats-row--sub">
-          <StatCard
-            label="En essai"
-            value={subStats.trial ?? '—'}
-            cls="sa-stat--trial"
-            sub="période d'essai active"
-          />
-          <StatCard
-            label="Abonnés actifs"
-            value={subStats.active ?? '—'}
-            cls="sa-stat--sub-active"
-            sub="abonnement payant"
-          />
-          <StatCard
-            label="Expirent dans 7 j"
-            value={subStats.expiringIn7 ?? '—'}
-            cls={`sa-stat--expiring${(subStats.expiringIn7 ?? 0) > 0 ? ' sa-stat--warn' : ''}`}
-            sub="à relancer"
-          />
-          <StatCard
-            label="Accès expiré"
-            value={subStats.expired ?? '—'}
-            cls={`sa-stat--expired${(subStats.expired ?? 0) > 0 ? ' sa-stat--danger' : ''}`}
-            sub="sans abonnement"
-          />
-        </div>
 
         {/* Filters + search */}
         <div className="sa-toolbar">
@@ -687,7 +639,7 @@ function SuperAdminPage() {
               { key: 'ALL',       label: 'Toutes' },
               { key: 'PENDING',   label: 'En attente' },
               { key: 'ACTIVE',    label: 'Actives' },
-              { key: 'SUSPENDED', label: 'Suspendues' },
+              { key: 'SUSPENDED', label: 'Bloquées' },
               { key: 'REJECTED',  label: 'Rejetées' },
             ].map(({ key, label }) => (
               <button
@@ -779,7 +731,6 @@ function SuperAdminPage() {
                         {/* Statut */}
                         <td className="sa-cell" data-label="Statut">
                           <StatusBadge status={inst.status} />
-                          {inst.access === 'BLOCKED' && <div><AccessBadge access="BLOCKED" /></div>}
                         </td>
 
                         {/* Élèves */}
@@ -817,8 +768,8 @@ function SuperAdminPage() {
                           )}
                           {inst.status !== 'SUSPENDED' && inst.status !== 'REJECTED' && (
                             <button className="sa-action-btn sa-action-btn--suspend"
-                              onClick={() => doAction(inst.id, 'suspend')} disabled={!!aL}>
-                              {aL === 'suspend' ? '...' : 'Suspendre'}
+                              onClick={() => window.confirm(`Bloquer « ${inst.name} » ? Tous ses utilisateurs sont déconnectés immédiatement.`) && doAction(inst.id, 'suspend')} disabled={!!aL}>
+                              {aL === 'suspend' ? '...' : 'Bloquer'}
                             </button>
                           )}
                           {inst.status !== 'REJECTED' && (

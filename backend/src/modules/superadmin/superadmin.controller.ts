@@ -96,7 +96,7 @@ export class SuperAdminController {
 
   @Roles(Role.SUPERADMIN)
   @Patch('institutions/:id/access')
-  updateAccess(@Param('id') id: string, @Body() body: { action: string; days?: number; months?: number }) {
+  updateAccess(@Param('id') id: string, @Body() body: { action: string }) {
     return this.superAdminService.updateAccess(id, body);
   }
 

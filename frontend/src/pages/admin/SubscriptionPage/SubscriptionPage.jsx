@@ -65,9 +65,10 @@ export default function SubscriptionPage() {
 
   const STATUS_META = {
     FREE:      { icon: '🎁', label: 'Gratuit',                          cls: 'free' },
-    TRIAL:     { icon: '🕐', label: t('subscription.status.TRIAL'),     cls: 'trial' },
+    // Plus d'expiration : essai et abonnement terminé donnent le même accès normal
+    TRIAL:     { icon: '✅', label: 'Accès actif',                       cls: 'active' },
     ACTIVE:    { icon: '✅', label: t('subscription.status.ACTIVE'),    cls: 'active' },
-    EXPIRED:   { icon: '🔴', label: t('subscription.status.EXPIRED'),   cls: 'expired' },
+    EXPIRED:   { icon: '✅', label: 'Accès actif',                       cls: 'active' },
     SUSPENDED: { icon: '⛔', label: t('subscription.status.SUSPENDED'), cls: 'suspended' },
   };
 
@@ -168,22 +169,11 @@ export default function SubscriptionPage() {
               <div>
                 <p className="sub-status-label">Statut de l'abonnement</p>
                 <p className="sub-status-value">{statusMeta.label}</p>
-                {isFree ? (
+                {isFree && (
                   <p className="sub-status-expiry">
                     Votre établissement a moins de 50 élèves — accès <strong>gratuit et illimité</strong>.
-                    Un abonnement sera requis dès que vous dépasserez 50 élèves inscrits.
                   </p>
-                ) : (statusData.expiry || statusData.trialEndsAt) ? (
-                  <p className="sub-status-expiry">
-                    {status === 'TRIAL' ? "Essai jusqu'au" : 'Valide jusqu\'au'} :{' '}
-                    <strong>
-                      {new Date(statusData.expiry ?? statusData.trialEndsAt).toLocaleDateString(locale, {
-                        day: '2-digit', month: 'long', year: 'numeric',
-                      })}
-                    </strong>
-                    {statusData.daysLeft != null && ` (${statusData.daysLeft} j restants)`}
-                  </p>
-                ) : null}
+                )}
               </div>
             </div>
             <div className="sub-status-right">

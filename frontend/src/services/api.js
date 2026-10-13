@@ -98,6 +98,9 @@ api.interceptors.response.use(
         processQueue(refreshErr, null);
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
+        // École bloquée par le super-admin : la page de connexion affiche la raison
+        const reason = refreshErr?.response?.data?.message;
+        if (typeof reason === 'string' && /bloqu/i.test(reason)) sessionStorage.setItem('loginNotice', reason);
         window.location.href = '/login';
         return Promise.reject(refreshErr);
       } finally {

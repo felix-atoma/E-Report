@@ -11,7 +11,16 @@ function LoginForm() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
-  const [error, setError] = useState('');
+  // Raison d'une déconnexion forcée (école bloquée par le super-admin), affichée une seule fois
+  const [error, setError] = useState(() => {
+    try {
+      const notice = sessionStorage.getItem('loginNotice') ?? '';
+      sessionStorage.removeItem('loginNotice');
+      return notice;
+    } catch {
+      return '';
+    }
+  });
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState('credentials'); // 'credentials' | 'otp'
   const [otp, setOtp] = useState('');

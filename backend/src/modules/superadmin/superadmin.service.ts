@@ -17,18 +17,11 @@ import { SubscriptionService } from '../subscription/subscription.service';
 
 /**
  * État d'accès d'un établissement, selon les mêmes règles que la connexion (auth.service) :
- * SUSPENDED (suspendu par le propriétaire), BLOCKED (50 élèves ou plus, essai ou abonnement terminé :
- * seul l'administrateur peut se connecter), OPEN (accès normal).
+ * SUSPENDED (bloqué par le super-admin, ou refusé) ou OPEN. Plus d'expiration d'essai ni d'abonnement.
  */
-export function computeAccess(inst: any, studentCount: number): 'OPEN' | 'BLOCKED' | 'SUSPENDED' {
-  if (!inst) return 'OPEN';
-  if (['SUSPENDED', 'REJECTED'].includes(inst.status)) return 'SUSPENDED';
-  if (studentCount < 50) return 'OPEN';
-  const now = new Date();
-  const trialOver = inst.subscriptionStatus === 'TRIAL' && inst.trialEndsAt && new Date(inst.trialEndsAt) < now;
-  const subOver = inst.subscriptionStatus === 'EXPIRED' || inst.subscriptionStatus === 'SUSPENDED'
-    || (inst.subscriptionStatus === 'ACTIVE' && inst.subscriptionExpiry && new Date(inst.subscriptionExpiry) < now);
-  return trialOver || subOver ? 'BLOCKED' : 'OPEN';
+export function computeAccess(inst: any): 'OPEN' | 'SUSPENDED' {
+  if (inst && ['SUSPENDED', 'REJECTED'].includes(inst.status)) return 'SUSPENDED';
+  return 'OPEN';
 }
 
 @Injectable()
@@ -166,7 +159,7 @@ export class SuperAdminService {
         subscriptionStatus: inst.subscriptionStatus,
         trialEndsAt: inst.trialEndsAt,
         subscriptionExpiry: inst.subscriptionExpiry,
-        access: computeAccess(inst, inst._count.students),
+        access: computeAccess(inst),
         ownerNotes: inst.ownerNotes,
         createdAt: inst.createdAt,
         updatedAt: inst.updatedAt,
@@ -185,31 +178,13 @@ export class SuperAdminService {
   }
 
   /**
-   * Accès d'un établissement, sans toucher au code : prolonger l'essai, activer l'abonnement,
-   * suspendre ou réactiver. Les durées s'ajoutent à la date en cours si elle n'est pas dépassée.
+   * Accès d'un établissement : le super-admin le bloque (« suspend ») ou le débloque (« reactivate »).
+   * Une école bloquée perd l'accès pour tous ses utilisateurs, administrateur compris.
    */
-  async updateAccess(id: string, body: { action: string; days?: number; months?: number }) {
+  async updateAccess(id: string, body: { action: string }) {
     const inst = await this.findInstitutionOrThrow(id);
-    const now = new Date();
-    const from = (d?: Date | null) => (d && new Date(d) > now ? new Date(d) : now);
     let data: Record<string, unknown>;
     switch (body.action) {
-      case 'extendTrial': {
-        const days = Math.round(Number(body.days));
-        if (!(days >= 1 && days <= 365)) throw new BadRequestException('Durée invalide (1 à 365 jours)');
-        const end = from((inst as any).trialEndsAt);
-        end.setDate(end.getDate() + days);
-        data = { subscriptionStatus: 'TRIAL', trialEndsAt: end };
-        break;
-      }
-      case 'activate': {
-        const months = Math.round(Number(body.months));
-        if (!(months >= 1 && months <= 36)) throw new BadRequestException('Durée invalide (1 à 36 mois)');
-        const end = from((inst as any).subscriptionStatus === 'ACTIVE' ? (inst as any).subscriptionExpiry : null);
-        end.setMonth(end.getMonth() + months);
-        data = { subscriptionStatus: 'ACTIVE', subscriptionExpiry: end };
-        break;
-      }
       case 'suspend':
         data = { status: 'SUSPENDED', isActive: false };
         break;
@@ -232,7 +207,7 @@ export class SuperAdminService {
       subscriptionStatus: (updated as any).subscriptionStatus,
       trialEndsAt: (updated as any).trialEndsAt,
       subscriptionExpiry: (updated as any).subscriptionExpiry,
-      access: computeAccess(updated, updated!._count.students),
+      access: computeAccess(updated),
     };
   }
 
@@ -285,13 +260,9 @@ export class SuperAdminService {
 
   // ─── Network-wide KPI stats ─────────────────────────────────────────────────
   async networkStats() {
-    const now   = new Date();
-    const in7d  = new Date(now.getTime() + 7 * 86_400_000);
-
     const [
       totalInstitutions, active, pending, suspended,
       totalStudents, totalUsers, totalBulletins, totalPayments,
-      trialCount, activeSubCount, expiredCount, expiringCount,
     ] = await Promise.all([
       this.prisma.institution.count(),
       this.prisma.institution.count({ where: { status: 'ACTIVE' as any } }),
@@ -301,12 +272,6 @@ export class SuperAdminService {
       this.prisma.user.count({ where: { role: { not: 'SUPERADMIN' as any } } }),
       this.prisma.reportCard.count(),
       this.prisma.payment.count(),
-      (this.prisma as any).institution.count({ where: { subscriptionStatus: 'TRIAL' } }),
-      (this.prisma as any).institution.count({ where: { subscriptionStatus: 'ACTIVE' } }),
-      (this.prisma as any).institution.count({ where: { subscriptionStatus: 'EXPIRED' } }),
-      (this.prisma as any).institution.count({
-        where: { subscriptionStatus: 'TRIAL', trialEndsAt: { gte: now, lt: in7d } },
-      }),
     ]);
 
     const recentSchools = await this.prisma.institution.findMany({
@@ -318,7 +283,6 @@ export class SuperAdminService {
     return {
       institutions: { total: totalInstitutions, active, pending, suspended },
       network:       { students: totalStudents, users: totalUsers, bulletins: totalBulletins, payments: totalPayments },
-      subscription:  { trial: trialCount, active: activeSubCount, expired: expiredCount, expiringIn7: expiringCount },
       recentSchools,
     };
   }
