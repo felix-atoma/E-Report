@@ -168,3 +168,8 @@
 .mrel-qr { width: 64px; height: 64px; image-rendering: pixelated; }
 .mrel-code { font-size: 0.55rem; color: #6b7280; letter-spacing: 0.2px; white-space: nowrap; }
 .mrel-photo { width: 64px; height: 78px; object-fit: cover; border: 2px solid #1e3a8a; border-radius: 3px; }
+
+/* Signatures des enseignants (fiches signées de la composition) */
+.mrel-sig__imgs { display: flex; justify-content: center; gap: 10px; min-height: 60px; align-items: flex-end; }
+.mrel-sig__person { flex: 1; min-width: 0; }
+.mrel-sig__img { display: block; max-height: 48px; max-width: 100%; margin: 0 auto; object-fit: contain; }

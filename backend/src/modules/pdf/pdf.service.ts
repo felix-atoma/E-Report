@@ -543,6 +543,7 @@ export class PdfService {
       isPrimaryScale: scale === 10,
       isPercentScale: isPercent,
       isCm,
+      teacherSignatures: data.teacherSignatures ?? [],
       qrDataUri,
       verifyCode: data.verifyCode ?? null,
       verifyUrl: this.verifyUrl,
@@ -880,6 +881,8 @@ export interface ReportCardData {
 
 /** Données d'un relevé de notes (examen blanc ou devoir surveillé) pour un élève. */
 export interface ReleveData {
+  /** Signatures des enseignants (titulaire puis professeurs de matière) — cadre « Le Maître » */
+  teacherSignatures?: Array<{ name: string; image: string }>;
   /** Code de vérification du relevé (imprimé et encodé dans le QR code) */
   verifyCode?: string;
   institution: {

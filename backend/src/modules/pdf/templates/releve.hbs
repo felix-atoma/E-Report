@@ -124,6 +124,10 @@ body {
 .sig-hint  { font-size:8px; color:#9ca3af; margin-bottom:20px; }
 .sig-line  { border-bottom:1px solid #374151; margin:0 12px 3px; }
 .sig-name  { font-size:8.5px; color:#374151; }
+/* Signatures des enseignants (fiches signées de la composition) */
+.sig-imgs { display:flex; justify-content:center; gap:8px; margin-top:4px; }
+.sig-person { flex:1; min-width:0; }
+.sig-img { display:block; max-height:30px; max-width:100%; margin:0 auto 2px; object-fit:contain; }
 
 .watermark {
   position:absolute; top:50%; left:50%; width:92%;
@@ -280,9 +284,17 @@ body {
   <div class="signatures">
     <div class="sig-box">
       <div class="sig-title">{{#if isCm}}{{L.teacherCm}}{{else}}{{L.teacher}}{{/if}}</div>
+      {{#if teacherSignatures.length}}
+      <div class="sig-imgs">
+        {{#each teacherSignatures}}
+        <div class="sig-person"><img src="{{this.image}}" alt="Signature" class="sig-img" /><div class="sig-name">{{this.name}}</div></div>
+        {{/each}}
+      </div>
+      {{else}}
       <div class="sig-hint">{{L.nameSign}}</div>
       <div class="sig-line"></div>
       <div class="sig-name">&nbsp;</div>
+      {{/if}}
     </div>
     <div class="sig-box">
       <div class="sig-title">{{L.head}}</div>

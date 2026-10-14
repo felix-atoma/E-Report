@@ -167,6 +167,35 @@ describe('MockExamsService', () => {
     });
   });
 
+  describe('teacher signatures on relevés', () => {
+    const sign = (signedById: string, name: string, image: string) =>
+      ({ signedById, signedByName: name, signatureData: image, signedBy: { name } });
+
+    it('one signature per teacher, class teacher first (latest kept)', async () => {
+      prisma.class.findUnique.mockResolvedValue({ teacherId: 'tit', teacher: { name: 'Michel Gadri' } });
+      prisma.mockExamSubjectFiche.findMany.mockResolvedValue([
+        sign('eng', 'GADESSE Yawa', 'img-eng-new'), sign('tit', 'Michel Gadri', 'img-tit'), sign('eng', 'GADESSE Yawa', 'img-eng-old'),
+      ]);
+      const sigs = await (service as any).teacherSignatures('exam-1', 'class-1');
+      expect(sigs).toEqual([{ name: 'Michel Gadri', image: 'img-tit' }, { name: 'GADESSE Yawa', image: 'img-eng-new' }]);
+    });
+
+    it('nobody signed yet: falls back to the class teacher latest known signature', async () => {
+      prisma.class.findUnique.mockResolvedValue({ teacherId: 'tit', teacher: { name: 'Michel Gadri' } });
+      prisma.mockExamSubjectFiche.findMany.mockResolvedValue([]);
+      prisma.gradeFiche.findFirst.mockResolvedValue({ signatureData: 'img-term', signedAt: new Date('2026-10-01') });
+      prisma.mockExamSubjectFiche.findFirst.mockResolvedValue({ signatureData: 'img-old-compo', signedAt: new Date('2026-09-01') });
+      const sigs = await (service as any).teacherSignatures('exam-1', 'class-1');
+      expect(sigs).toEqual([{ name: 'Michel Gadri', image: 'img-term' }]);
+    });
+
+    it('no signature anywhere: empty (blank line kept on the relevé)', async () => {
+      prisma.class.findUnique.mockResolvedValue({ teacherId: null, teacher: null });
+      prisma.mockExamSubjectFiche.findMany.mockResolvedValue([]);
+      expect(await (service as any).teacherSignatures('exam-1', 'class-1')).toEqual([]);
+    });
+  });
+
   describe('updateType', () => {
     it('refuses turning a primary session into a devoir surveillé', async () => {
       prisma.class.findUnique.mockResolvedValue({ level: 'CM2' });

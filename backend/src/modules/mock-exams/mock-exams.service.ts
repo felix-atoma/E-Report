@@ -599,6 +599,7 @@ export class MockExamsService {
       select: { id: true, user: { select: { profileImage: true } } },
     });
     const photoById = new Map(photos.map((p) => [p.id, p.user?.profileImage ?? null]));
+    const teacherSignatures = await this.teacherSignatures(examId, sheet.exam.class?.id);
 
     return {
       institution: {
@@ -610,6 +611,7 @@ export class MockExamsService {
       },
       exam: sheet.exam,
       subjects: sheet.subjects,
+      teacherSignatures,
       students: students.map((s) => ({
         ...s,
         photo: photoById.get(s.studentId) ?? null,
@@ -697,9 +699,11 @@ export class MockExamsService {
     });
     const detailById = new Map(details.map((d) => [d.id, d]));
     const subjectName = new Map(sheet.subjects.map((s: any) => [s.id, s.nameFr]));
+    const teacherSignatures = await this.teacherSignatures(examId, sheet.exam.class?.id);
 
     return students.map((s) => ({
       institution,
+      teacherSignatures,
       exam: {
         label: sheet.exam.label,
         examType: sheet.exam.examType,
@@ -825,6 +829,48 @@ export class MockExamsService {
   }
 
   // ─── Private ─────────────────────────────────────────────────────────────────
+
+  /**
+   * Signatures des enseignants pour le relevé : celles des fiches de la session (une par enseignant,
+   * le titulaire de la classe en premier, puis les professeurs de matière — par ex. ceux d'anglais).
+   * Si personne n'a encore signé de fiche dans la session, la dernière signature connue du titulaire
+   * (fiches de notes ou de composition) est reprise. Trois au plus.
+   */
+  private async teacherSignatures(examId: string, classId?: string | null): Promise<Array<{ name: string; image: string }>> {
+    const handwritten = { signedAt: { not: null }, signatureData: { not: null }, NOT: { signatureData: 'ADMIN_VERIFIED' } };
+    const [fiches, cls] = await Promise.all([
+      this.prisma.mockExamSubjectFiche.findMany({
+        where: { mockExamId: examId, ...handwritten },
+        orderBy: { signedAt: 'desc' },
+        select: { signedById: true, signedByName: true, signatureData: true, signedBy: { select: { name: true } } },
+      }),
+      classId
+        ? this.prisma.class.findUnique({ where: { id: classId }, select: { teacherId: true, teacher: { select: { name: true } } } })
+        : null,
+    ]);
+    const byTeacher = new Map<string, { id: string | null; name: string; image: string }>();
+    for (const f of fiches) {
+      const key = f.signedById ?? f.signedByName ?? '';
+      if (!key || byTeacher.has(key)) continue;   // la plus récente de chaque enseignant
+      byTeacher.set(key, { id: f.signedById, name: f.signedBy?.name ?? f.signedByName ?? '', image: f.signatureData! });
+    }
+    const list = [...byTeacher.values()];
+    const titulaireId = cls?.teacherId ?? null;
+    if (titulaireId && fiches.length === 0) {
+      // Titulaire : sa dernière signature connue, utilisée si personne n'a signé dans cette session
+      const [term, compo] = await Promise.all([
+        this.prisma.gradeFiche.findFirst({ where: { signedById: titulaireId, ...handwritten }, orderBy: { signedAt: 'desc' }, select: { signatureData: true, signedAt: true } }),
+        this.prisma.mockExamSubjectFiche.findFirst({ where: { signedById: titulaireId, ...handwritten }, orderBy: { signedAt: 'desc' }, select: { signatureData: true, signedAt: true } }),
+      ]);
+      const latest = [term, compo].filter(Boolean).sort((a, b) => +new Date(b!.signedAt!) - +new Date(a!.signedAt!))[0];
+      if (latest?.signatureData) {
+        // Aucune fiche signée dans la session : on montre au moins celle du titulaire
+        list.push({ id: titulaireId, name: cls?.teacher?.name ?? '', image: latest.signatureData });
+      }
+    }
+    list.sort((a, b) => Number(b.id === titulaireId) - Number(a.id === titulaireId));
+    return list.slice(0, 3).map(({ name, image }) => ({ name, image }));
+  }
 
   /**
    * Élèves de la classe pour l'année de la session (comme les fiches trimestrielles) — sinon les élèves
