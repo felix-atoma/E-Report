@@ -25,7 +25,7 @@ const T_FR = {
   className: 'Classe', year: 'Année scolaire', subject: 'Matière / Discipline', coef: 'Coeff.', mark: 'Note',
   points: 'Pts × Coeff', appreciation: 'Appréciation', total: 'TOTAL', average: 'Moyenne générale', mention: 'Mention',
   rank: 'Classement', result: 'Résultat', passed: 'MOYENNE ATTEINTE', below: 'SOUS LA MOYENNE',
-  teacher: 'Le Maître / La Maîtresse', teacherSign: 'Nom et signature',
+  teacher: 'Le Maître / La Maîtresse', teacherSign: 'Nom et signature', subjectTeachers: 'Professeur(s) de matière',
   head: 'Le Directeur / La Directrice', headSign: 'Signature et cachet', parentTitle: 'Lu et pris connaissance',
   parent: 'Parent / Tuteur', verifyAlt: 'Code de vérification',
   levels: ['Très Bien', 'Bien', 'Assez Bien', 'Passable', 'Insuffisant'],
@@ -35,7 +35,7 @@ const T_EN = {
   className: 'Class', year: 'School year', subject: 'Subject', coef: 'Coef.', mark: 'Mark',
   points: 'Pts × Coef', appreciation: 'Remark', total: 'TOTAL', average: 'Average', mention: 'Remark',
   rank: 'Position', result: 'Result', passed: 'PASSED', below: 'BELOW AVERAGE',
-  teacher: 'Class Teacher', teacherSign: 'Name and signature',
+  teacher: 'Class Teacher', teacherSign: 'Name and signature', subjectTeachers: 'Subject Teacher(s)',
   head: 'Head Teacher', headSign: 'Signature and stamp', parentTitle: 'Read and acknowledged',
   parent: 'Parent / Guardian', verifyAlt: 'Verification code',
   levels: ['Very Good', 'Good', 'Fairly Good', 'Satisfactory', 'Insufficient'],
@@ -81,6 +81,8 @@ function getResult(avg, examType, sex, T = T_FR) {
 
 // Single student card (one per print page)
 function StudentCard({ student, subjects, exam, institution, teacherSignatures = [] }) {
+  const classSignatures = teacherSignatures.filter((t) => t.classTeacher);
+  const subjectSignatures = teacherSignatures.filter((t) => !t.classTeacher);
   const scale = examScale(exam?.examType); // 10 pour les compositions mensuelles
   const isCm = isPrimaryCompoType(exam?.examType); // chaque matière sur son barème (10 ou 20)
   const totalCoeff = subjects.reduce((s, subj) => s + subj.coefficient, 0);
@@ -264,12 +266,12 @@ function StudentCard({ student, subjects, exam, institution, teacherSignatures =
 
       {/* ── Signatures ── */}
       <div className="mrel-sigs">
-        {/* Signatures des enseignants : titulaire puis professeurs de matière (fiches signées) */}
+        {/* Titulaire dans « Le Maître / Class Teacher », professeurs de matière dans leur propre cadre */}
         <div className="mrel-sig">
           <div className="mrel-sig__title">{T.teacher}</div>
-          {teacherSignatures.length > 0 ? (
+          {classSignatures.length > 0 ? (
             <div className="mrel-sig__imgs">
-              {teacherSignatures.map((t, i) => (
+              {classSignatures.map((t, i) => (
                 <div key={i} className="mrel-sig__person">
                   <img src={t.image} alt="Signature" className="mrel-sig__img" />
                   <div className="mrel-sig__name">{t.name}</div>
@@ -283,6 +285,19 @@ function StudentCard({ student, subjects, exam, institution, teacherSignatures =
             </>
           )}
         </div>
+        {subjectSignatures.length > 0 && (
+          <div className="mrel-sig">
+            <div className="mrel-sig__title">{T.subjectTeachers}</div>
+            <div className="mrel-sig__imgs">
+              {subjectSignatures.map((t, i) => (
+                <div key={i} className="mrel-sig__person">
+                  <img src={t.image} alt="Signature" className="mrel-sig__img" />
+                  <div className="mrel-sig__name">{t.name}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="mrel-sig">
           <div className="mrel-sig__title">{T.head}</div>
           <div className="mrel-sig__space" />

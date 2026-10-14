@@ -177,7 +177,22 @@ describe('MockExamsService', () => {
         sign('eng', 'GADESSE Yawa', 'img-eng-new'), sign('tit', 'Michel Gadri', 'img-tit'), sign('eng', 'GADESSE Yawa', 'img-eng-old'),
       ]);
       const sigs = await (service as any).teacherSignatures('exam-1', 'class-1');
-      expect(sigs).toEqual([{ name: 'Michel Gadri', image: 'img-tit' }, { name: 'GADESSE Yawa', image: 'img-eng-new' }]);
+      expect(sigs).toEqual([
+        { name: 'Michel Gadri', image: 'img-tit', classTeacher: true },
+        { name: 'GADESSE Yawa', image: 'img-eng-new', classTeacher: false },
+      ]);
+    });
+
+    it('English test signed only by subject teachers: class teacher box gets his latest signature', async () => {
+      prisma.class.findUnique.mockResolvedValue({ teacherId: 'tit', teacher: { name: 'Michel Gadri' } });
+      prisma.mockExamSubjectFiche.findMany.mockResolvedValue([sign('kad', 'KADJA BANIKY', 'img-kad')]);
+      prisma.gradeFiche.findFirst.mockResolvedValue({ signatureData: 'img-term', signedAt: new Date('2026-10-01') });
+      prisma.mockExamSubjectFiche.findFirst.mockResolvedValue(null);
+      const sigs = await (service as any).teacherSignatures('exam-1', 'class-1');
+      expect(sigs).toEqual([
+        { name: 'Michel Gadri', image: 'img-term', classTeacher: true },
+        { name: 'KADJA BANIKY', image: 'img-kad', classTeacher: false },
+      ]);
     });
 
     it('nobody signed yet: falls back to the class teacher latest known signature', async () => {
@@ -186,7 +201,7 @@ describe('MockExamsService', () => {
       prisma.gradeFiche.findFirst.mockResolvedValue({ signatureData: 'img-term', signedAt: new Date('2026-10-01') });
       prisma.mockExamSubjectFiche.findFirst.mockResolvedValue({ signatureData: 'img-old-compo', signedAt: new Date('2026-09-01') });
       const sigs = await (service as any).teacherSignatures('exam-1', 'class-1');
-      expect(sigs).toEqual([{ name: 'Michel Gadri', image: 'img-term' }]);
+      expect(sigs).toEqual([{ name: 'Michel Gadri', image: 'img-term', classTeacher: true }]);
     });
 
     it('no signature anywhere: empty (blank line kept on the relevé)', async () => {

@@ -284,9 +284,9 @@ body {
   <div class="signatures">
     <div class="sig-box">
       <div class="sig-title">{{#if isCm}}{{L.teacherCm}}{{else}}{{L.teacher}}{{/if}}</div>
-      {{#if teacherSignatures.length}}
+      {{#if classSignatures.length}}
       <div class="sig-imgs">
-        {{#each teacherSignatures}}
+        {{#each classSignatures}}
         <div class="sig-person"><img src="{{this.image}}" alt="Signature" class="sig-img" /><div class="sig-name">{{this.name}}</div></div>
         {{/each}}
       </div>
@@ -296,6 +296,16 @@ body {
       <div class="sig-name">&nbsp;</div>
       {{/if}}
     </div>
+    {{#if subjectSignatures.length}}
+    <div class="sig-box">
+      <div class="sig-title">{{L.subjectTeachers}}</div>
+      <div class="sig-imgs">
+        {{#each subjectSignatures}}
+        <div class="sig-person"><img src="{{this.image}}" alt="Signature" class="sig-img" /><div class="sig-name">{{this.name}}</div></div>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
     <div class="sig-box">
       <div class="sig-title">{{L.head}}</div>
       <div class="sig-hint">{{L.stampSign}}</div>

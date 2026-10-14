@@ -243,7 +243,7 @@ const RELEVE_LABELS_FR = {
   average: 'Moyenne', rank: 'Rang', subjects: 'Matières', mark: 'Note', coef: 'Coef.', points: 'Points',
   appreciation: 'Appréciation', totals: 'TOTAUX', resultCm: 'Résultat de la composition', resultDs: 'Résultat du devoir',
   result: 'Résultat', passed: 'MOYENNE ATTEINTE', belowAverage: 'SOUS LA MOYENNE', scaleTitle: 'Barème des appréciations',
-  results: 'Résultats', gradedSubjects: 'Matières notées', teacherCm: 'Le Maître / La Maîtresse',
+  results: 'Résultats', gradedSubjects: 'Matières notées', teacherCm: 'Le Maître / La Maîtresse', subjectTeachers: 'Professeur(s) de matière',
   teacher: 'Le Professeur Principal', nameSign: '(Nom et signature)', head: "Le Directeur de l'École",
   stampSign: '(Cachet et signature)', doneOn: 'Fait le', parents: 'Visa des Parents', readApproved: '(Lu et approuvé)',
   seenOn: 'Vu le :', generated: 'Généré le', verifyAlt: 'Code de vérification',
@@ -257,7 +257,7 @@ const RELEVE_LABELS_EN: typeof RELEVE_LABELS_FR = {
   average: 'Average', rank: 'Position', subjects: 'Subjects', mark: 'Mark', coef: 'Coef.', points: 'Points',
   appreciation: 'Remark', totals: 'TOTAL', resultCm: 'Test result', resultDs: 'Test result',
   result: 'Result', passed: 'PASSED', belowAverage: 'BELOW AVERAGE', scaleTitle: 'Grading scale',
-  results: 'Results', gradedSubjects: 'Subjects marked', teacherCm: 'Class Teacher',
+  results: 'Results', gradedSubjects: 'Subjects marked', teacherCm: 'Class Teacher', subjectTeachers: 'Subject Teacher(s)',
   teacher: 'Class Teacher', nameSign: '(Name and signature)', head: 'Head Teacher',
   stampSign: '(Stamp and signature)', doneOn: 'Date', parents: "Parent's signature", readApproved: '(Read and approved)',
   seenOn: 'Seen on:', generated: 'Generated on', verifyAlt: 'Verification code',
@@ -543,7 +543,9 @@ export class PdfService {
       isPrimaryScale: scale === 10,
       isPercentScale: isPercent,
       isCm,
-      teacherSignatures: data.teacherSignatures ?? [],
+      // Titulaire dans « Le Maître / Class Teacher », professeurs de matière dans leur propre cadre
+      classSignatures: (data.teacherSignatures ?? []).filter((t) => t.classTeacher),
+      subjectSignatures: (data.teacherSignatures ?? []).filter((t) => !t.classTeacher),
       qrDataUri,
       verifyCode: data.verifyCode ?? null,
       verifyUrl: this.verifyUrl,
@@ -882,7 +884,7 @@ export interface ReportCardData {
 /** Données d'un relevé de notes (examen blanc ou devoir surveillé) pour un élève. */
 export interface ReleveData {
   /** Signatures des enseignants (titulaire puis professeurs de matière) — cadre « Le Maître » */
-  teacherSignatures?: Array<{ name: string; image: string }>;
+  teacherSignatures?: Array<{ name: string; image: string; classTeacher?: boolean }>;
   /** Code de vérification du relevé (imprimé et encodé dans le QR code) */
   verifyCode?: string;
   institution: {

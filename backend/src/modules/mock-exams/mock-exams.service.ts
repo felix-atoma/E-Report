@@ -833,10 +833,11 @@ export class MockExamsService {
   /**
    * Signatures des enseignants pour le relevé : celles des fiches de la session (une par enseignant,
    * le titulaire de la classe en premier, puis les professeurs de matière — par ex. ceux d'anglais).
-   * Si personne n'a encore signé de fiche dans la session, la dernière signature connue du titulaire
-   * (fiches de notes ou de composition) est reprise. Trois au plus.
+   * Si le titulaire n'a signé aucune fiche de la session (ex. composition d'anglais signée par les
+   * professeurs d'anglais), sa dernière signature connue (fiches de notes ou de composition) est reprise
+   * pour le cadre « Le Maître / Class Teacher ». Trois au plus.
    */
-  private async teacherSignatures(examId: string, classId?: string | null): Promise<Array<{ name: string; image: string }>> {
+  private async teacherSignatures(examId: string, classId?: string | null): Promise<Array<{ name: string; image: string; classTeacher: boolean }>> {
     const handwritten = { signedAt: { not: null }, signatureData: { not: null }, NOT: { signatureData: 'ADMIN_VERIFIED' } };
     const [fiches, cls] = await Promise.all([
       this.prisma.mockExamSubjectFiche.findMany({
@@ -856,8 +857,8 @@ export class MockExamsService {
     }
     const list = [...byTeacher.values()];
     const titulaireId = cls?.teacherId ?? null;
-    if (titulaireId && fiches.length === 0) {
-      // Titulaire : sa dernière signature connue, utilisée si personne n'a signé dans cette session
+    if (titulaireId && !list.some((t) => t.id === titulaireId)) {
+      // Titulaire sans signature dans cette session : sa dernière signature connue
       const [term, compo] = await Promise.all([
         this.prisma.gradeFiche.findFirst({ where: { signedById: titulaireId, ...handwritten }, orderBy: { signedAt: 'desc' }, select: { signatureData: true, signedAt: true } }),
         this.prisma.mockExamSubjectFiche.findFirst({ where: { signedById: titulaireId, ...handwritten }, orderBy: { signedAt: 'desc' }, select: { signatureData: true, signedAt: true } }),
@@ -869,7 +870,8 @@ export class MockExamsService {
       }
     }
     list.sort((a, b) => Number(b.id === titulaireId) - Number(a.id === titulaireId));
-    return list.slice(0, 3).map(({ name, image }) => ({ name, image }));
+    // classTeacher : cadre « Le Maître / Class Teacher » ; sinon cadre « Professeur(s) de matière »
+    return list.slice(0, 3).map(({ id, name, image }) => ({ name, image, classTeacher: !!titulaireId && id === titulaireId }));
   }
 
   /**
