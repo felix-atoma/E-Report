@@ -282,6 +282,7 @@ body {
   </div>
 
   <div class="signatures">
+    {{#if showClassTeacher}}
     <div class="sig-box">
       <div class="sig-title">{{#if isCm}}{{L.teacherCm}}{{else}}{{L.teacher}}{{/if}}</div>
       {{#if classSignatures.length}}
@@ -296,6 +297,7 @@ body {
       <div class="sig-name">&nbsp;</div>
       {{/if}}
     </div>
+    {{/if}}
     {{#if subjectSignatures.length}}
     <div class="sig-box">
       <div class="sig-title">{{L.subjectTeachers}}</div>
@@ -305,6 +307,15 @@ body {
         {{/each}}
       </div>
     </div>
+    {{else}}
+    {{#unless showClassTeacher}}
+    <div class="sig-box">
+      <div class="sig-title">{{L.subjectTeachers}}</div>
+      <div class="sig-hint">{{L.nameSign}}</div>
+      <div class="sig-line"></div>
+      <div class="sig-name">&nbsp;</div>
+    </div>
+    {{/unless}}
     {{/if}}
     <div class="sig-box">
       <div class="sig-title">{{L.head}}</div>

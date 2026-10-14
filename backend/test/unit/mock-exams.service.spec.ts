@@ -178,8 +178,8 @@ describe('MockExamsService', () => {
       ]);
       const sigs = await (service as any).teacherSignatures('exam-1', 'class-1');
       expect(sigs).toEqual([
-        { name: 'Michel Gadri', image: 'img-tit', classTeacher: true },
-        { name: 'GADESSE Yawa', image: 'img-eng-new', classTeacher: false },
+        { name: 'Michel Gadri', image: 'img-tit', classTeacher: true, fromSession: true },
+        { name: 'GADESSE Yawa', image: 'img-eng-new', classTeacher: false, fromSession: true },
       ]);
     });
 
@@ -190,8 +190,8 @@ describe('MockExamsService', () => {
       prisma.mockExamSubjectFiche.findFirst.mockResolvedValue(null);
       const sigs = await (service as any).teacherSignatures('exam-1', 'class-1');
       expect(sigs).toEqual([
-        { name: 'Michel Gadri', image: 'img-term', classTeacher: true },
-        { name: 'KADJA BANIKY', image: 'img-kad', classTeacher: false },
+        { name: 'Michel Gadri', image: 'img-term', classTeacher: true, fromSession: false },
+        { name: 'KADJA BANIKY', image: 'img-kad', classTeacher: false, fromSession: true },
       ]);
     });
 
@@ -201,7 +201,7 @@ describe('MockExamsService', () => {
       prisma.gradeFiche.findFirst.mockResolvedValue({ signatureData: 'img-term', signedAt: new Date('2026-10-01') });
       prisma.mockExamSubjectFiche.findFirst.mockResolvedValue({ signatureData: 'img-old-compo', signedAt: new Date('2026-09-01') });
       const sigs = await (service as any).teacherSignatures('exam-1', 'class-1');
-      expect(sigs).toEqual([{ name: 'Michel Gadri', image: 'img-term', classTeacher: true }]);
+      expect(sigs).toEqual([{ name: 'Michel Gadri', image: 'img-term', classTeacher: true, fromSession: false }]);
     });
 
     it('no signature anywhere: empty (blank line kept on the relevé)', async () => {

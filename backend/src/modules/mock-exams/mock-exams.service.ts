@@ -837,7 +837,7 @@ export class MockExamsService {
    * professeurs d'anglais), sa dernière signature connue (fiches de notes ou de composition) est reprise
    * pour le cadre « Le Maître / Class Teacher ». Trois au plus.
    */
-  private async teacherSignatures(examId: string, classId?: string | null): Promise<Array<{ name: string; image: string; classTeacher: boolean }>> {
+  private async teacherSignatures(examId: string, classId?: string | null): Promise<Array<{ name: string; image: string; classTeacher: boolean; fromSession: boolean }>> {
     const handwritten = { signedAt: { not: null }, signatureData: { not: null }, NOT: { signatureData: 'ADMIN_VERIFIED' } };
     const [fiches, cls] = await Promise.all([
       this.prisma.mockExamSubjectFiche.findMany({
@@ -849,11 +849,11 @@ export class MockExamsService {
         ? this.prisma.class.findUnique({ where: { id: classId }, select: { teacherId: true, teacher: { select: { name: true } } } })
         : null,
     ]);
-    const byTeacher = new Map<string, { id: string | null; name: string; image: string }>();
+    const byTeacher = new Map<string, { id: string | null; name: string; image: string; fromSession: boolean }>();
     for (const f of fiches) {
       const key = f.signedById ?? f.signedByName ?? '';
       if (!key || byTeacher.has(key)) continue;   // la plus récente de chaque enseignant
-      byTeacher.set(key, { id: f.signedById, name: f.signedBy?.name ?? f.signedByName ?? '', image: f.signatureData! });
+      byTeacher.set(key, { id: f.signedById, name: f.signedBy?.name ?? f.signedByName ?? '', image: f.signatureData!, fromSession: true });
     }
     const list = [...byTeacher.values()];
     const titulaireId = cls?.teacherId ?? null;
@@ -866,12 +866,12 @@ export class MockExamsService {
       const latest = [term, compo].filter(Boolean).sort((a, b) => +new Date(b!.signedAt!) - +new Date(a!.signedAt!))[0];
       if (latest?.signatureData) {
         // Aucune fiche signée dans la session : on montre au moins celle du titulaire
-        list.push({ id: titulaireId, name: cls?.teacher?.name ?? '', image: latest.signatureData });
+        list.push({ id: titulaireId, name: cls?.teacher?.name ?? '', image: latest.signatureData, fromSession: false });
       }
     }
     list.sort((a, b) => Number(b.id === titulaireId) - Number(a.id === titulaireId));
     // classTeacher : cadre « Le Maître / Class Teacher » ; sinon cadre « Professeur(s) de matière »
-    return list.slice(0, 3).map(({ id, name, image }) => ({ name, image, classTeacher: !!titulaireId && id === titulaireId }));
+    return list.slice(0, 3).map(({ id, name, image, fromSession }) => ({ name, image, classTeacher: !!titulaireId && id === titulaireId, fromSession }));
   }
 
   /**

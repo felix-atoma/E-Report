@@ -81,8 +81,12 @@ function getResult(avg, examType, sex, T = T_FR) {
 
 // Single student card (one per print page)
 function StudentCard({ student, subjects, exam, institution, teacherSignatures = [] }) {
-  const classSignatures = teacherSignatures.filter((t) => t.classTeacher);
-  const subjectSignatures = teacherSignatures.filter((t) => !t.classTeacher);
+  // Composition d'anglais : pas de cadre titulaire, seulement les professeurs d'anglais qui ont signé
+  const englishTest = isCaType(exam?.examType);
+  const classSignatures = englishTest ? [] : teacherSignatures.filter((t) => t.classTeacher);
+  const subjectSignatures = englishTest
+    ? teacherSignatures.filter((t) => t.fromSession !== false)
+    : teacherSignatures.filter((t) => !t.classTeacher);
   const scale = examScale(exam?.examType); // 10 pour les compositions mensuelles
   const isCm = isPrimaryCompoType(exam?.examType); // chaque matière sur son barème (10 ou 20)
   const totalCoeff = subjects.reduce((s, subj) => s + subj.coefficient, 0);
@@ -267,6 +271,7 @@ function StudentCard({ student, subjects, exam, institution, teacherSignatures =
       {/* ── Signatures ── */}
       <div className="mrel-sigs">
         {/* Titulaire dans « Le Maître / Class Teacher », professeurs de matière dans leur propre cadre */}
+        {!englishTest && (
         <div className="mrel-sig">
           <div className="mrel-sig__title">{T.teacher}</div>
           {classSignatures.length > 0 ? (
@@ -285,6 +290,14 @@ function StudentCard({ student, subjects, exam, institution, teacherSignatures =
             </>
           )}
         </div>
+        )}
+        {englishTest && subjectSignatures.length === 0 && (
+          <div className="mrel-sig">
+            <div className="mrel-sig__title">{T.subjectTeachers}</div>
+            <div className="mrel-sig__space" />
+            <div className="mrel-sig__name">{T.teacherSign}</div>
+          </div>
+        )}
         {subjectSignatures.length > 0 && (
           <div className="mrel-sig">
             <div className="mrel-sig__title">{T.subjectTeachers}</div>

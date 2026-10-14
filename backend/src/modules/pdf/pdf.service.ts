@@ -543,9 +543,13 @@ export class PdfService {
       isPrimaryScale: scale === 10,
       isPercentScale: isPercent,
       isCm,
-      // Titulaire dans « Le Maître / Class Teacher », professeurs de matière dans leur propre cadre
-      classSignatures: (data.teacherSignatures ?? []).filter((t) => t.classTeacher),
-      subjectSignatures: (data.teacherSignatures ?? []).filter((t) => !t.classTeacher),
+      // Titulaire dans « Le Maître », professeurs de matière dans leur propre cadre. Composition d'anglais :
+      // pas de cadre titulaire, seulement les professeurs (d'anglais) qui ont signé leurs fiches.
+      showClassTeacher: !en,
+      classSignatures: en ? [] : (data.teacherSignatures ?? []).filter((t) => t.classTeacher),
+      subjectSignatures: en
+        ? (data.teacherSignatures ?? []).filter((t) => t.fromSession !== false)
+        : (data.teacherSignatures ?? []).filter((t) => !t.classTeacher),
       qrDataUri,
       verifyCode: data.verifyCode ?? null,
       verifyUrl: this.verifyUrl,
@@ -884,7 +888,7 @@ export interface ReportCardData {
 /** Données d'un relevé de notes (examen blanc ou devoir surveillé) pour un élève. */
 export interface ReleveData {
   /** Signatures des enseignants (titulaire puis professeurs de matière) — cadre « Le Maître » */
-  teacherSignatures?: Array<{ name: string; image: string; classTeacher?: boolean }>;
+  teacherSignatures?: Array<{ name: string; image: string; classTeacher?: boolean; fromSession?: boolean }>;
   /** Code de vérification du relevé (imprimé et encodé dans le QR code) */
   verifyCode?: string;
   institution: {
