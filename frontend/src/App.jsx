@@ -10,6 +10,8 @@ import AppRouter from './routes/AppRouter';
 import PwaInstallPrompt from './components/common/PwaInstallPrompt/PwaInstallPrompt';
 import NetworkStatus from './components/common/NetworkStatus/NetworkStatus';
 import './App.css';
+// Pluie de fleurs à chaque message de réussite (toast.success)
+import './utils/successSprinkle';
 
 import { queryClient } from './services/queryClient';
 
