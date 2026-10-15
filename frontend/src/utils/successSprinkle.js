@@ -1,13 +1,12 @@
 import toast from 'react-hot-toast';
 
 /**
- * Pluie de fleurs à chaque message de réussite (toast.success) : quelques pétales tombent depuis le
- * coin des notifications puis disparaissent. Purement décoratif : ne bloque aucun clic, ignoré si
- * l'appareil demande moins d'animations, au plus une fois par seconde.
+ * Pluie de petites fleurs à chaque message de réussite (toast.success) : elles tombent du haut sur
+ * toute la largeur de la page en se balançant, puis disparaissent en bas. Purement décoratif : ne
+ * bloque aucun clic, ignoré si l'appareil demande moins d'animations, au plus une fois par seconde.
  */
-const PETALS = ['🌸', '🌼', '🌺', '🌷', '💮', '✿'];
-const COUNT = 16;
-const DURATION = 1600;
+const PETALS = ['🌸', '🌼', '🌺', '🌷', '💮', '✿', '❀'];
+const COUNT = 42;
 let lastRun = 0;
 
 function reducedMotion() {
@@ -32,30 +31,41 @@ export function sprinkleFlowers() {
   });
   document.body.appendChild(layer);
 
-  // Départ : près des notifications (en haut à droite), un peu dispersé
-  const originX = window.innerWidth - Math.min(180, window.innerWidth / 3);
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  let longest = 0;
   for (let i = 0; i < COUNT; i++) {
-    const petal = document.createElement('span');
-    petal.textContent = PETALS[i % PETALS.length];
-    const size = 14 + Math.random() * 12;
-    Object.assign(petal.style, {
-      position: 'absolute', left: `${originX + (Math.random() - 0.5) * 160}px`, top: '40px',
-      fontSize: `${size}px`, lineHeight: '1', willChange: 'transform, opacity', color: '#ec4899',
+    const flower = document.createElement('span');
+    flower.textContent = PETALS[Math.floor(Math.random() * PETALS.length)];
+    const size = 10 + Math.random() * 10;                 // petites fleurs
+    Object.assign(flower.style, {
+      position: 'absolute', top: '-24px',
+      // Réparties sur toute la largeur (un peu au-delà des bords pour couvrir les côtés)
+      left: `${(i / COUNT) * (width + 40) - 20 + (Math.random() - 0.5) * (width / COUNT) * 2}px`,
+      fontSize: `${size}px`, lineHeight: '1', color: '#ec4899', willChange: 'transform, opacity',
     });
-    layer.appendChild(petal);
-    const dx = (Math.random() - 0.5) * 260;
-    const dy = 180 + Math.random() * 260;
-    const spin = (Math.random() - 0.5) * 540;
-    petal.animate(
+    layer.appendChild(flower);
+
+    // Chute jusqu'en bas de la page avec un balancement de gauche à droite
+    const fall = height + 48;
+    const sway = 25 + Math.random() * 45;
+    const dir = Math.random() < 0.5 ? -1 : 1;
+    const spin = (Math.random() - 0.5) * 720;
+    const duration = 2600 + Math.random() * 1800;
+    const delay = Math.random() * 900;
+    longest = Math.max(longest, duration + delay);
+    flower.animate(
       [
-        { transform: 'translate(0, -10px) rotate(0deg) scale(0.6)', opacity: 0 },
-        { transform: `translate(${dx * 0.3}px, ${dy * 0.2}px) rotate(${spin * 0.3}deg) scale(1)`, opacity: 1, offset: 0.15 },
-        { transform: `translate(${dx}px, ${dy}px) rotate(${spin}deg) scale(0.9)`, opacity: 0 },
+        { transform: 'translate(0, 0) rotate(0deg)', opacity: 0 },
+        { transform: `translate(${dir * sway}px, ${fall * 0.25}px) rotate(${spin * 0.25}deg)`, opacity: 1, offset: 0.12 },
+        { transform: `translate(${-dir * sway}px, ${fall * 0.5}px) rotate(${spin * 0.5}deg)`, opacity: 1, offset: 0.45 },
+        { transform: `translate(${dir * sway}px, ${fall * 0.75}px) rotate(${spin * 0.75}deg)`, opacity: 0.9, offset: 0.75 },
+        { transform: `translate(0, ${fall}px) rotate(${spin}deg)`, opacity: 0 },
       ],
-      { duration: DURATION * (0.75 + Math.random() * 0.5), easing: 'cubic-bezier(.2,.6,.4,1)', delay: Math.random() * 180, fill: 'forwards' },
+      { duration, delay, easing: 'linear', fill: 'both' },
     );
   }
-  setTimeout(() => layer.remove(), DURATION * 1.4 + 200);
+  setTimeout(() => layer.remove(), longest + 300);
 }
 
 // Toutes les réussites de l'application passent par toast.success : on y ajoute la pluie de fleurs
