@@ -160,6 +160,19 @@ describe('MockExamsService', () => {
       )).rejects.toThrow(BadRequestException);
     });
 
+    it('relevés and palmarès leave out a subject nobody was marked in (e.g. English Writing not taken)', async () => {
+      prisma.mockExam.findFirst.mockResolvedValue(primaryExam('COMPOSITION_ANGLAIS'));
+      prisma.classSubject.findMany.mockResolvedValue([
+        cs('eg', 'English Grammar', 20), cs('ew', 'English Writing', 20), cs('rc', 'Reading Comprehension', 20, 'ANGLAIS'),
+      ]);
+      const sheet = await (service as any).resultsSheet(exam.id, INST);
+      expect(sheet.subjects.map((s: any) => s.id)).toEqual(['eg', 'rc']);
+      expect(sheet.students[0].grades.map((g: any) => g.subjectId)).toEqual(['eg', 'rc']);
+      // La fiche de saisie, elle, garde la matière
+      const entry = await service.getGradeSheet(exam.id, INST);
+      expect(entry.subjects.map((s: any) => s.id)).toEqual(['eg', 'ew', 'rc']);
+    });
+
     it('a devoir surveillé keeps every subject', async () => {
       prisma.mockExam.findFirst.mockResolvedValue(exam);
       const sheet = await service.getGradeSheet(exam.id, INST);

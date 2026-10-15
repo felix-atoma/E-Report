@@ -418,7 +418,7 @@ export class MockExamsService {
 
   // ─── Get palmares (proclamation des résultats) ────────────────────────────
   async getPalmares(examId: string, institutionId: string) {
-    const sheet = await this.getGradeSheet(examId, institutionId);
+    const sheet = await this.resultsSheet(examId, institutionId);
 
     const institution = await this.prisma.institution.findUnique({
       where: { id: institutionId },
@@ -582,7 +582,7 @@ export class MockExamsService {
 
   // ─── Get relevé (for printing) ───────────────────────────────────────────────
   async getReleve(examId: string, institutionId: string, studentId?: string) {
-    const sheet = await this.getGradeSheet(examId, institutionId);
+    const sheet = await this.resultsSheet(examId, institutionId);
 
     // Get institution details for the header
     const institution = await this.prisma.institution.findUnique({
@@ -679,7 +679,7 @@ export class MockExamsService {
 
   /** Données prêtes pour le gabarit PDF, pour un élève ou pour toute la classe. */
   private async buildReleveData(examId: string, institutionId: string, studentId?: string): Promise<ReleveData[]> {
-    const sheet = await this.getGradeSheet(examId, institutionId);
+    const sheet = await this.resultsSheet(examId, institutionId);
     const institution = await this.prisma.institution.findUnique({
       where: { id: institutionId },
       select: {
@@ -829,6 +829,21 @@ export class MockExamsService {
   }
 
   // ─── Private ─────────────────────────────────────────────────────────────────
+
+  /**
+   * Feuille de notes pour les résultats (relevés, palmarès) : une matière sans aucune note dans la
+   * session (épreuve non passée, ex. English Writing) n'y figure pas — elle reste sur la fiche de saisie.
+   * Les moyennes et les rangs ne changent pas (ils ne comptent déjà que les notes saisies).
+   */
+  private async resultsSheet(examId: string, institutionId: string) {
+    const sheet = await this.getGradeSheet(examId, institutionId);
+    const graded = new Set(sheet.students.flatMap((s) => s.grades.filter((g) => g.score != null).map((g) => g.subjectId)));
+    return {
+      ...sheet,
+      subjects: sheet.subjects.filter((subj) => graded.has(subj.id)),
+      students: sheet.students.map((s) => ({ ...s, grades: s.grades.filter((g) => graded.has(g.subjectId)) })),
+    };
+  }
 
   /**
    * Signatures des enseignants pour le relevé : celles des fiches de la session (une par enseignant,
