@@ -16,7 +16,7 @@
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
-  font-family: Arial, Helvetica, sans-serif; font-size:10.5px; color:#111; background:#fff;
+  font-family: Arial, Helvetica, sans-serif; font-size:13.5px; color:#111; background:#fff;
   -webkit-print-color-adjust: exact; print-color-adjust: exact;
 }
 .page { width:210mm; min-height:297mm; padding:10mm 12mm; position:relative; }
@@ -24,12 +24,12 @@ body {
 
 .top-bar {
   background:var(--c-primary); color:#fff; text-align:center;
-  font-size:22px; font-weight:900; letter-spacing:1px; text-transform:uppercase; line-height:1.2;
+  font-size:25.5px; font-weight:900; letter-spacing:1px; text-transform:uppercase; line-height:1.2;
   padding:7px 10px; border-bottom:3px solid var(--c-secondary);
 }
 .country {
   display:flex; justify-content:space-between; gap:10px;
-  font-size:8px; color:#4b5563; text-transform:uppercase; letter-spacing:0.5px;
+  font-size:10.5px; color:#4b5563; text-transform:uppercase; letter-spacing:0.5px;
   padding:3px 10px; border-bottom:1px solid #e5e7eb;
 }
 
@@ -37,7 +37,7 @@ body {
 .hd-logo { width:84px; height:84px; object-fit:contain; flex-shrink:0; }
 .hd-mid { flex:1; min-width:0; }
 .hd-contacts { list-style:none; display:flex; flex-direction:column; gap:3px; margin-bottom:6px; }
-.hd-contacts li { display:flex; align-items:center; gap:7px; font-size:11px; color:#1f2937; }
+.hd-contacts li { display:flex; align-items:center; gap:7px; font-size:14.5px; color:#1f2937; }
 .hd-contacts .ico {
   width:16px; height:16px; flex-shrink:0; border-radius:50%;
   background:var(--c-primary); display:flex; align-items:center; justify-content:center;
@@ -46,7 +46,7 @@ body {
 .hd-contacts .motto { font-style:italic; font-weight:700; color:var(--c-primary-text); }
 .hd-title {
   display:inline-block; background:var(--c-primary); color:#fff;
-  font-size:11.5px; font-weight:800; letter-spacing:1px; text-transform:uppercase;
+  font-size:15px; font-weight:800; letter-spacing:1px; text-transform:uppercase;
   padding:3px 12px; border-radius:2px; border-bottom:2px solid var(--c-secondary);
 }
 .hd-title .term { text-transform:none; }
@@ -59,36 +59,36 @@ body {
 /* QR code de vérification du relevé */
 .hd-verify { flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:2px; align-self:flex-end; }
 .hd-qr { width:62px; height:62px; display:block; image-rendering:pixelated; }
-.hd-code { font-size:7px; color:#6b7280; letter-spacing:.2px; white-space:nowrap; }
+.hd-code { font-size:10px; color:#374151; letter-spacing:.2px; white-space:nowrap; }
 .hd-photo svg { width:48px; height:48px; fill:#cbd5e1; }
 
-.info { width:100%; border-collapse:collapse; font-size:11px; margin:0 0 6px; }
+.info { width:100%; border-collapse:collapse; font-size:14.5px; margin:0 0 6px; }
 .info td { padding:2px 10px 2px 0; vertical-align:top; }
 .info td:first-child { padding-left:10px; }
 .info .lbl { font-weight:700; white-space:nowrap; width:18%; }
 .info .sep { width:6px; font-weight:700; padding-right:6px; }
 .info .val { font-weight:700; color:var(--c-primary-text); width:32%; }
-.info .val--strong { color:var(--c-good); font-size:12px; }
+.info .val--strong { color:var(--c-good); font-size:15.5px; }
 .info .val--fail { color:var(--c-fail); }
 
-.grades { width:100%; border-collapse:collapse; font-size:10.5px; table-layout:fixed; }
+.grades { width:100%; border-collapse:collapse; font-size:13.5px; table-layout:fixed; }
 .grades th, .grades td { border:1px solid var(--c-line); padding:5px 6px; text-align:center; vertical-align:middle; }
 .grades thead th {
-  background:#fff; color:#111; font-weight:800; font-size:9px; text-transform:uppercase;
+  background:#fff; color:#111; font-weight:800; font-size:11.5px; text-transform:uppercase;
   border-top:2px solid var(--c-line); border-bottom:2px solid var(--c-line);
 }
 .grades thead th small { display:block; font-weight:600; text-transform:none; color:#4b5563; }
 .grades .c-num { font-weight:700; }
 .grades .c-mat { text-align:left; font-weight:700; }
-.grades .c-note { font-weight:800; font-size:11.5px; color:var(--c-primary-text); }
+.grades .c-note { font-weight:800; font-size:15px; color:var(--c-primary-text); }
 .grades .c-note.fail { color:var(--c-fail); }
-.grades .c-note .c-max { font-size:8.5px; font-weight:600; color:#6b7280; }
+.grades .c-note .c-max { font-size:11px; font-weight:600; color:#374151; }
 .grades .c-pts { font-weight:700; }
 .grades .c-appr { text-align:left; font-weight:700; }
 .grades .lvl-good { color:var(--c-good); }
 .grades .lvl-pass { color:var(--c-pass); }
 .grades .lvl-fail { color:var(--c-fail); }
-.grades tfoot td { font-weight:800; font-size:11px; border-top:2px solid var(--c-line); white-space:nowrap; }
+.grades tfoot td { font-weight:800; font-size:14.5px; border-top:2px solid var(--c-line); white-space:nowrap; }
 .grades tfoot .t-label { text-align:right; letter-spacing:0.5px; }
 .grades tfoot .t-val { color:var(--c-fail); }
 
@@ -96,23 +96,23 @@ body {
 .bottom-left { flex:1.45; padding:8px 10px; border-right:2px solid var(--c-line); display:flex; flex-direction:column; gap:8px; }
 .bottom-right { flex:1; display:flex; flex-direction:column; }
 .result-box { text-align:center; padding:8px; border:2px solid var(--c-line); }
-.result-box .lbl { font-size:9px; font-weight:800; text-transform:uppercase; color:#4b5563; margin-bottom:3px; }
-.result-box .val { font-size:18px; font-weight:900; letter-spacing:1px; }
+.result-box .lbl { font-size:11.5px; font-weight:800; text-transform:uppercase; color:#4b5563; margin-bottom:3px; }
+.result-box .val { font-size:20.5px; font-weight:900; letter-spacing:1px; }
 .result-box .pass { color:var(--c-good); }
 .result-box .admissible { color:var(--c-pass); }
 .result-box .fail { color:var(--c-fail); }
-.scale { border:1px solid var(--c-line); padding:4px 7px; font-size:8.5px; line-height:1.45; }
-.scale-title { text-align:center; font-weight:800; font-size:8.5px; text-transform:uppercase; margin-bottom:2px; }
+.scale { border:1px solid var(--c-line); padding:4px 7px; font-size:11px; line-height:1.45; }
+.scale-title { text-align:center; font-weight:800; font-size:11px; text-transform:uppercase; margin-bottom:2px; }
 
 .res-title {
   background:var(--c-primary); color:#fff; text-align:center;
-  font-size:10.5px; font-weight:800; letter-spacing:1px; text-transform:uppercase;
+  font-size:13.5px; font-weight:800; letter-spacing:1px; text-transform:uppercase;
   padding:4px 6px; border-bottom:2px solid var(--c-secondary);
 }
-.res { width:100%; border-collapse:collapse; font-size:10.5px; flex:1; }
+.res { width:100%; border-collapse:collapse; font-size:13.5px; flex:1; }
 .res td { border-bottom:1px solid var(--c-line); padding:4px 8px; }
 .res td:last-child { text-align:right; font-weight:700; border-left:1px solid var(--c-line); width:45%; }
-.res tr.grand td { font-weight:900; font-size:12px; background:var(--c-primary-light); }
+.res tr.grand td { font-weight:900; font-size:15.5px; background:var(--c-primary-light); }
 .res tr.grand td:last-child { color:var(--c-good); }
 .res tr.grand td.fail { color:var(--c-fail); }
 .res tr:last-child td { border-bottom:none; }
@@ -120,10 +120,10 @@ body {
 .signatures { display:flex; border-top:2px solid var(--c-line); }
 .sig-box { flex:1; text-align:center; padding:6px 10px 8px; border-right:1px solid var(--c-line); }
 .sig-box:last-child { border-right:none; }
-.sig-title { font-size:9.5px; font-weight:800; text-transform:uppercase; color:var(--c-primary-text); }
-.sig-hint  { font-size:8px; color:#9ca3af; margin-bottom:20px; }
+.sig-title { font-size:12.5px; font-weight:800; text-transform:uppercase; color:var(--c-primary-text); }
+.sig-hint  { font-size:10.5px; color:#4b5563; margin-bottom:20px; }
 .sig-line  { border-bottom:1px solid #374151; margin:0 12px 3px; }
-.sig-name  { font-size:8.5px; color:#374151; }
+.sig-name  { font-size:11px; color:#374151; }
 /* Signatures des enseignants (fiches signées de la composition) */
 .sig-imgs { display:flex; justify-content:center; gap:8px; margin-top:4px; }
 .sig-person { flex:1; min-width:0; }
@@ -142,7 +142,7 @@ body {
 }
 .stamp-area { position:absolute; bottom:28px; right:18px; opacity:0.5; }
 .stamp-area img { width:84px; height:84px; object-fit:contain; }
-.footer { text-align:center; font-size:8px; color:#9ca3af; padding-top:4px; }
+.footer { text-align:center; font-size:10.5px; color:#4b5563; padding-top:4px; }
 
 @media print {
   @page { size:A4; margin:0; }

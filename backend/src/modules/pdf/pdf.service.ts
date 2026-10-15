@@ -357,7 +357,12 @@ export class PdfService {
     const printableH = Math.floor((sheet.h - margin.top - margin.bottom) * MM);
     // Demi-feuille : le gabarit déclare une page A4 (@page) que Chrome réduirait en plus pour la faire
     // tenir sur la demi-feuille — on la remplace par le vrai format
-    if (half) html = html.replace('</head>', '<style>@page { size: 210mm 148.5mm; margin: 6mm 8mm; }</style></head>');
+    // Espacements resserrés pour que le texte (agrandi pour la lisibilité) reste grand une fois tenu sur la demi-feuille
+    if (half) html = html.replace('</head>', '<style>@page { size: 210mm 148.5mm; margin: 6mm 8mm; }'
+      + '.hd{padding:3px 8px 2px}.hd-logo{width:62px;height:62px}.hd-qr{width:54px;height:54px}.hd-photo{width:58px;height:70px}'
+      + '.info{margin:0 0 3px}.info td{padding:1px 10px 1px 0}.grades th,.grades td{padding:2px 6px}'
+      + '.bottom-left{padding:4px 8px;gap:4px}.result-box{padding:3px}.result-box .val{font-size:18px}.res td{padding:2px 8px}'
+      + '.sig-box{padding:3px 8px 4px}.sig-hint{margin-bottom:10px}.top-bar{padding-top:4px;padding-bottom:4px}</style></head>');
 
     const browser = await getBrowser();
     const page = await browser.newPage();
