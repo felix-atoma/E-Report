@@ -27,7 +27,7 @@
   /* Photo de classe sous un voile marine, plus sombre en bas pour lire le texte */
   background:
     linear-gradient(180deg, rgba(0, 35, 71, .78) 0%, rgba(0, 35, 71, .35) 38%, rgba(0, 35, 71, .25) 70%, rgba(0, 35, 71, .7) 100%),
-    var(--asl-photo, url('/images/landing/classroom.jpg')) center / cover no-repeat;
+    var(--asl-photo, url('/images/landing/auth.jpg')) center / cover no-repeat;
   background-color: #002347;
   color: #fff;
   display: flex;
@@ -368,8 +368,7 @@
 /* ── Responsive ───────────────────────────────────────────────────────────── */
 
 /* Une photo différente selon la page */
-.asl-page--register { --asl-photo: url('/images/landing/features/calcul.jpg'); }
-.asl-page--password { --asl-photo: url('/images/landing/features/bulletins.jpg'); }
+.asl-page--password { --asl-photo: url('/images/landing/auth.jpg'); }
 
 @media (max-width: 720px) {
   .asl-card-wrap {
@@ -436,7 +435,7 @@
   flex: 0 0 48%; position: sticky; top: 0; height: 100vh; padding: 0;
   background:
     linear-gradient(180deg, rgba(0, 35, 71, .35), rgba(0, 35, 71, .6)),
-    url('/images/landing/classroom.jpg') center / cover no-repeat;
+    url('/images/landing/auth.jpg') center / cover no-repeat;
 }
 @media (max-width: 720px) {
   .asl-root .asl-right { display: none; }
