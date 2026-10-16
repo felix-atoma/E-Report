@@ -809,7 +809,7 @@
     },
     "tierRange": {
       "STARTER":    "< 50 students",
-      "BASIC":      "50 – 99 students",
+      "BASIC":      "Fewer than 200 students",
       "PRO":        "100 – 199 students",
       "ENTERPRISE": "200+ students"
     }

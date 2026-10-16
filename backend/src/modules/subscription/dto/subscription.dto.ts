@@ -1,13 +1,13 @@
 import { IsEnum, IsString, IsOptional, IsIn } from 'class-validator';
 
 export class InitiateNotchpayDto {
-  @IsIn(['MONTHLY', 'ANNUAL'])
-  plan: 'MONTHLY' | 'ANNUAL';
+  @IsIn(['TRIMESTER', 'SEMESTER'])
+  plan: 'TRIMESTER' | 'SEMESTER';
 }
 
 export class SubmitMomoDto {
-  @IsIn(['MONTHLY', 'ANNUAL'])
-  plan: 'MONTHLY' | 'ANNUAL';
+  @IsIn(['TRIMESTER', 'SEMESTER'])
+  plan: 'TRIMESTER' | 'SEMESTER';
 
   @IsString()
   momoPhone: string;

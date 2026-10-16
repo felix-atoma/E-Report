@@ -191,15 +191,15 @@ Pour les cours primaires avec note sur 10, activez l'option « Cours primaire »
     sections: [
       {
         title: 'Plans disponibles',
-        content: `NovaBulletin propose quatre niveaux d'abonnement selon la taille de votre établissement :
+        content: `Le tarif dépend de la taille de votre établissement. Vous payez par trimestre ou par semestre :
 
-• Starter — Moins de 50 élèves — GRATUIT (accès complet à toutes les fonctionnalités)
-• Basic — De 50 à 99 élèves — 10 000 FCFA/mois ou 100 000 FCFA/an
-• Pro — De 100 à 199 élèves — 20 000 FCFA/mois ou 200 000 FCFA/an
-• Enterprise — 200 élèves et plus — 35 000 FCFA/mois ou 350 000 FCFA/an
+• Moins de 200 élèves — 75 000 FCFA par trimestre ou 100 000 FCFA par semestre
+• 200 élèves et plus — 150 000 FCFA par trimestre ou 200 000 FCFA par semestre
 
-L'abonnement annuel représente une économie de 2 mois par rapport au tarif mensuel.`,
-        callout: { type: 'tip', text: 'Choisissez l\'abonnement annuel pour économiser deux mois d\'abonnement par an.' },
+Frais d'inscription (entrée de l'école dans la base), payés une seule fois avec le premier abonnement :
+• Moins de 200 élèves — 20 000 FCFA
+• 200 élèves et plus — 40 000 FCFA`,
+        callout: { type: 'tip', text: 'Le paiement par semestre revient moins cher que deux trimestres.' },
       },
       {
         title: 'Souscrire ou renouveler un abonnement',
@@ -1184,7 +1184,7 @@ The platform is accessible from any web browser (Chrome, Firefox, Edge, Safari) 
           'Click "Create my space". Your account is activated immediately.',
           'You will be redirected to the setup wizard to configure your school.',
         ],
-        callout: { type: 'tip', text: 'Schools with fewer than 50 students get free access (Starter plan). Larger schools require a monthly or annual subscription (see Chapter 3).' },
+        callout: { type: 'tip', text: 'After the 30-day trial, the school pays a one-time onboarding fee, then a subscription per term or per semester (see Chapter 3).' },
       },
       {
         title: 'How to log in',
@@ -1337,15 +1337,15 @@ For primary school subjects graded out of 10, enable the "Primary school" option
     sections: [
       {
         title: 'Available plans',
-        content: `NovaBulletin offers four subscription tiers based on your school size:
+        content: `Pricing depends on the size of your school. You pay per term or per semester:
 
-• Starter — Fewer than 50 students — FREE (full access to all features)
-• Basic — 50 to 99 students — 10,000 FCFA/month or 100,000 FCFA/year
-• Pro — 100 to 199 students — 20,000 FCFA/month or 200,000 FCFA/year
-• Enterprise — 200+ students — 35,000 FCFA/month or 350,000 FCFA/year
+• Fewer than 200 students — 75,000 FCFA per term or 100,000 FCFA per semester
+• 200 students and more — 150,000 FCFA per term or 200,000 FCFA per semester
 
-An annual subscription saves you the equivalent of 2 months compared to monthly billing.`,
-        callout: { type: 'tip', text: 'Choose the annual subscription to save two months of fees per year.' },
+Onboarding fee (bringing the school into the database), paid once with the first subscription:
+• Fewer than 200 students — 20,000 FCFA
+• 200 students and more — 40,000 FCFA`,
+        callout: { type: 'tip', text: 'Paying per semester costs less than two terms.' },
       },
       {
         title: 'Subscribing or renewing',

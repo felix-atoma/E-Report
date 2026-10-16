@@ -82,11 +82,10 @@ export default function EdustageLanding() {
     { img: 'admin.jpg', tag: t('Administration', 'School office'), title: t('Frais, présences et bulletins au même endroit', 'Fees, attendance and report cards in one place'), text: t('Le directeur voit en direct les bulletins publiés, les frais encaissés et les retards.', 'The head sees published report cards, collected fees and late payments live.') },
   ];
 
+  const fmt = (n) => n.toLocaleString(isFr ? 'fr-FR' : 'en-US');
   const TIERS = [
-    { name: 'STARTER', size: t('Moins de 50 élèves', 'Fewer than 50 pupils'), price: t('Gratuit', 'Free'), sub: t('pour toujours', 'forever') },
-    { name: 'BASIC', size: t('50 – 99 élèves', '50 – 99 pupils'), price: '10 000', sub: t('FCFA / mois', 'FCFA / month') },
-    { name: 'PRO', size: t('100 – 199 élèves', '100 – 199 pupils'), price: '20 000', sub: t('FCFA / mois', 'FCFA / month'), popular: true },
-    { name: 'ENTERPRISE', size: t('200 élèves et plus', '200+ pupils'), price: '35 000', sub: t('FCFA / mois', 'FCFA / month') },
+    { name: t('Moins de 200 élèves', 'Fewer than 200 pupils'), onboarding: 20000, trimester: 75000, semester: 100000 },
+    { name: t('200 élèves et plus', '200 pupils and more'), onboarding: 40000, trimester: 150000, semester: 200000 },
   ];
 
   const waDigits = String(SUPPORT_WHATSAPP).replace(/\D/g, '');
@@ -179,7 +178,7 @@ export default function EdustageLanding() {
             <p className="es-register__sub">{t('Accès immédiat, sans carte bancaire', 'Immediate access, no credit card')}</p>
             <ul>
               <li>{t('30 jours complets offerts', '30 full days free')}</li>
-              <li>{t('Gratuit à vie sous 50 élèves', 'Free forever under 50 pupils')}</li>
+              <li>{t('Ensuite par trimestre ou par semestre', 'Then per term or per semester')}</li>
               <li>{t('Import Excel / CSV des élèves', 'Excel / CSV pupil import')}</li>
               <li>{t('Accompagnement sur WhatsApp', 'Support on WhatsApp')}</li>
             </ul>
@@ -264,17 +263,22 @@ export default function EdustageLanding() {
             <h2>{t('Un tarif simple, selon votre effectif', 'Simple pricing, based on your enrolment')}</h2>
             <p>{t('30 jours gratuits pour tout essayer — payez seulement si vous êtes satisfait', '30 free days to try everything — pay only if you are satisfied')}</p>
           </div>
-          <div className="es-grid es-grid--4">
+          <div className="es-grid es-grid--2">
             {TIERS.map((p) => (
-              <div className={`es-price${p.popular ? ' es-price--popular' : ''}`} key={p.name}>
-                {p.popular && <span className="es-price__badge">{t('Populaire', 'Popular')}</span>}
-                <div className="es-price__circle"><strong>{p.price}</strong><small>{p.sub}</small></div>
+              <div className="es-price" key={p.name}>
                 <h4>{p.name}</h4>
-                <p>{p.size}</p>
+                <div className="es-price__row">
+                  <div className="es-price__circle"><strong>{fmt(p.trimester)}</strong><small>{t('FCFA / trimestre', 'FCFA / term')}</small></div>
+                  <span className="es-price__or">{t('ou', 'or')}</span>
+                  <div className="es-price__circle"><strong>{fmt(p.semester)}</strong><small>{t('FCFA / semestre', 'FCFA / semester')}</small></div>
+                </div>
+                <p className="es-price__onboarding">
+                  {t("Frais d'inscription unique", 'One-time onboarding fee')} : <strong>{fmt(p.onboarding)} FCFA</strong>
+                </p>
               </div>
             ))}
           </div>
-          <p className="es-price__note">{t('Ou 10 mois payés pour 12 avec l’abonnement annuel · TMoney · Flooz · Virement bancaire', 'Or pay 10 months for 12 with the yearly plan · TMoney · Flooz · Bank transfer')}</p>
+          <p className="es-price__note">{t("Les frais d'inscription couvrent l'entrée de l'école dans la base (configuration, import des élèves, accompagnement) et ne sont payés qu'une fois · TMoney · Flooz · Carte · Virement", 'The onboarding fee covers bringing the school into the database (setup, student import, support) and is paid only once · TMoney · Flooz · Card · Bank transfer')}</p>
         </div>
       </section>
 

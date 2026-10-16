@@ -889,7 +889,7 @@
     },
     "tierRange": {
       "STARTER":    "Moins de 50 élèves",
-      "BASIC":      "De 50 à 99 élèves",
+      "BASIC":      "Moins de 200 élèves",
       "PRO":        "De 100 à 199 élèves",
       "ENTERPRISE": "200 élèves et plus"
     }

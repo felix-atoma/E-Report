@@ -151,7 +151,7 @@ function RegisterSchoolPage() {
                 email et mot de passe pour commencer.
               </p>
               <p className="rsp-success__hint">
-                Les établissements de moins de 50 élèves bénéficient d'un accès <strong>gratuit</strong>.
+                Après l'essai : frais d'inscription uniques puis abonnement <strong>par trimestre ou par semestre</strong>.
                 Au-delà, un abonnement est requis.
               </p>
               <Link to="/login" className="rsp-btn rsp-btn--primary" style={{ marginTop: '0.5rem' }}>
@@ -194,7 +194,7 @@ function RegisterSchoolPage() {
           </div>
 
           <h2 className="asl-heading">Créer votre espace scolaire</h2>
-          <p className="asl-subheading">Accès immédiat. Gratuit jusqu'à 50 élèves.</p>
+          <p className="asl-subheading">Accès immédiat. 30 jours d'essai gratuits.</p>
 
           {error && (
             <div className="asl-alert asl-alert--error" role="alert">{error}</div>

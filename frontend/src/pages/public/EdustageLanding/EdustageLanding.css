@@ -78,6 +78,7 @@
 .es-grid { display: grid; gap: 30px; }
 .es-grid--3 { grid-template-columns: repeat(3, 1fr); }
 .es-grid--4 { grid-template-columns: repeat(4, 1fr); }
+.es-grid--2 { grid-template-columns: repeat(2, 1fr); max-width: 900px; margin: 0 auto; }
 
 .es-feature { background: var(--es-tint); padding: 40px 36px; transition: all .3s ease; }
 .es-feature:hover { background: var(--es-navy); }
@@ -154,7 +155,11 @@
 }
 .es-price__circle strong { font: 600 24px/1.1 'Rubik', sans-serif; }
 .es-price__circle small { font-size: 12px; }
-.es-price h4 { font-size: 18px; letter-spacing: .05em; margin-bottom: 4px; }
+.es-price h4 { font-size: 22px; margin-bottom: 26px; }
+.es-price__row { display: flex; align-items: center; justify-content: center; gap: 14px; }
+.es-price__row .es-price__circle { margin: 0; }
+.es-price__or { font-style: italic; }
+.es-price__onboarding { margin-top: 24px !important; padding-top: 18px; border-top: 1px solid #e6e8f0; color: var(--es-navy); }
 .es-price__note { text-align: center; margin-top: 30px !important; font-style: italic; }
 
 /* ── FAQ ───────────────────────────────────────────── */
@@ -226,7 +231,9 @@
   .es-register { padding: 76px 0; }
   .es-title { margin-bottom: 44px; }
   .es-title h2, .es-whatsapp__text h2, .es-register__left h2 { font-size: 27px; }
-  .es-grid--3, .es-grid--4 { grid-template-columns: 1fr; }
+  .es-grid--2, .es-grid--3, .es-grid--4 { grid-template-columns: 1fr; }
+  .es-price__circle { width: 112px; height: 112px; }
+  .es-price__circle strong { font-size: 20px; }
   .es-register__card { padding: 34px 22px; }
   .es-whatsapp__photo img { height: 380px; }
   .es-whatsapp__photo::before { inset: 14px -10px -14px 14px; }

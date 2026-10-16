@@ -165,22 +165,19 @@ services:
         value: TMoney
       - key: SUBSCRIPTION_TRIAL_DAYS
         value: "30"
-      - key: SUBSCRIPTION_STARTER_MONTHLY_XOF
-        value: "5000"
-      - key: SUBSCRIPTION_STARTER_ANNUAL_XOF
-        value: "50000"
-      - key: SUBSCRIPTION_BASIC_MONTHLY_XOF
-        value: "10000"
-      - key: SUBSCRIPTION_BASIC_ANNUAL_XOF
-        value: "100000"
-      - key: SUBSCRIPTION_PRO_MONTHLY_XOF
+      # BASIC = moins de 200 élèves, ENTERPRISE = 200 et plus ; inscription payée une seule fois
+      - key: SUBSCRIPTION_BASIC_ONBOARDING_XOF
         value: "20000"
-      - key: SUBSCRIPTION_PRO_ANNUAL_XOF
+      - key: SUBSCRIPTION_BASIC_TRIMESTER_XOF
+        value: "75000"
+      - key: SUBSCRIPTION_BASIC_SEMESTER_XOF
+        value: "100000"
+      - key: SUBSCRIPTION_ENTERPRISE_ONBOARDING_XOF
+        value: "40000"
+      - key: SUBSCRIPTION_ENTERPRISE_TRIMESTER_XOF
+        value: "150000"
+      - key: SUBSCRIPTION_ENTERPRISE_SEMESTER_XOF
         value: "200000"
-      - key: SUBSCRIPTION_ENTERPRISE_MONTHLY_XOF
-        value: "35000"
-      - key: SUBSCRIPTION_ENTERPRISE_ANNUAL_XOF
-        value: "350000"
 
       # ── Redis / BullMQ (add when provisioned) ─────────────────────────────────
       - key: REDIS_HOST

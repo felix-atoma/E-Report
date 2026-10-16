@@ -12,45 +12,28 @@ import Select from '../../../components/common/Select/Select';
 import Loading from '../../../components/common/Loading/Loading';
 import './SubscriptionPage.css';
 
-// ── Static tier definitions (always shown, API data highlights current) ────────
+// ── Tarifs par taille d'école (les montants de l'API priment) ──────────────────
 const TIERS = [
   {
-    key:       'STARTER',
-    label:     'Starter',
-    range:     'Moins de 50 élèves',
-    rangeEN:   '< 50 students',
-    color:     '#6366f1',
-    monthly:   5000,
-    annual:    50000,
+    key:        'BASIC',
+    label:      'Standard',
+    color:      '#0ea5e9',
+    onboarding: 20000,
+    trimester:  75000,
+    semester:   100000,
   },
   {
-    key:       'BASIC',
-    label:     'Basic',
-    range:     'De 50 à 99 élèves',
-    rangeEN:   '50 – 99 students',
-    color:     '#0ea5e9',
-    monthly:   10000,
-    annual:    100000,
-  },
-  {
-    key:       'PRO',
-    label:     'Pro',
-    range:     'De 100 à 199 élèves',
-    rangeEN:   '100 – 199 students',
-    color:     '#f59e0b',
-    monthly:   20000,
-    annual:    200000,
-  },
-  {
-    key:       'ENTERPRISE',
-    label:     'Enterprise',
-    range:     '200 élèves et plus',
-    rangeEN:   '200+ students',
-    color:     '#8b5cf6',
-    monthly:   35000,
-    annual:    350000,
+    key:        'ENTERPRISE',
+    label:      'Grande école',
+    color:      '#8b5cf6',
+    onboarding: 40000,
+    trimester:  150000,
+    semester:   200000,
   },
 ];
+
+const PERIOD_LABEL = { TRIMESTER: 'Trimestre', SEMESTER: 'Semestre', MONTHLY: 'Mensuel', ANNUAL: 'Annuel' };
+const PER_PERIOD   = { TRIMESTER: 'trimestre', SEMESTER: 'semestre' };
 
 const OPERATORS = [
   { value: 'TMONEY', label: 'TMoney (Togocel)' },
@@ -64,7 +47,7 @@ export default function SubscriptionPage() {
   const locale = 'fr-FR';
 
   const STATUS_META = {
-    FREE:      { icon: '🎁', label: 'Gratuit',                          cls: 'free' },
+    FREE:      { icon: '✅', label: 'Accès actif',                       cls: 'active' },
     // Plus d'expiration : essai et abonnement terminé donnent le même accès normal
     TRIAL:     { icon: '✅', label: 'Accès actif',                       cls: 'active' },
     ACTIVE:    { icon: '✅', label: t('subscription.status.ACTIVE'),    cls: 'active' },
@@ -72,7 +55,7 @@ export default function SubscriptionPage() {
     SUSPENDED: { icon: '⛔', label: t('subscription.status.SUSPENDED'), cls: 'suspended' },
   };
 
-  const [billing, setBilling]       = useState('MONTHLY'); // 'MONTHLY' | 'ANNUAL'
+  const [billing, setBilling]       = useState('TRIMESTER'); // 'TRIMESTER' | 'SEMESTER'
   const [payMethod, setPayMethod]   = useState(null);      // 'MOMO' | 'NOTCHPAY' | 'CARD'
   const [momoForm, setMomoForm]     = useState({ momoPhone: '', momoReference: '', momoOperator: 'TMONEY' });
   const [momoErrors, setMomoErrors] = useState({});
@@ -122,16 +105,17 @@ export default function SubscriptionPage() {
   const currentTier     = statusData?.tier ?? null;
   const studentCount    = statusData?.studentCount ?? null;
   const status          = statusData?.status ?? null;
-  const isFree          = status === 'FREE';
   const statusMeta      = STATUS_META[status] ?? null;
   const momoInfo        = statusData?.momoInfo ?? { number: '', operator: 'TMoney' };
 
-  // Use API pricing if available, otherwise fall back to static TIERS
+  // Tarifs de l'API si disponibles, sinon ceux de TIERS
   const activeTierDef   = TIERS.find((t) => t.key === currentTier);
-  const currentPrice    = isFree ? 0
-    : billing === 'ANNUAL'
-      ? (statusData?.currentPrice?.annual  ?? activeTierDef?.annual  ?? 0)
-      : (statusData?.currentPrice?.monthly ?? activeTierDef?.monthly ?? 0);
+  const priceOf = (key) => ({ ...TIERS.find((t) => t.key === key), ...(statusData?.pricing?.[key] ?? {}) });
+  const activePrice     = activeTierDef ? priceOf(activeTierDef.key) : null;
+  const onboardingDue   = statusData?.onboardingDue ?? true;
+  const periodPrice     = activePrice ? (billing === 'SEMESTER' ? activePrice.semester : activePrice.trimester) : 0;
+  const onboardingFee   = activePrice && onboardingDue ? activePrice.onboarding : 0;
+  const currentPrice    = periodPrice + onboardingFee;
 
   return (
     <AppShell title="Abonnement">
@@ -169,11 +153,6 @@ export default function SubscriptionPage() {
               <div>
                 <p className="sub-status-label">Statut de l'abonnement</p>
                 <p className="sub-status-value">{statusMeta.label}</p>
-                {isFree && (
-                  <p className="sub-status-expiry">
-                    Votre établissement a moins de 50 élèves — accès <strong>gratuit et illimité</strong>.
-                  </p>
-                )}
               </div>
             </div>
             <div className="sub-status-right">
@@ -187,16 +166,12 @@ export default function SubscriptionPage() {
                   </p>
                 </>
               )}
-              {isFree ? (
-                <p className="sub-status-price" style={{ color: '#16a34a' }}>
-                  Gratuit <span>— &lt; 50 élèves</span>
-                </p>
-              ) : currentPrice > 0 ? (
+              {periodPrice > 0 && (
                 <p className="sub-status-price">
-                  {currentPrice.toLocaleString(locale)}{' '}
-                  <span>FCFA/{billing === 'ANNUAL' ? 'an' : 'mois'}</span>
+                  {periodPrice.toLocaleString(locale)}{' '}
+                  <span>FCFA/{PER_PERIOD[billing]}</span>
                 </p>
-              ) : null}
+              )}
             </div>
           </div>
         )}
@@ -205,47 +180,38 @@ export default function SubscriptionPage() {
         <Card>
           <h3 className="sub-section-title">Tarification par nombre d'élèves</h3>
           <p className="sub-section-sub">
-            Votre tier est détecté <strong>automatiquement</strong> à chaque paiement selon le nombre d'élèves inscrits dans votre établissement.
+            Votre tarif est détecté <strong>automatiquement</strong> selon le nombre d'élèves inscrits.
+            Les <strong>frais d'inscription</strong> (entrée de l'école dans la base) ne sont payés qu'une fois, avec le premier abonnement.
           </p>
 
           <div className="sub-tier-grid">
-            {TIERS.map((tier) => {
-              const isCurrent = tier.key === currentTier;
-              const isStarter = tier.key === 'STARTER';
-              const price     = billing === 'ANNUAL' ? tier.annual : tier.monthly;
+            {TIERS.map((def) => {
+              const tier      = priceOf(def.key);
+              const isCurrent = def.key === currentTier;
+              const price     = billing === 'SEMESTER' ? tier.semester : tier.trimester;
               return (
                 <div
-                  key={tier.key}
-                  className={`sub-tier-card${isCurrent ? ' sub-tier-card--current' : ''}${isStarter ? ' sub-tier-card--free' : ''}`}
-                  style={{ '--tier-color': tier.color }}
+                  key={def.key}
+                  className={`sub-tier-card${isCurrent ? ' sub-tier-card--current' : ''}`}
+                  style={{ '--tier-color': def.color }}
                 >
                   {isCurrent && (
-                    <div className="sub-tier-card__current-label">Votre tier actuel</div>
-                  )}
-                  {isStarter && !isCurrent && (
-                    <div className="sub-tier-card__free-label">Gratuit</div>
+                    <div className="sub-tier-card__current-label">Votre tarif actuel</div>
                   )}
                   <div className="sub-tier-card__top">
-                    <span className="sub-tier-card__name">{tier.label}</span>
-                    <span className="sub-tier-card__range">{t(`subscription.tierRange.${tier.key}`)}</span>
+                    <span className="sub-tier-card__name">{def.label}</span>
+                    <span className="sub-tier-card__range">{t(`subscription.tierRange.${def.key}`)}</span>
                   </div>
-                  {isStarter ? (
-                    <div className="sub-tier-card__price">
-                      <span className="sub-tier-card__amount sub-tier-card__amount--free">Gratuit</span>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="sub-tier-card__price">
-                        <span className="sub-tier-card__amount">{price.toLocaleString(locale)}</span>
-                        <span className="sub-tier-card__currency">FCFA/{billing === 'ANNUAL' ? 'an' : 'mois'}</span>
-                      </div>
-                      {billing === 'ANNUAL' && (
-                        <p className="sub-tier-card__saving">
-                          soit {Math.round(tier.annual / 12).toLocaleString(locale)} FCFA/mois · 2 mois offerts
-                        </p>
-                      )}
-                    </>
-                  )}
+                  <div className="sub-tier-card__price">
+                    <span className="sub-tier-card__amount">{price.toLocaleString(locale)}</span>
+                    <span className="sub-tier-card__currency">FCFA/{PER_PERIOD[billing]}</span>
+                  </div>
+                  <p className="sub-tier-card__saving">
+                    {billing === 'SEMESTER'
+                      ? `ou ${tier.trimester.toLocaleString(locale)} FCFA par trimestre`
+                      : `ou ${tier.semester.toLocaleString(locale)} FCFA par semestre`}
+                    {' · '}inscription unique : {tier.onboarding.toLocaleString(locale)} FCFA
+                  </p>
                 </div>
               );
             })}
@@ -253,36 +219,37 @@ export default function SubscriptionPage() {
         </Card>
 
         {/* ── Billing period toggle (hidden for free schools) ───────────────── */}
-        {!isFree && <Card>
+        <Card>
           <h3 className="sub-section-title">Période de facturation</h3>
           <div className="sub-billing-toggle">
             <button
-              className={`sub-billing-btn${billing === 'MONTHLY' ? ' sub-billing-btn--active' : ''}`}
-              onClick={() => setBilling('MONTHLY')}
+              className={`sub-billing-btn${billing === 'TRIMESTER' ? ' sub-billing-btn--active' : ''}`}
+              onClick={() => setBilling('TRIMESTER')}
             >
-              <span className="sub-billing-label">Mensuel</span>
-              <span className="sub-billing-desc">Renouvelé chaque mois</span>
+              <span className="sub-billing-label">Par trimestre</span>
+              <span className="sub-billing-desc">Renouvelé à chaque trimestre</span>
             </button>
             <button
-              className={`sub-billing-btn${billing === 'ANNUAL' ? ' sub-billing-btn--active' : ''}`}
-              onClick={() => setBilling('ANNUAL')}
+              className={`sub-billing-btn${billing === 'SEMESTER' ? ' sub-billing-btn--active' : ''}`}
+              onClick={() => setBilling('SEMESTER')}
             >
-              <span className="sub-billing-badge">2 mois offerts</span>
-              <span className="sub-billing-label">Annuel</span>
-              <span className="sub-billing-desc">Renouvelé chaque année</span>
+              <span className="sub-billing-badge">Plus avantageux</span>
+              <span className="sub-billing-label">Par semestre</span>
+              <span className="sub-billing-desc">Renouvelé à chaque semestre</span>
             </button>
           </div>
-        </Card>}
+        </Card>
 
         {/* ── Payment methods (hidden for free schools) ─────────────────────── */}
-        {!isFree && <Card>
+        <Card>
           <h3 className="sub-section-title">Mode de paiement</h3>
           {currentTier ? (
             <p className="sub-section-sub">
-              Vous serez facturé{' '}
-              <strong>{currentPrice.toLocaleString(locale)} FCFA</strong>
-              {billing === 'ANNUAL' ? ' / an' : ' / mois'} (tier{' '}
-              <strong>{activeTierDef?.label}</strong> — {activeTierDef ? t(`subscription.tierRange.${activeTierDef.key}`) : ''}).
+              Vous serez facturé <strong>{currentPrice.toLocaleString(locale)} FCFA</strong>
+              {onboardingFee > 0
+                ? <> : {periodPrice.toLocaleString(locale)} FCFA pour le {PER_PERIOD[billing]} + {onboardingFee.toLocaleString(locale)} FCFA de frais d'inscription (une seule fois)</>
+                : <> pour le {PER_PERIOD[billing]}</>}
+              {' '}— tarif <strong>{activeTierDef?.label}</strong>, {activeTierDef ? t(`subscription.tierRange.${activeTierDef.key}`).toLowerCase() : ''}.
             </p>
           ) : (
             <p className="sub-section-sub">
@@ -429,7 +396,7 @@ export default function SubscriptionPage() {
               </Button>
             </div>
           )}
-        </Card>}
+        </Card>
 
         {/* ── Payment history ────────────────────────────────────────────────── */}
         {history.length > 0 && (
@@ -461,7 +428,7 @@ export default function SubscriptionPage() {
                             </span>
                           ) : '—'}
                         </td>
-                        <td>{p.plan === 'ANNUAL' ? 'Annuel' : 'Mensuel'}</td>
+                        <td>{PERIOD_LABEL[p.plan] ?? p.plan}</td>
                         <td>{Number(p.amount).toLocaleString(locale)} FCFA</td>
                         <td>{p.method === 'MOMO_MANUAL' ? 'Mobile Money' : 'Notchpay (en ligne)'}</td>
                         <td style={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>

@@ -484,7 +484,7 @@ export class MailService {
 
   // ─── Subscription confirmation ───────────────────────────────────────────────
   async sendSubscriptionConfirmation(institutionName: string, to: string, plan: string, expiry: Date): Promise<boolean> {
-    const planLabel = plan === 'ANNUAL' ? 'Annuel' : 'Mensuel';
+    const planLabel = ({ TRIMESTER: 'Trimestriel', SEMESTER: 'Semestriel', ANNUAL: 'Annuel', MONTHLY: 'Mensuel' } as Record<string, string>)[plan] ?? plan;
     const expiryStr = expiry.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
     const subject = 'NovaBulletin - Abonnement activé';
     const frontendUrl = this.config.get('FRONTEND_URL', 'http://localhost:3000');

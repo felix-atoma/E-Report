@@ -341,7 +341,7 @@ function PendingSubscriptionsPanel() {
                 <span className="sa-sub-item__school">{p.institution?.name ?? '—'}</span>
                 <span className="sa-sub-item__plan">
                   {p.tier && <strong>{p.tier} · </strong>}
-                  {p.plan === 'ANNUAL' ? 'Annuel' : 'Mensuel'} — {Number(p.amount).toLocaleString(locale)} FCFA
+                  {({ TRIMESTER: 'Trimestre', SEMESTER: 'Semestre', ANNUAL: 'Annuel', MONTHLY: 'Mensuel' })[p.plan] ?? p.plan} — {Number(p.amount).toLocaleString(locale)} FCFA
                 </span>
                 <span className="sa-sub-item__meta">
                   📱 {p.momoPhone} ({p.momoOperator}) · Réf : <code>{p.momoReference}</code>

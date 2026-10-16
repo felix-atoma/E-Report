@@ -395,7 +395,7 @@ const COMPARISON = [
   { feature: 'Relances frais impayés', excel: '❌ Appels manuels', autres: '❌ Non', nova: '✅ Auto : amical puis quotidien' },
   { feature: 'Exports CSV officiels', excel: '❌ Mise en forme manuelle', autres: '⚠️ Coût supplémentaire', nova: '✅ Auto, prêt pour l\'inspection' },
   { feature: 'Adapté Afrique francophone', excel: '❌ Non', autres: '❌ Non', nova: '✅ Conçu pour Togo+' },
-  { feature: 'Prix', excel: '~0 (heures perdues)', autres: '50k–200k FCFA/mois', nova: '✅ Gratuit < 50 élèves • 10k–35k FCFA/mois' },
+  { feature: 'Prix', excel: '~0 (heures perdues)', autres: '50k–200k FCFA/mois', nova: '✅ 75k FCFA/trimestre ou 100k/semestre (< 200 élèves)' },
 ];
 
 /* ── Flag SVGs ──────────────────────────────────────────────────────────── */
@@ -489,7 +489,7 @@ const COMPARISON_EN = [
   { feature: 'Unpaid fee follow-ups', excel: '❌ Manual calls', autres: '❌ No', nova: '✅ Auto: friendly then daily' },
   { feature: 'Government CSV exports', excel: '❌ Manual formatting', autres: '⚠️ Extra cost', nova: '✅ Auto, inspection-ready' },
   { feature: 'Built for Francophone Africa', excel: '❌ No', autres: '❌ No', nova: '✅ Designed for Togo+' },
-  { feature: 'Price', excel: '~0 (hours lost)', autres: '50k–200k FCFA/month', nova: '✅ Free < 50 students • 10k–35k FCFA/month' },
+  { feature: 'Price', excel: '~0 (hours lost)', autres: '50k–200k FCFA/month', nova: '✅ 75k FCFA/term or 100k/semester (< 200 students)' },
 ];
 
 /* ── Hooks ──────────────────────────────────────────────────────────────── */
@@ -1566,31 +1566,18 @@ export default function LandingPage() {
             </Link>
             <div className="lp-price-range">
               <p>{t('💡 Après les 30 jours d\'essai, le tarif est calculé selon l\'effectif réel :','💡 After the 30-day trial, pricing is based on actual enrolment:')}</p>
-              <div className="lp-price-range__grid lp-price-range__grid--4">
-                <div className="lp-price-tier lp-price-tier--free">
-                  <strong>STARTER</strong>
-                  <span>{t('Moins de 50 élèves','Fewer than 50 students')}</span>
-                  <span className="lp-price-range__amount">{t('GRATUIT ∞','FREE ∞')}</span>
-                  <small>{t('Pour toujours','Forever')}</small>
+              <div className="lp-price-range__grid">
+                <div className="lp-price-tier">
+                  <strong>{t('Moins de 200 élèves','Fewer than 200 students')}</strong>
+                  <span className="lp-price-range__amount">{t('75 000 FCFA/trimestre','75,000 FCFA/term')}</span>
+                  <small>{t('ou 100 000 FCFA/semestre','or 100,000 FCFA/semester')}</small>
+                  <small>{t('+ 20 000 FCFA d’inscription (une fois)','+ 20,000 FCFA onboarding (once)')}</small>
                 </div>
                 <div className="lp-price-tier">
-                  <strong>BASIC</strong>
-                  <span>{t('50 – 99 élèves','50 – 99 students')}</span>
-                  <span className="lp-price-range__amount">10 000 FCFA/mois</span>
-                  <small>{t('ou 100 000/an (−17%)','or 100,000/year (−17%)')}</small>
-                </div>
-                <div className="lp-price-tier lp-price-tier--popular">
-                  <div className="lp-price-tier__badge">{t('Populaire','Popular')}</div>
-                  <strong>PRO</strong>
-                  <span>{t('100 – 199 élèves','100 – 199 students')}</span>
-                  <span className="lp-price-range__amount">20 000 FCFA/mois</span>
-                  <small>{t('ou 200 000/an (−17%)','or 200,000/year (−17%)')}</small>
-                </div>
-                <div className="lp-price-tier">
-                  <strong>ENTERPRISE</strong>
-                  <span>{t('200+ élèves','200+ students')}</span>
-                  <span className="lp-price-range__amount">35 000 FCFA/mois</span>
-                  <small>{t('ou 350 000/an (−17%)','or 350,000/year (−17%)')}</small>
+                  <strong>{t('200 élèves et plus','200 students and more')}</strong>
+                  <span className="lp-price-range__amount">{t('150 000 FCFA/trimestre','150,000 FCFA/term')}</span>
+                  <small>{t('ou 200 000 FCFA/semestre','or 200,000 FCFA/semester')}</small>
+                  <small>{t('+ 40 000 FCFA d’inscription (une fois)','+ 40,000 FCFA onboarding (once)')}</small>
                 </div>
               </div>
             </div>

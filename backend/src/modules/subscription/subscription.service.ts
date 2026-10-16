@@ -8,23 +8,21 @@ import { MailService } from '../mail/mail.service';
 import { WhatsAppService } from '../whatsapp/whatsapp.service';
 import { SubmitMomoDto, InitiateNotchpayDto } from './dto/subscription.dto';
 
-type Tier = 'STARTER' | 'BASIC' | 'PRO' | 'ENTERPRISE';
-type BillingPeriod = 'MONTHLY' | 'ANNUAL';
+/** Deux tailles d'école (valeurs de l'enum SubscriptionTier) : moins de 200 élèves, 200 et plus. */
+type Tier = 'BASIC' | 'ENTERPRISE';
+type BillingPeriod = 'TRIMESTER' | 'SEMESTER';
 
 const TIER_THRESHOLDS: Record<Tier, { min: number; max: number; label: string }> = {
-  STARTER:    { min: 0,   max: 49,       label: '< 50 élèves' },
-  BASIC:      { min: 50,  max: 99,       label: '50 – 99 élèves' },
-  PRO:        { min: 100, max: 199,      label: '100 – 199 élèves' },
+  BASIC:      { min: 0,   max: 199,      label: '< 200 élèves' },
   ENTERPRISE: { min: 200, max: Infinity, label: '≥ 200 élèves' },
 };
 
-const BILLING_MONTHS: Record<BillingPeriod, number> = { MONTHLY: 1, ANNUAL: 12 };
+/** Durée couverte : 3 trimestres ou 2 semestres font l'année (vacances comprises). */
+const BILLING_MONTHS: Record<BillingPeriod, number> = { TRIMESTER: 4, SEMESTER: 6 };
+const PERIOD_LABEL: Record<string, string> = { TRIMESTER: 'Trimestre', SEMESTER: 'Semestre', MONTHLY: 'Mensuel', ANNUAL: 'Annuel' };
 
 function getTier(studentCount: number): Tier {
-  if (studentCount < 50)  return 'STARTER';
-  if (studentCount < 100) return 'BASIC';
-  if (studentCount < 200) return 'PRO';
-  return 'ENTERPRISE';
+  return studentCount < 200 ? 'BASIC' : 'ENTERPRISE';
 }
 
 // Shorthand until `prisma migrate dev` generates the updated client types
@@ -34,7 +32,8 @@ const db = (prisma: PrismaService) => prisma as any;
 export class SubscriptionService {
   private readonly logger = new Logger(SubscriptionService.name);
 
-  private readonly pricing: Record<Tier, { monthly: number; annual: number }>;
+  /** onboarding = frais uniques d'entrée dans la base, ajoutés au premier paiement. */
+  private readonly pricing: Record<Tier, { onboarding: number; trimester: number; semester: number }>;
   private readonly ownerMomoNumber: string;
   private readonly ownerMomoOperator: string;
   private readonly trialDays: number;
@@ -51,21 +50,15 @@ export class SubscriptionService {
     private readonly config: ConfigService,
   ) {
     this.pricing = {
-      STARTER: {
-        monthly: +config.get('SUBSCRIPTION_STARTER_MONTHLY_XOF', 5000),
-        annual:  +config.get('SUBSCRIPTION_STARTER_ANNUAL_XOF', 50000),
-      },
       BASIC: {
-        monthly: +config.get('SUBSCRIPTION_BASIC_MONTHLY_XOF', 10000),
-        annual:  +config.get('SUBSCRIPTION_BASIC_ANNUAL_XOF', 100000),
-      },
-      PRO: {
-        monthly: +config.get('SUBSCRIPTION_PRO_MONTHLY_XOF', 20000),
-        annual:  +config.get('SUBSCRIPTION_PRO_ANNUAL_XOF', 200000),
+        onboarding: +config.get('SUBSCRIPTION_BASIC_ONBOARDING_XOF', 20000),
+        trimester:  +config.get('SUBSCRIPTION_BASIC_TRIMESTER_XOF', 75000),
+        semester:   +config.get('SUBSCRIPTION_BASIC_SEMESTER_XOF', 100000),
       },
       ENTERPRISE: {
-        monthly: +config.get('SUBSCRIPTION_ENTERPRISE_MONTHLY_XOF', 35000),
-        annual:  +config.get('SUBSCRIPTION_ENTERPRISE_ANNUAL_XOF', 350000),
+        onboarding: +config.get('SUBSCRIPTION_ENTERPRISE_ONBOARDING_XOF', 40000),
+        trimester:  +config.get('SUBSCRIPTION_ENTERPRISE_TRIMESTER_XOF', 150000),
+        semester:   +config.get('SUBSCRIPTION_ENTERPRISE_SEMESTER_XOF', 200000),
       },
     };
     this.ownerMomoNumber   = config.get<string>('OWNER_MOMO_NUMBER', '');
@@ -78,8 +71,25 @@ export class SubscriptionService {
 
   // ─── School-facing ────────────────────────────────────────────────────────
 
+  /** Les frais d'inscription ne sont dus qu'une fois : tant qu'aucun paiement n'a été approuvé. */
+  private async onboardingDue(institutionId: string): Promise<boolean> {
+    const paid = await db(this.prisma).subscriptionPayment.count({ where: { institutionId, status: 'APPROVED' } });
+    return paid === 0;
+  }
+
+  /** Montant à payer pour une période, frais d'inscription compris s'ils sont encore dus. */
+  private async quote(institutionId: string, plan: BillingPeriod) {
+    if (!BILLING_MONTHS[plan]) throw new BadRequestException('Période de facturation invalide.');
+    const studentCount = await this.prisma.student.count({ where: { institutionId } });
+    const tier = getTier(studentCount);
+    const price = this.pricing[tier];
+    const onboarding = (await this.onboardingDue(institutionId)) ? price.onboarding : 0;
+    const period = plan === 'SEMESTER' ? price.semester : price.trimester;
+    return { tier, studentCount, onboarding, amount: period + onboarding };
+  }
+
   async getStatus(institutionId: string) {
-    const [institution, studentCount] = await Promise.all([
+    const [institution, studentCount, onboardingDue] = await Promise.all([
       db(this.prisma).institution.findUnique({
         where:  { id: institutionId },
         select: {
@@ -90,37 +100,13 @@ export class SubscriptionService {
         },
       }),
       this.prisma.student.count({ where: { institutionId } }),
+      this.onboardingDue(institutionId),
     ]);
 
     if (!institution) throw new NotFoundException('Institution not found');
 
     const now  = new Date();
     const tier = getTier(studentCount);
-
-    // Schools with fewer than 50 students are permanently free — no subscription needed
-    if (studentCount < 50) {
-      return {
-        status:       'FREE',
-        isFree:       true,
-        tier:         'STARTER',
-        studentCount,
-        billingPlan:  null,
-        expiry:       null,
-        trialEndsAt:  null,
-        daysLeft:     null,
-        currentPrice: { monthly: 0, annual: 0 },
-        pricing: Object.fromEntries(
-          (Object.keys(TIER_THRESHOLDS) as Tier[]).map((t) => [
-            t,
-            { ...this.pricing[t], ...TIER_THRESHOLDS[t] },
-          ]),
-        ),
-        momoInfo: {
-          number:   this.ownerMomoNumber,
-          operator: this.ownerMomoOperator,
-        },
-      };
-    }
 
     // Auto-expire if deadline passed
     if (institution.subscriptionStatus === 'TRIAL' && institution.trialEndsAt && institution.trialEndsAt < now) {
@@ -152,6 +138,7 @@ export class SubscriptionService {
       trialEndsAt:  institution.trialEndsAt,
       daysLeft,
       currentPrice: this.pricing[tier],
+      onboardingDue,
       pricing: Object.fromEntries(
         (Object.keys(TIER_THRESHOLDS) as Tier[]).map((t) => [
           t,
@@ -171,9 +158,7 @@ export class SubscriptionService {
       throw new BadRequestException("Le paiement en ligne de l'abonnement n'est pas configuré.");
     }
 
-    const studentCount = await this.prisma.student.count({ where: { institutionId } });
-    const tier   = getTier(studentCount);
-    const amount = dto.plan === 'ANNUAL' ? this.pricing[tier].annual : this.pricing[tier].monthly;
+    const { tier, studentCount, onboarding, amount } = await this.quote(institutionId, dto.plan);
 
     const { url, reference } = await this.notchpay.createTransaction(this.platformNotchpayPublicKey, {
       studentId:    institutionId,
@@ -182,7 +167,7 @@ export class SubscriptionService {
       amount,
       parentName:   adminName,
       parentEmail:  adminEmail,
-      description:  `Abonnement NovaBulletin — ${tier} (${dto.plan === 'ANNUAL' ? 'Annuel' : 'Mensuel'})`,
+      description:  `Abonnement NovaBulletin — ${PERIOD_LABEL[dto.plan]}${onboarding ? " + frais d'inscription" : ''} (${TIER_THRESHOLDS[tier].label})`,
       callbackPath: '/subscription-return',
     });
 
@@ -206,9 +191,7 @@ export class SubscriptionService {
 
   /** School submits manual MoMo proof */
   async submitMomo(institutionId: string, dto: SubmitMomoDto) {
-    const studentCount = await this.prisma.student.count({ where: { institutionId } });
-    const tier   = getTier(studentCount);
-    const amount = dto.plan === 'ANNUAL' ? this.pricing[tier].annual : this.pricing[tier].monthly;
+    const { tier, studentCount, onboarding, amount } = await this.quote(institutionId, dto.plan);
 
     const payment = await db(this.prisma).subscriptionPayment.create({
       data: {
@@ -228,7 +211,7 @@ export class SubscriptionService {
 
     if (this.ownerMomoNumber) {
       await this.whatsapp.sendSchoolRegistration(
-        `💳 Paiement abonnement soumis\nÉcole: ${payment.institution.name}\nTier: ${tier} (${studentCount} élèves)\nPlan: ${dto.plan}\nMontant: ${amount} XOF\nOpérateur: ${dto.momoOperator}\nRéf: ${dto.momoReference}\n→ Vérifiez et approuvez dans le tableau superadmin.`,
+        `💳 Paiement abonnement soumis\nÉcole: ${payment.institution.name}\nTier: ${tier} (${studentCount} élèves)\nPlan: ${PERIOD_LABEL[dto.plan]}${onboarding ? ` + inscription ${onboarding} XOF` : ''}\nMontant: ${amount} XOF\nOpérateur: ${dto.momoOperator}\nRéf: ${dto.momoReference}\n→ Vérifiez et approuvez dans le tableau superadmin.`,
         '',
       );
     }
@@ -313,7 +296,7 @@ export class SubscriptionService {
         data:  {
           subscriptionStatus: 'ACTIVE',
           subscriptionExpiry: newExpiry,
-          subscriptionPlan:   payment.plan, // billing period (MONTHLY/ANNUAL)
+          subscriptionPlan:   payment.plan, // billing period (TRIMESTER/SEMESTER)
         },
       }),
     ]);
@@ -322,7 +305,7 @@ export class SubscriptionService {
       await this.mail.sendSubscriptionConfirmation(
         payment.institution.name,
         payment.institution.email,
-        `${payment.tier ?? ''} ${payment.plan}`.trim(),
+        payment.plan,
         newExpiry,
       );
     }
