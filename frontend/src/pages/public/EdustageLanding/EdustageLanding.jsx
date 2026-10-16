@@ -32,6 +32,16 @@ const Icon = ({ i }) => (
   </svg>
 );
 
+/* Photo et étiquette de chaque fonctionnalité, dans l'ordre de FEATURES_ROW1 + FEATURES_ROW2 (photos Unsplash) */
+const FEATURE_PHOTOS = [
+  { img: 'calcul.jpg',    tag: ['Notes', 'Marks'] },
+  { img: 'bulletins.jpg', tag: ['Bulletins', 'Report cards'] },
+  { img: 'whatsapp.jpg',  tag: ['Parents', 'Parents'] },
+  { img: 'fiches.jpg',    tag: ['Enseignants', 'Teachers'] },
+  { img: 'frais.jpg',     tag: ['Finances', 'Finance'] },
+  { img: 'analytics.jpg', tag: ['Direction', 'Management'] },
+];
+
 function Faq({ q, a }) {
   const [open, setOpen] = useState(false);
   return (
@@ -148,11 +158,17 @@ export default function EdustageLanding() {
           </div>
           <div className="es-grid es-grid--3">
             {features.map((f, i) => (
-              <div className="es-feature" key={f.title}>
-                <Icon i={i} />
-                <h4>{f.title}</h4>
-                <p>{f.desc}</p>
-              </div>
+              <article className="es-card es-feature-card" key={f.title}>
+                <div className="es-card__img">
+                  <img src={`/images/landing/features/${FEATURE_PHOTOS[i].img}`} alt="" loading="lazy" decoding="async" />
+                  <span className="es-feature-card__badge"><Icon i={i} /></span>
+                </div>
+                <div className="es-card__body">
+                  <span className="es-card__tag">{t(...FEATURE_PHOTOS[i].tag)}</span>
+                  <h4>{f.title}</h4>
+                  <p>{f.desc}</p>
+                </div>
+              </article>
             ))}
           </div>
         </div>
@@ -229,7 +245,7 @@ export default function EdustageLanding() {
               </article>
             ))}
           </div>
-          <p className="es-credit">{t("Photos d'illustration : Unsplash (Annie Spratt, David Geneugelijk, Ninthgrid, WOCinTech Chat).", 'Illustrative photos: Unsplash (Annie Spratt, David Geneugelijk, Ninthgrid, WOCinTech Chat).')}</p>
+          <p className="es-credit">{t("Photos d'illustration : Unsplash (Annie Spratt, David Geneugelijk, Ninthgrid, WOCinTech Chat, Daniel Thomas, Ahmed Nasiru, Kojo Kwarteng, Akinyemi Gbadamosi).", 'Illustrative photos: Unsplash (Annie Spratt, David Geneugelijk, Ninthgrid, WOCinTech Chat, Daniel Thomas, Ahmed Nasiru, Kojo Kwarteng, Akinyemi Gbadamosi).')}</p>
         </div>
       </section>
 

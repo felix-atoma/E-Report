@@ -80,12 +80,7 @@
 .es-grid--4 { grid-template-columns: repeat(4, 1fr); }
 .es-grid--2 { grid-template-columns: repeat(2, 1fr); max-width: 900px; margin: 0 auto; }
 
-.es-feature { background: var(--es-tint); padding: 40px 36px; transition: all .3s ease; }
-.es-feature:hover { background: var(--es-navy); }
-.es-feature:hover h4, .es-feature:hover .es-icon { color: #fff; }
-.es-feature:hover p { color: #c9d3df; }
-.es-icon { width: 48px; height: 48px; color: var(--es-navy); margin-bottom: 26px; transition: color .3s; }
-.es-feature h4 { font-size: 20px; margin-bottom: 12px; transition: color .3s; }
+.es-icon { width: 48px; height: 48px; color: var(--es-navy); }
 
 /* ── Bandeau marine : chiffres + inscription ───────── */
 .es-register { background: var(--es-navy); padding: 100px 0; }
@@ -244,3 +239,14 @@
 @media (prefers-reduced-motion: reduce) {
   .es *, .es *::before, .es *::after { transition: none !important; }
 }
+
+/* ── Cartes fonctionnalités avec photo (comme les « courses » du modèle) ── */
+.es-feature-card { background: var(--es-tint); box-shadow: none; }
+.es-feature-card .es-card__img { position: relative; overflow: visible; height: 230px; }
+.es-feature-card .es-card__img img { transform: none !important; }
+.es-feature-card__badge {
+  position: absolute; right: 22px; bottom: -32px; width: 64px; height: 64px; border-radius: 50%;
+  background: var(--es-yellow); display: grid; place-items: center; box-shadow: 0 8px 20px rgba(0, 35, 71, .15);
+}
+.es-feature-card__badge .es-icon { width: 30px; height: 30px; }
+.es-feature-card .es-card__body { padding-top: 32px; }
