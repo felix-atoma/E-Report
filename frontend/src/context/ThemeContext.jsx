@@ -41,4 +41,19 @@ export function ThemeProvider({ children }) {
   );
 }
 
-export const useTheme = () => useContext(ThemeContext);
+/* Repli si le contexte est introuvable (ancienne version du fichier encore en cache après un
+   déploiement, ou rechargement à chaud en développement) : on lit et bascule le thème
+   directement sur <html> au lieu de faire planter la page. */
+function fallbackTheme() {
+  const root = document.documentElement;
+  return {
+    darkMode: root.getAttribute('data-theme') === 'dark',
+    toggleDarkMode: () => {
+      const next = root.getAttribute('data-theme') !== 'dark';
+      root.setAttribute('data-theme', next ? 'dark' : 'light');
+      localStorage.setItem('darkMode', String(next));
+    },
+  };
+}
+
+export const useTheme = () => useContext(ThemeContext) ?? fallbackTheme();
