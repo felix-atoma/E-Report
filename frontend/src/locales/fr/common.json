@@ -2362,6 +2362,7 @@
       "primaryHint":  "En-têtes, barres et boutons du bulletin",
       "secondary":    "Couleur secondaire",
       "secondaryHint":"Accents et sous-titres",
+      "dashboardNote":"Ces couleurs s'appliquent aux bulletins et relevés de notes. Le tableau de bord garde les couleurs NovaBulletin.",
       "preview":      "Aperçu",
       "mainLabel":    "Principale",
       "secondLabel":  "Secondaire"

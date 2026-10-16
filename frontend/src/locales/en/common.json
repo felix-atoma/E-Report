@@ -2280,6 +2280,7 @@
       "primaryHint":  "Headers, bars and buttons on the report card",
       "secondary":    "Secondary colour",
       "secondaryHint":"Accents and subtitles",
+      "dashboardNote":"These colours apply to report cards and report sheets. The dashboard keeps the NovaBulletin colours.",
       "preview":      "Preview",
       "mainLabel":    "Primary",
       "secondLabel":  "Secondary"
