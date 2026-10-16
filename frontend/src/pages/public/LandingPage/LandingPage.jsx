@@ -77,59 +77,6 @@ const IllustrationHero = () => (
   </svg>
 );
 
-const IllustrationWhatsapp = () => (
-  <svg viewBox="0 0 280 480" xmlns="http://www.w3.org/2000/svg" className="lp-illus lp-illus--phone" aria-hidden="true">
-    {/* Phone body */}
-    <rect x="20" y="10" width="240" height="460" rx="36" fill="#1f2937" stroke="#374151" strokeWidth="2"/>
-    <rect x="30" y="20" width="220" height="440" rx="30" fill="#111827"/>
-    {/* Screen */}
-    <rect x="30" y="20" width="220" height="440" rx="30" fill="#f0fdf4"/>
-    {/* Status bar */}
-    <rect x="30" y="20" width="220" height="32" rx="30" fill="#16a34a"/>
-    <rect x="30" y="40" width="220" height="12" fill="#16a34a"/>
-    <text x="140" y="38" textAnchor="middle" fontSize="10" fontWeight="700" fill="white">WhatsApp</text>
-    {/* Notch */}
-    <rect x="100" y="20" width="80" height="16" rx="8" fill="#1f2937"/>
-    {/* Chat header */}
-    <rect x="30" y="52" width="220" height="50" fill="#16a34a"/>
-    <circle cx="66" cy="77" r="16" fill="#dcfce7"/>
-    <text x="66" y="82" textAnchor="middle" fontSize="14" fontWeight="900" fill="#16a34a">N</text>
-    <text x="120" y="72" fontSize="10" fontWeight="700" fill="white">NovaBulletin</text>
-    <text x="120" y="85" fontSize="8" fill="#bbf7d0">En ligne ●</text>
-    {/* Message bubbles */}
-    {/* Bubble 1 */}
-    <rect x="50" y="118" width="150" height="52" rx="12" fill="#dcfce7"/>
-    <text x="65" y="134" fontSize="8" fontWeight="600" fill="#166534">📄 Bulletin de Kofi Mensah</text>
-    <text x="65" y="147" fontSize="7.5" fill="#374151">Trimestre 2 — 2025/2026</text>
-    <text x="65" y="159" fontSize="7.5" fill="#374151">Moyenne : 15.4/20 — Rang : 3/28</text>
-    <text x="180" y="165" fontSize="6.5" fill="#6b7280">09:32 ✓✓</text>
-    {/* Bubble 2 */}
-    <rect x="50" y="182" width="140" height="38" rx="12" fill="#dcfce7"/>
-    <text x="65" y="196" fontSize="7.5" fill="#374151">📎 Voir le bulletin PDF complet</text>
-    <text x="65" y="210" fontSize="7" fill="#3b82f6" textDecoration="underline">Appuyez pour ouvrir →</text>
-    <text x="172" y="215" fontSize="6.5" fill="#6b7280">09:32 ✓✓</text>
-    {/* Bubble 3 */}
-    <rect x="88" y="232" width="162" height="36" rx="12" fill="#fff"/>
-    <text x="100" y="246" fontSize="7.5" fill="#374151">Merci ! J'ai reçu le bulletin 🙏</text>
-    <text x="100" y="260" fontSize="7.5" fill="#374151">Très bons résultats !</text>
-    <text x="234" y="263" fontSize="6.5" fill="#6b7280">09:35</text>
-    {/* Bubble 4 */}
-    <rect x="50" y="280" width="155" height="50" rx="12" fill="#dcfce7"/>
-    <text x="65" y="295" fontSize="8" fontWeight="600" fill="#166534">📌 Rappel frais scolaires</text>
-    <text x="65" y="308" fontSize="7.5" fill="#374151">Solde restant : 15 000 FCFA</text>
-    <text x="65" y="320" fontSize="7.5" fill="#374151">Trimestre 3 — Échéance : 15/04</text>
-    <text x="188" y="326" fontSize="6.5" fill="#6b7280">10:00 ✓✓</text>
-    {/* Input bar */}
-    <rect x="30" y="410" width="220" height="50" fill="#f0fdf4" rx="0"/>
-    <rect x="38" y="418" width="155" height="32" rx="16" fill="white" stroke="#e5e7eb" strokeWidth="1"/>
-    <text x="60" y="438" fontSize="8" fill="#9ca3af">Écrire un message…</text>
-    <circle cx="218" cy="434" r="14" fill="#16a34a"/>
-    <text x="218" y="439" textAnchor="middle" fontSize="12">🎤</text>
-    {/* Bottom bar */}
-    <rect x="90" y="468" width="100" height="4" rx="2" fill="#374151"/>
-  </svg>
-);
-
 const IllustrationLMS = () => (
   <svg viewBox="0 0 520 360" xmlns="http://www.w3.org/2000/svg" className="lp-illus lp-illus--lms" aria-hidden="true">
     {/* Laptop body */}
@@ -1469,7 +1416,16 @@ export default function LandingPage() {
             </Link>
           </div>
           <div className="lp-whatsapp__phone">
-            <IllustrationWhatsapp />
+            <div className="lp-wa-photo">
+              <img src="/images/landing/parent.jpg" alt={t('Une maman sourit en lisant un message sur son téléphone','A mother smiling at a message on her phone')} loading="lazy" decoding="async" />
+              <div className="lp-wa-photo__bubble">
+                <span className="lp-wa-photo__icon">💬</span>
+                <div>
+                  <strong>NovaBulletin</strong>
+                  <p>{t('Le bulletin du 1er trimestre de Kofi est disponible : 14,25/20 — 3e/42 📄','Kofi\'s Term 1 report card is ready: 14.25/20 — 3rd/42 📄')}</p>
+                </div>
+              </div>
+            </div>
             <div className="lp-wa-badge">
               <div className="lp-wa-badge__dot" />
               <span>{t('100% des parents informés','100% of parents informed')}</span>
@@ -1482,35 +1438,52 @@ export default function LandingPage() {
       <section className="lp-gallery">
         <div className="lp-container">
           <div className="lp-section-head">
-            <span className="lp-tag">{t('📸 En action','📸 In Action')}</span>
-            <h2>{t('NovaBulletin dans les établissements','NovaBulletin in schools')}</h2>
-            <p>{t('Des écoles du Togo, du Bénin et de Côte d\'Ivoire font confiance à NovaBulletin chaque trimestre.','Schools in Togo, Benin and Côte d\'Ivoire trust NovaBulletin every term.')}</p>
+            <span className="lp-tag">{t('📸 En classe','📸 In the classroom')}</span>
+            <h2>{t('Pensé pour les écoles d\'Afrique de l\'Ouest','Built for West African schools')}</h2>
+            <p>{t('Des enseignants, des élèves, des parents et une administration qui gagnent du temps — de la saisie des notes au bulletin reçu sur WhatsApp.','Teachers, pupils, parents and school staff saving time — from entering marks to the report card received on WhatsApp.')}</p>
           </div>
           <div className="lp-gallery__grid">
-            <div className="lp-gallery__item lp-gallery__item--tall lp-gallery__item--svg">
+            <div className="lp-gallery__item lp-gallery__item--tall">
+              <img src="/images/landing/classroom.jpg" alt={t('Élèves en uniforme dans une salle de classe','Pupils in uniform in a classroom')} className="lp-gallery__img" loading="lazy" decoding="async" />
+              <div className="lp-gallery__overlay">
+                <div className="lp-gallery__badge">{t('🎓 Les élèves','🎓 Pupils')}</div>
+                <p className="lp-gallery__label">{t('Notes, rangs et bulletins clairs pour chaque élève','Clear marks, ranks and report cards for every pupil')}</p>
+              </div>
+            </div>
+            <div className="lp-gallery__col">
+              <div className="lp-gallery__item">
+                <img src="/images/landing/teacher.jpg" alt={t('Un enseignant fait cours devant sa classe','A teacher leading a lesson')} className="lp-gallery__img" loading="lazy" decoding="async" />
+                <div className="lp-gallery__overlay">
+                  <div className="lp-gallery__badge">{t('👨🏾‍🏫 Les enseignants','👨🏾‍🏫 Teachers')}</div>
+                  <p className="lp-gallery__label">{t('Saisie et signature des notes depuis le téléphone','Enter and sign marks from a phone')}</p>
+                </div>
+              </div>
+              <div className="lp-gallery__item">
+                <img src="/images/landing/student.jpg" alt={t('Une élève trace un graphique avec sa règle','A pupil drawing a graph with a ruler')} className="lp-gallery__img" loading="lazy" decoding="async" />
+                <div className="lp-gallery__overlay">
+                  <div className="lp-gallery__badge">{t('📐 Au travail','📐 At work')}</div>
+                  <p className="lp-gallery__label">{t('Compositions, devoirs et relevés suivis au jour le jour','Tests, homework and report sheets tracked day by day')}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="lp-gallery__grid lp-gallery__grid--second">
+            <div className="lp-gallery__item">
+              <img src="/images/landing/admin.jpg" alt={t('Une responsable d\'école consulte son ordinateur portable','A school administrator checking her laptop')} className="lp-gallery__img lp-gallery__img--top" loading="lazy" decoding="async" />
+              <div className="lp-gallery__overlay">
+                <div className="lp-gallery__badge">{t('⚙️ L\'administration','⚙️ School office')}</div>
+                <p className="lp-gallery__label">{t('Frais, présences et bulletins au même endroit','Fees, attendance and report cards in one place')}</p>
+              </div>
+            </div>
+            <div className="lp-gallery__item lp-gallery__item--svg">
               <div className="lp-gallery__svg-wrap"><IllustrationDashboard /></div>
               <div className="lp-gallery__overlay">
                 <div className="lp-gallery__badge">{t('🖥️ Tableau de bord','🖥️ Dashboard')}</div>
                 <p className="lp-gallery__label">{t('Vue complète de l\'établissement en temps réel','Complete school overview in real time')}</p>
               </div>
             </div>
-            <div className="lp-gallery__col">
-              <div className="lp-gallery__item lp-gallery__item--svg">
-                <div className="lp-gallery__svg-wrap"><IllustrationMobileApp /></div>
-                <div className="lp-gallery__overlay">
-                  <div className="lp-gallery__badge">{t('📝 Fiche numérique','📝 Digital sheet')}</div>
-                  <p className="lp-gallery__label">{t('Saisie et signature sur mobile','Entry and signature on mobile')}</p>
-                </div>
-              </div>
-              <div className="lp-gallery__item lp-gallery__item--svg">
-                <div className="lp-gallery__svg-wrap"><IllustrationWhatsapp /></div>
-                <div className="lp-gallery__overlay">
-                  <div className="lp-gallery__badge">📱 WhatsApp</div>
-                  <p className="lp-gallery__label">{t('Bulletin reçu le jour même','Report received on the same day')}</p>
-                </div>
-              </div>
-            </div>
           </div>
+          <p className="lp-gallery__credit">{t('Photos d\'illustration : Unsplash (Emmanuel Ikwuegbu, David Geneugelijk, Ninthgrid, WOCinTech Chat).','Illustrative photos: Unsplash (Emmanuel Ikwuegbu, David Geneugelijk, Ninthgrid, WOCinTech Chat).')}</p>
           <div className="lp-gallery__strip">
             {(isFr ? [
               {icon:'⚙️',label:'Administration simplifiée'},
