@@ -1421,7 +1421,7 @@ export default function LandingPage() {
               </div>
             </div>
           </div>
-          <p className="lp-gallery__credit">{t('Photos d\'illustration : Unsplash (Emmanuel Ikwuegbu, David Geneugelijk, Ninthgrid, WOCinTech Chat).','Illustrative photos: Unsplash (Emmanuel Ikwuegbu, David Geneugelijk, Ninthgrid, WOCinTech Chat).')}</p>
+          <p className="lp-gallery__credit">{t('Photos d\'illustration : Unsplash (Annie Spratt, David Geneugelijk, Ninthgrid, WOCinTech Chat).','Illustrative photos: Unsplash (Annie Spratt, David Geneugelijk, Ninthgrid, WOCinTech Chat).')}</p>
           <div className="lp-gallery__strip">
             {(isFr ? [
               {icon:'⚙️',label:'Administration simplifiée'},

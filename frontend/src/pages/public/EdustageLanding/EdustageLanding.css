@@ -62,7 +62,7 @@
 .es-banner { position: relative; padding-top: 150px; text-align: center; background: #f5f3f6; }
 .es-banner__content { max-width: 900px; position: relative; z-index: 1; padding-bottom: 50px; }
 .es-banner__photo { position: relative; height: 520px; overflow: hidden; }
-.es-banner__photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 8%; }
+.es-banner__photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 62%; }
 .es-banner__photo::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 90px; background: linear-gradient(180deg, #f5f3f6, rgba(245, 243, 246, 0)); z-index: 1; }
 .es-banner__eyebrow { text-transform: uppercase; font-family: 'Rubik', sans-serif; font-weight: 500; font-size: 15px; color: var(--es-navy); letter-spacing: .03em; margin-bottom: 18px !important; }
 .es-banner h1 { text-transform: uppercase; font-size: 46px; letter-spacing: .01em; margin-bottom: 18px; }

@@ -136,7 +136,7 @@ export default function EdustageLanding() {
           </div>
         </div>
         <div className="es-banner__photo">
-          <img src="/images/landing/classroom.jpg" alt={t('Élèves en classe, une élève lit son livre', 'Pupils in class, a girl reading her book')} fetchpriority="high" decoding="async" />
+          <img src="/images/landing/classroom.jpg" alt={t('Élèves en uniforme dans leur salle de classe', 'Pupils in uniform in their classroom')} fetchpriority="high" decoding="async" />
         </div>
       </section>
 
@@ -230,7 +230,7 @@ export default function EdustageLanding() {
               </article>
             ))}
           </div>
-          <p className="es-credit">{t("Photos d'illustration : Unsplash (Emmanuel Ikwuegbu, David Geneugelijk, Ninthgrid, WOCinTech Chat).", 'Illustrative photos: Unsplash (Emmanuel Ikwuegbu, David Geneugelijk, Ninthgrid, WOCinTech Chat).')}</p>
+          <p className="es-credit">{t("Photos d'illustration : Unsplash (Annie Spratt, David Geneugelijk, Ninthgrid, WOCinTech Chat).", 'Illustrative photos: Unsplash (Annie Spratt, David Geneugelijk, Ninthgrid, WOCinTech Chat).')}</p>
         </div>
       </section>
 
