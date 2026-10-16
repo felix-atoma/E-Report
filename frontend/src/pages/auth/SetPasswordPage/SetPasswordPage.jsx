@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../context/AuthContext';
 import api from '../../../services/api';
-import logoIcon from '../../../assets/images/novaBulletin-icon.svg';
+import logoIcon from '../../../assets/images/novabulletin-tablet.svg';
 import '../asl-auth.css';
 
 const ROLE_HOME = {

@@ -3,7 +3,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../context/AuthContext';
 import LoginForm from '../../../components/auth/LoginForm/LoginForm';
-import logoIcon from '../../../assets/images/novaBulletin-icon.svg';
+import logoIcon from '../../../assets/images/novabulletin-tablet.svg';
 import './LoginPage.css';
 
 const ROLE_HOME = {

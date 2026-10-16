@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../../../services/api';
-import logoIcon from '../../../assets/images/novaBulletin-icon.svg';
+import logoIcon from '../../../assets/images/novabulletin-tablet.svg';
 import '../asl-auth.css';
 
 function OtpLoginPage() {

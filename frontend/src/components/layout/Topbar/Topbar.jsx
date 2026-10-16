@@ -6,7 +6,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useTheme } from '../../../context/ThemeContext';
 import { notificationsService } from '../../../services/notificationsService';
 import Avatar from '../../common/Avatar/Avatar';
-import logoIcon from '../../../assets/images/novaBulletin-icon.svg';
+import logoIcon from '../../../assets/images/novabulletin-tablet.svg';
 import './Topbar.css';
 
 const ROLE_HOME = {

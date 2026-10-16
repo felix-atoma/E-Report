@@ -7,7 +7,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useInstitution } from '../../../context/InstitutionContext';
 import Avatar from '../../common/Avatar/Avatar';
 import LanguageSwitcher from '../../common/LanguageSwitcher/LanguageSwitcher';
-import logoIcon from '../../../assets/images/novaBulletin-icon.svg';
+import logoIcon from '../../../assets/images/novabulletin-tablet.svg';
 import './Sidebar.css';
 
 const NAV = {

@@ -24,7 +24,11 @@
 
 .asl-left {
   flex: 0 0 42%;
-  background: #0d1554;
+  /* Photo de classe sous un voile marine, plus sombre en bas pour lire le texte */
+  background:
+    linear-gradient(180deg, rgba(0, 35, 71, .78) 0%, rgba(0, 35, 71, .35) 38%, rgba(0, 35, 71, .25) 70%, rgba(0, 35, 71, .7) 100%),
+    var(--asl-photo, url('/images/landing/classroom.jpg')) center / cover no-repeat;
+  background-color: #002347;
   color: #fff;
   display: flex;
   flex-direction: column;
@@ -56,6 +60,8 @@
 }
 
 /* ── Dashboard illustration ───────────────────────────────────────────────── */
+/* Remplacée par la photo : on garde l'espace pour que le texte reste en bas */
+.asl-illustration > * { display: none !important; }
 
 .asl-illustration {
   flex: 1;
@@ -207,7 +213,7 @@
 }
 
 .asl-dot-nav--active {
-  background: #fff;
+  background: #fdc632;
   width: 22px;
   border-radius: 4px;
 }
@@ -240,7 +246,7 @@
 .asl-brand__name {
   font-size: 1rem;
   font-weight: 800;
-  color: #0d1554;
+  color: #002347;
   letter-spacing: -0.01em;
   line-height: 1.1;
 }
@@ -288,10 +294,10 @@
   width: 100%;
   margin-top: 0.75rem;
   padding: 0.625rem 1rem;
-  border: 1.5px solid #0d1554;
+  border: 1.5px solid #002347;
   border-radius: 8px;
   background: transparent;
-  color: #0d1554;
+  color: #002347;
   font-size: 0.8rem;
   font-weight: 600;
   text-align: center;
@@ -300,8 +306,9 @@
 }
 
 .asl-signup-btn:hover {
-  background: #0d1554;
-  color: #fff;
+  background: #fdc632;
+  border-color: #fdc632;
+  color: #002347;
 }
 
 .asl-back-link {
@@ -315,7 +322,7 @@
   transition: color 0.15s;
 }
 
-.asl-back-link:hover { color: #0d1554; }
+.asl-back-link:hover { color: #002347; }
 
 .asl-divider {
   display: flex;
@@ -360,6 +367,10 @@
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */
 
+/* Une photo différente selon la page */
+.asl-page--register { --asl-photo: url('/images/landing/features/calcul.jpg'); }
+.asl-page--password { --asl-photo: url('/images/landing/features/bulletins.jpg'); }
+
 @media (max-width: 720px) {
   .asl-card-wrap {
     flex-direction: column;
@@ -386,3 +397,7 @@
   .asl-left__title { font-size: 1.1rem; }
   .asl-left__subtitle { font-size: 0.8rem; }
 }
+
+/* Texte lisible sur la photo */
+.asl-left__title, .asl-left__subtitle, .asl-left__desc { text-shadow: 0 1px 10px rgba(0, 20, 45, .55); }
+.asl-left__desc { color: rgba(255, 255, 255, .85); }

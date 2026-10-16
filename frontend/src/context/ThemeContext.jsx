@@ -29,6 +29,8 @@ function setSidebarVars(root, primaryColor) {
   root.style.setProperty('--sidebar-bg',        `hsl(${h},30%,9%)`);
   root.style.setProperty('--sidebar-bg-subtle',  `hsl(${h},25%,13%)`);
   root.style.setProperty('--sidebar-bg-muted',   `hsl(${h},20%,18%)`);
+  root.style.setProperty('--sidebar-accent',      primaryColor);
+  root.style.setProperty('--sidebar-accent-text', '#fff');
 }
 
 export const ThemeContext = createContext(null);

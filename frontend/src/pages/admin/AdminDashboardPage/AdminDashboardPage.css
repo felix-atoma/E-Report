@@ -19,7 +19,7 @@
 .stat-card__icon-wrap--blue    { background: #dbeafe; color: #1d4ed8; }
 .stat-card__icon-wrap--teal    { background: #ccfbf1; color: #0f766e; }
 .stat-card__icon-wrap--green   { background: #d1fae5; color: #065f46; }
-.stat-card__icon-wrap--primary { background: #ffedd5; color: #c2410c; }
+.stat-card__icon-wrap--primary { background: #e6edf5; color: #002347; }
 .stat-card__body { display: flex; flex-direction: column; }
 .stat-card__value { font-size: 1.6rem; font-weight: 700; color: var(--color-text, #1f2937); line-height: 1.1; }
 .stat-card__label { font-size: 0.8rem; color: var(--color-text-muted, #6b7280); margin-top: 0.15rem; }

@@ -66,13 +66,20 @@
   --transition-slow: 400ms ease;
 
   /* Sidebar palette — overridden by ThemeContext when institution branding loads */
-  --sidebar-bg:        #0f172a;
-  --sidebar-bg-subtle: #1e2d42;
-  --sidebar-bg-muted:  #2c3d55;
+  --sidebar-bg:        #002347;
+  --sidebar-bg-subtle: #0a2f57;
+  --sidebar-bg-muted:  #15406e;
+  /* Élément actif, avatar et encadré d'aide du menu : jaune Edustage (ou couleur de l'école) */
+  --sidebar-accent:      #fdc632;
+  --sidebar-accent-text: #002347;
+  --color-highlight:     #fdc632;
 }
 
 /* ── Dark mode overrides ──────────────────────────────────────────────────── */
 [data-theme="dark"] {
+  /* Le marine est illisible sur fond sombre : bleu plus clair pour liens et boutons */
+  --color-primary:      #4d7cc0;
+  --color-accent:       #6b93cf;
   --color-bg:           #1a2235;
   --color-bg-subtle:    #212e42;
   --color-bg-muted:     #2c3d55;

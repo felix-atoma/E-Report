@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { institutionsService } from '../../../services/institutionsService';
-import logoIcon from '../../../assets/images/novaBulletin-icon.svg';
+import logoIcon from '../../../assets/images/novabulletin-tablet.svg';
 import './RegisterSchoolPage.css';
 
 const API_BASE = import.meta.env.VITE_API_URL

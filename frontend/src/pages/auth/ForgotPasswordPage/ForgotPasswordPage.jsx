@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ForgotPasswordForm from '../../../components/auth/ForgotPasswordForm/ForgotPasswordForm';
-import logoIcon from '../../../assets/images/novaBulletin-icon.svg';
+import logoIcon from '../../../assets/images/novabulletin-tablet.svg';
 import './ForgotPasswordPage.css';
 
 function LockIllustration({ t }) {
@@ -32,7 +32,7 @@ function LockIllustration({ t }) {
 function ForgotPasswordPage() {
   const { t } = useTranslation();
   return (
-    <div className="asl-page">
+    <div className="asl-page asl-page--password">
       <div className="asl-card-wrap">
 
         {/* ── Left panel ─────────────────────────────────────────── */}

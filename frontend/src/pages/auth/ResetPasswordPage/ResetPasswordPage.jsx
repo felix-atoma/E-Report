@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ResetPasswordForm from '../../../components/auth/ResetPasswordForm/ResetPasswordForm';
-import logoIcon from '../../../assets/images/novaBulletin-icon.svg';
+import logoIcon from '../../../assets/images/novabulletin-tablet.svg';
 import './ResetPasswordPage.css';
 
 function ResetPasswordPage() {
   const { t } = useTranslation();
   return (
-    <div className="asl-page">
+    <div className="asl-page asl-page--password">
       <div className="asl-card-wrap">
 
         {/* ── Left panel ─────────────────────────────────────────── */}

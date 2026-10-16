@@ -10,8 +10,8 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: linear-gradient(135deg, #fff7ed, #ffedd5);
-  border: 1.5px solid #f97316;
+  background: linear-gradient(135deg, #fffdf4, #fff3cc);
+  border: 1.5px solid #fdc632;
   border-radius: 14px;
   padding: 1rem 1.25rem;
   margin-bottom: 1.25rem;
@@ -41,7 +41,7 @@
   flex-shrink: 0;
 }
 .sa-alert-banner__btn {
-  background: #f97316; color: #fff; border: none; border-radius: 8px;
+  background: #002347; color: #fff; border: none; border-radius: 8px;
   padding: .5rem 1rem; font-size: .8rem; font-weight: 700; cursor: pointer;
   white-space: nowrap; transition: background .15s;
 }

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import logoIcon from '../../../assets/images/novabulletin-tablet.svg';
 import './PwaInstallPrompt.css';
 
 export default function PwaInstallPrompt() {
@@ -37,12 +38,7 @@ export default function PwaInstallPrompt() {
   return (
     <div className="pwa-prompt">
       <div className="pwa-prompt__icon">
-        <svg viewBox="0 0 192 192" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
-          <rect width="192" height="192" rx="42" fill="#1E2A78"/>
-          <g transform="translate(96 96)">
-            <path d="M 0 -60 C 5 -26, 26 -5, 60 0 C 26 5, 5 26, 0 60 C -5 26, -26 5, -60 0 C -26 -5, -5 -26, 0 -60 Z" fill="#FFB547"/>
-          </g>
-        </svg>
+        <img src={logoIcon} alt="" width="36" height="36" />
       </div>
       <div className="pwa-prompt__text">
         <strong>Installer NovaBulletin</strong>

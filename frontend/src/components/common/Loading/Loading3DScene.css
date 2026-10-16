@@ -12,7 +12,7 @@
   width: 36%;
   height: 36%;
   border-radius: 50%;
-  background: radial-gradient(circle at 38% 35%, #fb923c, #f97316 55%, #c2410c);
+  background: radial-gradient(circle at 38% 35%, #fde68a, #fdc632 55%, #c98f00);
   box-shadow:
     0 0 12px rgba(249,115,22,0.7),
     0 0 28px rgba(249,115,22,0.35),
@@ -35,7 +35,7 @@
 }
 
 .orb-loader__ring--1 {
-  border-top-color: #f97316;
+  border-top-color: #fdc632;
   border-right-color: rgba(249,115,22,0.3);
   transform: rotateX(68deg);
   animation: ring-spin-1 1.1s linear infinite;
@@ -88,8 +88,8 @@
   animation: dot-orbit-2 1.7s linear infinite;
 }
 .orb-loader__dot--3 {
-  color: #fb923c;
-  background: #fb923c;
+  color: #fdc632;
+  background: #fdc632;
   animation: dot-orbit-3 2.2s linear infinite;
 }
 

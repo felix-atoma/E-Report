@@ -42,7 +42,7 @@
   background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px;
   color: #78350f; font-size: 0.9rem; line-height: 1.45;
 }
-.print-page__btn--print { background: #f97316; color: #fff; }
+.print-page__btn--print { background: var(--color-primary); color: #fff; }
 .print-page__btn--close  { background: transparent; color: #cbd5e1; border: 1px solid #475569; }
 
 /* ════════════════════════════════════════════════════════════════════

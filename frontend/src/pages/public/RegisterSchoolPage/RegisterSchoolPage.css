@@ -155,7 +155,7 @@
 }
 
 .rsp-input:focus {
-  border-color: #0d1554;
+  border-color: #002347;
   box-shadow: 0 0 0 3px rgba(13, 21, 84, 0.1);
 }
 
@@ -188,7 +188,7 @@
 }
 
 .rsp-btn--primary {
-  background: #0d1554;
+  background: #002347;
   color: #fff;
 }
 
@@ -226,7 +226,7 @@
 }
 
 .rsp-link {
-  color: #0d1554;
+  color: #002347;
   font-weight: 600;
   text-decoration: none;
 }
