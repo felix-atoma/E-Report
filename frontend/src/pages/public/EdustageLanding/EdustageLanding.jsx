@@ -135,6 +135,9 @@ export default function EdustageLanding() {
             <Link to="/register-school" className="es-btn es-btn--yellow">{t('Essai gratuit 30 jours', 'Free 30-day trial')}</Link>
           </div>
         </div>
+        <div className="es-banner__photo">
+          <img src="/images/landing/classroom.jpg" alt={t('Élèves en classe, une élève lit son livre', 'Pupils in class, a girl reading her book')} fetchpriority="high" decoding="async" />
+        </div>
       </section>
 
       {/* ─── Fonctionnalités ─────────────────────────────────────── */}

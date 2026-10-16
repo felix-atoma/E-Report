@@ -58,14 +58,12 @@
 .es-burger span { display: block; width: 24px; height: 2px; background: var(--es-navy); margin: 5px 0; }
 
 /* ── Bannière ──────────────────────────────────────── */
-.es-banner {
-  position: relative; min-height: 760px; display: flex; align-items: flex-start;
-  padding-top: 190px; text-align: center;
-  background:
-    linear-gradient(180deg, #f5f3f6 0%, rgba(245, 243, 246, .97) 44%, rgba(245, 243, 246, .6) 66%, rgba(245, 243, 246, 0) 86%),
-    url('/images/landing/classroom.jpg') center 65% / cover no-repeat;
-}
-.es-banner__content { max-width: 900px; }
+/* Texte sur fond clair, photo nette en dessous : seul son bord haut se fond dans le fond. */
+.es-banner { position: relative; padding-top: 150px; text-align: center; background: #f5f3f6; }
+.es-banner__content { max-width: 900px; position: relative; z-index: 1; padding-bottom: 50px; }
+.es-banner__photo { position: relative; height: 520px; overflow: hidden; }
+.es-banner__photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 8%; }
+.es-banner__photo::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 90px; background: linear-gradient(180deg, #f5f3f6, rgba(245, 243, 246, 0)); z-index: 1; }
 .es-banner__eyebrow { text-transform: uppercase; font-family: 'Rubik', sans-serif; font-weight: 500; font-size: 15px; color: var(--es-navy); letter-spacing: .03em; margin-bottom: 18px !important; }
 .es-banner h1 { text-transform: uppercase; font-size: 46px; letter-spacing: .01em; margin-bottom: 18px; }
 .es-banner__lead { font-size: 17px; color: #4a5568; max-width: 680px; margin: 0 auto 34px !important; }
@@ -218,7 +216,9 @@
 }
 @media (max-width: 640px) {
   .es-logo span { font-size: 23px; }
-  .es-banner { min-height: 640px; padding-top: 130px; background: linear-gradient(180deg, #f5f3f6 0%, rgba(245, 243, 246, .97) 62%, rgba(245, 243, 246, .4) 82%, rgba(245, 243, 246, 0) 100%), url("/images/landing/classroom.jpg") center 70% / cover no-repeat; }
+  .es-banner { padding-top: 110px; }
+  .es-banner__content { padding-bottom: 34px; }
+  .es-banner__photo { height: 300px; }
   .es-banner h1 { font-size: 30px; }
   .es-banner__lead { font-size: 15px; }
   .es-btn { padding: 0 26px; }
