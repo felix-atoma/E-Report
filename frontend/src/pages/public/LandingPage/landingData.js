@@ -7,7 +7,7 @@ export const SUPPORT_WHATSAPP = import.meta.env.VITE_SUPPORT_WHATSAPP ?? '233244
 export const FEATURES_ROW1 = [
   { icon: '🧮', color: '#eff6ff', iconColor: '#1E2A78', title: 'Calcul automatique', desc: 'Moyennes, coefficients, rangs calculés instantanément. Zéro formule Excel, zéro erreur.' },
   { icon: '📄', color: '#fff3f0', iconColor: '#FF7A59', title: 'Bulletins PDF en 1 clic', desc: 'Bulletin professionnel avec logo, couleurs et cachet de votre école. Prêt à imprimer ou partager.' },
-  { icon: '📱', color: '#eff6ff', iconColor: '#1E2A78', title: 'WhatsApp & Email', desc: 'Parents informés instantanément par WhatsApp. Distribution automatique dès la publication.' },
+  { icon: '📱', color: '#eff6ff', iconColor: '#1E2A78', title: 'WhatsApp, SMS & Email', desc: 'Parents informés instantanément par WhatsApp, SMS et email — même sans smartphone. Bulletin, rappels de frais et reçus de paiement envoyés automatiquement.' },
 ];
 
 export const FEATURES_ROW2 = [
@@ -20,7 +20,7 @@ export const STEPS = [
   { num: '01', icon: '🏫', title: 'Inscrivez votre école', desc: 'Formulaire en 2 minutes. Accès immédiat, sans attente. Compte activé gratuitement — 30 jours d\'essai offerts.', tags: ['Nom école','Type','Niveau','Contact'] },
   { num: '02', icon: '⚙️', title: 'Configurez en 30 min', desc: 'Ajoutez classes, matières, enseignants, élèves. Import CSV disponible. Paramétrez le système de périodes par cycle.', tags: ['Classes','Matières','Coefficients','Import CSV'] },
   { num: '03', icon: '✏️', title: 'Saisie des notes', desc: 'Les professeurs saisissent les notes sur leur téléphone, même en mode paysage, puis signent leur fiche. Dès que toutes les fiches sont signées, les bulletins sont générés automatiquement.', tags: ['Devoir','Composition','Signature','Bulletins auto'] },
-  { num: '04', icon: '🚀', title: 'Le titulaire publie', desc: 'Le professeur titulaire relit les bulletins de sa classe, ajoute l\'observation et la conduite, puis publie. Chaque parent reçoit le bulletin PDF sur WhatsApp et par email. Blocage auto si frais impayés.', tags: ['Titulaire','PDF auto','WhatsApp','Blocage frais'] },
+  { num: '04', icon: '🚀', title: 'Le titulaire publie', desc: 'Le professeur titulaire relit les bulletins de sa classe, ajoute l\'observation et la conduite, puis publie. Chaque parent est prévenu par WhatsApp, SMS et email. Blocage auto si frais impayés.', tags: ['Titulaire','PDF auto','WhatsApp & SMS','Blocage frais'] },
 ];
 
 export const TEAM = [
@@ -38,7 +38,7 @@ export const FAQS = [
   { q: 'NovaBulletin remplace-t-il tous les registres papier ?', a: 'Oui. NovaBulletin centralise 11 registres : présences, santé, bibliothèque, inventaire, anciens élèves, transferts, dossiers disciplinaires, examens nationaux, calendrier, documents officiels et profils du personnel. Chaque donnée est sécurisée, consultable instantanément et exportable en CSV.' },
   { q: 'Combien de temps faut-il pour configurer l\'école ?', a: 'Environ 30 minutes pour une école de taille moyenne. Vous pouvez importer vos élèves depuis un fichier Excel ou CSV en quelques clics. Notre équipe vous accompagne à chaque étape via WhatsApp.' },
   { q: 'Les enseignants doivent-ils être formés ?', a: 'L\'interface est conçue pour être intuitive sur mobile. La plupart des enseignants maîtrisent la plateforme en moins de 10 minutes. Nous fournissons un guide de démarrage rapide et un support WhatsApp dédié.' },
-  { q: 'Que se passe-t-il si un parent n\'utilise pas WhatsApp ?', a: 'NovaBulletin envoie aussi les bulletins par email. Si le parent n\'a ni WhatsApp ni email, l\'admin peut imprimer le bulletin PDF directement depuis la plateforme, comme avant.' },
+  { q: 'Que se passe-t-il si un parent n\'utilise pas WhatsApp ?', a: 'NovaBulletin prévient aussi le parent par SMS — sur n\'importe quel téléphone, même sans internet — et lui envoie le bulletin par email. Si le parent n\'a ni WhatsApp ni email, l\'admin peut imprimer le bulletin PDF directement depuis la plateforme, comme avant.' },
   { q: 'Les données de nos élèves sont-elles sécurisées ?', a: 'Oui. Toutes les données sont chiffrées et hébergées sur Supabase (infrastructure cloud de niveau bancaire). Chaque école n\'a accès qu\'à ses propres données. Conformité RGPD assurée.' },
   { q: 'Fonctionne-t-il sur tous les appareils ?', a: 'Oui. NovaBulletin est une application web qui fonctionne sur ordinateur, tablette et smartphone (Android et iOS). Aucune installation requise — ouvrez simplement votre navigateur.' },
 ];
@@ -46,7 +46,7 @@ export const FAQS = [
 export const FEATURES_ROW1_EN = [
   { icon: '🧮', color: '#eff6ff', iconColor: '#1E2A78', title: 'Automatic Calculation', desc: 'Averages, coefficients, rankings calculated instantly. Zero Excel formulas, zero errors.' },
   { icon: '📄', color: '#fff3f0', iconColor: '#FF7A59', title: 'PDF Reports in 1 click', desc: 'Professional report card with your school logo, colors and stamp. Ready to print or share.' },
-  { icon: '📱', color: '#eff6ff', iconColor: '#1E2A78', title: 'WhatsApp & Email', desc: 'Parents notified instantly via WhatsApp. Automatic distribution as soon as published.' },
+  { icon: '📱', color: '#eff6ff', iconColor: '#1E2A78', title: 'WhatsApp, SMS & Email', desc: 'Parents notified instantly by WhatsApp, SMS and email — even without a smartphone. Report cards, fee reminders and payment receipts sent automatically.' },
 ];
 
 export const FEATURES_ROW2_EN = [
@@ -59,7 +59,7 @@ export const STEPS_EN = [
   { num: '01', icon: '🏫', title: 'Register your school', desc: '2-minute form. Immediate access, no waiting. Account activated for free — 30-day trial included.', tags: ['School name','Type','Level','Contact'] },
   { num: '02', icon: '⚙️', title: 'Set up in 30 min', desc: 'Add classes, subjects, teachers, students. CSV import available. Configure term system per cycle.', tags: ['Classes','Subjects','Coefficients','CSV Import'] },
   { num: '03', icon: '✏️', title: 'Grade entry', desc: 'Teachers enter grades on their phone, even in landscape mode, then sign their sheet. As soon as every sheet is signed, report cards are generated automatically.', tags: ['Test','Exam','Signature','Auto reports'] },
-  { num: '04', icon: '🚀', title: 'The form teacher publishes', desc: 'The form teacher reviews the class report cards, adds the comment and conduct, then publishes. Every parent receives the PDF on WhatsApp and by email. Auto block if fees unpaid.', tags: ['Form teacher','Auto PDF','WhatsApp','Fee gate'] },
+  { num: '04', icon: '🚀', title: 'The form teacher publishes', desc: 'The form teacher reviews the class report cards, adds the comment and conduct, then publishes. Every parent is notified by WhatsApp, SMS and email. Auto block if fees unpaid.', tags: ['Form teacher','Auto PDF','WhatsApp & SMS','Fee gate'] },
 ];
 
 export const FAQS_EN = [
@@ -71,7 +71,7 @@ export const FAQS_EN = [
   { q: 'Does NovaBulletin replace all paper registers?', a: 'Yes. NovaBulletin centralizes 11 registers: attendance, health, library, inventory, alumni, transfers, disciplinary files, national exams, calendar, official documents and staff profiles. Every record is secured, instantly searchable and exportable to CSV.' },
   { q: 'How long does it take to set up the school?', a: 'About 30 minutes for a medium-sized school. You can import your students from an Excel or CSV file in a few clicks. Our team supports you at every step via WhatsApp.' },
   { q: 'Do teachers need training?', a: 'The interface is designed to be intuitive on mobile. Most teachers master the platform in under 10 minutes. We provide a quick-start guide and dedicated WhatsApp support.' },
-  { q: 'What if a parent doesn\'t use WhatsApp?', a: 'NovaBulletin also sends report cards by email. If the parent has neither WhatsApp nor email, the admin can print the PDF report card directly from the platform, as before.' },
+  { q: 'What if a parent doesn\'t use WhatsApp?', a: 'NovaBulletin also notifies the parent by SMS — on any phone, even without internet — and sends the report card by email. If the parent has neither WhatsApp nor email, the admin can print the PDF report card directly from the platform, as before.' },
   { q: 'Is our students\' data secure?', a: 'Yes. All data is encrypted and hosted on Supabase (bank-level cloud infrastructure). Each school only has access to its own data. GDPR compliance ensured.' },
   { q: 'Does it work on all devices?', a: 'Yes. NovaBulletin is a web application that works on computers, tablets and smartphones (Android and iOS). No installation required — just open your browser.' },
 ];

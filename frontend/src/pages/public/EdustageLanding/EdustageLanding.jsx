@@ -107,7 +107,7 @@ export default function EdustageLanding() {
       <Helmet>
         <html lang={isFr ? 'fr' : 'en'} />
         <title>{t("NovaBulletin — Logiciel de gestion scolaire pour les écoles d'Afrique", 'NovaBulletin — School Management Software for African Schools')}</title>
-        <meta name="description" content={t("NovaBulletin calcule les moyennes, génère les bulletins PDF en 1 clic et les envoie aux parents sur WhatsApp. Conçu pour les écoles d'Afrique de l'Ouest.", 'NovaBulletin calculates averages, generates PDF report cards in 1 click and sends them to parents on WhatsApp. Built for West African schools.')} />
+        <meta name="description" content={t("NovaBulletin calcule les moyennes, génère les bulletins PDF en 1 clic et prévient les parents par WhatsApp et SMS. Conçu pour les écoles d'Afrique de l'Ouest.", 'NovaBulletin calculates averages, generates PDF report cards in 1 click and notifies parents by WhatsApp and SMS. Built for West African schools.')} />
         <link rel="canonical" href={SITE_URL} />
       </Helmet>
 
@@ -138,7 +138,7 @@ export default function EdustageLanding() {
         <div className="es-container es-banner__content">
           <p className="es-banner__eyebrow">{t("Conçu pour les écoles d'Afrique de l'Ouest", 'Built for West African schools')}</p>
           <h1>{t('Le bulletin scolaire entre dans le 21e siècle', 'Report cards enter the 21st century')}</h1>
-          <p className="es-banner__lead">{t('Fini Excel : moyennes calculées automatiquement, bulletins PDF en 1 clic, envoyés aux parents sur WhatsApp.', 'No more Excel: averages calculated automatically, PDF report cards in 1 click, sent to parents on WhatsApp.')}</p>
+          <p className="es-banner__lead">{t('Fini Excel : moyennes calculées automatiquement, bulletins PDF en 1 clic, parents prévenus par WhatsApp et SMS.', 'No more Excel: averages calculated automatically, PDF report cards in 1 click, parents notified by WhatsApp and SMS.')}</p>
           <div className="es-banner__btns">
             <a href="#how" className="es-btn es-btn--navy">{t('Comment ça marche', 'How it works')}</a>
             <Link to="/register-school" className="es-btn es-btn--yellow">{t('Essai gratuit 30 jours', 'Free 30-day trial')}</Link>
@@ -255,16 +255,17 @@ export default function EdustageLanding() {
           <div className="es-whatsapp__photo">
             <img src="/images/landing/parent.jpg" alt={t('Une maman lit un message sur son téléphone', 'A mother reading a message on her phone')} loading="lazy" decoding="async" />
             <div className="es-whatsapp__bubble">
-              <strong>NovaBulletin</strong>
+              <strong>NovaBulletin · SMS</strong>
               <p>{t('Le bulletin du 1er trimestre de Kofi est disponible : 14,25/20 — 3e/42 📄', "Kofi's Term 1 report card is ready: 14.25/20 — 3rd/42 📄")}</p>
             </div>
           </div>
           <div className="es-whatsapp__text">
-            <p className="es-banner__eyebrow">WhatsApp &amp; email</p>
+            <p className="es-banner__eyebrow">WhatsApp, SMS &amp; email</p>
             <h2>{t('Les parents reçoivent le bulletin le jour même', 'Parents receive the report card the same day')}</h2>
-            <p>{t("Dès que le titulaire publie, chaque parent reçoit le bulletin PDF sur WhatsApp et par email. Si les frais ne sont pas réglés, le bulletin reste bloqué jusqu'au paiement.", 'As soon as the form teacher publishes, every parent receives the PDF report card on WhatsApp and by email. If fees are unpaid, the report card stays locked until payment.')}</p>
+            <p>{t("Dès que le titulaire publie, chaque parent reçoit le bulletin PDF sur WhatsApp et par email, et un SMS sur n'importe quel téléphone — même sans smartphone ni internet. Si les frais ne sont pas réglés, le bulletin reste bloqué jusqu'au paiement.", 'As soon as the form teacher publishes, every parent receives the PDF report card on WhatsApp and by email, and an SMS on any phone — even without a smartphone or internet. If fees are unpaid, the report card stays locked until payment.')}</p>
             <ul className="es-checks">
               <li>{t('Bulletin PDF avec logo, cachet et QR code', 'PDF report card with logo, stamp and QR code')}</li>
+              <li>{t('SMS : bulletin disponible, rappels de frais et reçus de paiement', 'SMS: report card ready, fee reminders and payment receipts')}</li>
               <li>{t('Vérification en ligne de chaque document', 'Online verification of every document')}</li>
               <li>{t('Paiement Mobile Money versé à l’école', 'Mobile Money payment paid to the school')}</li>
             </ul>
