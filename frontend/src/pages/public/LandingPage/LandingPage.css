@@ -780,3 +780,4 @@ section[id]{scroll-margin-top:110px}
   .lp-wa-photo img{height:380px}
 }
 @media (prefers-reduced-motion:reduce){.lp-wa-photo__bubble{animation:none}}
+.lp-footer__team{font-size:.8rem;opacity:.75;margin:.25rem 0 .5rem}

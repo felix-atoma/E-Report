@@ -384,6 +384,10 @@ const DATABASE_MODULES = [
   { icon: '👤', color: '#fff3f0', iconColor: '#FF7A59', title: 'Profils du personnel', desc: 'Dossiers RH complets : diplômes, contrat, expérience, contacts d\'urgence.' },
 ];
 
+/** Sections masquées pour alléger la page (nouveautés, fiche, LMS, base de données, vidéo, rôles,
+ *  comparatif, témoignages, équipe) : true pour les réafficher. */
+const SHOW_EXTRA_SECTIONS = false;
+
 const TEAM = [
   { name: 'Felix Atoma', role: 'Lead Developer', tags: ['Software Developer', "Professeur d'Anglais"], initials: 'FA', color: '#1E2A78', colorEnd: '#3b82f6', photo: '/team/felix.jpg', email: 'felixatoma2@gmail.com' },
   { name: 'Manzaman Abalossosso', role: 'Project Manager', tags: ['Professeur de Science', 'Data Scientist'], initials: 'AA', color: '#1E2A78', colorEnd: '#FF7A59', photo: '/team/manzaman.jpg', email: 'abalossossomanzaman@gmail.com' },
@@ -711,16 +715,9 @@ export default function LandingPage() {
   // ── Search ─────────────────────────────────────────────────────────────
   const SEARCH_ITEMS = [
     { label: isFr ? 'Fonctionnalités' : 'Features',           anchor: '#features',   icon: '⚡' },
-    { label: isFr ? 'Module LMS'      : 'LMS Module',          anchor: '#lms',        icon: '🎓' },
-    { label: isFr ? 'Base de données' : 'Database',            anchor: '#database',   icon: '🗄️' },
     { label: isFr ? 'Démarrage'       : 'Get started',         anchor: '#how',        icon: '🚀' },
-    { label: isFr ? 'Pour qui ?'      : 'Who it\'s for',       anchor: '#roles',      icon: '👥' },
-    { label: isFr ? 'Comparaison'     : 'Comparison',          anchor: '#comparison', icon: '📊' },
-    { label: isFr ? 'Témoignages'     : 'Testimonials',        anchor: '#testimonials',icon:'⭐' },
     { label: isFr ? 'Tarif'           : 'Pricing',             anchor: '#pricing',    icon: '💎' },
     { label: isFr ? 'FAQ'             : 'FAQ',                 anchor: '#faq',        icon: '❓' },
-    { label: isFr ? 'Équipe'          : 'Team',                anchor: '#team',       icon: '👥' },
-    { label: isFr ? 'Démo vidéo'      : 'Video demo',          anchor: '#demo',       icon: '▶️' },
     { label: 'WhatsApp',                                        anchor: '#whatsapp',   icon: '📱' },
     { label: isFr ? 'Galerie'         : 'Gallery',             anchor: '#gallery',    icon: '📸' },
     { label: isFr ? 'Se connecter'    : 'Log in',              href: '/login',        icon: '🔐' },
@@ -1004,12 +1001,9 @@ export default function LandingPage() {
           <ul className={`lp-nav__links${menuOpen ? ' lp-nav__links--open' : ''}`}>
             {[
               ['#features', t('Fonctionnalités','Features')],
-              ['#lms','LMS'],
-              ['#database', t('Base de données','Database')],
               ['#how', t('Démarrage','Get Started')],
-              ['#roles', t('Pour qui','Who it\'s for')],
-              ['#comparison', t('Comparaison','Comparison')],
-              ['#team', t('Équipe','Team')],
+              ['#whatsapp', 'WhatsApp'],
+              ['#pricing', t('Tarif','Pricing')],
               ['#faq','FAQ'],
             ].map(([h,l]) => (
               <li key={h}><a href={h} onClick={() => setMenuOpen(false)}>{l}</a></li>
@@ -1179,6 +1173,7 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {SHOW_EXTRA_SECTIONS && (<>
       {/* ─── NEW FEATURES CALLOUT ────────────────────────────────────── */}
       <section className="lp-fiche" style={{background:'linear-gradient(135deg,#fdf4ff 0%,#ede9fe 50%,#f0fdf4 100%)'}}>
         <div className="lp-container lp-fiche__inner">
@@ -1314,6 +1309,8 @@ export default function LandingPage() {
         </div>
       </section>
 
+      </>)}
+
       {/* ─── HOW IT WORKS ────────────────────────────────────────────── */}
       <section className="lp-how" id="how">
         <div className="lp-container">
@@ -1337,6 +1334,7 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {SHOW_EXTRA_SECTIONS && (<>
       {/* ─── VIDEO DEMO ──────────────────────────────────────────────── */}
       <section className="lp-video" id="demo">
         <div className="lp-container">
@@ -1380,8 +1378,10 @@ export default function LandingPage() {
         </div>
       </section>
 
+      </>)}
+
       {/* ─── WHATSAPP SHOWCASE ───────────────────────────────────────── */}
-      <section className="lp-whatsapp">
+      <section className="lp-whatsapp" id="whatsapp">
         <div className="lp-container lp-whatsapp__inner">
           <div className="lp-whatsapp__text">
             <span className="lp-tag">📱 WhatsApp</span>
@@ -1435,7 +1435,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─── GALLERY ─────────────────────────────────────────────────── */}
-      <section className="lp-gallery">
+      <section className="lp-gallery" id="gallery">
         <div className="lp-container">
           <div className="lp-section-head">
             <span className="lp-tag">{t('📸 En classe','📸 In the classroom')}</span>
@@ -1507,6 +1507,7 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {SHOW_EXTRA_SECTIONS && (<>
       {/* ─── ROLES ───────────────────────────────────────────────────── */}
       <section className="lp-roles" id="roles">
         <div className="lp-container">
@@ -1592,6 +1593,8 @@ export default function LandingPage() {
           <TestimonialCarousel />
         </div>
       </section>
+
+      </>)}
 
       {/* ─── PRICING ─────────────────────────────────────────────────── */}
       <section className="lp-pricing" id="pricing">
@@ -1683,6 +1686,7 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {SHOW_EXTRA_SECTIONS && (<>
       {/* ─── TEAM ────────────────────────────────────────────────────── */}
       <section className="lp-team" id="team">
         <div className="lp-container">
@@ -1709,6 +1713,8 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      </>)}
 
       {/* ─── CTA ─────────────────────────────────────────────────────── */}
       <section className="lp-cta">
@@ -1751,6 +1757,7 @@ export default function LandingPage() {
             <div className="lp-footer__logo"><img src={logoIcon} alt="NovaBulletin" width="42" height="42"/><span>NovaBulletin</span></div>
             <p>{t('Le logiciel de gestion scolaire moderne conçu pour les écoles d\'Afrique francophone.','The modern school management software built for Francophone African schools.')}</p>
             <p className="lp-footer__tagline">{t('Fait avec ❤️ au Togo','Made with ❤️ in Togo')}</p>
+            <p className="lp-footer__team">{t('Équipe','Team')} : {TEAM.map((m) => m.name).join(' · ')}</p>
             <a href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(SUPPORT_EMAIL)}`} target="_blank" rel="noopener noreferrer" className="lp-footer__email">📧 {SUPPORT_EMAIL}</a>
             <div className="lp-footer__socials">
               <a href="https://facebook.com/novabulletin" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="lp-footer__social-link">
@@ -1794,13 +1801,11 @@ export default function LandingPage() {
               <h4>{t('Produit','Product')}</h4>
               {[
                 ['#features', t('Fonctionnalités','Features')],
-                ['#lms', t('Module LMS','LMS Module')],
-                ['#database', t('Base de données','Database')],
                 ['#how', t('Comment ça marche','How it works')],
-                ['#roles', t('Pour qui','Who it\'s for')],
-                ['#comparison', t('Comparaison','Comparison')],
+                ['#whatsapp', 'WhatsApp'],
+                ['#gallery', t('En classe','In the classroom')],
                 ['#pricing', t('Tarif','Pricing')],
-                ['#team', t('Équipe','Team')],
+                ['#faq', 'FAQ'],
               ].map(([h,l]) => <a key={h} href={h}>{l}</a>)}
             </div>
             <div>
