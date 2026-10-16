@@ -154,6 +154,11 @@ export default function SubscriptionPage() {
               <div>
                 <p className="sub-status-label">Statut de l'abonnement</p>
                 <p className="sub-status-value">{statusMeta.label}</p>
+                {status === 'ACTIVE' && statusData?.expiry && (
+                  <p className="sub-status-expiry">
+                    Abonnement payé jusqu'au <strong>{new Date(statusData.expiry).toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' })}</strong>.
+                  </p>
+                )}
                 {isFree && (
                   <p className="sub-status-expiry">
                     Votre établissement a moins de 50 élèves : accès <strong>gratuit et illimité</strong>, sans frais d'inscription.
@@ -441,7 +446,7 @@ export default function SubscriptionPage() {
                         </td>
                         <td>{PERIOD_LABEL[p.plan] ?? p.plan}</td>
                         <td>{Number(p.amount).toLocaleString(locale)} FCFA</td>
-                        <td>{p.method === 'MOMO_MANUAL' ? 'Mobile Money' : 'Notchpay (en ligne)'}</td>
+                        <td>{p.momoOperator === 'CASH' ? 'Espèces / virement' : p.method === 'MOMO_MANUAL' ? 'Mobile Money' : 'Notchpay (en ligne)'}</td>
                         <td style={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>
                           {p.momoReference ?? p.notchpayRef ?? '—'}
                         </td>
