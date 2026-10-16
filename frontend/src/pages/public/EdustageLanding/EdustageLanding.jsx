@@ -152,6 +152,45 @@ export default function EdustageLanding() {
         </div>
       </section>
 
+      {/* ─── La question aux parents ─────────────────────────────── */}
+      <section className="es-question">
+        <div className="es-container">
+          <p className="es-question__eyebrow">{t('Une question simple', 'A simple question')}</p>
+          <h2>
+            {t('Inscririez-vous votre enfant dans une école qui écrit encore ses bulletins ',
+               'Would you enrol your child in a school that still writes its report cards ')}
+            <span>{t('à la main', 'by hand')}</span>
+            {t(' ou sur ', ' or on ')}
+            <span>Excel</span>{t(' ?', '?')}
+          </h2>
+          <div className="es-question__compare">
+            <div className="es-question__col es-question__col--old">
+              <h3>{t('À la main ou sur Excel', 'By hand or on Excel')}</h3>
+              <ul>
+                <li>{t('Erreurs de calcul dans les moyennes et les rangs', 'Mistakes in averages and ranks')}</li>
+                <li>{t('Des semaines d’attente après les compositions', 'Weeks of waiting after exams')}</li>
+                <li>{t('Fiches perdues, bulletins faciles à falsifier', 'Lost sheets, report cards easy to forge')}</li>
+                <li>{t('Les parents apprennent les résultats trop tard', 'Parents learn the results too late')}</li>
+              </ul>
+            </div>
+            <div className="es-question__col es-question__col--new">
+              <h3>{t('Avec NovaBulletin', 'With NovaBulletin')}</h3>
+              <ul>
+                <li>{t('Moyennes et rangs calculés sans erreur', 'Averages and ranks calculated without errors')}</li>
+                <li>{t('Bulletins prêts dès que les fiches sont signées', 'Report cards ready as soon as sheets are signed')}</li>
+                <li>{t('QR code de vérification sur chaque bulletin', 'A verification QR code on every report card')}</li>
+                <li>{t('Parents prévenus le jour même par WhatsApp et SMS', 'Parents notified the same day by WhatsApp and SMS')}</li>
+              </ul>
+            </div>
+          </div>
+          <p className="es-question__answer">
+            {t('Les parents choisissent les écoles modernes. Montrez-leur que la vôtre en fait partie.',
+               'Parents choose modern schools. Show them yours is one of them.')}
+          </p>
+          <Link to="/register-school" className="es-btn es-btn--yellow">{t('Moderniser mon école', 'Modernise my school')}</Link>
+        </div>
+      </section>
+
       {/* ─── Fonctionnalités ─────────────────────────────────────── */}
       <section className="es-section" id="features">
         <div className="es-container">

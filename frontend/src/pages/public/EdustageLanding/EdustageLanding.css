@@ -271,3 +271,29 @@
   .es-tabs { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; padding-bottom: 6px; margin-bottom: 26px; }
   .es-tabs__btn { flex-shrink: 0; }
 }
+
+/* ── La question aux parents ─────────────────────────────────────── */
+.es-question { background: var(--es-navy); padding: 90px 0; text-align: center; }
+.es-question__eyebrow { color: var(--es-yellow); font: 500 14px 'Rubik', sans-serif; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 16px !important; }
+.es-question h2 { color: #fff; font-size: 38px; max-width: 900px; margin: 0 auto 50px; line-height: 1.3; }
+.es-question h2 span { color: var(--es-yellow); }
+.es-question__compare { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 900px; margin: 0 auto 40px; text-align: left; }
+.es-question__col { padding: 30px 30px 24px; }
+.es-question__col h3 { font-size: 19px; margin-bottom: 16px; }
+.es-question__col li { position: relative; padding: 7px 0 7px 30px; line-height: 1.5; }
+.es-question__col li::before { position: absolute; left: 0; top: 7px; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; }
+.es-question__col--old { background: rgba(255, 255, 255, .06); border: 1px solid rgba(255, 255, 255, .12); }
+.es-question__col--old h3 { color: #c9d3df; }
+.es-question__col--old li { color: #a3b1c2; }
+.es-question__col--old li::before { content: '✕'; background: rgba(239, 68, 68, .18); color: #fca5a5; }
+.es-question__col--new { background: #fff; border-top: 4px solid var(--es-yellow); }
+.es-question__col--new li { color: var(--es-navy); }
+.es-question__col--new li::before { content: '✓'; background: var(--es-yellow); color: var(--es-navy); }
+.es-question__answer { color: #fff; font-size: 18px; font-style: italic; margin-bottom: 26px !important; }
+@media (max-width: 640px) {
+  .es-question { padding: 64px 0; }
+  .es-question h2 { font-size: 26px; margin-bottom: 34px; }
+  .es-question__compare { grid-template-columns: 1fr; }
+  .es-question__col { padding: 24px 20px 18px; }
+  .es-question__answer { font-size: 16px; }
+}
