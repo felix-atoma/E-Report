@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../../../services/api';
 import logoIcon from '../../../assets/images/novabulletin-tablet.svg';
+import '../../../components/auth/LoginForm/LoginForm.css';
 import '../asl-auth.css';
 
 function OtpLoginPage() {

@@ -401,3 +401,53 @@
 /* Texte lisible sur la photo */
 .asl-left__title, .asl-left__subtitle, .asl-left__desc { text-shadow: 0 1px 10px rgba(0, 20, 45, .55); }
 .asl-left__desc { color: rgba(255, 255, 255, .85); }
+
+/* ── Plein écran (ordinateur et tablette) ─────────────────────────────────── */
+@media (min-width: 721px) {
+  .asl-page,
+  .asl-page.asl-page--register { padding: 0; align-items: stretch; background: #fff; }
+  .asl-page .asl-card-wrap,
+  .asl-page .asl-card-wrap--wide { max-width: none; width: 100%; min-height: 100vh; border-radius: 0; box-shadow: none; }
+  /* Photo fixe à gauche, même quand le formulaire défile */
+  .asl-left { flex: 0 0 48%; position: sticky; top: 0; height: 100vh; padding: 3.5rem 3.5rem 2.5rem; }
+  .asl-left__title { font-size: 2.6rem; }
+  .asl-left__subtitle { font-size: 1.15rem; }
+  .asl-left__desc { font-size: .95rem; max-width: 460px; }
+  .asl-right { justify-content: center; padding: 3rem clamp(2rem, 6vw, 6rem); }
+  .asl-right > * { width: 100%; max-width: 460px; margin-left: auto; margin-right: auto; }
+  .asl-page--register .asl-right { justify-content: flex-start; }
+  .asl-page--register .asl-right > * { max-width: 640px; }
+
+  /* Message court (inscription envoyée) : reste une carte centrée */
+  .asl-page:has(.asl-card-wrap--narrow) { padding: 2rem 1rem; align-items: center; background: #eef0f5; }
+  .asl-page .asl-card-wrap--narrow { max-width: 520px; min-height: 0; border-radius: 20px; box-shadow: 0 20px 60px rgba(0, 0, 0, .18); }
+}
+
+/* ── Pages OTP et définition du mot de passe (formulaire dans .asl-left) ──── */
+.asl-root { display: flex; min-height: 100vh; background: #fff; }
+.asl-root .asl-left {
+  flex: 1; position: static; height: auto; background: #fff; color: #111827;
+  justify-content: center; padding: 3rem clamp(1.25rem, 6vw, 6rem);
+}
+.asl-root .asl-left__inner { width: 100%; max-width: 460px; margin: 0 auto; }
+.asl-root .asl-brand { display: flex; align-items: center; gap: .625rem; margin-bottom: 1.75rem; }
+.asl-root .asl-brand__icon { width: 40px; height: 40px; object-fit: contain; }
+.asl-root .asl-right {
+  flex: 0 0 48%; position: sticky; top: 0; height: 100vh; padding: 0;
+  background:
+    linear-gradient(180deg, rgba(0, 35, 71, .35), rgba(0, 35, 71, .6)),
+    url('/images/landing/classroom.jpg') center / cover no-repeat;
+}
+@media (max-width: 720px) {
+  .asl-root .asl-right { display: none; }
+}
+.asl-root .asl-heading { margin-bottom: 1.25rem; font-size: inherit; }
+.asl-root .asl-heading__title { font-size: 1.6rem; font-weight: 800; color: #111827; margin: 0 0 .3rem; letter-spacing: -.02em; }
+.asl-root .asl-heading__sub { font-size: .85rem; font-weight: 400; color: #6b7280; margin: 0; }
+
+/* Téléphone : plein écran aussi, sans marge grise */
+@media (max-width: 720px) {
+  /* !important : la règle globale [class$="-page"] ajoute 0.75rem sur mobile */
+  div.asl-page, div.asl-page.asl-page--register { padding: 0 !important; align-items: stretch; background: #fff; }
+  .asl-page .asl-card-wrap, .asl-page .asl-card-wrap--wide { max-width: none; width: 100%; min-height: 100vh; border-radius: 0; box-shadow: none; }
+}
