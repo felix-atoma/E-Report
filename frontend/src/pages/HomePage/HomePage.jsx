@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import LandingPage from '../public/LandingPage/LandingPage';
+import EdustageLanding from '../public/EdustageLanding/EdustageLanding';
 import Loading from '../../components/common/Loading/Loading';
 
 const ROLE_HOME = {
@@ -23,7 +23,7 @@ function HomePage() {
   if (loading) return <Loading fullPage />;
 
   // Show landing page for unauthenticated visitors
-  if (!user) return <LandingPage />;
+  if (!user) return <EdustageLanding />;
 
   return <Loading fullPage />;
 }
