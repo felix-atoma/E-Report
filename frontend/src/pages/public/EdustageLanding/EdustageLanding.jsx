@@ -9,6 +9,7 @@ import {
   SITE_URL, SUPPORT_EMAIL, SUPPORT_WHATSAPP, FEATURES_ROW1, FEATURES_ROW2, STEPS, FAQS, TEAM,
   FEATURES_ROW1_EN, FEATURES_ROW2_EN, STEPS_EN, FAQS_EN,
 } from '../LandingPage/landingData';
+import { MODULE_TABS } from './modules';
 import './EdustageLanding.css';
 
 /* Icônes au trait, comme celles du modèle */
@@ -63,6 +64,7 @@ export default function EdustageLanding() {
   const faqs = (isFr ? FAQS : FAQS_EN).slice(0, 8);
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [moduleTab, setModuleTab] = useState(0);
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -73,6 +75,7 @@ export default function EdustageLanding() {
 
   const NAV = [
     ['#features', t('Fonctionnalités', 'Features')],
+    ['#modules', t('Modules', 'Modules')],
     ['#how', t('Démarrage', 'Get started')],
     ['#classroom', t('En classe', 'Classroom')],
     ['#pricing', t('Tarif', 'Pricing')],
@@ -82,7 +85,7 @@ export default function EdustageLanding() {
   const STATS = [
     ['3', t('jours', 'days'), t('de travail manuel éliminés chaque trimestre', 'of manual work removed every term')],
     ['30', 'min', t('pour préparer un trimestre', 'to prepare a term')],
-    ['11', t('registres', 'registers'), t('présences, santé, bibliothèque…', 'attendance, health, library…')],
+    ['12', t('registres', 'registers'), t('présences, santé, bibliothèque…', 'attendance, health, library…')],
     ['100', '%', t('des parents informés le jour même', 'of parents informed the same day')],
   ];
 
@@ -169,6 +172,35 @@ export default function EdustageLanding() {
                   <p>{f.desc}</p>
                 </div>
               </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Tous les modules, par onglet ─────────────────────────── */}
+      <section className="es-section es-section--tint" id="modules">
+        <div className="es-container">
+          <div className="es-title">
+            <h2>{t('Bien plus que des bulletins', 'Much more than report cards')}</h2>
+            <p>{t("Toute la vie de l'école dans une seule application", "The whole life of the school in one app")}</p>
+          </div>
+          <div className="es-tabs" role="tablist">
+            {MODULE_TABS.map((tab, i) => (
+              <button key={tab.key} type="button" role="tab" aria-selected={moduleTab === i}
+                className={`es-tabs__btn${moduleTab === i ? ' is-active' : ''}`} onClick={() => setModuleTab(i)}>
+                {t(...tab.label)}
+              </button>
+            ))}
+          </div>
+          <div className="es-modules" role="tabpanel">
+            {MODULE_TABS[moduleTab].items.map((m) => (
+              <div className="es-module" key={m.title[0]}>
+                <span className="es-module__icon" aria-hidden="true">{m.icon}</span>
+                <div>
+                  <h4>{t(...m.title)}</h4>
+                  <p>{t(...m.desc)}</p>
+                </div>
+              </div>
             ))}
           </div>
         </div>
