@@ -38,7 +38,7 @@ La plateforme est accessible depuis n'importe quel navigateur web (Chrome, Firef
           'Cliquez sur « Créer mon espace ». Votre espace est immédiatement activé.',
           'Vous êtes redirigé vers l\'assistant de démarrage pour configurer votre école.',
         ],
-        callout: { type: 'tip', text: 'Les établissements de moins de 50 élèves bénéficient d\'un accès gratuit (plan Starter). Au-delà, un abonnement mensuel ou annuel est requis (voir Chapitre 3).' },
+        callout: { type: 'tip', text: 'Les établissements de moins de 50 élèves bénéficient d\'un accès gratuit et sans frais d\'inscription. Au-delà, après les 30 jours d\'essai, l\'école règle des frais d\'inscription uniques puis un abonnement par trimestre ou par semestre (voir Chapitre 3).' },
       },
       {
         title: 'Comment se connecter',
@@ -193,11 +193,12 @@ Pour les cours primaires avec note sur 10, activez l'option « Cours primaire »
         title: 'Plans disponibles',
         content: `Le tarif dépend de la taille de votre établissement. Vous payez par trimestre ou par semestre :
 
-• Moins de 200 élèves — 75 000 FCFA par trimestre ou 100 000 FCFA par semestre
+• Moins de 50 élèves — GRATUIT (accès complet, sans frais d'inscription)
+• De 50 à 199 élèves — 75 000 FCFA par trimestre ou 100 000 FCFA par semestre
 • 200 élèves et plus — 150 000 FCFA par trimestre ou 200 000 FCFA par semestre
 
 Frais d'inscription (entrée de l'école dans la base), payés une seule fois avec le premier abonnement :
-• Moins de 200 élèves — 20 000 FCFA
+• De 50 à 199 élèves — 20 000 FCFA
 • 200 élèves et plus — 40 000 FCFA`,
         callout: { type: 'tip', text: 'Le paiement par semestre revient moins cher que deux trimestres.' },
       },
@@ -1184,7 +1185,7 @@ The platform is accessible from any web browser (Chrome, Firefox, Edge, Safari) 
           'Click "Create my space". Your account is activated immediately.',
           'You will be redirected to the setup wizard to configure your school.',
         ],
-        callout: { type: 'tip', text: 'After the 30-day trial, the school pays a one-time onboarding fee, then a subscription per term or per semester (see Chapter 3).' },
+        callout: { type: 'tip', text: 'Schools with fewer than 50 students are free. Larger schools, after the 30-day trial, pay a one-time onboarding fee, then a subscription per term or per semester (see Chapter 3).' },
       },
       {
         title: 'How to log in',
@@ -1339,11 +1340,12 @@ For primary school subjects graded out of 10, enable the "Primary school" option
         title: 'Available plans',
         content: `Pricing depends on the size of your school. You pay per term or per semester:
 
-• Fewer than 200 students — 75,000 FCFA per term or 100,000 FCFA per semester
+• Fewer than 50 students — FREE (full access, no onboarding fee)
+• 50 to 199 students — 75,000 FCFA per term or 100,000 FCFA per semester
 • 200 students and more — 150,000 FCFA per term or 200,000 FCFA per semester
 
 Onboarding fee (bringing the school into the database), paid once with the first subscription:
-• Fewer than 200 students — 20,000 FCFA
+• 50 to 199 students — 20,000 FCFA
 • 200 students and more — 40,000 FCFA`,
         callout: { type: 'tip', text: 'Paying per semester costs less than two terms.' },
       },

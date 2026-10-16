@@ -13,13 +13,16 @@ type Tier = 'BASIC' | 'ENTERPRISE';
 type BillingPeriod = 'TRIMESTER' | 'SEMESTER';
 
 const TIER_THRESHOLDS: Record<Tier, { min: number; max: number; label: string }> = {
-  BASIC:      { min: 0,   max: 199,      label: '< 200 élèves' },
+  BASIC:      { min: 50,  max: 199,      label: '50 – 199 élèves' },
   ENTERPRISE: { min: 200, max: Infinity, label: '≥ 200 élèves' },
 };
 
 /** Durée couverte : 3 trimestres ou 2 semestres font l'année (vacances comprises). */
 const BILLING_MONTHS: Record<BillingPeriod, number> = { TRIMESTER: 4, SEMESTER: 6 };
 const PERIOD_LABEL: Record<string, string> = { TRIMESTER: 'Trimestre', SEMESTER: 'Semestre', MONTHLY: 'Mensuel', ANNUAL: 'Annuel' };
+
+/** Les écoles de moins de 50 élèves restent gratuites, sans abonnement ni frais d'inscription. */
+const FREE_BELOW = 50;
 
 function getTier(studentCount: number): Tier {
   return studentCount < 200 ? 'BASIC' : 'ENTERPRISE';
@@ -81,6 +84,9 @@ export class SubscriptionService {
   private async quote(institutionId: string, plan: BillingPeriod) {
     if (!BILLING_MONTHS[plan]) throw new BadRequestException('Période de facturation invalide.');
     const studentCount = await this.prisma.student.count({ where: { institutionId } });
+    if (studentCount < FREE_BELOW) {
+      throw new BadRequestException(`Votre école a moins de ${FREE_BELOW} élèves : l'accès est gratuit, aucun paiement n'est nécessaire.`);
+    }
     const tier = getTier(studentCount);
     const price = this.pricing[tier];
     const onboarding = (await this.onboardingDue(institutionId)) ? price.onboarding : 0;
@@ -104,6 +110,19 @@ export class SubscriptionService {
     ]);
 
     if (!institution) throw new NotFoundException('Institution not found');
+
+    const pricing = Object.fromEntries(
+      (Object.keys(TIER_THRESHOLDS) as Tier[]).map((t) => [t, { ...this.pricing[t], ...TIER_THRESHOLDS[t] }]),
+    );
+    const momoInfo = { number: this.ownerMomoNumber, operator: this.ownerMomoOperator };
+
+    if (studentCount < FREE_BELOW) {
+      return {
+        status: 'FREE', isFree: true, tier: 'STARTER', studentCount, billingPlan: null,
+        expiry: null, trialEndsAt: null, daysLeft: null, currentPrice: null, onboardingDue: false,
+        pricing, momoInfo,
+      };
+    }
 
     const now  = new Date();
     const tier = getTier(studentCount);
@@ -139,16 +158,8 @@ export class SubscriptionService {
       daysLeft,
       currentPrice: this.pricing[tier],
       onboardingDue,
-      pricing: Object.fromEntries(
-        (Object.keys(TIER_THRESHOLDS) as Tier[]).map((t) => [
-          t,
-          { ...this.pricing[t], ...TIER_THRESHOLDS[t] },
-        ]),
-      ),
-      momoInfo: {
-        number:   this.ownerMomoNumber,
-        operator: this.ownerMomoOperator,
-      },
+      pricing,
+      momoInfo,
     };
   }
 

@@ -47,7 +47,7 @@ export default function SubscriptionPage() {
   const locale = 'fr-FR';
 
   const STATUS_META = {
-    FREE:      { icon: '✅', label: 'Accès actif',                       cls: 'active' },
+    FREE:      { icon: '🎁', label: 'Gratuit',                          cls: 'free' },
     // Plus d'expiration : essai et abonnement terminé donnent le même accès normal
     TRIAL:     { icon: '✅', label: 'Accès actif',                       cls: 'active' },
     ACTIVE:    { icon: '✅', label: t('subscription.status.ACTIVE'),    cls: 'active' },
@@ -105,6 +105,7 @@ export default function SubscriptionPage() {
   const currentTier     = statusData?.tier ?? null;
   const studentCount    = statusData?.studentCount ?? null;
   const status          = statusData?.status ?? null;
+  const isFree          = status === 'FREE'; // moins de 50 élèves
   const statusMeta      = STATUS_META[status] ?? null;
   const momoInfo        = statusData?.momoInfo ?? { number: '', operator: 'TMoney' };
 
@@ -153,6 +154,11 @@ export default function SubscriptionPage() {
               <div>
                 <p className="sub-status-label">Statut de l'abonnement</p>
                 <p className="sub-status-value">{statusMeta.label}</p>
+                {isFree && (
+                  <p className="sub-status-expiry">
+                    Votre établissement a moins de 50 élèves : accès <strong>gratuit et illimité</strong>, sans frais d'inscription.
+                  </p>
+                )}
               </div>
             </div>
             <div className="sub-status-right">
@@ -166,7 +172,11 @@ export default function SubscriptionPage() {
                   </p>
                 </>
               )}
-              {periodPrice > 0 && (
+              {isFree ? (
+                <p className="sub-status-price" style={{ color: '#16a34a' }}>
+                  Gratuit <span>— moins de 50 élèves</span>
+                </p>
+              ) : periodPrice > 0 && (
                 <p className="sub-status-price">
                   {periodPrice.toLocaleString(locale)}{' '}
                   <span>FCFA/{PER_PERIOD[billing]}</span>
@@ -182,6 +192,7 @@ export default function SubscriptionPage() {
           <p className="sub-section-sub">
             Votre tarif est détecté <strong>automatiquement</strong> selon le nombre d'élèves inscrits.
             Les <strong>frais d'inscription</strong> (entrée de l'école dans la base) ne sont payés qu'une fois, avec le premier abonnement.
+            Les écoles de <strong>moins de 50 élèves</strong> restent gratuites.
           </p>
 
           <div className="sub-tier-grid">
@@ -219,7 +230,7 @@ export default function SubscriptionPage() {
         </Card>
 
         {/* ── Billing period toggle (hidden for free schools) ───────────────── */}
-        <Card>
+        {!isFree && <Card>
           <h3 className="sub-section-title">Période de facturation</h3>
           <div className="sub-billing-toggle">
             <button
@@ -238,10 +249,10 @@ export default function SubscriptionPage() {
               <span className="sub-billing-desc">Renouvelé à chaque semestre</span>
             </button>
           </div>
-        </Card>
+        </Card>}
 
         {/* ── Payment methods (hidden for free schools) ─────────────────────── */}
-        <Card>
+        {!isFree && <Card>
           <h3 className="sub-section-title">Mode de paiement</h3>
           {currentTier ? (
             <p className="sub-section-sub">
@@ -396,7 +407,7 @@ export default function SubscriptionPage() {
               </Button>
             </div>
           )}
-        </Card>
+        </Card>}
 
         {/* ── Payment history ────────────────────────────────────────────────── */}
         {history.length > 0 && (

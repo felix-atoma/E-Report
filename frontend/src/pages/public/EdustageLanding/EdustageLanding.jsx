@@ -84,7 +84,7 @@ export default function EdustageLanding() {
 
   const fmt = (n) => n.toLocaleString(isFr ? 'fr-FR' : 'en-US');
   const TIERS = [
-    { name: t('Moins de 200 élèves', 'Fewer than 200 pupils'), onboarding: 20000, trimester: 75000, semester: 100000 },
+    { name: t('50 à 199 élèves', '50 to 199 pupils'), onboarding: 20000, trimester: 75000, semester: 100000 },
     { name: t('200 élèves et plus', '200 pupils and more'), onboarding: 40000, trimester: 150000, semester: 200000 },
   ];
 
@@ -178,7 +178,7 @@ export default function EdustageLanding() {
             <p className="es-register__sub">{t('Accès immédiat, sans carte bancaire', 'Immediate access, no credit card')}</p>
             <ul>
               <li>{t('30 jours complets offerts', '30 full days free')}</li>
-              <li>{t('Ensuite par trimestre ou par semestre', 'Then per term or per semester')}</li>
+              <li>{t('Gratuit à vie sous 50 élèves', 'Free forever under 50 pupils')}</li>
               <li>{t('Import Excel / CSV des élèves', 'Excel / CSV pupil import')}</li>
               <li>{t('Accompagnement sur WhatsApp', 'Support on WhatsApp')}</li>
             </ul>
@@ -263,6 +263,7 @@ export default function EdustageLanding() {
             <h2>{t('Un tarif simple, selon votre effectif', 'Simple pricing, based on your enrolment')}</h2>
             <p>{t('30 jours gratuits pour tout essayer — payez seulement si vous êtes satisfait', '30 free days to try everything — pay only if you are satisfied')}</p>
           </div>
+          <p className="es-price__free">{t("🎁 Moins de 50 élèves : gratuit, sans abonnement ni frais d'inscription", '🎁 Fewer than 50 pupils: free, no subscription and no onboarding fee')}</p>
           <div className="es-grid es-grid--2">
             {TIERS.map((p) => (
               <div className="es-price" key={p.name}>
