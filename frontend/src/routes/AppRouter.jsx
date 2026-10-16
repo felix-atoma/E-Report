@@ -6,6 +6,7 @@ import Loading from '../components/common/Loading/Loading';
 // â”€â”€ Public â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const HomePage               = lazy(() => import('../pages/HomePage/HomePage'));
 const LandingPage            = lazy(() => import('../pages/public/LandingPage/LandingPage'));
+const EdustageLanding        = lazy(() => import('../pages/public/EdustageLanding/EdustageLanding'));
 const LoginPage              = lazy(() => import('../pages/auth/LoginPage/LoginPage'));
 const RegisterPage           = lazy(() => import('../pages/auth/RegisterPage/RegisterPage'));
 const RegisterSchoolPage     = lazy(() => import('../pages/public/RegisterSchoolPage/RegisterSchoolPage'));
@@ -128,7 +129,8 @@ function AppRouter() {
       <Routes>
         {/* Public */}
         <Route path="/"                   element={<HomePage />} />
-        <Route path="/home"               element={<LandingPage />} />
+        <Route path="/home"               element={<EdustageLanding />} />
+        <Route path="/home/classique"     element={<LandingPage />} />
         <Route path="/login"              element={<LoginPage />} />
         <Route path="/register"           element={<RegisterPage />} />
         <Route path="/register-school"    element={<RegisterSchoolPage />} />

@@ -3,12 +3,13 @@ import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useLanguage } from '../../../context/LanguageContext';
 import logoIcon from '../../../assets/images/novaBulletin-icon.svg';
+import {
+  SITE_URL, SUPPORT_EMAIL, SUPPORT_WHATSAPP, FEATURES_ROW1, FEATURES_ROW2, STEPS, TEAM, FAQS,
+  FEATURES_ROW1_EN, FEATURES_ROW2_EN, STEPS_EN, FAQS_EN,
+} from './landingData';
 import './LandingPage.css';
 import './LandingPage.night.css';
 
-const SITE_URL = import.meta.env.VITE_APP_URL ?? (typeof window !== 'undefined' ? window.location.origin : 'https://novabulletin.app');
-const SUPPORT_EMAIL = import.meta.env.VITE_SUPPORT_EMAIL ?? 'contact@novabulletin.app';
-const SUPPORT_WHATSAPP = import.meta.env.VITE_SUPPORT_WHATSAPP ?? '233244173068';
 const OG_IMAGE = `${SITE_URL}/og-image.svg`;
 
 /* ── SVG Illustrations ──────────────────────────────────────────────────── */
@@ -327,16 +328,6 @@ const IllustrationMobileApp = () => (
 );
 
 /* ── Data ───────────────────────────────────────────────────────────────── */
-const FEATURES_ROW1 = [
-  { icon: '🧮', color: '#eff6ff', iconColor: '#1E2A78', title: 'Calcul automatique', desc: 'Moyennes, coefficients, rangs calculés instantanément. Zéro formule Excel, zéro erreur.' },
-  { icon: '📄', color: '#fff3f0', iconColor: '#FF7A59', title: 'Bulletins PDF en 1 clic', desc: 'Bulletin professionnel avec logo, couleurs et cachet de votre école. Prêt à imprimer ou partager.' },
-  { icon: '📱', color: '#eff6ff', iconColor: '#1E2A78', title: 'WhatsApp & Email', desc: 'Parents informés instantanément par WhatsApp. Distribution automatique dès la publication.' },
-];
-const FEATURES_ROW2 = [
-  { icon: '📝', color: '#fff3f0', iconColor: '#FF7A59', title: 'Fiches de notes numériques', desc: 'Chaque enseignant dispose d\'une fiche numérique sur son téléphone. Saisie mobile, calcul auto et signature électronique. Zéro papier, zéro perte.' },
-  { icon: '💰', color: '#eff6ff', iconColor: '#1E2A78', title: 'Frais scolaires', desc: 'Gestion intégrée des cotisations. Paiement Mobile Money en ligne versé directement sur le compte de l\'école. Blocage automatique des bulletins si frais impayés.' },
-  { icon: '📊', color: '#fff3f0', iconColor: '#FF7A59', title: 'Analytics temps réel', desc: 'Taux de recouvrement, progression par classe, bulletins publiés vs en attente — en direct.' },
-];
 
 const LMS_FEATURES = [
   { icon: '📚', title: 'Cours & Documents', desc: 'Les enseignants déposent leurs cours, PDF et ressources pédagogiques. Les élèves y accèdent depuis leur portail, à tout moment.' },
@@ -347,12 +338,6 @@ const LMS_FEATURES = [
   { icon: '🏆', title: 'Examens blancs, devoirs & compositions', desc: 'Examens blancs (CEPE, BEPC, BAC), devoirs surveillés et compositions mensuelles : saisie des notes, palmarès et relevés de notes en PDF.' },
 ];
 
-const STEPS = [
-  { num: '01', icon: '🏫', title: 'Inscrivez votre école', desc: 'Formulaire en 2 minutes. Accès immédiat, sans attente. Compte activé gratuitement — 30 jours d\'essai offerts.', tags: ['Nom école','Type','Niveau','Contact'] },
-  { num: '02', icon: '⚙️', title: 'Configurez en 30 min', desc: 'Ajoutez classes, matières, enseignants, élèves. Import CSV disponible. Paramétrez le système de périodes par cycle.', tags: ['Classes','Matières','Coefficients','Import CSV'] },
-  { num: '03', icon: '✏️', title: 'Saisie des notes', desc: 'Les professeurs saisissent les notes sur leur téléphone, même en mode paysage, puis signent leur fiche. Dès que toutes les fiches sont signées, les bulletins sont générés automatiquement.', tags: ['Devoir','Composition','Signature','Bulletins auto'] },
-  { num: '04', icon: '🚀', title: 'Le titulaire publie', desc: 'Le professeur titulaire relit les bulletins de sa classe, ajoute l\'observation et la conduite, puis publie. Chaque parent reçoit le bulletin PDF sur WhatsApp et par email. Blocage auto si frais impayés.', tags: ['Titulaire','PDF auto','WhatsApp','Blocage frais'] },
-];
 
 const ROLES = [
   { icon: '🏫', title: 'Administrateur', color: '#1E2A78', desc: 'Vision complète de votre établissement.', features: ['Tableau de bord analytique complet','Gestion classes, matières, enseignants','Bulletins PDF sécurisés (QR code, filigrane)','Devoirs surveillés, compositions & examens blancs','Paramétrage des frais scolaires','Compte Mobile Money de l\'école pour les paiements','Registre présences, santé, bibliothèque','Inventaire, alumni, examens nationaux','Documents officiels & profils du personnel','Exportation CSV de toutes les données'] },
@@ -388,25 +373,7 @@ const DATABASE_MODULES = [
  *  comparatif, témoignages, équipe) : true pour les réafficher. */
 const SHOW_EXTRA_SECTIONS = false;
 
-const TEAM = [
-  { name: 'Felix Atoma', role: 'Lead Developer', tags: ['Software Developer', "Professeur d'Anglais"], initials: 'FA', color: '#1E2A78', colorEnd: '#3b82f6', photo: '/team/felix.jpg', email: 'felixatoma2@gmail.com' },
-  { name: 'Manzaman Abalossosso', role: 'Project Manager', tags: ['Professeur de Science', 'Data Scientist'], initials: 'AA', color: '#1E2A78', colorEnd: '#FF7A59', photo: '/team/manzaman.jpg', email: 'abalossossomanzaman@gmail.com' },
-  { name: 'Benjamin Ngbabou', role: 'Software Developer', tags: ['Marketing', 'Professeur de Mathématiques'], initials: 'BN', color: '#FF7A59', colorEnd: '#1E2A78', photo: '/team/benjamin.jpg', email: 'bawiloussimngbabou1@gmail.com' },
-];
 
-const FAQS = [
-  { q: 'Est-ce que je dois payer pour essayer ?', a: 'Non. Vous bénéficiez d\'un essai gratuit de 30 jours avec accès complet à toutes les fonctionnalités. Aucun engagement, aucune carte bancaire requise dès le départ. Si vous êtes satisfait à la fin des 30 jours, vous choisissez un abonnement. Sinon, vous revenez à votre ancien système.' },
-  { q: 'Est-ce gratuit pour les petites écoles ?', a: 'Oui. Toute école ayant moins de 50 élèves inscrits bénéficie d\'un accès gratuit permanent à toutes les fonctionnalités de NovaBulletin — sans limite de durée, sans abonnement et sans carte bancaire. Le modèle payant ne s\'applique qu\'à partir de 50 élèves.' },
-  { q: 'Combien coûte NovaBulletin après l\'essai gratuit ?', a: 'Le tarif dépend de votre effectif réel. STARTER (< 50 élèves) : GRATUIT ∞. BASIC (50–99 élèves) : 10 000 FCFA/mois ou 100 000 FCFA/an. PRO (100–199 élèves) : 20 000 FCFA/mois ou 200 000 FCFA/an. ENTERPRISE (200+ élèves) : 35 000 FCFA/mois ou 350 000 FCFA/an. Paiement par TMoney, Flooz ou virement.' },
-  { q: 'Mon école est un complexe (primaire + collège + lycée). Est-ce compatible ?', a: 'Oui. NovaBulletin est conçu pour les établissements complexes multi-cycles. Vous pouvez configurer des systèmes de périodes différents par cycle : par exemple, trimestriel pour le primaire et le collège, et semestriel pour le lycée. Chaque bulletin est généré automatiquement avec le bon système de périodes selon le cycle de la classe.' },
-  { q: 'Comment fonctionnent les fiches numériques des enseignants ?', a: 'Chaque enseignant a accès à sa propre fiche de notes numérique depuis son téléphone. Il saisit les notes (interrogations, devoirs, compositions), les moyennes se calculent automatiquement, et il signe la fiche avec sa signature manuscrite. Quand toutes les fiches de la classe sont signées, les bulletins sont générés automatiquement et le professeur titulaire les relit et les publie. Aucune retranscription manuelle, aucune perte de fiche papier.' },
-  { q: 'NovaBulletin remplace-t-il tous les registres papier ?', a: 'Oui. NovaBulletin centralise 11 registres : présences, santé, bibliothèque, inventaire, anciens élèves, transferts, dossiers disciplinaires, examens nationaux, calendrier, documents officiels et profils du personnel. Chaque donnée est sécurisée, consultable instantanément et exportable en CSV.' },
-  { q: 'Combien de temps faut-il pour configurer l\'école ?', a: 'Environ 30 minutes pour une école de taille moyenne. Vous pouvez importer vos élèves depuis un fichier Excel ou CSV en quelques clics. Notre équipe vous accompagne à chaque étape via WhatsApp.' },
-  { q: 'Les enseignants doivent-ils être formés ?', a: 'L\'interface est conçue pour être intuitive sur mobile. La plupart des enseignants maîtrisent la plateforme en moins de 10 minutes. Nous fournissons un guide de démarrage rapide et un support WhatsApp dédié.' },
-  { q: 'Que se passe-t-il si un parent n\'utilise pas WhatsApp ?', a: 'NovaBulletin envoie aussi les bulletins par email. Si le parent n\'a ni WhatsApp ni email, l\'admin peut imprimer le bulletin PDF directement depuis la plateforme, comme avant.' },
-  { q: 'Les données de nos élèves sont-elles sécurisées ?', a: 'Oui. Toutes les données sont chiffrées et hébergées sur Supabase (infrastructure cloud de niveau bancaire). Chaque école n\'a accès qu\'à ses propres données. Conformité RGPD assurée.' },
-  { q: 'Fonctionne-t-il sur tous les appareils ?', a: 'Oui. NovaBulletin est une application web qui fonctionne sur ordinateur, tablette et smartphone (Android et iOS). Aucune installation requise — ouvrez simplement votre navigateur.' },
-];
 
 const COMPARISON = [
   { feature: 'Fiches de notes numériques (mobile)', excel: '❌ Papier + saisie double', autres: '⚠️ PC uniquement', nova: '✅ Mobile + signature élec.' },
@@ -451,16 +418,6 @@ const FLAG_GB = (
 );
 
 /* ── EN data ─────────────────────────────────────────────────────────────── */
-const FEATURES_ROW1_EN = [
-  { icon: '🧮', color: '#eff6ff', iconColor: '#1E2A78', title: 'Automatic Calculation', desc: 'Averages, coefficients, rankings calculated instantly. Zero Excel formulas, zero errors.' },
-  { icon: '📄', color: '#fff3f0', iconColor: '#FF7A59', title: 'PDF Reports in 1 click', desc: 'Professional report card with your school logo, colors and stamp. Ready to print or share.' },
-  { icon: '📱', color: '#eff6ff', iconColor: '#1E2A78', title: 'WhatsApp & Email', desc: 'Parents notified instantly via WhatsApp. Automatic distribution as soon as published.' },
-];
-const FEATURES_ROW2_EN = [
-  { icon: '📝', color: '#fff3f0', iconColor: '#FF7A59', title: 'Digital Grade Sheets', desc: 'Every teacher has a digital grade sheet on their phone. Mobile entry, auto-calculation and electronic signature. Zero paper, zero loss.' },
-  { icon: '💰', color: '#eff6ff', iconColor: '#1E2A78', title: 'School Fees', desc: 'Integrated fee management. Online Mobile Money payment deposited directly into the school\'s own account. Automatic blocking of report cards if fees are unpaid.' },
-  { icon: '📊', color: '#fff3f0', iconColor: '#FF7A59', title: 'Real-time Analytics', desc: 'Collection rates, class progress, published vs pending reports — live.' },
-];
 const LMS_FEATURES_EN = [
   { icon: '📚', title: 'Courses & Documents', desc: 'Teachers upload their courses, PDFs and learning resources. Students access them from their portal, at any time.' },
   { icon: '📝', title: 'Homework & Exercises', desc: 'Assignment publication with deadlines. Real-time submission tracking. Automatic reminders for late students.' },
@@ -468,12 +425,6 @@ const LMS_FEATURES_EN = [
   { icon: '📅', title: 'Timetable', desc: 'Each class timetable accessible from the app. Updated in real time by the administration.' },
   { icon: '📢', title: 'Announcements & News', desc: 'Publish targeted announcements to parents, teachers or students. Each party receives only what concerns them.' },
   { icon: '🏆', title: 'Mock exams, tests & monthly tests', desc: 'Mock exams (CEPE, BEPC, BAC), supervised tests and monthly tests: grade entry, results lists and PDF transcripts.' },
-];
-const STEPS_EN = [
-  { num: '01', icon: '🏫', title: 'Register your school', desc: '2-minute form. Immediate access, no waiting. Account activated for free — 30-day trial included.', tags: ['School name','Type','Level','Contact'] },
-  { num: '02', icon: '⚙️', title: 'Set up in 30 min', desc: 'Add classes, subjects, teachers, students. CSV import available. Configure term system per cycle.', tags: ['Classes','Subjects','Coefficients','CSV Import'] },
-  { num: '03', icon: '✏️', title: 'Grade entry', desc: 'Teachers enter grades on their phone, even in landscape mode, then sign their sheet. As soon as every sheet is signed, report cards are generated automatically.', tags: ['Test','Exam','Signature','Auto reports'] },
-  { num: '04', icon: '🚀', title: 'The form teacher publishes', desc: 'The form teacher reviews the class report cards, adds the comment and conduct, then publishes. Every parent receives the PDF on WhatsApp and by email. Auto block if fees unpaid.', tags: ['Form teacher','Auto PDF','WhatsApp','Fee gate'] },
 ];
 const ROLES_EN = [
   { icon: '🏫', title: 'Administrator', color: '#1E2A78', desc: 'Complete view of your institution.', features: ['Full analytics dashboard','Manage classes, subjects, teachers','Secure PDF reports (QR code, watermark)','Supervised tests, monthly tests & mock exams','School fee configuration','School\'s own Mobile Money account for payments','Attendance, health, library registers','Inventory, alumni, national exams','Official documents & staff profiles','CSV export of all data'] },
@@ -494,19 +445,6 @@ const DATABASE_MODULES_EN = [
   { icon: '📅', color: '#eff6ff', iconColor: '#1E2A78', title: 'School Calendar', desc: 'Holidays, exams, meetings, sports and cultural events. Shared view.' },
   { icon: '📁', color: '#eff6ff', iconColor: '#1E2A78', title: 'Official Documents', desc: 'Circulars, contracts, reports, timetables. Secure digital archiving.' },
   { icon: '👤', color: '#fff3f0', iconColor: '#FF7A59', title: 'Staff Profiles', desc: 'Complete HR files: qualifications, contract, experience, emergency contacts.' },
-];
-const FAQS_EN = [
-  { q: 'Do I have to pay to try it?', a: 'No. You get a free 30-day trial with full access to all features. No commitment, no credit card required upfront. If you are satisfied after 30 days, you choose a plan. If not, you go back to your old system.' },
-  { q: 'Is it free for small schools?', a: 'Yes. Any school with fewer than 50 enrolled students gets permanent free access to all NovaBulletin features — no time limit, no subscription, no credit card. The paid model only applies from 50 students upwards.' },
-  { q: 'How much does NovaBulletin cost after the free trial?', a: 'Pricing depends on your actual enrolment. STARTER (< 50 students): FREE ∞. BASIC (50–99): 10,000 FCFA/month or 100,000 FCFA/year. PRO (100–199): 20,000 FCFA/month or 200,000 FCFA/year. ENTERPRISE (200+): 35,000 FCFA/month or 350,000 FCFA/year. Payment via TMoney, Flooz or bank transfer.' },
-  { q: 'My school is a complex (primary + middle + high school). Is it compatible?', a: 'Yes. NovaBulletin is built for multi-cycle complexes. You can configure different term systems per cycle — for example, trimester for primary and middle school, and semester for high school. Each report card is automatically generated with the correct term system for its cycle.' },
-  { q: 'How do the teachers\' digital grade sheets work?', a: 'Each teacher accesses their own digital grade sheet from their phone. They enter grades (tests, homework, exams), averages calculate automatically, and they sign the sheet with their handwritten signature. Once every sheet in the class is signed, report cards are generated automatically and the form teacher reviews and publishes them. No manual re-entry, no lost paper sheets.' },
-  { q: 'Does NovaBulletin replace all paper registers?', a: 'Yes. NovaBulletin centralizes 11 registers: attendance, health, library, inventory, alumni, transfers, disciplinary files, national exams, calendar, official documents and staff profiles. Every record is secured, instantly searchable and exportable to CSV.' },
-  { q: 'How long does it take to set up the school?', a: 'About 30 minutes for a medium-sized school. You can import your students from an Excel or CSV file in a few clicks. Our team supports you at every step via WhatsApp.' },
-  { q: 'Do teachers need training?', a: 'The interface is designed to be intuitive on mobile. Most teachers master the platform in under 10 minutes. We provide a quick-start guide and dedicated WhatsApp support.' },
-  { q: 'What if a parent doesn\'t use WhatsApp?', a: 'NovaBulletin also sends report cards by email. If the parent has neither WhatsApp nor email, the admin can print the PDF report card directly from the platform, as before.' },
-  { q: 'Is our students\' data secure?', a: 'Yes. All data is encrypted and hosted on Supabase (bank-level cloud infrastructure). Each school only has access to its own data. GDPR compliance ensured.' },
-  { q: 'Does it work on all devices?', a: 'Yes. NovaBulletin is a web application that works on computers, tablets and smartphones (Android and iOS). No installation required — just open your browser.' },
 ];
 const FEATURES_ROW3 = [
   { icon: '✨', color: '#eff6ff', iconColor: '#1E2A78', title: 'Appréciations IA', desc: 'Générez en 1 clic des appréciations de bulletin personnalisées. L\'IA analyse la moyenne, la mention et les notes par matière pour rédiger un commentaire professionnel adapté à chaque élève.' },
@@ -1829,3 +1767,4 @@ export default function LandingPage() {
     </div>
   );
 }
+
