@@ -367,11 +367,14 @@ export class PdfService {
    * on réduit encore un peu si besoin. Un bulletin court garde sa taille normale (échelle 1).
    */
   /** half : demi-feuille A4 (A5 paysage, 210 × 148,5 mm) — relevés imprimés deux par feuille. */
-  private async renderOnePagePdf(html: string, half = false, tightMargins = false): Promise<Buffer> {
+  /** fill : étire le tableau des notes pour remplir toute la hauteur de la page — relevé des DS. */
+  private async renderOnePagePdf(html: string, half = false, fill = false): Promise<Buffer> {
     const MM = 96 / 25.4;                       // px par mm à 96 dpi
     const sheet = half ? { w: 210, h: 148.5 } : { w: 210, h: 297 };
+    // Remplissage : le gabarit imprime sans marge (@page margin:0) — on mesure donc sur la feuille entière,
+    // avec une marge intérieure de 6 mm pour que l'imprimante ne coupe pas le cadre.
     const margin = half ? { top: 6, bottom: 6, left: 8, right: 8 }
-      : tightMargins ? { top: 6, bottom: 6, left: 10, right: 10 } : { top: 15, bottom: 15, left: 12, right: 12 };
+      : fill ? { top: 0, bottom: 0, left: 0, right: 0 } : { top: 15, bottom: 15, left: 12, right: 12 };
     const printableW = Math.floor((sheet.w - margin.left - margin.right) * MM);
     const printableH = Math.floor((sheet.h - margin.top - margin.bottom) * MM);
     // Demi-feuille : le gabarit déclare une page A4 (@page) que Chrome réduirait en plus pour la faire
@@ -382,6 +385,8 @@ export class PdfService {
       + '.info{margin:0 0 3px}.info td{padding:1px 10px 1px 0}.grades th,.grades td{padding:2px 6px}'
       + '.bottom-left{padding:4px 8px;gap:4px}.result-box{padding:3px}.result-box .val{font-size:18px}.res td{padding:2px 8px}'
       + '.sig-box{padding:3px 8px 4px}.sig-hint{margin-bottom:10px}.top-bar{padding-top:4px;padding-bottom:4px}</style></head>');
+
+    if (fill) html = html.replace('</head>', '<style>@media print{.page{padding:6mm 7mm !important}}</style></head>');
 
     const browser = await getBrowser();
     const page = await browser.newPage();
@@ -399,6 +404,22 @@ export class PdfService {
           }))),
         new Promise((resolve) => setTimeout(resolve, 15000)),
       ]));
+
+      // Remplir la page : la hauteur restante est répartie sur les lignes du tableau des notes.
+      // (Un zoom agrandirait aussi le texte, mais Chrome ne l'imprime pas comme il le mesure à l'écran.)
+      // Marge de sécurité de 1,5 % : la mise en page imprimée est un peu plus haute que celle mesurée.
+      if (fill) {
+        await page.evaluate((maxH: number) => {
+          const el = document.querySelector('.page') as HTMLElement | null;
+          const rows = Array.from(document.querySelectorAll('.grades tbody tr')) as HTMLElement[];
+          if (!el || !rows.length) return;
+          const gap = maxH - el.getBoundingClientRect().height;
+          if (gap <= 2) return;
+          const extra = gap / rows.length;
+          rows.forEach((tr) => { tr.style.height = `${tr.getBoundingClientRect().height + extra}px`; });
+          if (el.getBoundingClientRect().height > maxH) rows.forEach((tr) => { tr.style.height = ''; });
+        }, printableH * 0.985);
+      }
 
       // Hauteur réelle du bulletin (.page), pas celle du document : celui-ci fait toujours au moins
       // la hauteur de la fenêtre, ce qui faisait croire à un dépassement pour chaque bulletin.
