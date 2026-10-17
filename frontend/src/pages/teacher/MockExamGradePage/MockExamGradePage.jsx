@@ -3,12 +3,22 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
 import { mockExamsService } from '../../../services/mockExamsService';
 import { useAuth } from '../../../context/AuthContext';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import Loading from '../../../components/common/Loading/Loading';
 import { examScale, isCaType } from '../../../utils/examKinds';
 import './MockExamGradePage.css';
+
+// Devoir surveillé : le serveur indique si les notes ont été reportées sur la fiche du trimestre
+function showFicheSync(message) {
+  if (!message || !message.includes('« Devoir »')) return;
+  const text = message.replace(/^Notes sauvegardées[^.]*\.\s*/, '');
+  if (/laissée|non reportée|échoué/.test(text)) toast(text, { icon: 'ℹ️', duration: 8000 });
+  else toast.success(text, { duration: 6000 });
+}
+
 
 const APPRE_COLOR = Object.fromEntries(Object.entries(APPRECIATION_COLORS).map(([k, v]) => [k, v.color]));
 
@@ -129,7 +139,8 @@ function MockExamGradePage() {
       });
     });
     try {
-      await mockExamsService.saveGrades(id, payload);
+      const res = await mockExamsService.saveGrades(id, payload);
+      showFicheSync(res?.data?.message);
       await qc.invalidateQueries({ queryKey: ['mock-exam-sheet', id] });
       setDirty(false);
       setSaved(true);

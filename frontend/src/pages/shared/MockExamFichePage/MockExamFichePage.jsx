@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import { mockExamsService } from '../../../services/mockExamsService';
 import { useAuth } from '../../../context/AuthContext';
 import AppShell from '../../../components/layout/AppShell/AppShell';
@@ -14,6 +15,15 @@ import { examScale } from '../../../utils/examKinds';
 // Mode saisie paysage et boutons : mêmes styles que la fiche de notes trimestrielle
 import '../../teacher/GradeEntryPage/GradeEntryPage.css';
 import './MockExamFichePage.css';
+
+// Devoir surveillé : le serveur indique si les notes ont été reportées sur la fiche du trimestre
+function showFicheSync(message) {
+  if (!message || !message.includes('« Devoir »')) return;
+  const text = message.replace(/^Notes sauvegardées[^.]*\.\s*/, '');
+  if (/laissée|non reportée|échoué/.test(text)) toast(text, { icon: 'ℹ️', duration: 8000 });
+  else toast.success(text, { duration: 6000 });
+}
+
 
 /** Mode paysage : rendu à la racine du document pour couvrir tout l'écran (sinon coincé dans la fiche) */
 function FocusPortal({ active, children }) {
@@ -244,7 +254,8 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
         const num = raw !== '' && raw != null ? parseFloat(raw) : null;
         return { studentId: s.studentId, score: isNaN(num) ? null : num };
       });
-      await mockExamsService.saveSubjectGrades(examId, subject.id, grades, coeffNum);
+      const res = await mockExamsService.saveSubjectGrades(examId, subject.id, grades, coeffNum);
+      showFicheSync(res?.data?.message);
       setDirty(false);
       setSaved(true);
       qc.invalidateQueries({ queryKey: ['mock-exam-fiche', examId] });
