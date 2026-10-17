@@ -113,3 +113,11 @@
   color: #991b1b; border-radius: 6px; padding: 0.75rem 1rem; font-size: 0.875rem;
   margin: 1rem 0;
 }
+
+/* Coefficient modifiable dans l'en-tête de colonne */
+.meg-coeff-input {
+  width: 2.6rem; padding: 2px 4px; text-align: center; font: inherit; font-weight: 700;
+  border: 1px solid var(--color-border-strong, #d1d5db); border-radius: 4px; background: #fff; color: var(--color-text, #1f2937);
+}
+.meg-coeff-input:focus { outline: 2px solid var(--color-highlight, #fdc632); border-color: transparent; }
+.meg-coeff-input--error { border-color: #ef4444; background: #fef2f2; }

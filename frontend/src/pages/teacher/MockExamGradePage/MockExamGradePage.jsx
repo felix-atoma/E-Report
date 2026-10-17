@@ -60,6 +60,8 @@ function MockExamGradePage() {
 
   // grades[studentId][subjectId] = score string
   const [grades, setGrades] = useState({});
+  // coeffs[subjectId] = coefficient saisi (texte) — modifiable dans l'en-tête de chaque colonne
+  const [coeffs, setCoeffs] = useState({});
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -75,8 +77,20 @@ function MockExamGradePage() {
       });
     });
     setGrades(init);
+    setCoeffs(Object.fromEntries(data.subjects.map((s) => [s.id, String(s.coefficient)])));
     setDirty(false);
   }, [data]);
+
+  const setCoeff = (subjectId, val) => {
+    setCoeffs((prev) => ({ ...prev, [subjectId]: val.replace(/[^0-9]/g, '').slice(0, 2) }));
+    setDirty(true);
+    setSaved(false);
+  };
+  const coeffOk = (v) => { const n = parseInt(v, 10); return n >= 1 && n <= 20; };
+  // Matières avec le coefficient en cours de saisie (pour moyennes, rangs et enregistrement)
+  const liveSubjects = useMemo(() => (data?.subjects ?? []).map((s) => (
+    coeffOk(coeffs[s.id]) ? { ...s, coefficient: parseInt(coeffs[s.id], 10) } : s
+  )), [data, coeffs]);
 
   const setScore = (studentId, subjectId, val) => {
     setGrades((prev) => ({
@@ -92,21 +106,23 @@ function MockExamGradePage() {
     if (!data) return {};
     const avgs = data.students.map((s) => ({
       id: s.studentId,
-      avg: computeAvg(grades[s.studentId] ?? {}, data.subjects, examScale(data.exam.examType)),
+      avg: computeAvg(grades[s.studentId] ?? {}, liveSubjects, examScale(data.exam.examType)),
     }));
     const sorted = avgs.filter((a) => a.avg != null).sort((a, b) => (b.avg ?? 0) - (a.avg ?? 0));
     const map = {};
     sorted.forEach((a, i) => { map[a.id] = i + 1; });
     return map;
-  }, [grades, data]);
+  }, [grades, data, liveSubjects]);
 
   const handleSave = async () => {
     if (!data) return;
+    const subjsToSave = editableSubjectIds
+      ? liveSubjects.filter((subj) => editableSubjectIds.includes(subj.id))
+      : liveSubjects;
+    const bad = subjsToSave.find((subj) => !coeffOk(coeffs[subj.id]));
+    if (bad) { alert(`Coefficient de « ${bad.nameFr} » : un nombre entier de 1 à 20.`); return; }
     setSaving(true);
     const payload = [];
-    const subjsToSave = editableSubjectIds
-      ? data.subjects.filter((subj) => editableSubjectIds.includes(subj.id))
-      : data.subjects;
     data.students.forEach((s) => {
       subjsToSave.forEach((subj) => {
         const raw = grades[s.studentId]?.[subj.id];
@@ -145,7 +161,8 @@ function MockExamGradePage() {
     </AppShell>
   );
 
-  const { exam, subjects, students, editableSubjectIds } = data;
+  const { exam, students, editableSubjectIds } = data;
+  const subjects = liveSubjects;
   const isPublished = exam.status === 'PUBLISHED';
   const scale = examScale(exam.examType); // 10 pour les compositions mensuelles
   // null = admin (all editable); array = teacher (only assigned subjects)
@@ -222,7 +239,20 @@ function MockExamGradePage() {
                 {subjects.map((subj) => (
                   <th key={subj.id} className="meg-th meg-th--subject">
                     <div className="meg-subject-name">{subj.nameFr}</div>
-                    <div className="meg-subject-coeff">{t('mockExamGrade.columns.coeff')} {subj.coefficient}</div>
+                    <div className="meg-subject-coeff">
+                      {t('mockExamGrade.columns.coeff')}{' '}
+                      {canEditSubject(subj.id) ? (
+                        <input
+                          type="text" inputMode="numeric"
+                          className={`meg-coeff-input${coeffOk(coeffs[subj.id]) ? '' : ' meg-coeff-input--error'}`}
+                          value={coeffs[subj.id] ?? ''}
+                          onChange={(e) => setCoeff(subj.id, e.target.value)}
+                          onFocus={(e) => e.target.select()}
+                          aria-label={`Coefficient ${subj.nameFr}`}
+                          title="Coefficient (1 à 20)"
+                        />
+                      ) : subj.coefficient}
+                    </div>
                   </th>
                 ))}
                 <th className="meg-th meg-th--avg" rowSpan={2}>{t('mockExamGrade.columns.average')}</th>

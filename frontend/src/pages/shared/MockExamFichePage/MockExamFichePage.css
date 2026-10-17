@@ -271,3 +271,5 @@
    (une page plus large que l'écran poussait hors champ le panneau de signature) */
 .mfiche-table-scroll { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 @media print { .mfiche-table-scroll { overflow: visible; } }
+
+.mfiche-coeff-input--error { border-color: #ef4444 !important; background: #fef2f2 !important; }

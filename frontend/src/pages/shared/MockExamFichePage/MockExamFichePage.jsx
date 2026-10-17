@@ -92,7 +92,8 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
     return init;
   });
 
-  const [coeff, setCoeff] = useState(subject.coefficient ?? 1);
+  // Texte libre pendant la saisie (on peut effacer le 1 pour taper 3) ; vérifié à l'enregistrement
+  const [coeff, setCoeff] = useState(String(subject.coefficient ?? 1));
 
   useEffect(() => {
     const init = {};
@@ -101,10 +102,12 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
       init[s.studentId] = g?.score != null ? String(g.score) : '';
     });
     setScores(init);
-    setCoeff(subject.coefficient ?? 1);
     setDirty(false);
     setSaved(false);
-  }, [students, subject.id, subject.coefficient]);
+  }, [students, subject.id]);
+
+  // Le coefficient ne revient à la valeur enregistrée que si celle-ci change (pas à chaque rechargement)
+  useEffect(() => { setCoeff(String(subject.coefficient ?? 1)); }, [subject.id, subject.coefficient]);
 
   const [saving,   setSaving]   = useState(false);
   const [saved,    setSaved]    = useState(false);
@@ -225,15 +228,15 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
   };
 
   const handleCoeffChange = (val) => {
-    const n = parseFloat(val);
-    if (!isNaN(n) && n >= 0.5 && n <= 20) {
-      setCoeff(n);
-      setDirty(true);
-      setSaved(false);
-    }
+    setCoeff(val.replace(/[^0-9]/g, '').slice(0, 2));
+    setDirty(true);
+    setSaved(false);
   };
+  const coeffNum = parseInt(coeff, 10);
+  const coeffValid = coeffNum >= 1 && coeffNum <= 20;
 
   const handleSave = async () => {
+    if (!coeffValid) { alert('Le coefficient doit être un nombre entier de 1 à 20.'); return; }
     setSaving(true);
     try {
       const grades = students.map((s) => {
@@ -241,7 +244,7 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
         const num = raw !== '' && raw != null ? parseFloat(raw) : null;
         return { studentId: s.studentId, score: isNaN(num) ? null : num };
       });
-      await mockExamsService.saveSubjectGrades(examId, subject.id, grades, coeff);
+      await mockExamsService.saveSubjectGrades(examId, subject.id, grades, coeffNum);
       setDirty(false);
       setSaved(true);
       qc.invalidateQueries({ queryKey: ['mock-exam-fiche', examId] });
@@ -294,12 +297,12 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
             Coeff.&nbsp;
             {isEditable && !isPublished && !isLocked ? (
               <input
-                type="number"
-                className="mfiche-coeff-input"
+                type="text" inputMode="numeric"
+                className={`mfiche-coeff-input${coeffValid ? '' : ' mfiche-coeff-input--error'}`}
                 value={coeff}
-                min={0.5} max={20} step={0.5}
                 onChange={(e) => handleCoeffChange(e.target.value)}
-                title="Coefficient de la matière"
+                onFocus={(e) => e.target.select()}
+                title="Coefficient de la matière (1 à 20)"
               />
             ) : (
               <strong>{coeff}</strong>
@@ -375,8 +378,8 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
             </div>
             <label className="fdn-focus__coef">
               Coef.
-              <input type="number" inputMode="decimal" className="fdn-focus__coef-input" min={0.5} max={20} step={0.5}
-                value={coeff} onChange={(e) => handleCoeffChange(e.target.value)} disabled={isLocked} />
+              <input type="text" inputMode="numeric" className="fdn-focus__coef-input"
+                value={coeff} onChange={(e) => handleCoeffChange(e.target.value)} onFocus={(e) => e.target.select()} disabled={isLocked} />
             </label>
             {saved && !dirty && <span className="fdn-focus__saved">✓ Enregistré</span>}
             {!isLocked && (

@@ -170,6 +170,22 @@ export class MockExamsService {
       }
     });
 
+    // Pas encore de note pour une matière : on propose le coefficient utilisé sur les bulletins
+    // de la classe (dernier enregistré), sinon 1. Le coefficient des sessions est un entier.
+    const missing = sessionSubjects.map((cs) => cs.subject.id).filter((sid) => !subjectCoeffMap.has(sid));
+    if (missing.length) {
+      const fromBulletins = await this.prisma.grade.findMany({
+        where: { subjectId: { in: missing }, reportCard: { classId: exam.classId } },
+        orderBy: { updatedAt: 'desc' },
+        distinct: ['subjectId'],
+        select: { subjectId: true, coefficient: true },
+      });
+      fromBulletins.forEach((g) => {
+        const c = Math.round(g.coefficient);
+        if (c >= 1 && c <= 20) subjectCoeffMap.set(g.subjectId, c);
+      });
+    }
+
     const subjects = sessionSubjects.map((cs) => ({
       id: cs.subject.id,
       nameFr: cs.subject.nameFr,
@@ -915,13 +931,13 @@ export class MockExamsService {
     }
   }
 
-  /** Note : nombre réel ou vide ; coefficient : entre 0 (exclu) et 20. */
+  /** Note : nombre réel ou vide ; coefficient : nombre entier de 1 à 20. */
   private assertValidEntries(entries: { score?: number | null; coefficient?: number | null }[]) {
     for (const e of entries) {
       if (e.score != null && (typeof e.score !== 'number' || !Number.isFinite(e.score))) {
         throw new BadRequestException('Note invalide : saisissez un nombre.');
       }
-      if (e.coefficient != null && (typeof e.coefficient !== 'number' || !(e.coefficient > 0 && e.coefficient <= 20))) {
+      if (e.coefficient != null && (typeof e.coefficient !== 'number' || !Number.isInteger(e.coefficient) || e.coefficient < 1 || e.coefficient > 20)) {
         throw new BadRequestException('Coefficient invalide : il doit être supérieur à 0 et au plus 20.');
       }
     }

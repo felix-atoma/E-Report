@@ -30,6 +30,7 @@ describe('MockExamsService', () => {
     prisma.classStudent.findMany.mockResolvedValue([enrol('stu-1'), enrol('stu-2')]);
     prisma.subject.findMany.mockResolvedValue([{ id: 'math', nameFr: 'Maths', maxScore: 20 }, { id: 'svt', nameFr: 'SVT', maxScore: 20 }]);
     prisma.mockExamSubjectFiche.findMany.mockResolvedValue([]);
+    prisma.grade.findMany.mockResolvedValue([]);
     prisma.mockExamSubjectFiche.findUnique.mockResolvedValue(null);
     prisma.mockExamGrade.upsert.mockResolvedValue({});
   });
@@ -76,6 +77,12 @@ describe('MockExamsService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
+    it('refuses a decimal coefficient (coefficients are whole numbers)', async () => {
+      await expect(
+        service.saveSubjectGrades(exam.id, 'math', [{ studentId: 'stu-1', score: 12 }], INST, 2.5, 'TEACHER', 'teacher-1'),
+      ).rejects.toThrow(BadRequestException);
+    });
+
     it('refuses an invalid coefficient', async () => {
       await expect(
         service.saveSubjectGrades(exam.id, 'math', [{ studentId: 'stu-1', score: 12 }], INST, -3, 'TEACHER', 'teacher-1'),
@@ -87,6 +94,16 @@ describe('MockExamsService', () => {
     beforeEach(() => {
       prisma.classSubject.findMany.mockResolvedValue([]);
       prisma.mockExamGrade.findMany.mockResolvedValue([]);
+    });
+
+    it('proposes the report-card coefficient for a subject with no marks yet, otherwise 1', async () => {
+      prisma.classSubject.findMany.mockResolvedValue([
+        { subject: { id: 'math', nameFr: 'Maths', nameEn: 'Maths', code: 'M', maxScore: 20, category: null } },
+        { subject: { id: 'svt', nameFr: 'SVT', nameEn: 'Biology', code: 'S', maxScore: 20, category: null } },
+      ]);
+      prisma.grade.findMany.mockResolvedValue([{ subjectId: 'math', coefficient: 4 }]);
+      const sheet = await service.getGradeSheet(exam.id, INST);
+      expect(Object.fromEntries(sheet.subjects.map((x: any) => [x.id, x.coefficient]))).toEqual({ math: 4, svt: 1 });
     });
 
     it('only lists students enrolled for the session year', async () => {
