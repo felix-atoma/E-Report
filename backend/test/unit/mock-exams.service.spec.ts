@@ -252,4 +252,46 @@ describe('MockExamsService', () => {
       await expect(service.updateType(exam.id, INST, 'NOPE')).rejects.toThrow(BadRequestException);
     });
   });
+
+  describe('DS marks also fill the « Devoir » column of the term grade sheet', () => {
+    it('reads the term from the session name, then from the date', () => {
+      const t = (label: string, examDate?: string) => service.dsTermNumber({ label, academicYear: '2026-2027', examDate: examDate ? new Date(examDate) : null } as any);
+      expect(t('Devoir Surveillé du Premier Trimestre')).toBe(1);
+      expect(t('DS du 2e trimestre')).toBe(2);
+      expect(t('Devoir surveillé — trimestre 3')).toBe(3);
+      expect(t('Devoir surveillé', '2027-02-10')).toBe(2);
+    });
+
+    beforeEach(() => {
+      prisma.classSubject.findFirst.mockResolvedValue({ id: 'cs' });
+      prisma.mockExam.findFirst.mockResolvedValue({ ...exam, label: 'Devoir Surveillé du Premier Trimestre' });
+      prisma.class.findUnique.mockResolvedValue({ institutionId: INST, institution: { academicSettings: null } });
+      prisma.reportCard.findFirst.mockResolvedValue({ termName: '1er trimestre', termType: 'TRIMESTRE' });
+      prisma.subject.findUnique.mockResolvedValue({ nameFr: 'Maths', maxScore: 20, hasCoefficient: true });
+      prisma.reportCard.findUnique.mockResolvedValue({ id: 'rc-1' });
+      prisma.grade.findUnique.mockResolvedValue({ noteInterro1: 10, noteComposition: null, coefficient: 3 });
+      prisma.grade.findMany.mockResolvedValue([]);
+      prisma.mockExamSubjectFiche.findUnique.mockResolvedValue(null);
+      prisma.$transaction = jest.fn().mockResolvedValue([]) as any;
+    });
+
+    it('copies the DS mark as « Devoir » and recomputes the subject average', async () => {
+      prisma.gradeFiche.findUnique.mockResolvedValue(null);
+      const res = await service.saveSubjectGrades(exam.id, 'math', [{ studentId: 'stu-1', score: 14 }], INST, 3, 'TEACHER', 'teacher-1');
+      expect(prisma.grade.upsert).toHaveBeenCalledTimes(1);
+      const data = prisma.grade.upsert.mock.calls[0][0].update;
+      expect(data.noteDevoir).toBe(14);
+      expect(data.moyenneMatiere).toBe(12.67);           // (10 × 1 + 14 × 2) / 3
+      expect(data.coefficient).toBe(3);
+      expect(data.appreciation).toBe('Assez Bien');
+      expect(res.message).toContain('colonne « Devoir »');
+    });
+
+    it('never touches a term grade sheet that is already signed', async () => {
+      prisma.gradeFiche.findUnique.mockResolvedValue({ signedAt: new Date() });
+      const res = await service.saveSubjectGrades(exam.id, 'math', [{ studentId: 'stu-1', score: 14 }], INST, 3, 'TEACHER', 'teacher-1');
+      expect(prisma.grade.upsert).not.toHaveBeenCalled();
+      expect(res.message).toContain('déjà signée');
+    });
+  });
 });

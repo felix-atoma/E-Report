@@ -8,6 +8,8 @@ import { byStudentName } from '../../common/utils/student-order.util';
 import { releveCode, parseReleveCode, releveCodeMatches } from './releve-code.util';
 import { CreateMockExamDto } from './dto/create-mock-exam.dto';
 import { SaveMockExamGradesDto } from './dto/save-grades.dto';
+import { computeAppreciation, computeMoyenneMatiere } from '../grades/grades.service';
+import { resolveTermRange } from '../attendance/attendance.service';
 
 /** Compositions du primaire (CI → CM2) : composition mensuelle et composition d'anglais. */
 export function isPrimaryComposition(examType: string | null | undefined): boolean {
@@ -404,7 +406,8 @@ export class MockExamsService {
         }),
       ),
     );
-    return { message: 'Notes sauvegardées.' };
+    const synced = await this.syncDsToTermFiche(exam, grades.map((g) => ({ ...g, subjectId, coefficient })));
+    return { message: `Notes sauvegardées.${synced}` };
   }
 
   /** Refuse une note négative ou au-dessus du barème de sa matière (/10 ou /20). */
@@ -524,11 +527,137 @@ export class MockExamsService {
       ),
     );
 
+    const synced = await this.syncDsToTermFiche(exam, entries);
     return {
-      message: skippedSigned
+      message: (skippedSigned
         ? `Notes sauvegardées (${skippedSigned} matière(s) signée(s) laissée(s) telle(s) quelle(s)).`
-        : 'Notes sauvegardées.',
+        : 'Notes sauvegardées.') + synced,
     };
+  }
+
+  // ─── Devoir surveillé → fiche de notes du trimestre ────────────────────────
+  /**
+   * Trimestre d'un devoir surveillé : d'abord son nom (« … du premier trimestre », « DS 2e trimestre »),
+   * sinon sa date comparée aux dates des trimestres (Paramètres), sinon la date du jour.
+   */
+  dsTermNumber(exam: { label?: string | null; examDate?: Date | null; academicYear: string }, academicSettings?: unknown): number {
+    const label = (exam.label ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const near = (re: string) => new RegExp(`(${re})\\s*(trimestre|semestre)|(trimestre|semestre)\\s*(${re})\\b`).test(label);
+    if (near('troisieme|3e|3eme|3') ) return 3;
+    if (near('deuxieme|second|seconde|2e|2eme|2nd|2')) return 2;
+    if (near('premier|premiere|1er|1re|1ere|1')) return 1;
+    const when = exam.examDate ? new Date(exam.examDate) : new Date();
+    for (const n of [1, 2, 3]) {
+      const range = resolveTermRange(academicSettings, exam.academicYear, 'TRIMESTRE', n);
+      if (range && when >= range.start && when <= range.end) return n;
+    }
+    return 1;
+  }
+
+  /**
+   * Les notes d'un devoir surveillé sont reportées dans la colonne « Devoir » de la fiche de notes du
+   * trimestre (même matière, mêmes élèves) : le professeur ne saisit qu'une fois. La moyenne de la
+   * matière, l'appréciation et le rang sont recalculés comme sur la fiche. Une fiche trimestrielle déjà
+   * signée n'est jamais modifiée. Une note de DS effacée ne vide pas la fiche.
+   * Renvoie un court message à ajouter à « Notes sauvegardées. ».
+   */
+  private async syncDsToTermFiche(
+    exam: { examType: string; classId: string; academicYear: string; label?: string | null; examDate?: Date | null; institutionId?: string },
+    entries: { studentId: string; subjectId: string; score?: number | null; coefficient?: number | null }[],
+  ): Promise<string> {
+    if (exam.examType !== 'DEVOIR_SURVEILLE') return '';
+    try {
+      const cls = await this.prisma.class.findUnique({
+        where: { id: exam.classId },
+        select: { institutionId: true, institution: { select: { academicSettings: true } } },
+      });
+      const termNumber = this.dsTermNumber(exam, cls?.institution?.academicSettings);
+      const sample = await this.prisma.reportCard.findFirst({
+        where: { classId: exam.classId, academicYear: exam.academicYear, termNumber },
+        select: { termName: true, termType: true },
+      });
+      const termName = sample?.termName ?? (termNumber === 1 ? '1er trimestre' : `${termNumber}e trimestre`);
+      const termType = sample?.termType ?? 'TRIMESTRE';
+
+      const bySubject = new Map<string, typeof entries>();
+      for (const e of entries) {
+        if (e.score == null) continue;
+        if (!bySubject.has(e.subjectId)) bySubject.set(e.subjectId, []);
+        bySubject.get(e.subjectId)!.push(e);
+      }
+      const signedSubjects: string[] = [];
+      let copied = 0;
+
+      for (const [subjectId, list] of bySubject) {
+        const subject = await this.prisma.subject.findUnique({
+          where: { id: subjectId }, select: { nameFr: true, maxScore: true, hasCoefficient: true },
+        });
+        if (!subject) continue;
+        const fiche = await this.prisma.gradeFiche.findUnique({
+          where: { classId_subjectId_academicYear_termNumber: { classId: exam.classId, subjectId, academicYear: exam.academicYear, termNumber } },
+          select: { signedAt: true },
+        });
+        if (fiche?.signedAt) { signedSubjects.push(subject.nameFr); continue; }
+        const maxScore = subject.maxScore ?? 20;
+
+        for (const e of list) {
+          let reportCard = await this.prisma.reportCard.findUnique({
+            where: { studentId_academicYear_termNumber: { studentId: e.studentId, academicYear: exam.academicYear, termNumber } },
+            select: { id: true },
+          });
+          if (!reportCard) {
+            reportCard = await this.prisma.reportCard.create({
+              data: { studentId: e.studentId, classId: exam.classId, academicYear: exam.academicYear, termType: termType as any, termNumber, termName },
+              select: { id: true },
+            });
+          }
+          const existing = await this.prisma.grade.findUnique({
+            where: { reportCardId_subjectId: { reportCardId: reportCard.id, subjectId } },
+          });
+          // DS sur 20 → barème de la matière sur la fiche
+          const devoir = Math.round(((e.score as number) * maxScore / 20) * 100) / 100;
+          const moy = computeMoyenneMatiere(
+            existing?.noteInterro1 ?? null, existing?.noteInterro2 ?? null, existing?.noteInterro3 ?? null,
+            existing?.noteInterro4 ?? null, devoir, existing?.noteComposition ?? null, maxScore,
+          );
+          const coef = subject.hasCoefficient === false ? 1 : (existing?.coefficient ?? e.coefficient ?? 1);
+          const data = {
+            noteDevoir: devoir,
+            moyenneMatiere: moy,
+            coefficient: coef,
+            weightedScore: moy !== null ? moy * coef : 0,
+            score: moy ?? 0,
+            appreciation: computeAppreciation(moy, subject.nameFr),
+          };
+          await this.prisma.grade.upsert({
+            where: { reportCardId_subjectId: { reportCardId: reportCard.id, subjectId } },
+            create: { reportCardId: reportCard.id, subjectId, ...data } as any,
+            update: data,
+          });
+          copied++;
+        }
+
+        // Rang dans la matière, recalculé pour toute la classe sur ce trimestre
+        const all = await this.prisma.grade.findMany({
+          where: { subjectId, moyenneMatiere: { not: null }, reportCard: { classId: exam.classId, academicYear: exam.academicYear, termNumber } },
+          select: { id: true, moyenneMatiere: true },
+          orderBy: { moyenneMatiere: 'desc' },
+        });
+        let rank = 1;
+        for (let i = 0; i < all.length; i++) {
+          if (i > 0 && all[i].moyenneMatiere !== all[i - 1].moyenneMatiere) rank = i + 1;
+          await this.prisma.grade.update({ where: { id: all[i].id }, data: { rangMatiere: rank } });
+        }
+      }
+
+      const term = termNumber === 1 ? '1er trimestre' : `${termNumber}e trimestre`;
+      let msg = copied ? ` Notes reportées dans la colonne « Devoir » de la fiche du ${term}.` : '';
+      if (signedSubjects.length) msg += ` Fiche du ${term} déjà signée (${signedSubjects.join(', ')}) : note « Devoir » non reportée.`;
+      return msg;
+    } catch (err) {
+      this.logger.warn(`Report du DS sur la fiche trimestrielle impossible : ${err}`);
+      return ' (Le report sur la fiche du trimestre a échoué : saisissez la note « Devoir » sur la fiche.)';
+    }
   }
 
   // ─── Update exam type ────────────────────────────────────────────────────────

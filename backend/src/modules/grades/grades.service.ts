@@ -8,12 +8,12 @@ import { BulkGradesDto } from './dto/bulk-grades.dto';
 import { SaveClassGradesDto } from './dto/save-class-grades.dto';
 
 /** Appréciation de la moyenne (sur 20) dans la langue de la matière — barème commun (appreciation.util). */
-function computeAppreciation(moy: number | null, subjectName?: string): string | null {
+export function computeAppreciation(moy: number | null, subjectName?: string): string | null {
   if (moy === null) return null;
   return appreciationOn20(moy, subjectLang(subjectName));
 }
 
-function computeMoyenneMatiere(
+export function computeMoyenneMatiere(
   interro1: number | null,
   interro2: number | null,
   interro3: number | null,
