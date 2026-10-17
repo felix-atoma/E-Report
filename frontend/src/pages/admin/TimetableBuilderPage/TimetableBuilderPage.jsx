@@ -14,7 +14,9 @@ import Select from '../../../components/common/Select/Select';
 import Button from '../../../components/common/Button/Button';
 import './TimetableBuilderPage.css';
 
-const DAY_KEYS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+// Jours enregistrés en français côté serveur (enum DayOfWeek : LUNDI … SAMEDI) ; libellés traduits
+const DAY_KEYS = ['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI'];
+const DAY_LABEL_KEY = { LUNDI: 'MONDAY', MARDI: 'TUESDAY', MERCREDI: 'WEDNESDAY', JEUDI: 'THURSDAY', VENDREDI: 'FRIDAY', SAMEDI: 'SATURDAY' };
 
 const TIME_SLOTS = [
   '07:00', '07:30', '08:00', '08:30', '09:00', '09:30',
@@ -69,7 +71,7 @@ export default function TimetableBuilderPage() {
 
   const [slotForm, setSlotForm] = useState({ subjectId: '', teacherId: '', startTime: '08:00', duration: 60, room: '' });
 
-  const days = useMemo(() => DAY_KEYS.map((k) => ({ key: k, label: t(`timetable.days.${k}`) })), [t]);
+  const days = useMemo(() => DAY_KEYS.map((k) => ({ key: k, label: t(`timetable.days.${DAY_LABEL_KEY[k]}`) })), [t]);
 
   function openEdit(day, time) {
     const existing = displaySlots.find((s) => s.dayOfWeek === day && s.startTime === time);
