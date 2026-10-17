@@ -88,7 +88,9 @@ export default function StatsSheetPage() {
           <tbody>
             <tr><td className="ssheet-left">Moyenne la plus forte</td><td>{fmt(s.highest?.value)}</td><td className="ssheet-left">{s.highest?.names.join(', ') ?? '—'}</td></tr>
             <tr><td className="ssheet-left">Moyenne la plus faible</td><td>{fmt(s.lowest?.value)}</td><td className="ssheet-left">{s.lowest?.names.join(', ') ?? '—'}</td></tr>
-            <tr className="ssheet-row--pass"><td className="ssheet-left">Moyenne de la classe</td><td>{fmt(s.classAverage)}</td><td className="ssheet-left">Ensemble de la classe ({s.classified} élèves)</td></tr>
+            <tr className="ssheet-row--pass"><td className="ssheet-left">Moyenne de la classe</td><td>{fmt(s.classAverage)}</td><td className="ssheet-left">{!s.atClassAverage ? '—'
+              : s.atClassAverage.exact ? s.atClassAverage.names.join(', ')
+              : `Aucun élève exactement — le plus proche : ${s.atClassAverage.names.join(', ')} (${fmt(s.atClassAverage.value)})`}</td></tr>
             <tr><td className="ssheet-left">Progrès de la classe</td><td colSpan={2} className="ssheet-left">{progressText}</td></tr>
           </tbody>
         </table>

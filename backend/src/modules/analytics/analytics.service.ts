@@ -388,6 +388,17 @@ export class AnalyticsService {
     const classAverage = n ? round2(rows.reduce((s, r) => s + r.avg, 0) / n) : null;
     const highest = n ? { value: round2(rows[0].avg), names: rows.filter((r) => r.avg === rows[0].avg).map((r) => r.name) } : null;
     const lowest = n ? { value: round2(rows[n - 1].avg), names: rows.filter((r) => r.avg === rows[n - 1].avg).map((r) => r.name) } : null;
+    // Élève(s) ayant exactement la moyenne de la classe (au centième), sinon le ou les plus proches
+    let atClassAverage: { exact: boolean; names: string[]; value: number | null } | null = null;
+    if (classAverage != null) {
+      const exact = rows.filter((r) => round2(r.avg) === classAverage);
+      if (exact.length) atClassAverage = { exact: true, names: exact.map((r) => r.name), value: classAverage };
+      else {
+        const gap = Math.min(...rows.map((r) => Math.abs(r.avg - classAverage)));
+        const closest = rows.filter((r) => Math.abs(Math.abs(r.avg - classAverage) - gap) < 1e-9);
+        atClassAverage = { exact: false, names: closest.map((r) => r.name), value: round2(closest[0].avg) };
+      }
+    }
 
     const prevAverages = previous.map((r) => Number(r.overallAverage));
     const previousClassAverage = prevAverages.length ? round2(prevAverages.reduce((s, a) => s + a, 0) / prevAverages.length) : null;
@@ -417,6 +428,7 @@ export class AnalyticsService {
       highest,
       lowest,
       classAverage,
+      atClassAverage,
       previousClassAverage,
       progress,
       top5,
