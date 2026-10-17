@@ -14,7 +14,7 @@ const pct = (v) => `${String(v).replace('.', ',')} %`;
 export default function StatsSheetPage() {
   const [params] = useSearchParams();
   const { pathname } = useLocation();
-  const back = pathname.startsWith('/council') ? '/council' : pathname.startsWith('/admin') ? '/admin/statistics' : '/teacher/statistics';
+  const back = pathname.startsWith('/admin') ? '/admin/statistics' : '/teacher/statistics';
   const classId = params.get('classId');
   const academicYear = params.get('academicYear');
   const termNumber = params.get('termNumber');

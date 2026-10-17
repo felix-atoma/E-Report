@@ -200,3 +200,9 @@
 
 .cstats-sheet-btn { display: inline-block; margin-top: .9rem; background: var(--color-primary, #002347); color: #fff; padding: .55rem 1rem; border-radius: 6px; font-weight: 700; text-decoration: none; }
 .cstats-sheet-btn:hover { background: var(--color-highlight, #fdc632); color: #002347; }
+
+/* Onglets : statistiques du trimestre / conseil de classe */
+.cstats-tabs { display: flex; flex-wrap: wrap; gap: .5rem; margin: 0 0 1rem; border-bottom: 2px solid var(--color-border, #e5e7eb); }
+.cstats-tab { border: 0; background: none; padding: .6rem 1rem; font: inherit; font-weight: 600; color: var(--color-text-muted, #6b7280); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+.cstats-tab:hover { color: var(--color-primary, #002347); }
+.cstats-tab.is-active { color: var(--color-primary, #002347); border-bottom-color: var(--color-highlight, #fdc632); }

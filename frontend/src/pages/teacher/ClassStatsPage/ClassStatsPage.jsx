@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
+import ClassCouncilPage from '../../shared/ClassCouncilPage/ClassCouncilPage';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { analyticsService } from '../../../services/analyticsService';
@@ -85,6 +87,12 @@ function ClassStatsPage() {
   });
 
   const canFetch = classId && termNumber && academicYear;
+  // Onglets : statistiques du trimestre (avec la fiche à imprimer) et conseil de classe de fin d'année
+  const [params, setParams] = useSearchParams();
+  const tab = params.get('tab') === 'conseil' ? 'conseil' : 'trimestre';
+  const setTab = (t) => setParams(t === 'conseil' ? { tab: 'conseil' } : {}, { replace: true });
+  const { pathname } = useLocation();
+  const sheetUrl = `${pathname.startsWith('/admin') ? '/admin' : '/teacher'}/statistics/fiche?classId=${encodeURIComponent(classId)}&academicYear=${encodeURIComponent(academicYear)}&termNumber=${termNumber}`;
 
   const { data: stats, isLoading: loadingStats, isError } = useQuery({
     queryKey: ['class-stats', classId, academicYear, termNumber],
@@ -100,10 +108,18 @@ function ClassStatsPage() {
 
   return (
     <AppShell title="Statistiques de classe">
-      <PageHeader
-        title="Statistiques de classe"
-        subtitle="Progression, écarts-types et distribution des moyennes de la classe"
-      />
+      <div className="no-print">
+        <PageHeader
+          title="Statistiques de classe"
+          subtitle="Statistiques et fiche de chaque trimestre, conseil de classe de fin d'année"
+        />
+        <div className="cstats-tabs" role="tablist">
+          <button type="button" role="tab" aria-selected={tab === 'trimestre'} className={`cstats-tab${tab === 'trimestre' ? ' is-active' : ''}`} onClick={() => setTab('trimestre')}>📊 Statistiques du trimestre</button>
+          <button type="button" role="tab" aria-selected={tab === 'conseil'} className={`cstats-tab${tab === 'conseil' ? ' is-active' : ''}`} onClick={() => setTab('conseil')}>🏛️ Conseil de classe (fin d'année)</button>
+        </div>
+      </div>
+
+      {tab === 'conseil' ? <ClassCouncilPage embedded /> : (<>
 
       {/* ── Filters ── */}
       <Card className="cstats-filters">
@@ -151,6 +167,9 @@ function ClassStatsPage() {
           <p className="cstats-filters__note">
             Note : au 1er trimestre, il n'y a pas de trimestre précédent — les comparaisons d'évolution ne seront pas disponibles.
           </p>
+        )}
+        {canFetch && (
+          <Link to={sheetUrl} className="cstats-sheet-btn">🖨️ Fiche de statistiques du trimestre à imprimer</Link>
         )}
       </Card>
 
@@ -306,6 +325,7 @@ function ClassStatsPage() {
           )}
         </>
       )}
+      </>)}
     </AppShell>
   );
 }

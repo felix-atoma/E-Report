@@ -1,4 +1,5 @@
-﻿import { lazy, Suspense } from 'react';
+﻿import { useAuth } from '../context/AuthContext';
+import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from '../components/auth/ProtectedRoute/ProtectedRoute';
 import Loading from '../components/common/Loading/Loading';
@@ -123,6 +124,12 @@ const MockExamFichesListPage = lazy(() => import('../pages/shared/MockExamFiches
 const MockExamResultsPage    = lazy(() => import('../pages/shared/MockExamResultsPage/MockExamResultsPage'));
 
 const fallback = <Loading fullPage />;
+
+/** /council → onglet « Conseil de classe » de la page Statistiques (selon le rôle). */
+function CouncilRedirect() {
+  const { user } = useAuth();
+  return <Navigate to={`${user?.role === 'ADMIN' ? '/admin' : '/teacher'}/statistics?tab=conseil`} replace />;
+}
 
 function AppRouter() {
   return (
@@ -284,7 +291,8 @@ function AppRouter() {
         {/* Shared */}
         <Route path="/help"     element={<ProtectedRoute><HelpPage /></ProtectedRoute>} />
         <Route path="/palmares" element={<ProtectedRoute roles={['ADMIN','TEACHER']}><ClassPalmaresPage /></ProtectedRoute>} />
-        <Route path="/council" element={<ProtectedRoute roles={['ADMIN','TEACHER']}><ClassCouncilPage /></ProtectedRoute>} />
+        {/* Le conseil de classe est un onglet de Statistiques : l'ancienne adresse y mène */}
+        <Route path="/council" element={<ProtectedRoute roles={['ADMIN','TEACHER']}><CouncilRedirect /></ProtectedRoute>} />
         <Route path="/council/statistiques" element={<ProtectedRoute roles={['ADMIN','TEACHER']}><StatsSheetPage /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route path="/reports/:id/print" element={<ProtectedRoute><PrintReportCardPage /></ProtectedRoute>} />
