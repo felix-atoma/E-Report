@@ -73,4 +73,21 @@ export class AnalyticsController {
     if (!classId || !academicYear || isNaN(term)) throw new BadRequestException('classId, academicYear et termNumber sont requis');
     return this.service.getClassStats(user.institutionId, classId, academicYear, term);
   }
+
+  @Get('stats-sheet')
+  @Roles(Role.ADMIN, Role.TEACHER)
+  @ApiOperation({ summary: 'Fiche de statistiques du titulaire (classe × trimestre)' })
+  @ApiQuery({ name: 'classId', required: true })
+  @ApiQuery({ name: 'academicYear', required: true })
+  @ApiQuery({ name: 'termNumber', required: true })
+  getStatsSheet(
+    @CurrentUser() user: any,
+    @Query('classId') classId: string,
+    @Query('academicYear') academicYear: string,
+    @Query('termNumber') termNumber: string,
+  ) {
+    const term = parseInt(termNumber, 10);
+    if (!classId || !academicYear || isNaN(term)) throw new BadRequestException('classId, academicYear et termNumber sont requis');
+    return this.service.getStatsSheet(user.institutionId, classId, academicYear, term);
+  }
 }

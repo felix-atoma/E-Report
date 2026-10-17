@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { appreciationOn20 } from '../../common/utils/appreciation.util';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { WhatsAppService } from '../whatsapp/whatsapp.service';
 
@@ -340,6 +341,85 @@ export class AnalyticsService {
       inventoryActive,
       examPassRate: examTotal > 0 ? Math.round((examAdmis / examTotal) * 100) : null,
       examTotal,
+    };
+  }
+
+  /**
+   * Fiche de statistiques du titulaire (une par classe et par trimestre) :
+   * répartition des moyennes (≥ 10, 9–9,99, 8–8,99, 7–7,99, < 7) en nombre et pourcentage,
+   * moyenne la plus forte / la plus faible (et qui), moyenne de la classe, progrès par rapport
+   * au trimestre précédent, et les 5 premiers. Prend tous les bulletins du trimestre qui ont une
+   * moyenne (publiés ou non) : le titulaire la prépare en même temps que les bulletins.
+   */
+  async getStatsSheet(institutionId: string, classId: string, academicYear: string, termNumber: number) {
+    const cls = await this.prisma.class.findFirst({
+      where: { id: classId, institutionId },
+      select: { name: true, level: true, teacher: { select: { name: true } },
+        institution: { select: { name: true, logo: true, crest: true, address: true, phone: true, email: true, website: true, country: true, countryMotto: true } } },
+    });
+    if (!cls) throw new NotFoundException('Classe introuvable');
+
+    const load = (term: number) => this.prisma.reportCard.findMany({
+      where: { classId, academicYear, termNumber: term, overallAverage: { not: null } },
+      select: { studentId: true, overallAverage: true, classRank: true, termName: true,
+        student: { select: { admissionNumber: true, user: { select: { name: true } } } } },
+    });
+    const [current, previous, enrolled] = await Promise.all([
+      load(termNumber),
+      termNumber > 1 ? load(termNumber - 1) : Promise.resolve([] as Awaited<ReturnType<typeof load>>),
+      this.prisma.classStudent.count({ where: { classId, academicYear } }).catch(() => 0),
+    ]);
+
+    const round2 = (v: number) => Math.round(v * 100) / 100;
+    const rows = current
+      .map((r) => ({ name: r.student.user?.name ?? r.student.admissionNumber, avg: Number(r.overallAverage), storedRank: r.classRank }))
+      .sort((a, b) => b.avg - a.avg);
+    const n = rows.length;
+    const pct = (k: number) => (n ? Math.round((k / n) * 1000) / 10 : 0);   // une décimale
+
+    const bands = [
+      { label: 'Moyenne ≥ 10',        test: (a: number) => a >= 10 },
+      { label: '9 ≤ moyenne < 10',    test: (a: number) => a >= 9 && a < 10 },
+      { label: '8 ≤ moyenne < 9',     test: (a: number) => a >= 8 && a < 9 },
+      { label: '7 ≤ moyenne < 8',     test: (a: number) => a >= 7 && a < 8 },
+      { label: 'Moyenne < 7',         test: (a: number) => a < 7 },
+    ].map((b) => { const count = rows.filter((r) => b.test(r.avg)).length; return { label: b.label, count, percentage: pct(count) }; });
+
+    const classAverage = n ? round2(rows.reduce((s, r) => s + r.avg, 0) / n) : null;
+    const highest = n ? { value: round2(rows[0].avg), names: rows.filter((r) => r.avg === rows[0].avg).map((r) => r.name) } : null;
+    const lowest = n ? { value: round2(rows[n - 1].avg), names: rows.filter((r) => r.avg === rows[n - 1].avg).map((r) => r.name) } : null;
+
+    const prevAverages = previous.map((r) => Number(r.overallAverage));
+    const previousClassAverage = prevAverages.length ? round2(prevAverages.reduce((s, a) => s + a, 0) / prevAverages.length) : null;
+    const progress = termNumber > 1 && classAverage != null && previousClassAverage != null
+      ? round2(classAverage - previousClassAverage) : null;
+
+    // Rang : celui du bulletin, sinon calculé (ex æquo au même rang)
+    let rank = 0;
+    const ranked = rows.map((r, i) => {
+      if (i === 0 || r.avg !== rows[i - 1].avg) rank = i + 1;
+      return { rank: r.storedRank ?? rank, name: r.name, average: round2(r.avg), appreciation: appreciationOn20(r.avg, 'fr') };
+    });
+    const top5 = ranked.filter((r) => r.rank <= 5).slice(0, Math.max(5, ranked.filter((r) => r.rank <= 5).length));
+
+    const termLabel = termNumber === 1 ? '1er trimestre' : `${termNumber}e trimestre`;
+    return {
+      institution: cls.institution,
+      className: cls.name.trim(),
+      classTeacher: cls.teacher?.name ?? null,
+      academicYear,
+      termNumber,
+      termLabel,
+      enrolled: enrolled || n,
+      classified: n,
+      bands,
+      passing: bands[0],
+      highest,
+      lowest,
+      classAverage,
+      previousClassAverage,
+      progress,
+      top5,
     };
   }
 

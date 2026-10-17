@@ -78,6 +78,7 @@ const ProgramPage            = lazy(() => import('../pages/teacher/ProgramPage/P
 const TeacherSchedulePage    = lazy(() => import('../pages/teacher/TeacherSchedulePage/TeacherSchedulePage'));
 const TeacherRoadmapPage     = lazy(() => import('../pages/teacher/TeacherRoadmapPage/TeacherRoadmapPage'));
 const ClassStatsPage         = lazy(() => import('../pages/teacher/ClassStatsPage/ClassStatsPage'));
+const StatsSheetPage         = lazy(() => import('../pages/teacher/StatsSheetPage/StatsSheetPage'));
 const TitulaireEntryPage     = lazy(() => import('../pages/teacher/TitulaireEntryPage/TitulaireEntryPage'));
 const PrincipalCommentPage   = lazy(() => import('../pages/admin/PrincipalCommentPage/PrincipalCommentPage'));
 const MockExamsPage          = lazy(() => import('../pages/teacher/MockExamsPage/MockExamsPage'));
@@ -170,6 +171,7 @@ function AppRouter() {
         <Route path="/admin/reports/new"   element={<ProtectedRoute roles={['ADMIN']}><CreateReportCardPage /></ProtectedRoute>} />
         <Route path="/admin/reports/:id"   element={<ProtectedRoute roles={['ADMIN']}><EditReportCardPage /></ProtectedRoute>} />
         <Route path="/admin/statistics"    element={<ProtectedRoute roles={['ADMIN']}><ClassStatsPage /></ProtectedRoute>} />
+        <Route path="/admin/statistics/fiche" element={<ProtectedRoute roles={['ADMIN']}><StatsSheetPage /></ProtectedRoute>} />
         <Route path="/admin/import"        element={<ProtectedRoute roles={['ADMIN']}><AdminImportPage /></ProtectedRoute>} />
         <Route path="/admin/attendance"    element={<ProtectedRoute roles={['ADMIN']}><AdminAttendancePage /></ProtectedRoute>} />
         <Route path="/admin/school-documents" element={<ProtectedRoute roles={['ADMIN']}><SchoolDocumentsPage /></ProtectedRoute>} />
@@ -233,6 +235,7 @@ function AppRouter() {
         <Route path="/teacher/reports/:id"        element={<ProtectedRoute roles={['TEACHER']}><EditReportCardPage /></ProtectedRoute>} />
         <Route path="/teacher/bulletins"          element={<ProtectedRoute roles={['TEACHER']}><TeacherBulletinsPage /></ProtectedRoute>} />
         <Route path="/teacher/statistics"         element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><ClassStatsPage /></ProtectedRoute>} />
+        <Route path="/teacher/statistics/fiche"   element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><StatsSheetPage /></ProtectedRoute>} />
         <Route path="/teacher/attendance"         element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><TeacherAttendancePage /></ProtectedRoute>} />
         <Route path="/teacher/lms"                element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><LMSPage /></ProtectedRoute>} />
         <Route path="/teacher/mock-exams"            element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamsPage /></ProtectedRoute>} />

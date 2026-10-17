@@ -197,3 +197,6 @@
 .cstats-highlight__delta { font-size: 13px; font-weight: 700; }
 .cstats-highlight__delta.up   { color: #16a34a; }
 .cstats-highlight__delta.down { color: #dc2626; }
+
+.cstats-sheet-btn { display: inline-block; margin-top: .9rem; background: var(--color-primary, #002347); color: #fff; padding: .55rem 1rem; border-radius: 6px; font-weight: 700; text-decoration: none; }
+.cstats-sheet-btn:hover { background: var(--color-highlight, #fdc632); color: #002347; }
