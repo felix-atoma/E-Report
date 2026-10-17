@@ -285,6 +285,7 @@ function AppRouter() {
         <Route path="/help"     element={<ProtectedRoute><HelpPage /></ProtectedRoute>} />
         <Route path="/palmares" element={<ProtectedRoute roles={['ADMIN','TEACHER']}><ClassPalmaresPage /></ProtectedRoute>} />
         <Route path="/council" element={<ProtectedRoute roles={['ADMIN','TEACHER']}><ClassCouncilPage /></ProtectedRoute>} />
+        <Route path="/council/statistiques" element={<ProtectedRoute roles={['ADMIN','TEACHER']}><StatsSheetPage /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route path="/reports/:id/print" element={<ProtectedRoute><PrintReportCardPage /></ProtectedRoute>} />
         <Route path="/mock-exams/:id/fiche"          element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamFichePage /></ProtectedRoute>} />

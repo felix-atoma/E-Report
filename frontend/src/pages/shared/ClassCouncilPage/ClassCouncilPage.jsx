@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { reportsService } from '../../../services/reportsService';
@@ -103,13 +104,28 @@ export default function ClassCouncilPage() {
       <div className="no-print">
         <PageHeader
           title="Conseil de classe"
-          subtitle="Fin d'année : moyennes, rang annuel et décision de chaque élève, puis procès-verbal"
+          subtitle="Fiche de statistiques de chaque trimestre, puis en fin d'année : moyennes, rang annuel, décision de chaque élève et procès-verbal"
         />
 
         <Card className="council-filters">
           <Select id="council-class" label="Classe" value={classId} options={classOptions} onChange={(e) => setClassId(e.target.value)} />
           <Input id="council-year" label="Année scolaire" value={academicYear} placeholder="2026-2027" onChange={(e) => setYear(e.target.value.trim())} />
         </Card>
+
+        {classId && /^\d{4}-\d{4}$/.test(academicYear) && (
+          <Card className="council-stats">
+            <div className="council-stats__title">📊 Fiche de statistiques du trimestre</div>
+            <p className="council-stats__hint">Répartition des moyennes, moyennes extrêmes, moyenne de la classe, progrès et cinq premiers — à imprimer et signer par le titulaire et le chef d'établissement.</p>
+            <div className="council-stats__btns">
+              {[1, 2, 3].map((n) => (
+                <Link key={n} className="council-stats__btn"
+                  to={`/council/statistiques?classId=${encodeURIComponent(classId)}&academicYear=${encodeURIComponent(academicYear)}&termNumber=${n}`}>
+                  {n === 1 ? '1er trimestre' : `${n}e trimestre`}
+                </Link>
+              ))}
+            </div>
+          </Card>
+        )}
       </div>
 
       {!classId && <p className="council-empty no-print">Choisissez une classe pour ouvrir le conseil.</p>}

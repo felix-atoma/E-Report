@@ -14,7 +14,7 @@ const pct = (v) => `${String(v).replace('.', ',')} %`;
 export default function StatsSheetPage() {
   const [params] = useSearchParams();
   const { pathname } = useLocation();
-  const back = pathname.startsWith('/admin') ? '/admin/statistics' : '/teacher/statistics';
+  const back = pathname.startsWith('/council') ? '/council' : pathname.startsWith('/admin') ? '/admin/statistics' : '/teacher/statistics';
   const classId = params.get('classId');
   const academicYear = params.get('academicYear');
   const termNumber = params.get('termNumber');
@@ -30,7 +30,7 @@ export default function StatsSheetPage() {
     return (
       <div className="ssheet-loading">
         <p>Impossible de préparer la fiche. Choisissez une classe, un trimestre et l'année scolaire.</p>
-        <Link to={back}>← Retour aux statistiques</Link>
+        <Link to={back}>← Retour</Link>
       </div>
     );
   }

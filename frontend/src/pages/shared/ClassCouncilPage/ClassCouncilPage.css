@@ -53,3 +53,11 @@
 }
 
 @media (max-width: 640px) { .council-filters { grid-template-columns: 1fr; } }
+
+/* Fiche de statistiques de chaque trimestre */
+.council-stats { margin-bottom: 0.75rem; }
+.council-stats__title { font-weight: 700; font-size: 1rem; color: var(--color-primary, #002347); }
+.council-stats__hint { margin: 0.25rem 0 0.6rem; font-size: 0.85rem; color: var(--color-text-muted, #6b7280); }
+.council-stats__btns { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.council-stats__btn { padding: 0.5rem 1rem; border-radius: 6px; background: var(--color-primary, #002347); color: #fff; font-weight: 600; text-decoration: none; }
+.council-stats__btn:hover { background: var(--color-highlight, #fdc632); color: #002347; }

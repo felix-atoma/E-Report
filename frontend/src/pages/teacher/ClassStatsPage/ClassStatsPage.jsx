@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { analyticsService } from '../../../services/analyticsService';
@@ -86,8 +85,6 @@ function ClassStatsPage() {
   });
 
   const canFetch = classId && termNumber && academicYear;
-  const { pathname } = useLocation();
-  const sheetUrl = `${pathname.startsWith('/admin') ? '/admin' : '/teacher'}/statistics/fiche?classId=${encodeURIComponent(classId)}&academicYear=${encodeURIComponent(academicYear)}&termNumber=${termNumber}`;
 
   const { data: stats, isLoading: loadingStats, isError } = useQuery({
     queryKey: ['class-stats', classId, academicYear, termNumber],
@@ -104,7 +101,7 @@ function ClassStatsPage() {
   return (
     <AppShell title="Statistiques de classe">
       <PageHeader
-        title="Fiche de statistiques"
+        title="Statistiques de classe"
         subtitle="Progression, écarts-types et distribution des moyennes de la classe"
       />
 
@@ -154,9 +151,6 @@ function ClassStatsPage() {
           <p className="cstats-filters__note">
             Note : au 1er trimestre, il n'y a pas de trimestre précédent — les comparaisons d'évolution ne seront pas disponibles.
           </p>
-        )}
-        {canFetch && (
-          <Link to={sheetUrl} className="cstats-sheet-btn">🖨️ Fiche de statistiques à imprimer (titulaire)</Link>
         )}
       </Card>
 
