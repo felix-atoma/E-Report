@@ -1,4 +1,5 @@
-﻿import { Injectable, Logger } from '@nestjs/common';
+﻿import { formatSessionDays } from '../../common/utils/session-dates.util';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -278,6 +279,23 @@ export function isSecondaryLevel(level: string | null | undefined): boolean {
   return /^\s*([3-6]\s*(e|è|eme|ème)|2\s*nde|seconde|1\s*(re|ere|ère)|premi[eè]re|tle|terminale)\s*$/i.test(level ?? '');
 }
 
+/** Relevé des devoirs surveillés en grands caractères (lisibilité pour les malvoyants). */
+const RELEVE_LARGE_CSS = [
+  'body{font-size:15.5px;color:#000}',
+  '.hd-contacts li{font-size:15px;color:#000}',
+  '.info{font-size:16.5px;margin:0 0 4px}.info td{padding:1px 10px 1px 0}.info .lbl{font-weight:800;color:#000}.info .val{font-weight:800}.info .val--strong{font-size:18px}',
+  '.grades{font-size:16.5px}.grades th,.grades td{padding:3px 7px;border-width:1.5px}',
+  '.grades thead th{font-size:13.5px;color:#000}.grades thead th small{color:#000;font-weight:700}',
+  '.grades .c-num,.grades .c-mat,.grades .c-pts,.grades .c-appr,.grades td{font-weight:800;color:#000}',
+  '.grades .c-note{font-size:19.5px;font-weight:900}.grades .c-appr.lvl-good{color:#166534}.grades .c-appr.lvl-pass{color:#9a3412}.grades .c-appr.lvl-fail{color:#b91c1c}',
+  '.grades tfoot td{font-size:18px;font-weight:900}',
+  '.bottom-left{padding:6px 10px;gap:6px}.result-box{padding:5px}.result-box .lbl{font-size:13.5px;color:#000}.result-box .val{font-size:24px}',
+  '.scale,.scale-title{font-size:12.5px;color:#000;font-weight:700}',
+  '.res-title{font-size:15px}.res{font-size:16px}.res td{padding:3px 10px;font-weight:700;color:#000}.res tr.grand td{font-size:19px}',
+  '.sig-box{padding:4px 10px 6px}.sig-title{font-size:13.5px}.sig-hint{font-size:11.5px;color:#000;margin-bottom:12px}.sig-name{font-size:12.5px;color:#000;font-weight:700}',
+  '.footer{font-size:11.5px;color:#000}',
+].join('');
+
 @Injectable()
 export class PdfService {
   private readonly logger = new Logger(PdfService.name);
@@ -349,10 +367,11 @@ export class PdfService {
    * on réduit encore un peu si besoin. Un bulletin court garde sa taille normale (échelle 1).
    */
   /** half : demi-feuille A4 (A5 paysage, 210 × 148,5 mm) — relevés imprimés deux par feuille. */
-  private async renderOnePagePdf(html: string, half = false): Promise<Buffer> {
+  private async renderOnePagePdf(html: string, half = false, tightMargins = false): Promise<Buffer> {
     const MM = 96 / 25.4;                       // px par mm à 96 dpi
     const sheet = half ? { w: 210, h: 148.5 } : { w: 210, h: 297 };
-    const margin = half ? { top: 6, bottom: 6, left: 8, right: 8 } : { top: 15, bottom: 15, left: 12, right: 12 };
+    const margin = half ? { top: 6, bottom: 6, left: 8, right: 8 }
+      : tightMargins ? { top: 6, bottom: 6, left: 10, right: 10 } : { top: 15, bottom: 15, left: 12, right: 12 };
     const printableW = Math.floor((sheet.w - margin.left - margin.right) * MM);
     const printableH = Math.floor((sheet.h - margin.top - margin.bottom) * MM);
     // Demi-feuille : le gabarit déclare une page A4 (@page) que Chrome réduirait en plus pour la faire
@@ -503,7 +522,7 @@ export class PdfService {
       : { text: female ? 'AJOURNÉE' : 'AJOURNÉ', cls: 'fail' };
 
     const fmtDate = (d?: Date | string | null) => (d ? new Date(d).toLocaleDateString(en ? 'en-GB' : 'fr-FR') : null);
-    const dates = [fmtDate(exam.examDate), fmtDate(exam.examEndDate)].filter(Boolean).join(' → ') || '—';
+    const dates = formatSessionDays(exam.examDate, exam.examEndDate, en ? 'en' : 'fr') ?? '—';
     const rankLabel = data.rank == null ? null
       : en ? englishOrdinal(data.rank)
       : (data.rank === 1 ? (female ? '1ère' : '1er') : `${data.rank}e`);
@@ -570,7 +589,10 @@ export class PdfService {
       watermark: buildWatermark(institution.name),
       generatedAt: new Date().toLocaleDateString(en ? 'en-GB' : 'fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }),
     });
-    return this.renderOnePagePdf(html, half);
+    // Devoir surveillé (page entière) : gros caractères et tout en gras, pour les personnes qui voient mal.
+    // Le contenu est agrandi pour remplir la page A4 ; s'il dépassait, renderOnePagePdf le ramènerait à une page.
+    const large = !half && exam.examType === 'DEVOIR_SURVEILLE';
+    return this.renderOnePagePdf(large ? html.replace('</head>', `<style>${RELEVE_LARGE_CSS}</style></head>`) : html, half, large);
   }
 
   async generateReportCardPdfBuffer(reportData: ReportCardData): Promise<Buffer> {

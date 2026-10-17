@@ -1,44 +1,32 @@
 /**
- * Formats a mock exam session date range.
+ * Dates d'une session (examen blanc, devoir surveillé, composition).
+ * Les épreuves n'ont pas lieu le week-end : seuls les jours du lundi au vendredi sont listés.
  *
- * - No dates          → null
- * - Start only        → "Du 11 mai 2026"
- * - Same month range  → "Session du 11, 12, 13 mai 2026"
- * - Cross-month range → "Session du 30 avril au 2 mai 2026"
+ * - Pas de date             → null
+ * - Un seul jour            → "Du 11 mai 2026"
+ * - Même mois               → "Session du 15, 16, 19 et 20 octobre 2026"
+ * - Sur deux mois           → "Session du 30 avril au 2 mai 2026"
  */
 export function fmtSessionDates(start, end) {
   if (!start) return null;
-
   const s = new Date(start);
-
-  if (!end) {
-    return `Du ${s.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`;
-  }
-
+  const long = (d) => d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+  if (!end) return `Du ${long(s)}`;
   const e = new Date(end);
+  if (e <= s) return `Du ${long(s)}`;
 
-  // Clamp: if end before start treat as same day
-  if (e <= s) {
-    return `Du ${s.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+  const days = [];
+  for (const d = new Date(s); d <= e && days.length < 40; d.setUTCDate(d.getUTCDate() + 1)) days.push(new Date(d));
+  const weekdays = days.filter((d) => d.getUTCDay() !== 0 && d.getUTCDay() !== 6);
+  const list = weekdays.length ? weekdays : days;
+
+  const sameMonth = list.every((d) => d.getUTCMonth() === list[0].getUTCMonth() && d.getUTCFullYear() === list[0].getUTCFullYear());
+  if (sameMonth && list.length <= 10) {
+    const nums = list.map((d) => d.getUTCDate());
+    const txt = nums.length > 1 ? `${nums.slice(0, -1).join(', ')} et ${nums[nums.length - 1]}` : String(nums[0]);
+    const monthYear = list[0].toLocaleDateString('fr-FR', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+    return `Session du ${txt} ${monthYear}`;
   }
-
-  if (
-    s.getMonth() === e.getMonth() &&
-    s.getFullYear() === e.getFullYear()
-  ) {
-    // Same month — list every day number
-    const days = [];
-    const cur = new Date(s);
-    while (cur <= e) {
-      days.push(cur.getDate());
-      cur.setDate(cur.getDate() + 1);
-    }
-    const monthYear = s.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
-    return `Session du ${days.join(', ')} ${monthYear}`;
-  }
-
-  // Different months — "du X mois au Y mois année"
-  const startStr = s.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
-  const endStr   = e.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-  return `Session du ${startStr} au ${endStr}`;
+  const from = s.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', timeZone: 'UTC' });
+  return `Session du ${from} au ${long(e)}`;
 }
