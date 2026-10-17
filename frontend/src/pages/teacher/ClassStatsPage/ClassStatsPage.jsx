@@ -70,11 +70,13 @@ function ClassStatsPage() {
   };
 
   const DIST_CONFIG = [
-    { key: 'TB',    label: t('mention.tresBien'),    range: '≥ 16',       color: '#16a34a', bg: '#dcfce7' },
+    { key: 'EX',    label: t('mention.excellent'),   range: '18 – 20',    color: '#6d28d9', bg: '#ede9fe' },
+    { key: 'TB',    label: t('mention.tresBien'),    range: '16 – 17,99', color: '#16a34a', bg: '#dcfce7' },
     { key: 'B',     label: t('mention.bien'),         range: '14 – 15,99', color: '#2563eb', bg: '#dbeafe' },
     { key: 'AB',    label: t('mention.assezBien'),    range: '12 – 13,99', color: '#7c3aed', bg: '#ede9fe' },
     { key: 'P',     label: t('mention.passable'),     range: '10 – 11,99', color: '#d97706', bg: '#fef9c3' },
-    { key: 'Insuf', label: t('mention.insuffisant'),  range: '< 10',       color: '#dc2626', bg: '#fee2e2' },
+    { key: 'Insuf', label: t('mention.insuffisant'),  range: '8 – 9,99',   color: '#dc2626', bg: '#fee2e2' },
+    { key: 'TresInsuf', label: t('mention.tresInsuffisant'), range: '0 – 7,99', color: '#7f1d1d', bg: '#fecaca' },
   ];
 
   const { data: classes, isLoading: loadingClasses } = useQuery({

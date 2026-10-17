@@ -1,3 +1,4 @@
+import { appreciationOn20 } from '../src/common/utils/appreciation.util';
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
@@ -40,7 +41,7 @@ const hash = (p: string) => bcrypt.hash(p, 12);
 function calcMoy(i1: number, i2: number, d: number, c: number) {
   return Math.round(((i1 + i2 + d + 2 * c) / 5) * 100) / 100;
 }
-function appr(m: number) { return m >= 16 ? 'TB' : m >= 14 ? 'B' : m >= 12 ? 'AB' : m >= 10 ? 'P' : 'F'; }
+function appr(m: number) { return appreciationOn20(m, 'fr'); }
 function ment(a: number) {
   return a >= 18 ? 'Excellent' : a >= 16 ? 'Très Bien' : a >= 14 ? 'Bien'
     : a >= 12 ? 'Assez Bien' : a >= 10 ? 'Passable' : 'Insuffisant';

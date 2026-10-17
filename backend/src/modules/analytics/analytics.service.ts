@@ -418,12 +418,15 @@ export class AnalyticsService {
         ? round2(Math.sqrt(averages.reduce((s, a) => s + Math.pow(a - classAverage, 2), 0) / n))
         : null;
 
+    // Répartition selon le barème des appréciations (7 niveaux)
     const distribution = {
-      TB:    averages.filter((a) => a >= 16).length,
-      B:     averages.filter((a) => a >= 14 && a < 16).length,
-      AB:    averages.filter((a) => a >= 12 && a < 14).length,
-      P:     averages.filter((a) => a >= 10 && a < 12).length,
-      Insuf: averages.filter((a) => a < 10).length,
+      EX:        averages.filter((a) => a >= 18).length,
+      TB:        averages.filter((a) => a >= 16 && a < 18).length,
+      B:         averages.filter((a) => a >= 14 && a < 16).length,
+      AB:        averages.filter((a) => a >= 12 && a < 14).length,
+      P:         averages.filter((a) => a >= 10 && a < 12).length,
+      Insuf:     averages.filter((a) => a >= 8 && a < 10).length,
+      TresInsuf: averages.filter((a) => a < 8).length,
     };
 
     const passingCount = averages.filter((a) => a >= 10).length;

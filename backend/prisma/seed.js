@@ -66,7 +66,8 @@ const hash = (p) => bcrypt.hash(p, 12);
 function calcMoy(i1, i2, d, c) {
     return Math.round(((i1 + i2 + d + 2 * c) / 5) * 100) / 100;
 }
-function appr(m) { return m >= 16 ? 'TB' : m >= 14 ? 'B' : m >= 12 ? 'AB' : m >= 10 ? 'P' : 'F'; }
+// Barème des appréciations (identique à src/common/utils/appreciation.util.ts)
+function appr(m) { return m >= 18 ? 'Excellent' : m >= 16 ? 'Très Bien' : m >= 14 ? 'Bien' : m >= 12 ? 'Assez Bien' : m >= 10 ? 'Passable' : m >= 8 ? 'Insuffisant' : 'Très Insuffisant'; }
 function ment(a) {
     return a >= 18 ? 'Excellent' : a >= 16 ? 'Très Bien' : a >= 14 ? 'Bien'
         : a >= 12 ? 'Assez Bien' : a >= 10 ? 'Passable' : 'Insuffisant';
