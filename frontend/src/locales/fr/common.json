@@ -1001,7 +1001,8 @@
     },
     "errors": {
       "titleRequired":   "Titre requis",
-      "contentRequired": "Contenu requis"
+      "contentRequired": "Contenu requis",
+      "classRequired":   "Choisissez la classe"
     },
     "toast": {
       "created":   "Annonce créée",

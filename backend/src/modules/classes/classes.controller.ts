@@ -33,7 +33,7 @@ export class ClassesController {
   constructor(private readonly service: ClassesService) {}
 
   @Get()
-  @Roles(Role.ADMIN, Role.TEACHER)
+  @Roles(Role.ADMIN, Role.TEACHER, Role.BURSAR)   // l’économe assigne les cotisations par classe
   @ApiOperation({ summary: 'List all active classes in the institution' })
   findAll(@CurrentUser() user: any) {
     return this.service.findAll(user.institutionId, user.id, user.role);

@@ -19,11 +19,17 @@ import './BulletinsPage.css';
 const EMPTY_FORM = { title: '', content: '', classId: '', audience: 'CLASS' };
 
 const AUDIENCE_KEYS = ['CLASS', 'ALL_PARENTS', 'ALL'];
+// Le serveur enregistre targetAudience (ALL | CLASS | PARENT | STUDENT) et targetId (la classe)
+const TO_TARGET = { CLASS: 'CLASS', ALL_PARENTS: 'PARENT', ALL: 'ALL' };
+const FROM_TARGET = { CLASS: 'CLASS', PARENT: 'ALL_PARENTS', ALL: 'ALL', STUDENT: 'ALL' };
+const audienceOf = (b) => FROM_TARGET[b?.targetAudience] ?? 'ALL';
 
 function validate(form, t) {
   const errors = {};
   if (!form.title.trim())   errors.title   = t('bulletins.errors.titleRequired');
   if (!form.content.trim()) errors.content = t('bulletins.errors.contentRequired');
+  // « Classe spécifique » sans classe : l'annonce ne serait visible par personne
+  if (form.audience === 'CLASS' && !form.classId) errors.classId = t('bulletins.errors.classRequired');
   return errors;
 }
 
@@ -48,7 +54,7 @@ function BulletinForm({ form, errors, onChange, classes, t }) {
       {form.audience === 'CLASS' && (
         <Select
           id="classId" label={t('classes.title')}
-          value={form.classId}
+          value={form.classId} error={errors.classId}
           placeholder={t('fees.selectClass')}
           options={classOptions}
           onChange={(e) => onChange('classId', e.target.value)}
@@ -108,6 +114,7 @@ function BulletinsPage() {
   });
 
   function openCreate() {
+    setSelected(null);
     setForm(EMPTY_FORM);
     setErrors({});
     setModal('create');
@@ -118,8 +125,8 @@ function BulletinsPage() {
     setForm({
       title:    b.title    ?? '',
       content:  b.content  ?? '',
-      classId:  b.classId  ?? '',
-      audience: b.audience ?? 'CLASS',
+      classId:  b.targetId ?? '',
+      audience: audienceOf(b),
     });
     setErrors({});
     setModal('edit');
@@ -143,8 +150,9 @@ function BulletinsPage() {
     const payload = {
       title:    form.title,
       content:  form.content,
-      audience: form.audience,
-      classId:  form.audience === 'CLASS' && form.classId ? form.classId : undefined,
+      type:           selected?.type ?? 'ANNOUNCEMENT',
+      targetAudience: TO_TARGET[form.audience] ?? 'ALL',
+      targetId:       form.audience === 'CLASS' && form.classId ? form.classId : undefined,
     };
     if (modal === 'create') createMutation.mutate(payload);
     else updateMutation.mutate({ id: selected.id, data: payload });
@@ -169,8 +177,9 @@ function BulletinsPage() {
       key: 'audience',
       label: t('bulletins.columns.audience'),
       render: (b) => {
-        if (b.audience === 'CLASS') return b.class?.name ?? t('classes.title');
-        return t(`bulletins.audienceOptions.${b.audience}`, b.audience);
+        const aud = audienceOf(b);
+        if (aud === 'CLASS') return classes.find((c) => c.id === b.targetId)?.name ?? t('classes.title');
+        return t(`bulletins.audienceOptions.${aud}`);
       },
     },
     {

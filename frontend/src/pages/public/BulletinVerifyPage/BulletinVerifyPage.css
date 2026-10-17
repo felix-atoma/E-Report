@@ -105,3 +105,11 @@
   font-size: 1rem; font-weight: 800; color: #991b1b; margin-bottom: 0.5rem;
 }
 .bv-invalid__hint { font-size: 0.8rem; color: #b91c1c; line-height: 1.5; }
+
+/* Téléphone : le champ peut rétrécir et le bouton passe dessous si besoin (plus de débordement) */
+.bv-input { min-width: 0; }
+@media (max-width: 420px) {
+  .bv-form { flex-wrap: wrap; }
+  .bv-input { flex: 1 1 100%; }
+  .bv-btn { flex: 1 1 100%; }
+}

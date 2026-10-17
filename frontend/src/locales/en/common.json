@@ -921,7 +921,8 @@
     },
     "errors": {
       "titleRequired":   "Title required",
-      "contentRequired": "Content required"
+      "contentRequired": "Content required",
+      "classRequired":   "Choose the class"
     },
     "toast": {
       "created":   "Announcement created",
