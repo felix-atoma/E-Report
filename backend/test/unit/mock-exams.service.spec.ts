@@ -287,6 +287,23 @@ describe('MockExamsService', () => {
       expect(res.message).toContain('colonne « Devoir »');
     });
 
+    it('keeps a different « Devoir » mark already typed on the term sheet', async () => {
+      prisma.gradeFiche.findUnique.mockResolvedValue(null);
+      prisma.grade.findUnique.mockResolvedValue({ noteInterro1: 10, noteDevoir: 9, noteComposition: null, coefficient: 3 });
+      prisma.mockExamGrade.findMany.mockResolvedValue([]);
+      const res = await service.saveSubjectGrades(exam.id, 'math', [{ studentId: 'stu-1', score: 14 }], INST, 3, 'TEACHER', 'teacher-1');
+      expect(prisma.grade.upsert).not.toHaveBeenCalled();
+      expect(res.message).toContain('déjà une autre note « Devoir »');
+    });
+
+    it('updates the sheet when the teacher corrects the same DS mark', async () => {
+      prisma.gradeFiche.findUnique.mockResolvedValue(null);
+      prisma.grade.findUnique.mockResolvedValue({ noteInterro1: 10, noteDevoir: 12, noteComposition: null, coefficient: 3 });
+      prisma.mockExamGrade.findMany.mockResolvedValue([{ studentId: 'stu-1', subjectId: 'math', score: 12 }]);
+      await service.saveSubjectGrades(exam.id, 'math', [{ studentId: 'stu-1', score: 14 }], INST, 3, 'TEACHER', 'teacher-1');
+      expect(prisma.grade.upsert.mock.calls[0][0].update.noteDevoir).toBe(14);
+    });
+
     it('never touches a term grade sheet that is already signed', async () => {
       prisma.gradeFiche.findUnique.mockResolvedValue({ signedAt: new Date() });
       const res = await service.saveSubjectGrades(exam.id, 'math', [{ studentId: 'stu-1', score: 14 }], INST, 3, 'TEACHER', 'teacher-1');

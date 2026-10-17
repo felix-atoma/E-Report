@@ -391,6 +391,7 @@ export class MockExamsService {
     this.assertValidEntries([...grades, { coefficient }]);
     await this.assertStudentsInSheet(exam.classId, exam.academicYear, grades.map((g) => g.studentId));
     await this.assertWithinScale(exam.examType, grades.map((g) => ({ subjectId, score: g.score })));
+    const previous = await this.previousDsScores(exam, grades.map((g) => ({ studentId: g.studentId, subjectId })));
     await this.prisma.$transaction(
       grades.map((g) =>
         this.prisma.mockExamGrade.upsert({
@@ -406,7 +407,7 @@ export class MockExamsService {
         }),
       ),
     );
-    const synced = await this.syncDsToTermFiche(exam, grades.map((g) => ({ ...g, subjectId, coefficient })));
+    const synced = await this.syncDsToTermFiche(exam, grades.map((g) => ({ ...g, subjectId, coefficient })), previous);
     return { message: `Notes sauvegardées.${synced}` };
   }
 
@@ -501,6 +502,7 @@ export class MockExamsService {
     this.assertValidEntries(entries);
     await this.assertStudentsInSheet(exam.classId, exam.academicYear, entries.map((g) => g.studentId));
     await this.assertWithinScale(exam.examType, entries);
+    const previous = await this.previousDsScores(exam, entries);
 
     await this.prisma.$transaction(
       entries.map((g) =>
@@ -527,7 +529,7 @@ export class MockExamsService {
       ),
     );
 
-    const synced = await this.syncDsToTermFiche(exam, entries);
+    const synced = await this.syncDsToTermFiche(exam, entries, previous);
     return {
       message: (skippedSigned
         ? `Notes sauvegardées (${skippedSigned} matière(s) signée(s) laissée(s) telle(s) quelle(s)).`
@@ -536,6 +538,18 @@ export class MockExamsService {
   }
 
   // ─── Devoir surveillé → fiche de notes du trimestre ────────────────────────
+  /** Notes du DS avant l'enregistrement (élève:matière → note), pour reconnaître une correction. */
+  private async previousDsScores(exam: { id?: string; examType: string }, keys: { studentId: string; subjectId: string }[]) {
+    const map = new Map<string, number | null>();
+    if (exam.examType !== 'DEVOIR_SURVEILLE' || !exam.id || !keys.length) return map;
+    const rows = await this.prisma.mockExamGrade.findMany({
+      where: { mockExamId: exam.id, OR: keys.map((k) => ({ studentId: k.studentId, subjectId: k.subjectId })) },
+      select: { studentId: true, subjectId: true, score: true },
+    });
+    for (const r of rows ?? []) map.set(`${r.studentId}:${r.subjectId}`, r.score);
+    return map;
+  }
+
   /**
    * Trimestre d'un devoir surveillé : d'abord son nom (« … du premier trimestre », « DS 2e trimestre »),
    * sinon sa date comparée aux dates des trimestres (Paramètres), sinon la date du jour.
@@ -558,12 +572,14 @@ export class MockExamsService {
    * Les notes d'un devoir surveillé sont reportées dans la colonne « Devoir » de la fiche de notes du
    * trimestre (même matière, mêmes élèves) : le professeur ne saisit qu'une fois. La moyenne de la
    * matière, l'appréciation et le rang sont recalculés comme sur la fiche. Une fiche trimestrielle déjà
-   * signée n'est jamais modifiée. Une note de DS effacée ne vide pas la fiche.
+   * signée n'est jamais modifiée. Une note de DS effacée ne vide pas la fiche. Une note « Devoir » déjà
+   * saisie autrement sur la fiche (différente de l'ancienne note du DS) est laissée telle quelle.
    * Renvoie un court message à ajouter à « Notes sauvegardées. ».
    */
   private async syncDsToTermFiche(
     exam: { examType: string; classId: string; academicYear: string; label?: string | null; examDate?: Date | null; institutionId?: string },
     entries: { studentId: string; subjectId: string; score?: number | null; coefficient?: number | null }[],
+    previous: Map<string, number | null> = new Map(),
   ): Promise<string> {
     if (exam.examType !== 'DEVOIR_SURVEILLE') return '';
     try {
@@ -587,6 +603,7 @@ export class MockExamsService {
       }
       const signedSubjects: string[] = [];
       let copied = 0;
+      let kept = 0;
 
       for (const [subjectId, list] of bySubject) {
         const subject = await this.prisma.subject.findUnique({
@@ -615,7 +632,15 @@ export class MockExamsService {
             where: { reportCardId_subjectId: { reportCardId: reportCard.id, subjectId } },
           });
           // DS sur 20 → barème de la matière sur la fiche
-          const devoir = Math.round(((e.score as number) * maxScore / 20) * 100) / 100;
+          const toFiche = (v: number) => Math.round((v * maxScore / 20) * 100) / 100;
+          const devoir = toFiche(e.score as number);
+          // Une autre note « Devoir » est déjà sur la fiche (pas celle de ce DS) : on n'écrase pas
+          const before = previous.get(`${e.studentId}:${subjectId}`);
+          const cur = existing?.noteDevoir;
+          if (cur != null && Math.abs(cur - devoir) > 0.001 && (before == null || Math.abs(cur - toFiche(before)) > 0.001)) {
+            kept++;
+            continue;
+          }
           const moy = computeMoyenneMatiere(
             existing?.noteInterro1 ?? null, existing?.noteInterro2 ?? null, existing?.noteInterro3 ?? null,
             existing?.noteInterro4 ?? null, devoir, existing?.noteComposition ?? null, maxScore,
@@ -653,6 +678,7 @@ export class MockExamsService {
       const term = termNumber === 1 ? '1er trimestre' : `${termNumber}e trimestre`;
       let msg = copied ? ` Notes reportées dans la colonne « Devoir » de la fiche du ${term}.` : '';
       if (signedSubjects.length) msg += ` Fiche du ${term} déjà signée (${signedSubjects.join(', ')}) : note « Devoir » non reportée.`;
+      if (kept) msg += ` ${kept} élève(s) avai(en)t déjà une autre note « Devoir » sur la fiche : laissée(s) telle(s) quelle(s).`;
       return msg;
     } catch (err) {
       this.logger.warn(`Report du DS sur la fiche trimestrielle impossible : ${err}`);
