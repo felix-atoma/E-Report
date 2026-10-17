@@ -166,7 +166,7 @@ describe('MockExamsService', () => {
       expect(s1.rank).toBe(2);
       // Composition d'anglais : appréciations en anglais
       expect(s2.appreciation).toBe('Very Good');       // 82,5 % → 16,5/20
-      expect(s1.appreciation).toBe('Insufficient');    // 25 %
+      expect(s1.appreciation).toBe('Very Poor');       // 25 % → 5/20 : très insuffisant
       expect(s2.grades.find((g: any) => g.subjectId === 'rc')!.appreciation).toBe('Good'); // 15/20
     });
 

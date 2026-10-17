@@ -118,7 +118,8 @@ function getMention(avg) {
   if (avg >= 14) return 'mention.bien';
   if (avg >= 12) return 'mention.assezBien';
   if (avg >= 10) return 'mention.passable';
-  return 'mention.insuffisant';
+  if (avg >= 8) return 'mention.insuffisant';
+  return 'mention.tresInsuffisant';
 }
 
 function GradeTable({ rows, onChange, locked, t }) {

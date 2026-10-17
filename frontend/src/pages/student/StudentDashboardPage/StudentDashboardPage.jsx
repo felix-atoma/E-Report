@@ -22,7 +22,8 @@ function StudentDashboardPage() {
     if (avg >= 14) return { label: t('mention.good'),        variant: 'info'    };
     if (avg >= 12) return { label: t('mention.fairlyGood'),  variant: 'info'    };
     if (avg >= 10) return { label: t('mention.pass'),        variant: 'warning' };
-    return               { label: t('mention.fail'),         variant: 'danger'  };
+    if (avg >= 8)  return { label: t('mention.fail'),         variant: 'danger'  };
+    return               { label: t('mention.veryFail'),     variant: 'danger'  };
   }
 
   const { data: reports = [], isLoading: l1 } = useQuery({

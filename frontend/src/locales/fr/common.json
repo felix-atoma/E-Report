@@ -197,7 +197,9 @@
     "good":       "Bien",
     "fairlyGood": "Assez Bien",
     "pass":       "Passable",
-    "fail":       "Insuffisant"
+    "fail":       "Insuffisant",
+    "veryFail":   "Très Insuffisant",
+    "tresInsuffisant": "Très Insuffisant"
   },
 
   "payment": {
@@ -919,12 +921,19 @@
   },
 
   "mention": {
+    "veryGood": "Très Bien",
+    "good": "Bien",
+    "fairlyGood": "Assez Bien",
+    "pass": "Passable",
+    "fail": "Insuffisant",
     "excellent":   "Excellent",
     "tresBien":    "Très Bien",
     "bien":        "Bien",
     "assezBien":   "Assez Bien",
     "passable":    "Passable",
-    "insuffisant": "Insuffisant"
+    "insuffisant": "Insuffisant",
+    "tresInsuffisant": "Très Insuffisant",
+    "veryFail": "Très Insuffisant"
   },
 
   "days": {
@@ -1281,7 +1290,8 @@
       "Bien":        "Bien",
       "AssezBien":   "Assez Bien",
       "Passable":    "Passable",
-      "Insuffisant": "Insuffisant"
+      "Insuffisant": "Insuffisant",
+      "TresInsuffisant": "Très Insuffisant"
     },
     "subjectTitle":  "Résultats par matière",
     "showSubjects":  "Voir par matière",

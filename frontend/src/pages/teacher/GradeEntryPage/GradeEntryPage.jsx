@@ -1,3 +1,4 @@
+import { appreciationOn20, subjectLangFromName } from '../../../utils/appreciation';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -52,33 +53,10 @@ function computeRanks(rows) {
   return out;
 }
 
-// Appreciation labels stay in-code: they vary per subject language
-const APPRECIATION_LABELS = {
-  fr: ['Très Bien',  'Bien',  'Assez Bien',   'Passable',    'Insuffisant'],
-  en: ['Very Good',  'Good',  'Fairly Good',  'Satisfactory','Insufficient'],
-  de: ['Sehr gut',   'Gut',   'Befriedigend', 'Ausreichend', 'Ungenügend'],
-  es: ['Muy bien',   'Bien',  'Bastante bien','Suficiente',  'Insuficiente'],
-  ar: ['ممتاز',      'جيد جداً', 'جيد',       'مقبول',       'ضعيف'],
-};
-
-function detectAppreciationLang(subjectName) {
-  if (!subjectName) return 'fr';
-  const n = subjectName.toLowerCase();
-  if (n.includes('anglais')  || n.includes('english')) return 'en';
-  if (n.includes('allemand') || n.includes('deutsch'))  return 'de';
-  if (n.includes('espagnol') || n.includes('español'))  return 'es';
-  if (n.includes('arabe')    || n.includes('arabic'))   return 'ar';
-  return 'fr';
-}
-
+// Appréciation dans la langue de la matière — barème commun (utils/appreciation.js)
 function appreciation(moy, subjectName) {
   if (moy === null) return '';
-  const [vg, g, fg, p, f] = APPRECIATION_LABELS[detectAppreciationLang(subjectName)];
-  if (moy >= 16) return vg;
-  if (moy >= 14) return g;
-  if (moy >= 12) return fg;
-  if (moy >= 10) return p;
-  return f;
+  return appreciationOn20(moy, subjectLangFromName(subjectName));
 }
 
 function apprCls(moy) {

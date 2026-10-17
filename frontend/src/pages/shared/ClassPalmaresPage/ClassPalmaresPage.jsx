@@ -20,6 +20,7 @@ const MENTION_CFG = {
   'Assez Bien':   { color: '#a16207', bg: '#fef3c7' },
   'Passable':     { color: '#b45309', bg: '#ffedd5' },
   'Insuffisant':  { color: '#b91c1c', bg: '#fee2e2' },
+  'Très Insuffisant': { color: '#7f1d1d', bg: '#fecaca' },
 };
 
 function MentionBadge({ mention }) {

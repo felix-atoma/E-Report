@@ -248,9 +248,9 @@ const RELEVE_LABELS_FR = {
   teacher: 'Le Professeur Principal', nameSign: '(Nom et signature)', head: "Le Directeur de l'École",
   stampSign: '(Cachet et signature)', doneOn: 'Fait le', parents: 'Visa des Parents', readApproved: '(Lu et approuvé)',
   seenOn: 'Vu le :', generated: 'Généré le', verifyAlt: 'Code de vérification',
-  scale20: '16 à 20 : Très Bien · 14 à 15,99 : Bien · 12 à 13,99 : Assez Bien · 10 à 11,99 : Passable · 0 à 9,99 : Insuffisant',
-  scale10: '8 à 10 : Très Bien · 7 à 7,99 : Bien · 6 à 6,99 : Assez Bien · 5 à 5,99 : Passable · 0 à 4,99 : Insuffisant',
-  scalePercent: '80 à 100 % : Très Bien · 70 à 79 % : Bien · 60 à 69 % : Assez Bien · 50 à 59 % : Passable · 0 à 49 % : Insuffisant',
+  scale20: '18 à 20 : Excellent · 16 à 17,99 : Très Bien · 14 à 15,99 : Bien · 12 à 13,99 : Assez Bien · 10 à 11,99 : Passable · 8 à 9,99 : Insuffisant · 0 à 7,99 : Très Insuffisant',
+  scale10: '9 à 10 : Excellent · 8 à 8,99 : Très Bien · 7 à 7,99 : Bien · 6 à 6,99 : Assez Bien · 5 à 5,99 : Passable · 4 à 4,99 : Insuffisant · 0 à 3,99 : Très Insuffisant',
+  scalePercent: '90 à 100 % : Excellent · 80 à 89 % : Très Bien · 70 à 79 % : Bien · 60 à 69 % : Assez Bien · 50 à 59 % : Passable · 40 à 49 % : Insuffisant · 0 à 39 % : Très Insuffisant',
 };
 const RELEVE_LABELS_EN: typeof RELEVE_LABELS_FR = {
   title: 'Report sheet', name: 'Full name', admission: 'Admission No.', sex: 'Sex', male: 'Male', female: 'Female',
@@ -262,9 +262,9 @@ const RELEVE_LABELS_EN: typeof RELEVE_LABELS_FR = {
   teacher: 'Class Teacher', nameSign: '(Name and signature)', head: 'Head Teacher',
   stampSign: '(Stamp and signature)', doneOn: 'Date', parents: "Parent's signature", readApproved: '(Read and approved)',
   seenOn: 'Seen on:', generated: 'Generated on', verifyAlt: 'Verification code',
-  scale20: '16–20: Very Good · 14–15.99: Good · 12–13.99: Fairly Good · 10–11.99: Satisfactory · 0–9.99: Insufficient',
-  scale10: '8–10: Very Good · 7–7.99: Good · 6–6.99: Fairly Good · 5–5.99: Satisfactory · 0–4.99: Insufficient',
-  scalePercent: '80–100%: Very Good · 70–79%: Good · 60–69%: Fairly Good · 50–59%: Satisfactory · 0–49%: Insufficient',
+  scale20: '18–20: Excellent · 16–17.99: Very Good · 14–15.99: Good · 12–13.99: Fairly Good · 10–11.99: Satisfactory · 8–9.99: Insufficient · 0–7.99: Very Poor',
+  scale10: '9–10: Excellent · 8–8.99: Very Good · 7–7.99: Good · 6–6.99: Fairly Good · 5–5.99: Satisfactory · 4–4.99: Insufficient · 0–3.99: Very Poor',
+  scalePercent: '90–100%: Excellent · 80–89%: Very Good · 70–79%: Good · 60–69%: Fairly Good · 50–59%: Satisfactory · 40–49%: Insufficient · 0–39%: Very Poor',
 };
 
 /** 1st, 2nd, 3rd, 4th … 11th, 12th, 13th, 21st … */

@@ -1,3 +1,4 @@
+import { appreciationOn20, APPRECIATION_COLORS } from '../../../utils/appreciation';
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -9,22 +10,14 @@ import Loading from '../../../components/common/Loading/Loading';
 import { examScale, isCaType } from '../../../utils/examKinds';
 import './MockExamGradePage.css';
 
-const APPRE_COLOR = {
-  'Très Bien': '#15803d', 'Bien': '#1d4ed8',
-  'Assez Bien': '#7c3aed', 'Passable': '#d97706', 'Insuffisant': '#dc2626',
-};
+const APPRE_COLOR = Object.fromEntries(Object.entries(APPRECIATION_COLORS).map(([k, v]) => [k, v.color]));
 
 /** Appréciation d'une note sur `scale` (seuils définis sur 20). */
 function apprec(score, scale = 20) {
   if (score == null || score === '') return '';
   const raw = parseFloat(score);
   if (isNaN(raw)) return '';
-  const v = (raw * 20) / scale;
-  if (v >= 16) return 'Très Bien';
-  if (v >= 14) return 'Bien';
-  if (v >= 12) return 'Assez Bien';
-  if (v >= 10) return 'Passable';
-  return 'Insuffisant';
+  return appreciationOn20((raw * 20) / scale, 'fr');
 }
 
 // Points obtenus ÷ points possibles, ramenés au barème de la session : chaque matière a son propre

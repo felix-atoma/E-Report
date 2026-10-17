@@ -152,12 +152,13 @@ Vous pouvez revenir à n'importe quelle étape à tout moment via les Paramètre
         content: `La grille d'appréciation définit les mentions attribuées selon la moyenne obtenue. Elle s'applique automatiquement sur tous les bulletins.
 
 Valeurs par défaut (sur 20) :
-• 18 – 20 : Excellent
-• 16 – 18 : Très Bien
-• 14 – 16 : Bien
-• 12 – 14 : Assez Bien
-• 10 – 12 : Passable
-• 0 – 10  : Insuffisant
+• 18 à 20 : Excellent
+• 16 à 17,99 : Très Bien
+• 14 à 15,99 : Bien
+• 12 à 13,99 : Assez Bien
+• 10 à 11,99 : Passable
+• 8 à 9,99 : Insuffisant
+• 0 à 7,99 : Très Insuffisant
 
 Pour les cours primaires avec note sur 10, activez l'option « Cours primaire » au niveau de la classe ou de la matière.`,
       },
@@ -1300,11 +1301,12 @@ You can return to any step at any time via Settings in the menu.`,
 
 Default values (out of 20):
 • 18 – 20: Excellent
-• 16 – 18: Very Good
-• 14 – 16: Good
-• 12 – 14: Fairly Good
-• 10 – 12: Pass
-• 0 – 10 : Fail
+• 16 – 17.99: Very Good
+• 14 – 15.99: Good
+• 12 – 13.99: Fairly Good
+• 10 – 11.99: Satisfactory
+• 8 – 9.99: Insufficient
+• 0 – 7.99: Very Poor
 
 For primary school subjects graded out of 10, enable the "Primary school" option at the class or subject level.`,
       },

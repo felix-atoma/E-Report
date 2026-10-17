@@ -24,7 +24,8 @@ function getMention(avg, t) {
   if (avg >= 14) return t('progress.mention.Bien');
   if (avg >= 12) return t('progress.mention.AssezBien');
   if (avg >= 10) return t('progress.mention.Passable');
-  return t('progress.mention.Insuffisant');
+  if (avg >= 8) return t('progress.mention.Insuffisant');
+  return t('progress.mention.TresInsuffisant');
 }
 
 function CustomTooltip({ active, payload, label, t }) {

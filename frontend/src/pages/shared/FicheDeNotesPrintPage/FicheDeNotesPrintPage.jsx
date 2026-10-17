@@ -1,3 +1,4 @@
+import { appreciationOn20 } from '../../../utils/appreciation';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { gradesService } from '../../../services/gradesService';
@@ -48,19 +49,10 @@ function computeRanks(rows) {
   return out;
 }
 
-const APPR_LABELS = {
-  fr: ['Très Bien', 'Bien', 'Assez Bien', 'Passable', 'Insuffisant'],
-  en: ['Very Good', 'Good', 'Fairly Good', 'Satisfactory', 'Insufficient'],
-};
 function apprLabel(moy, subjectName) {
   if (moy === null) return '';
   const lang = (subjectName ?? '').toLowerCase().includes('anglais') || (subjectName ?? '').toLowerCase().includes('english') ? 'en' : 'fr';
-  const [vg, g, fg, p, f] = APPR_LABELS[lang];
-  if (moy >= 16) return vg;
-  if (moy >= 14) return g;
-  if (moy >= 12) return fg;
-  if (moy >= 10) return p;
-  return f;
+  return appreciationOn20(moy, lang);
 }
 function apprCls(moy) {
   if (moy === null) return '';

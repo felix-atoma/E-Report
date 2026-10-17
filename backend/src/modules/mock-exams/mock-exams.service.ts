@@ -1,3 +1,4 @@
+import { appreciationOn20 } from '../../common/utils/appreciation.util';
 import { BadRequestException, Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
 import archiver = require('archiver');
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
@@ -37,15 +38,7 @@ export function isEnglishSession(examType: string | null | undefined): boolean {
 /** Appréciation d'une note exprimée sur `scale` (seuils définis sur 20) ; en anglais pour l'anglais. */
 function appreciation(raw: number | null, scale = 20, en = false): string {
   if (raw == null) return '';
-  const score = (raw * 20) / scale;
-  const [vg, g, fg, s, i] = en
-    ? ['Very Good', 'Good', 'Fairly Good', 'Satisfactory', 'Insufficient']
-    : ['Très Bien', 'Bien', 'Assez Bien', 'Passable', 'Insuffisant'];
-  if (score >= 16) return vg;
-  if (score >= 14) return g;
-  if (score >= 12) return fg;
-  if (score >= 10) return s;
-  return i;
+  return appreciationOn20((raw * 20) / scale, en ? 'en' : 'fr');
 }
 
 function round2(v: number) { return Math.round(v * 100) / 100; }

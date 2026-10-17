@@ -197,7 +197,9 @@
     "good":       "Good",
     "fairlyGood": "Fairly Good",
     "pass":       "Pass",
-    "fail":       "Fail"
+    "fail":       "Insufficient",
+    "veryFail":   "Very Poor",
+    "tresInsuffisant": "Very Poor"
   },
 
   "payment": {
@@ -839,12 +841,19 @@
   },
 
   "mention": {
+    "veryGood": "Very Good",
+    "good": "Good",
+    "fairlyGood": "Fairly Good",
+    "pass": "Satisfactory",
+    "fail": "Insufficient",
     "excellent":   "Excellent",
     "tresBien":    "Very Good",
     "bien":        "Good",
     "assezBien":   "Fairly Good",
     "passable":    "Fair",
-    "insuffisant": "Insufficient"
+    "insuffisant": "Insufficient",
+    "tresInsuffisant": "Very Poor",
+    "veryFail": "Very Poor"
   },
 
   "days": {
@@ -1199,7 +1208,8 @@
       "Bien":        "Good",
       "AssezBien":   "Fairly Good",
       "Passable":    "Satisfactory",
-      "Insuffisant": "Insufficient"
+      "Insuffisant": "Insufficient",
+      "TresInsuffisant": "Very Poor"
     },
     "subjectTitle":  "Results by subject",
     "showSubjects":  "View by subject",

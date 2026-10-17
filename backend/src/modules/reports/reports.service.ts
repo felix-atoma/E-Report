@@ -1,4 +1,5 @@
-﻿import {
+﻿import { appreciationOn20 } from '../../common/utils/appreciation.util';
+import {
   BadRequestException,
   ForbiddenException,
   Injectable,
@@ -26,13 +27,9 @@ import { UpdateReportDto } from './dto/update-report.dto';
 import { TitulaireEntryDto } from './dto/titulaire-entry.dto';
 import { BulkZipDto } from './dto/bulk-zip.dto';
 
+/** Mention du bulletin d'après la moyenne générale (sur 20) — barème commun (appreciation.util). */
 function computeMention(avg: number): string {
-  if (avg >= 18) return 'Excellent';
-  if (avg >= 16) return 'Très Bien';
-  if (avg >= 14) return 'Bien';
-  if (avg >= 12) return 'Assez Bien';
-  if (avg >= 10) return 'Passable';
-  return 'Insuffisant';
+  return appreciationOn20(avg, 'fr');
 }
 
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';

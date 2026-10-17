@@ -1,3 +1,4 @@
+import { appreciationOn20, subjectLang } from '../../common/utils/appreciation.util';
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -6,34 +7,10 @@ import { byStudentName } from '../../common/utils/student-order.util';
 import { BulkGradesDto } from './dto/bulk-grades.dto';
 import { SaveClassGradesDto } from './dto/save-class-grades.dto';
 
-type AppreciationLang = 'fr' | 'en' | 'de' | 'es' | 'ar';
-
-const APPRECIATION_LABELS: Record<AppreciationLang, [string, string, string, string, string]> = {
-  fr: ['Très Bien',  'Bien',  'Assez Bien',   'Passable',    'Insuffisant'],
-  en: ['Very Good',  'Good',  'Fairly Good',  'Satisfactory','Insufficient'],
-  de: ['Sehr gut',   'Gut',   'Befriedigend', 'Ausreichend', 'Ungenügend'],
-  es: ['Muy bien',   'Bien',  'Bastante bien','Suficiente',  'Insuficiente'],
-  ar: ['ممتاز',      'جيد جداً', 'جيد',       'مقبول',       'ضعيف'],
-};
-
-function detectAppreciationLang(subjectName: string): AppreciationLang {
-  const n = subjectName.toLowerCase();
-  if (n.includes('anglais')  || n.includes('english')) return 'en';
-  if (n.includes('allemand') || n.includes('deutsch'))  return 'de';
-  if (n.includes('espagnol') || n.includes('español'))  return 'es';
-  if (n.includes('arabe')    || n.includes('arabic'))   return 'ar';
-  return 'fr';
-}
-
+/** Appréciation de la moyenne (sur 20) dans la langue de la matière — barème commun (appreciation.util). */
 function computeAppreciation(moy: number | null, subjectName?: string): string | null {
   if (moy === null) return null;
-  const lang = subjectName ? detectAppreciationLang(subjectName) : 'fr';
-  const [vg, g, fg, p, f] = APPRECIATION_LABELS[lang];
-  if (moy >= 16) return vg;
-  if (moy >= 14) return g;
-  if (moy >= 12) return fg;
-  if (moy >= 10) return p;
-  return f;
+  return appreciationOn20(moy, subjectLang(subjectName));
 }
 
 function computeMoyenneMatiere(

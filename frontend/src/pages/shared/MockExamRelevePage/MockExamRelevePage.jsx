@@ -1,3 +1,4 @@
+import { appreciationOn20 } from '../../../utils/appreciation';
 import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
@@ -28,7 +29,7 @@ const T_FR = {
   teacher: 'Le Maître / La Maîtresse', teacherSign: 'Nom et signature', subjectTeachers: 'Professeur(s) de matière',
   head: 'Le Directeur / La Directrice', headSign: 'Signature et cachet', parentTitle: 'Lu et pris connaissance',
   parent: 'Parent / Tuteur', verifyAlt: 'Code de vérification',
-  levels: ['Très Bien', 'Bien', 'Assez Bien', 'Passable', 'Insuffisant'],
+  lang: 'fr',
 };
 const T_EN = {
   title: 'REPORT SHEET', mockSubtitle: 'Mock exam report', name: 'Full name', admission: 'Admission No.',
@@ -38,19 +39,13 @@ const T_EN = {
   teacher: 'Class Teacher', teacherSign: 'Name and signature', subjectTeachers: 'Subject Teacher(s)',
   head: 'Head Teacher', headSign: 'Signature and stamp', parentTitle: 'Read and acknowledged',
   parent: 'Parent / Guardian', verifyAlt: 'Verification code',
-  levels: ['Very Good', 'Good', 'Fairly Good', 'Satisfactory', 'Insufficient'],
+  lang: 'en',
 };
 
 /** Appréciation d'une note sur `scale` (seuils définis sur 20). */
 function apprec(raw, scale = 20, T = T_FR) {
   if (raw == null) return '';
-  const avg = (raw * 20) / scale;
-  const [vg, g, fg, sa, ins] = T.levels;
-  if (avg >= 16) return vg;
-  if (avg >= 14) return g;
-  if (avg >= 12) return fg;
-  if (avg >= 10) return sa;
-  return ins;
+  return appreciationOn20((raw * 20) / scale, T.lang);
 }
 
 /** 1st, 2nd, 3rd, 4th … 11th, 12th, 13th, 21st … */
