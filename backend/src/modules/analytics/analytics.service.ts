@@ -2,12 +2,14 @@ import { appreciationOn20 } from '../../common/utils/appreciation.util';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { WhatsAppService } from '../whatsapp/whatsapp.service';
+import { AttendanceService } from '../attendance/attendance.service';
 
 @Injectable()
 export class AnalyticsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly whatsapp: WhatsAppService,
+    private readonly attendance: AttendanceService,
   ) {}
 
   async getOverview(institutionId: string) {
@@ -362,6 +364,7 @@ export class AnalyticsService {
     const load = (term: number) => this.prisma.reportCard.findMany({
       where: { classId, academicYear, termNumber: term, overallAverage: { not: null } },
       select: { studentId: true, overallAverage: true, classRank: true, termName: true,
+        attendanceAbsent: true, attendanceExcused: true, attendanceLate: true, attendanceLateMinutes: true,
         student: { select: { admissionNumber: true, user: { select: { name: true } } } } },
     });
     const [current, previous, enrolled] = await Promise.all([
@@ -413,6 +416,31 @@ export class AnalyticsService {
     });
     const top5 = ranked.filter((r) => r.rank <= 5).slice(0, Math.max(5, ranked.filter((r) => r.rank <= 5).length));
 
+    // ── Absences et retards du trimestre ─────────────────────────────────────
+    // Même calcul que le bulletin : depuis les appels des professeurs ; sans appel saisi sur le
+    // trimestre, les valeurs entrées par le titulaire sur les bulletins.
+    let perStudent: Array<{ absent: number; excused: number; late: number; lateMinutes: number }> = [];
+    let attendanceSource: 'APPELS' | 'BULLETINS' | 'AUCUNE' = 'AUCUNE';
+    const fromCalls = await this.attendance.computeTermAttendance(classId, academicYear, 'TRIMESTRE', termNumber, institutionId).catch(() => new Map());
+    if (fromCalls.size) {
+      attendanceSource = 'APPELS';
+      perStudent = [...fromCalls.values()].map((a: any) => ({ absent: a.absentDays, excused: a.excusedDays, late: a.lateCount, lateMinutes: a.lateMinutes }));
+    } else {
+      const filled = current.filter((r) => r.attendanceAbsent != null || r.attendanceExcused != null || r.attendanceLate != null);
+      if (filled.length) {
+        attendanceSource = 'BULLETINS';
+        perStudent = filled.map((r) => ({ absent: r.attendanceAbsent ?? 0, excused: r.attendanceExcused ?? 0, late: r.attendanceLate ?? 0, lateMinutes: r.attendanceLateMinutes ?? 0 }));
+      }
+    }
+    const sum = (k: 'absent' | 'excused' | 'late' | 'lateMinutes') => perStudent.reduce((s, x) => s + (x[k] || 0), 0);
+    const who = (k: 'absent' | 'excused' | 'late') => perStudent.filter((x) => (x[k] || 0) > 0).length;
+    const attendanceStats = {
+      source: attendanceSource,
+      absentDays: sum('absent'), absentStudents: who('absent'),
+      excusedDays: sum('excused'), excusedStudents: who('excused'),
+      lateCount: sum('late'), lateMinutes: sum('lateMinutes'), lateStudents: who('late'),
+    };
+
     const termLabel = termNumber === 1 ? '1er trimestre' : `${termNumber}e trimestre`;
     return {
       institution: cls.institution,
@@ -432,6 +460,7 @@ export class AnalyticsService {
       previousClassAverage,
       progress,
       top5,
+      attendance: attendanceStats,
     };
   }
 

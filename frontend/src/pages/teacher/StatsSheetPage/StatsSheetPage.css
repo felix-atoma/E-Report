@@ -34,7 +34,26 @@
 @media print {
   @page { size: A4; margin: 8mm; }
   .no-print { display: none !important; }
-  .ssheet-screen { background: #fff; padding: 0; }
+  .ssheet-screen { background: #fff; padding: 0; min-height: 0; }
   .ssheet-page { width: auto; min-height: 0; margin: 0; padding: 0; box-shadow: none; }
   .ssheet-row--pass td, .ssheet-table th, .ssheet-table tfoot td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  /* Tout sur une page A4 */
+  .ssheet-page { font-size: 13px; zoom: 0.88; }
+  .ssheet-head { padding-bottom: 5px; }
+  .ssheet-head__logo { width: 50px; height: 50px; }
+  .ssheet-head__school { font-size: 19px; }
+  .ssheet-title { font-size: 20px; margin: 8px 0 6px; }
+  .ssheet-meta { font-size: 13px; margin: 2px 0; }
+  .ssheet-h2 { font-size: 14px; margin: 9px 0 4px; }
+  .ssheet-table { font-size: 13px; }
+  .ssheet-table th, .ssheet-table td { padding: 4px 6px; }
+  .ssheet-table th { font-size: 12.5px; }
+  .ssheet-signs { margin-top: 12px; }
+  .ssheet-sign { min-height: 88px; }
+  .ssheet-sign__name { margin-top: 44px; }
+  .ssheet-foot { margin-top: 6px; }
 }
+.ssheet-note { margin: 4px 0 0; font-size: 12px; font-weight: 600; font-style: italic; }
+/* Une page A4 avec la section absences : tableaux un peu plus serrés */
+.ssheet-table th, .ssheet-table td { padding: 6px 8px; }
+.ssheet-h2 { margin-top: 12px; }

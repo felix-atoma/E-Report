@@ -32,3 +32,5 @@
 }
 
 .network-banner__icon { font-size: 1rem; line-height: 1; }
+
+@media print { .network-banner { display: none !important; } }

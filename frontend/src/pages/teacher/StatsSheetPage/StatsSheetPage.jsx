@@ -6,6 +6,8 @@ import './StatsSheetPage.css';
 
 const fmt = (v) => (v == null ? '—' : Number(v).toFixed(2).replace('.', ','));
 const pct = (v) => `${String(v).replace('.', ',')} %`;
+/** Minutes → « 1 h 25 min » */
+const fmtDuration = (m) => (m >= 60 ? `${Math.floor(m / 60)} h${m % 60 ? ` ${m % 60} min` : ''}` : `${m} min`);
 
 /**
  * Fiche de statistiques du titulaire (une par classe et par trimestre), à imprimer sur une page A4 :
@@ -36,6 +38,7 @@ export default function StatsSheetPage() {
   }
 
   const inst = s.institution ?? {};
+  const att = s.attendance ?? { absentDays: 0, absentStudents: 0, excusedDays: 0, excusedStudents: 0, lateCount: 0, lateMinutes: 0, lateStudents: 0, source: 'AUCUNE' };
   const progressText = s.termNumber === 1 || s.progress == null
     ? 'Sans objet au 1er trimestre'
     : `${s.progress > 0 ? '+' : ''}${fmt(s.progress)} point(s) (${fmt(s.previousClassAverage)} → ${fmt(s.classAverage)})`;
@@ -95,7 +98,19 @@ export default function StatsSheetPage() {
           </tbody>
         </table>
 
-        <h2 className="ssheet-h2">3. Les cinq premiers</h2>
+        <h2 className="ssheet-h2">3. Absences et retards</h2>
+        <table className="ssheet-table">
+          <thead><tr><th></th><th>Total</th><th>Élèves concernés</th></tr></thead>
+          <tbody>
+            <tr><td className="ssheet-left">Absences non justifiées</td><td>{att.absentDays} jour(s)</td><td>{att.absentStudents}</td></tr>
+            <tr><td className="ssheet-left">Absences justifiées</td><td>{att.excusedDays} jour(s)</td><td>{att.excusedStudents}</td></tr>
+            <tr className="ssheet-row--pass"><td className="ssheet-left">Total des absences</td><td>{att.absentDays + att.excusedDays} jour(s)</td><td>—</td></tr>
+            <tr><td className="ssheet-left">Retards</td><td>{att.lateCount} retard(s){att.lateMinutes ? ` · ${fmtDuration(att.lateMinutes)}` : ''}</td><td>{att.lateStudents}</td></tr>
+          </tbody>
+        </table>
+        {att.source === 'AUCUNE' && <p className="ssheet-note">Aucun appel ni absence saisis pour ce trimestre.</p>}
+
+        <h2 className="ssheet-h2">4. Les cinq premiers</h2>
         <table className="ssheet-table">
           <thead><tr><th>Rang</th><th>Nom et prénoms</th><th>Moyenne</th><th>Appréciation</th></tr></thead>
           <tbody>

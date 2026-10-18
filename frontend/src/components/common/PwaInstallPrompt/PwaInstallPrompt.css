@@ -61,3 +61,6 @@
   line-height: 1;
 }
 .pwa-prompt__dismiss:hover { color: #374151; }
+
+/* Jamais imprimée (bulletins, fiches, relevés imprimés depuis le navigateur) */
+@media print { .pwa-prompt { display: none !important; } }
