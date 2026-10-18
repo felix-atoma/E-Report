@@ -467,7 +467,7 @@ export class AnalyticsService {
   async getClassStats(institutionId: string, classId: string, academicYear: string, termNumber: number) {
     const [currentReports, previousReports] = await Promise.all([
       this.prisma.reportCard.findMany({
-        where: { classId, academicYear, termNumber, status: 'PUBLISHED', class: { institutionId } },
+        where: { classId, academicYear, termNumber, overallAverage: { not: null }, class: { institutionId } },
         select: {
           studentId: true,
           overallAverage: true,
@@ -477,7 +477,7 @@ export class AnalyticsService {
       }),
       termNumber > 1
         ? this.prisma.reportCard.findMany({
-            where: { classId, academicYear, termNumber: termNumber - 1, status: 'PUBLISHED', class: { institutionId } },
+            where: { classId, academicYear, termNumber: termNumber - 1, overallAverage: { not: null }, class: { institutionId } },
             select: { studentId: true, overallAverage: true },
           })
         : Promise.resolve([]),
@@ -552,6 +552,7 @@ export class AnalyticsService {
 
     const passingCount = averages.filter((a) => a >= 10).length;
     const passingRate = n > 0 ? Math.round((passingCount / n) * 100) : null;
+    const failingCount = n - passingCount;   // moyenne < 10 (toutes tranches confondues)
 
     return {
       classId,
@@ -573,6 +574,7 @@ export class AnalyticsService {
       distribution,
       passingRate,
       passingCount,
+      failingCount,
     };
   }
 }

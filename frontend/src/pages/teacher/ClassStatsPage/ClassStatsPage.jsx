@@ -165,7 +165,7 @@ function ClassStatsPage() {
         </div>
         {termNumber === '1' && (
           <p className="cstats-filters__note">
-            Note : au 1er trimestre, il n'y a pas de trimestre précédent — les comparaisons d'évolution ne seront pas disponibles.
+            Au 1er trimestre : moyennes, répartition, écart-type et fiche de statistiques. Les comparaisons avec le trimestre précédent apparaissent aux 2e et 3e trimestres.
           </p>
         )}
         {canFetch && (
@@ -203,7 +203,7 @@ function ClassStatsPage() {
           <div className="cstats-kpis">
             <Card className="cstats-kpi">
               <div className="cstats-kpi__value">{stats.totalStudents}</div>
-              <div className="cstats-kpi__label">Élèves au total</div>
+              <div className="cstats-kpi__label">Élèves classés</div>
             </Card>
             <Card className="cstats-kpi cstats-kpi--pass" style={{ '--kpi-color': '#16a34a' }}>
               <div className="cstats-kpi__value">{stats.passingCount ?? 0}</div>
@@ -213,10 +213,10 @@ function ClassStatsPage() {
               )}
             </Card>
             <Card className="cstats-kpi" style={{ '--kpi-color': '#dc2626' }}>
-              <div className="cstats-kpi__value">{stats.distribution?.Insuf ?? 0}</div>
+              <div className="cstats-kpi__value">{stats.failingCount ?? 0}</div>
               <div className="cstats-kpi__label">En échec (&lt; 10)</div>
             </Card>
-            {stats.noPreviousTerm > 0 && (
+            {stats.termNumber > 1 && stats.noPreviousTerm > 0 && (
               <Card className="cstats-kpi cstats-kpi--muted">
                 <div className="cstats-kpi__value">{stats.noPreviousTerm}</div>
                 <div className="cstats-kpi__label">Sans données N-1</div>
@@ -311,16 +311,25 @@ function ClassStatsPage() {
             </Card>
           )}
 
-          {/* ── Best / worst highlights ── */}
+          {/* ── Best / worst highlights : comparaison à partir du 2e trimestre ── */}
+          {stats.termNumber > 1 && (
           <div className="cstats-highlights">
             <HighlightCard title="Plus forte progression" data={stats.bestProgress} icon="🏆" positive={true} />
             <HighlightCard title="Plus forte régression"  data={stats.worstDecline} icon="⚠️" positive={false} />
           </div>
+          )}
 
-          {stats.withPreviousTerm === 0 && termNumber !== '1' && (
+          {stats.totalStudents === 0 && (
             <div className="cstats-empty">
               <div className="cstats-empty__icon">📭</div>
-              <p>Aucun bulletin publié pour ce trimestre, ou aucun bulletin du trimestre précédent disponible pour comparaison.</p>
+              <p>Aucune moyenne enregistrée pour ce trimestre : les statistiques apparaîtront dès que les notes auront été saisies.</p>
+            </div>
+          )}
+
+          {stats.totalStudents > 0 && stats.withPreviousTerm === 0 && stats.termNumber > 1 && (
+            <div className="cstats-empty">
+              <div className="cstats-empty__icon">📭</div>
+              <p>Pas de moyennes au trimestre précédent : la comparaison n'est pas disponible.</p>
             </div>
           )}
         </>
