@@ -1,3 +1,4 @@
+import { fmtSignedAt } from '../../../utils/fmtSignedAt';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { mockExamsService } from '../../../services/mockExamsService';
@@ -56,7 +57,6 @@ function SubjectPrintFiche({ subject, students, institution, exam }) {
     teacherName: 'Nom du professeur', head: 'Visa du Directeur / de la Directrice', stamp: 'Signature et cachet',
   };
   const num = (v) => (en ? v.toFixed(2) : v.toFixed(2).replace('.', ','));
-  const dateOf = (iso) => (en ? new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }) : fmtDate(iso));
   const gradeMap = new Map();
   students.forEach((s) => {
     const g = s.grades.find((g) => g.subjectId === subject.id);
@@ -128,7 +128,7 @@ function SubjectPrintFiche({ subject, students, institution, exam }) {
         {subject.isSigned && (
           <div className="mfp-signed-tag">
             ✅ {T.signed}{subject.signedByName ? ` · ${subject.signedByName}` : ''}
-            {subject.signedAt ? ` · ${dateOf(subject.signedAt)}` : ''}
+            {subject.signedAt ? ` · ${fmtSignedAt(subject.signedAt, { lang: en ? 'en' : 'fr' })}` : ''}
           </div>
         )}
       </div>
@@ -212,7 +212,7 @@ function SubjectPrintFiche({ subject, students, institution, exam }) {
           ) : subject.isSigned && subject.signedAt ? (
             <div className="mfp-sig__stamp">
               <div className="mfp-sig__stamp-name">{subject.signedByName || subject.teacherName || '—'}</div>
-              <div className="mfp-sig__stamp-date">{T.signedOn} {dateOf(subject.signedAt)}</div>
+              <div className="mfp-sig__stamp-date">{T.signedOn} {fmtSignedAt(subject.signedAt, { lang: en ? 'en' : 'fr' })}</div>
             </div>
           ) : (
             <div className="mfp-sig__line" />

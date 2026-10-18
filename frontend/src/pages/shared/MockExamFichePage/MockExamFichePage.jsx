@@ -1,3 +1,4 @@
+import { fmtSignedAt } from '../../../utils/fmtSignedAt';
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, Link } from 'react-router-dom';
@@ -80,10 +81,8 @@ function fmtDate(iso) {
   return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
-function fmtSignDate(iso) {
-  if (!iso) return '';
-  return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
-}
+/** Date et heure de signature : « 18 octobre 2026 à 14:35 » */
+const fmtSignDate = (iso) => fmtSignedAt(iso);
 
 /* ── Single subject fiche ─────────────────────────────────────────────────── */
 function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished, isAdmin, currentUser, autoFocus = false }) {

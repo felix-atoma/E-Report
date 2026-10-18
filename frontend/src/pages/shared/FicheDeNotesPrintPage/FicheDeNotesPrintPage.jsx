@@ -1,3 +1,4 @@
+import { fmtSignedAt } from '../../../utils/fmtSignedAt';
 import { appreciationOn20 } from '../../../utils/appreciation';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -232,7 +233,7 @@ export default function FicheDeNotesPrintPage() {
           </span>
           {fiche?.isSigned ? (
             <span className="fdnp__signed-badge">
-              ✅ Fiche signée — {fiche.signedByName} · {fmtDate(fiche.signedAt)}
+              ✅ Fiche signée — {fiche.signedByName} · {fmtSignedAt(fiche.signedAt)}
             </span>
           ) : (
             <span className="fdnp__unsigned-badge">En attente de signature</span>
@@ -368,7 +369,7 @@ export default function FicheDeNotesPrintPage() {
             ) : fiche?.isSigned ? (
               <div className="fdnp__sig__stamp">
                 <div className="fdnp__sig__stamp-name">{fiche.signedByName ?? teacher?.name ?? '—'}</div>
-                <div className="fdnp__sig__stamp-date">Signé le {fmtDate(fiche.signedAt)}</div>
+                <div className="fdnp__sig__stamp-date">Signé le {fmtSignedAt(fiche.signedAt)}</div>
               </div>
             ) : (
               <div className="fdnp__sig__line" />

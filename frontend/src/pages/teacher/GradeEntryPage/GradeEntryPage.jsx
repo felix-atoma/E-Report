@@ -1,3 +1,4 @@
+import { fmtSignedAt } from '../../../utils/fmtSignedAt';
 import { appreciationOn20, subjectLangFromName } from '../../../utils/appreciation';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
@@ -573,7 +574,7 @@ export default function GradeEntryPage() {
             <strong>{t('gradeEntry.signedBannerTitle')}</strong>
             <span> — {t('gradeEntry.signedBy', {
               name: data.fiche.signedByName,
-              date: new Date(data.fiche.signedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }),
+              date: fmtSignedAt(data.fiche.signedAt),
             })}</span>
           </div>
         </div>

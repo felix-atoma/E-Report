@@ -1,4 +1,5 @@
-﻿import { useState } from 'react';
+﻿import { fmtSignedAt } from '../../../utils/fmtSignedAt';
+import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -222,7 +223,7 @@ function FichesPanel({ classId, academicYear, t }) {
                   <span className="acd__fiche-badge acd__fiche-badge--signed">
                     ✅ {f.signedByName}
                     {f.signedAt && (
-                      <span className="acd__fiche-date"> · {new Date(f.signedAt).toLocaleDateString('fr-FR')}</span>
+                      <span className="acd__fiche-date"> · {fmtSignedAt(f.signedAt)}</span>
                     )}
                   </span>
                 ) : (

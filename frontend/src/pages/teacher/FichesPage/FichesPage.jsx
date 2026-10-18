@@ -1,3 +1,4 @@
+import { fmtSignedAt } from '../../../utils/fmtSignedAt';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -102,7 +103,7 @@ function ClassFicheCard({ cls, term, termLabel }) {
             <div className="fp__subject-right">
               {f.signedAt && (
                 <span className="fp__signed-date">
-                  {new Date(f.signedAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
+                  {fmtSignedAt(f.signedAt, { short: true })}
                 </span>
               )}
               <span className={`fp__badge${f.isSigned ? ' fp__badge--signed' : ' fp__badge--pending'}`}>
