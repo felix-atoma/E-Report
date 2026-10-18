@@ -592,9 +592,11 @@ export class PdfService {
       // pas de cadre titulaire, seulement les professeurs (d'anglais) qui ont signé leurs fiches.
       showClassTeacher: !en,
       classSignatures: en ? [] : (data.teacherSignatures ?? []).filter((t) => t.classTeacher),
-      subjectSignatures: en
-        ? (data.teacherSignatures ?? []).filter((t) => t.fromSession !== false)
-        : (data.teacherSignatures ?? []).filter((t) => !t.classTeacher),
+      // Devoir surveillé : pas de cadre « Professeur(s) de matière » sur le relevé
+      subjectSignatures: exam.examType === 'DEVOIR_SURVEILLE' ? []
+        : en
+          ? (data.teacherSignatures ?? []).filter((t) => t.fromSession !== false)
+          : (data.teacherSignatures ?? []).filter((t) => !t.classTeacher),
       qrDataUri,
       verifyCode: data.verifyCode ?? null,
       verifyUrl: this.verifyUrl,

@@ -79,9 +79,11 @@ function StudentCard({ student, subjects, exam, institution, teacherSignatures =
   // Composition d'anglais : pas de cadre titulaire, seulement les professeurs d'anglais qui ont signé
   const englishTest = isCaType(exam?.examType);
   const classSignatures = englishTest ? [] : teacherSignatures.filter((t) => t.classTeacher);
-  const subjectSignatures = englishTest
-    ? teacherSignatures.filter((t) => t.fromSession !== false)
-    : teacherSignatures.filter((t) => !t.classTeacher);
+  // Devoir surveillé : pas de cadre « Professeur(s) de matière » (comme sur le relevé PDF)
+  const subjectSignatures = exam?.examType === 'DEVOIR_SURVEILLE' ? []
+    : englishTest
+      ? teacherSignatures.filter((t) => t.fromSession !== false)
+      : teacherSignatures.filter((t) => !t.classTeacher);
   const scale = examScale(exam?.examType); // 10 pour les compositions mensuelles
   const isCm = isPrimaryCompoType(exam?.examType); // chaque matière sur son barème (10 ou 20)
   const totalCoeff = subjects.reduce((s, subj) => s + subj.coefficient, 0);
