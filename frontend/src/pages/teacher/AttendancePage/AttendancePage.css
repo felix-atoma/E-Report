@@ -63,3 +63,15 @@
   .att-row__btns { width: 100%; }
   .att-status-btn { flex: 1; text-align: center; }
 }
+
+/* Appels faits sans internet, en attente d'envoi */
+.att-offline-banner {
+  display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap;
+  background: #fff7ed; border: 1px solid #fdba74; color: #9a3412; border-radius: 10px;
+  padding: .7rem 1rem; margin: 0 0 1rem; font-size: .88rem; font-weight: 600;
+}
+.att-offline-banner button {
+  background: #002347; color: #fff; border: none; border-radius: 8px; padding: .45rem .9rem;
+  font-weight: 700; font-size: .82rem; cursor: pointer; font-family: inherit;
+}
+.att-offline-banner button:disabled { opacity: .6; cursor: default; }

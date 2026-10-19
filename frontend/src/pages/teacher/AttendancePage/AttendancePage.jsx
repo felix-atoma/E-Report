@@ -14,6 +14,10 @@ import Card from '../../../components/common/Card/Card';
 import Loading from '../../../components/common/Loading/Loading';
 import EmptyState from '../../../components/common/EmptyState/EmptyState';
 import Button from '../../../components/common/Button/Button';
+import {
+  enqueueAttendance, pendingAttendance, pendingAttendanceCount, syncAttendanceQueue,
+  onAttendanceQueueChange, isNetworkError,
+} from '../../../utils/offlineAttendanceQueue';
 import './AttendancePage.css';
 
 function today() {
@@ -121,28 +125,74 @@ export default function AttendancePage() {
 
   const students = classDetail?.students?.map((cs) => cs.student) ?? [];
 
+  // Appels faits sans internet, en attente d'envoi
+  const [pendingCount, setPendingCount] = useState(0);
+  const [syncingQueue, setSyncingQueue] = useState(false);
+  useEffect(() => {
+    const refresh = () => pendingAttendanceCount().then(setPendingCount).catch(() => {});
+    refresh();
+    return onAttendanceQueueChange(refresh);
+  }, []);
+  const sendPending = async () => {
+    setSyncingQueue(true);
+    const sent = await syncAttendanceQueue();
+    setSyncingQueue(false);
+    if (sent > 0) {
+      qc.invalidateQueries({ queryKey: ['attendance'] });
+      toast.success(`${sent} appel(s) envoyé(s).`);
+    } else if (!navigator.onLine) toast('Toujours pas d\'internet : les appels restent sur l\'appareil.', { icon: '📶' });
+  };
+
+  // Séance déjà appelée hors ligne : on retrouve l'appel gardé sur l'appareil
+  useEffect(() => {
+    if (!selectedClassId || !date) return;
+    const key = [selectedClassId, date, subjectId || '', startTime || ''].join('|');
+    pendingAttendance().then((items) => {
+      const item = items.find((i) => i.key === key);
+      if (!item) return;
+      const map = {}; const mins = {};
+      item.payload.entries.forEach((e) => {
+        map[e.studentId] = e.status;
+        if (e.minutesLate) mins[e.studentId] = String(e.minutesLate);
+      });
+      setEntries(map);
+      setLateMinutes(mins);
+    }).catch(() => {});
+  }, [selectedClassId, date, subjectId, startTime, existing]);
+
+  const buildPayload = () => ({
+    classId: selectedClassId,
+    date,
+    subjectId: subjectId || undefined,
+    startTime: startTime || undefined,
+    entries: students.map((s) => {
+      const status = entries[s.id] ?? 'PRESENT';
+      const mins = Number(lateMinutes[s.id]);
+      return {
+        studentId: s.id,
+        status,
+        minutesLate: status === 'LATE' && mins > 0 ? mins : undefined,
+      };
+    }),
+  });
+
   const { mutate: save, isPending: saving } = useMutation({
-    mutationFn: () =>
-      attendanceService.bulkUpsert({
-        classId: selectedClassId,
-        date,
-        subjectId: subjectId || undefined,
-        startTime: startTime || undefined,
-        entries: students.map((s) => {
-          const status = entries[s.id] ?? 'PRESENT';
-          const mins = Number(lateMinutes[s.id]);
-          return {
-            studentId: s.id,
-            status,
-            minutesLate: status === 'LATE' && mins > 0 ? mins : undefined,
-          };
-        }),
-      }),
+    mutationFn: (payload) => attendanceService.bulkUpsert(payload),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['attendance', selectedClassId] });
       toast.success('Présences enregistrées');
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur lors de l\'enregistrement'),
+    onError: async (err, payload) => {
+      // Pas d'internet : l'appel est gardé sur l'appareil et envoyé automatiquement plus tard
+      if (isNetworkError(err)) {
+        try {
+          await enqueueAttendance(payload);
+          toast("Pas d'internet : l'appel est gardé sur l'appareil et sera envoyé automatiquement dès le retour du réseau.", { icon: '📶', duration: 6000 });
+          return;
+        } catch { /* IndexedDB indisponible */ }
+      }
+      toast.error(err?.response?.data?.message ?? 'Erreur lors de l\'enregistrement');
+    },
   });
 
   const missingLateMinutes = students.some(
@@ -172,6 +222,15 @@ export default function AttendancePage() {
         title="Absences & retards"
         subtitle="Choisissez la classe, la matière et la séance, puis marquez les absents et les retards (en minutes)"
       />
+
+      {pendingCount > 0 && (
+        <div className="att-offline-banner">
+          <span>📶 {pendingCount} appel(s) fait(s) sans internet, gardé(s) sur l'appareil — envoi automatique au retour du réseau.</span>
+          <button type="button" onClick={sendPending} disabled={syncingQueue}>
+            {syncingQueue ? 'Envoi…' : 'Envoyer maintenant'}
+          </button>
+        </div>
+      )}
 
       <Card className="att-controls">
         <div className="att-controls__row">
@@ -324,7 +383,7 @@ export default function AttendancePage() {
             {missingLateMinutes && (
               <span className="att-footer__warn">Indiquez la durée (en minutes) de chaque retard.</span>
             )}
-            <Button onClick={() => save()} disabled={saving || missingLateMinutes || (!isTitulaire && !subjectId)}>
+            <Button onClick={() => save(buildPayload())}disabled={saving || missingLateMinutes || (!isTitulaire && !subjectId)}>
               {saving ? 'Enregistrement…' : '💾 Enregistrer les présences'}
             </Button>
           </div>

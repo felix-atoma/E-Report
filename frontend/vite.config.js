@@ -55,13 +55,13 @@ export default defineConfig({
             handler: 'NetworkOnly',
           },
           {
-            // API — network first, fall back to cache for 24h
+            // API — network first; without internet, the last answer (up to 7 days old) is shown
             // 60s timeout to survive Render free-tier cold starts (~30-60s)
             urlPattern: /^https?:\/\/.*\/api\/.*/i,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',
-              expiration: { maxEntries: 100, maxAgeSeconds: 86400 },
+              expiration: { maxEntries: 400, maxAgeSeconds: 7 * 86400 },
               networkTimeoutSeconds: 60,
             },
           },

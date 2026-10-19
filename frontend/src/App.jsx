@@ -9,6 +9,7 @@ import { LanguageProvider } from './context/LanguageContext';
 import AppRouter from './routes/AppRouter';
 import PwaInstallPrompt from './components/common/PwaInstallPrompt/PwaInstallPrompt';
 import NetworkStatus from './components/common/NetworkStatus/NetworkStatus';
+import OfflineSync from './components/common/OfflineSync/OfflineSync';
 import './App.css';
 // Pluie de fleurs à chaque message de réussite (toast.success)
 import './utils/successSprinkle';
@@ -28,6 +29,7 @@ function App() {
                 <Toaster position="top-right" />
                 <PwaInstallPrompt />
                 <NetworkStatus />
+                <OfflineSync />
               </ThemeProvider>
             </InstitutionProvider>
           </AuthProvider>
