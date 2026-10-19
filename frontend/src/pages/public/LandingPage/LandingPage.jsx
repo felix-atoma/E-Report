@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useLanguage } from '../../../context/LanguageContext';
-import logoIcon from '../../../assets/images/novaBulletin-icon.svg';
+import logoIcon from '../../../assets/images/novabulletin-tablet.svg';
 import {
   SITE_URL, SUPPORT_EMAIL, SUPPORT_WHATSAPP, FEATURES_ROW1, FEATURES_ROW2, STEPS, TEAM, FAQS,
   FEATURES_ROW1_EN, FEATURES_ROW2_EN, STEPS_EN, FAQS_EN,
@@ -10,7 +10,7 @@ import {
 import './LandingPage.css';
 import './LandingPage.night.css';
 
-const OG_IMAGE = `${SITE_URL}/og-image.svg`;
+const OG_IMAGE = `${SITE_URL}/og-image.png`;
 
 /* ── SVG Illustrations ──────────────────────────────────────────────────── */
 const IllustrationHero = () => (

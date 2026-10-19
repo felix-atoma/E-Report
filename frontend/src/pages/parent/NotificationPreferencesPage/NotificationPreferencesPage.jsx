@@ -59,7 +59,7 @@ function PushNotificationsCard() {
         toast.success(t('notifPrefs.toast.granted'));
         new Notification('NovaBulletin', {
           body: t('notifPrefs.push.testBody'),
-          icon: '/pwa-192.svg',
+          icon: '/pwa-192.png',
         });
       } else {
         toast.error(t('notifPrefs.toast.denied'));
@@ -83,7 +83,7 @@ function PushNotificationsCard() {
           </Button>
         )}
         {permission === 'granted' && (
-          <Button size="sm" variant="ghost" onClick={() => new Notification('NovaBulletin', { body: t('notifPrefs.push.testBody'), icon: '/pwa-192.svg' })}>
+          <Button size="sm" variant="ghost" onClick={() => new Notification('NovaBulletin', { body: t('notifPrefs.push.testBody'), icon: '/pwa-192.png' })}>
             {t('notifPrefs.push.test')}
           </Button>
         )}
