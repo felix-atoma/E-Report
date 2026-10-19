@@ -31,6 +31,20 @@ function SmallInput({ value, onChange, type = 'number', placeholder = '—', wid
   );
 }
 
+/** Heures avec une décimale, virgule française : 95 min → « 1,6 » */
+const minutesToHours = (m) => String(Math.round((m / 60) * 10) / 10).replace('.', ',');
+const parseNum = (v) => (v === '' || v == null ? null : Number(String(v).replace(',', '.')));
+const sameValue = (a, b) => parseNum(a) === parseNum(b);
+
+// Absences / retards : remplis automatiquement depuis les appels des professeurs, modifiables
+// par le titulaire. Valeur affichée = sa correction si elle existe, sinon le calcul des appels.
+const ATT_FIELDS = [
+  { key: 'attendanceAbsent',      label: 'Abs. non just. (j)', auto: (a) => String(a.absentDays) },
+  { key: 'attendanceExcused',     label: 'Abs. just. (j)',     auto: (a) => String(a.excusedDays) },
+  { key: 'attendanceLate',        label: 'Retards (nb)',       auto: (a) => String(a.lateCount) },
+  { key: 'attendanceLateMinutes', label: 'Retards (h)',        auto: (a) => minutesToHours(a.lateMinutes) },
+];
+
 export default function TitulaireEntryPage() {
   const { classId } = useParams();
   const navigate = useNavigate();
@@ -87,6 +101,9 @@ export default function TitulaireEntryPage() {
     () => new Map(termAttendance.map((a) => [a.studentId, a])),
     [termAttendance],
   );
+  // Calcul des appels pour un élève (0 s'il n'a aucun appel alors que la classe en a)
+  const autoFor = (studentId) => attendanceByStudentId.get(studentId)
+    ?? (termAttendance.length ? { absentDays: 0, excusedDays: 0, lateCount: 0, lateMinutes: 0 } : null);
 
   // État de la classe : fiches signées par les professeurs, bulletins par statut
   const { data: status } = useQuery({
@@ -154,8 +171,11 @@ export default function TitulaireEntryPage() {
       [studentId]: {
         attendanceDays:      rc?.attendanceDays      != null ? String(rc.attendanceDays)      : '',
         attendancePresent:   rc?.attendancePresent   != null ? String(rc.attendancePresent)   : '',
-        attendanceLate:         rc?.attendanceLate         != null ? String(rc.attendanceLate)         : '',
-        attendanceAbsent:       rc?.attendanceAbsent       != null ? String(rc.attendanceAbsent)       : '',
+        // Absences / retards : valeur enregistrée sur le bulletin, sinon (undefined) le calcul des appels
+        attendanceAbsent:       rc?.attendanceAbsent       != null ? String(rc.attendanceAbsent)       : undefined,
+        attendanceExcused:      rc?.attendanceExcused      != null ? String(rc.attendanceExcused)      : undefined,
+        attendanceLate:         rc?.attendanceLate         != null ? String(rc.attendanceLate)         : undefined,
+        attendanceLateMinutes:  rc?.attendanceLateMinutes  != null ? minutesToHours(rc.attendanceLateMinutes) : undefined,
         attendanceAbsentHours:  rc?.attendanceAbsentHours  != null ? String(rc.attendanceAbsentHours)  : '',
         attendanceExcluded:  rc?.attendanceExcluded  != null ? String(rc.attendanceExcluded)  : '',
         warnings:            rc?.warnings            != null ? String(rc.warnings)            : '',
@@ -184,8 +204,7 @@ export default function TitulaireEntryPage() {
             studentId,
             attendanceDays:     e.attendanceDays     !== '' && e.attendanceDays     != null ? Number(e.attendanceDays)     : undefined,
             attendancePresent:  e.attendancePresent  !== '' && e.attendancePresent  != null ? Number(e.attendancePresent)  : undefined,
-            attendanceLate:     e.attendanceLate     !== '' && e.attendanceLate     != null ? Number(e.attendanceLate)     : undefined,
-            attendanceAbsent:      e.attendanceAbsent      !== '' && e.attendanceAbsent      != null ? Number(e.attendanceAbsent)      : undefined,
+            ...attendancePayload(studentId, e),
             attendanceAbsentHours: e.attendanceAbsentHours !== '' && e.attendanceAbsentHours != null ? Number(e.attendanceAbsentHours) : undefined,
             attendanceExcluded: e.attendanceExcluded !== '' && e.attendanceExcluded != null ? Number(e.attendanceExcluded) : undefined,
             warnings:           e.warnings           !== '' && e.warnings           != null ? Number(e.warnings)           : undefined,
@@ -204,6 +223,47 @@ export default function TitulaireEntryPage() {
     },
     onError: (err) => toast.error(err?.response?.data?.message ?? 'Erreur'),
   });
+
+  // null = suivre les appels (case vide ou égale au calcul) ; un nombre = correction du titulaire
+  function attendancePayload(studentId, e) {
+    const auto = autoFor(studentId);
+    const out = {};
+    for (const f of ATT_FIELDS) {
+      const v = e[f.key];
+      const n = parseNum(v);
+      if (n == null || Number.isNaN(n) || n < 0 || (auto && sameValue(v, f.auto(auto)))) { out[f.key] = null; continue; }
+      out[f.key] = f.key === 'attendanceLateMinutes' ? Math.round(n * 60) : Math.round(n);
+    }
+    return out;
+  }
+
+  /** Case absence / retard : calcul des appels déjà rempli, modifiable ; orange quand corrigée. */
+  function attCell(studentId, e, auto, f) {
+    const autoVal = auto ? f.auto(auto) : '';
+    const v = e[f.key];
+    const edited = !!auto && v !== undefined && v !== '' && !sameValue(v, autoVal);
+    return (
+      <td key={f.key} className="tit__td">
+        <div className={`tit__att${edited ? ' tit__att--edited' : auto ? ' tit__att--auto' : ''}`}>
+          <input
+            type="text"
+            inputMode="decimal"
+            className="tit__input"
+            style={{ width: 52 }}
+            value={v !== undefined ? v : autoVal}
+            placeholder="—"
+            title={auto ? `D'après les appels des professeurs : ${autoVal}` : undefined}
+            onChange={(ev) => setField(studentId, f.key, ev.target.value)}
+          />
+          {edited && (
+            <button type="button" className="tit__att-reset" title={`Revenir au calcul des appels (${autoVal})`}
+              onClick={() => setField(studentId, f.key, undefined)}>↺</button>
+          )}
+        </div>
+        {edited && <small className="tit__att-hint">appels : {autoVal}</small>}
+      </td>
+    );
+  }
 
   function setField(studentId, field, value) {
     setEntries((prev) => ({
@@ -308,8 +368,10 @@ export default function TitulaireEntryPage() {
 
       {termAttendance.length > 0 && (
         <p className="tit__auto-note">
-          Les absences et retards en <span className="tit__auto">vert</span> sont calculés automatiquement
-          à partir des feuilles de présence des professeurs et seront reportés sur le bulletin à la publication.
+          Les absences et retards (cases <span className="tit__auto">vertes</span>) sont remplis automatiquement
+          à partir des appels faits par les professeurs et se mettent à jour tout seuls jusqu'à la publication.
+          Vous pouvez corriger une case : elle passe en <span className="tit__edited-chip">orange</span> (↺ pour
+          revenir au calcul), puis cliquez sur « Enregistrer tout ».
         </p>
       )}
 
@@ -325,9 +387,9 @@ export default function TitulaireEntryPage() {
                 <th className="tit__th tit__th--name">Élève</th>
                 <th className="tit__th">Jours</th>
                 <th className="tit__th">Présents</th>
-                <th className="tit__th">Abs. (j)</th>
+                {ATT_FIELDS.slice(0, 2).map((f) => <th key={f.key} className="tit__th">{f.label}</th>)}
                 <th className="tit__th">H. Absence</th>
-                <th className="tit__th">Retards (h)</th>
+                {ATT_FIELDS.slice(2).map((f) => <th key={f.key} className="tit__th">{f.label}</th>)}
                 <th className="tit__th">Exclusions</th>
                 <th className="tit__th">Avert.</th>
                 <th className="tit__th">Fél.</th>
@@ -343,7 +405,7 @@ export default function TitulaireEntryPage() {
                 if (!studentId) return null;
                 const e = entries[studentId] ?? {};
                 const rc = reportsByStudentId.get(studentId);
-                const auto = attendanceByStudentId.get(studentId);
+                const auto = autoFor(studentId);
 
                 return (
                   <tr key={studentId} className={rc ? '' : 'tit__tr--new'}>
@@ -359,28 +421,11 @@ export default function TitulaireEntryPage() {
                     <td className="tit__td">
                       <SmallInput value={e.attendancePresent} onChange={(v) => setField(studentId, 'attendancePresent', v)} />
                     </td>
-                    <td className="tit__td">
-                      {auto ? (
-                        <span className="tit__auto" title="Calculé depuis les feuilles de présence">
-                          {auto.absentDays} j
-                          {auto.excusedDays > 0 && <small> (+{auto.excusedDays} just.)</small>}
-                        </span>
-                      ) : (
-                        <SmallInput value={e.attendanceAbsent} onChange={(v) => setField(studentId, 'attendanceAbsent', v)} />
-                      )}
-                    </td>
+                    {ATT_FIELDS.slice(0, 2).map((f) => attCell(studentId, e, auto, f))}
                     <td className="tit__td">
                       <SmallInput value={e.attendanceAbsentHours} onChange={(v) => setField(studentId, 'attendanceAbsentHours', v)} />
                     </td>
-                    <td className="tit__td">
-                      {auto ? (
-                        <span className="tit__auto" title={`${auto.lateCount} retard(s) — calculé depuis les feuilles de présence`}>
-                          {String(Math.round((auto.lateMinutes / 60) * 10) / 10).replace('.', ',')} h
-                        </span>
-                      ) : (
-                        <SmallInput value={e.attendanceLate} onChange={(v) => setField(studentId, 'attendanceLate', v)} />
-                      )}
-                    </td>
+                    {ATT_FIELDS.slice(2).map((f) => attCell(studentId, e, auto, f))}
                     <td className="tit__td">
                       <SmallInput value={e.attendanceExcluded} onChange={(v) => setField(studentId, 'attendanceExcluded', v)} />
                     </td>

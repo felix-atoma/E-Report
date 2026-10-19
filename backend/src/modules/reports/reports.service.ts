@@ -227,7 +227,9 @@ export class ReportsService {
       ? (await this.conductSuggestions(institutionId, [report as any])).get(report.id) ?? null
       : null;
     const termRecap = await this.termRecap(report, institutionId);
-    return { ...report, classTeacherSignature, nextTerm, conductSuggestion, termRecap };
+    // Avant publication, l'aperçu montre déjà les absences / retards calculés depuis les appels
+    const attendanceFill = report.status !== 'PUBLISHED' ? await this.autoAttendanceFill(report as any, institutionId) : {};
+    return { ...report, ...attendanceFill, classTeacherSignature, nextTerm, conductSuggestion, termRecap };
   }
 
   /**
@@ -496,20 +498,9 @@ export class ReportsService {
         : proposedDecision(annualAverage, settings.promotionThreshold);
     }
 
-    // Absences (jours) et retards (minutes) calculés depuis les saisies des professeurs.
-    // Sans aucune saisie sur le trimestre, on garde les valeurs entrées par le titulaire.
-    const termAttendance = await this.attendance.computeTermAttendance(
-      report.classId, report.academicYear, report.termType, report.termNumber, institutionId, [report.studentId],
-    );
-    const att = termAttendance.get(report.studentId);
-    const attendanceData = att
-      ? {
-          attendanceAbsent: att.absentDays,
-          attendanceExcused: att.excusedDays,
-          attendanceLate: att.lateCount,
-          attendanceLateMinutes: att.lateMinutes,
-        }
-      : {};
+    // Absences et retards : pré-remplis depuis les appels des professeurs ; une valeur corrigée par
+    // le titulaire (champ non vide) est gardée, seuls les champs vides prennent le calcul.
+    const attendanceData = await this.autoAttendanceFill(report as any, institutionId);
 
     const published = await this.prisma.reportCard.update({
       where: { id },
@@ -702,6 +693,42 @@ export class ReportsService {
     };
   }
 
+  /**
+   * Absences / retards calculés depuis les appels des professeurs pour les champs que le titulaire
+   * a laissés vides (null = « suivre les appels »). Un élève sans aucun appel dans une classe où
+   * l'appel est fait compte 0 ; sans aucun appel dans la classe, rien n'est rempli.
+   */
+  private async autoAttendanceFill(
+    report: { studentId: string; classId: string; academicYear: string; termType: any; termNumber: number;
+      attendanceAbsent?: number | null; attendanceExcused?: number | null; attendanceLate?: number | null; attendanceLateMinutes?: number | null },
+    institutionId: string,
+    classAttendance?: Map<string, { absentDays: number; excusedDays: number; lateCount: number; lateMinutes: number }>,
+  ) {
+    const map = classAttendance ?? await this.attendance.computeTermAttendance(
+      report.classId, report.academicYear, String(report.termType ?? 'TRIMESTRE'), report.termNumber, institutionId,
+    );
+    return this.autoAttendanceFillSync(map, report.studentId, report);
+  }
+
+  /** Même calcul, à partir des appels déjà chargés : remplit les clés de `current` qui valent null. */
+  private autoAttendanceFillSync(
+    map: Map<string, { absentDays: number; excusedDays: number; lateCount: number; lateMinutes: number }>,
+    studentId: string,
+    current: { attendanceAbsent?: number | null; attendanceExcused?: number | null; attendanceLate?: number | null; attendanceLateMinutes?: number | null },
+  ) {
+    if (!map.size) return {};
+    const att = map.get(studentId) ?? { absentDays: 0, excusedDays: 0, lateCount: 0, lateMinutes: 0 };
+    const auto = {
+      attendanceAbsent: att.absentDays, attendanceExcused: att.excusedDays,
+      attendanceLate: att.lateCount, attendanceLateMinutes: att.lateMinutes,
+    };
+    const data: Record<string, number> = {};
+    for (const k of Object.keys(auto) as (keyof typeof auto)[]) {
+      if (k in current ? current[k] == null : false) data[k] = auto[k];
+    }
+    return data;
+  }
+
   async bulkTitulaireUpsert(dto: TitulaireEntryDto, institutionId: string, userId: string, role: Role) {
     const cls = await this.prisma.class.findFirst({
       where: { id: dto.classId, institutionId },
@@ -718,18 +745,37 @@ export class ReportsService {
         ? `Semestre ${dto.termNumber}`
         : `Trimestre ${dto.termNumber}`);
 
+    // Bulletin déjà publié : « suivre les appels » (null) y écrit la valeur calculée, le bulletin reste complet
+    const [existing, classAttendance] = await Promise.all([
+      this.prisma.reportCard.findMany({
+        where: { classId: dto.classId, academicYear: dto.academicYear, termNumber: dto.termNumber },
+        select: { studentId: true, status: true },
+      }),
+      this.attendance.computeTermAttendance(dto.classId, dto.academicYear, dto.termType, dto.termNumber, institutionId),
+    ]);
+    const publishedIds = new Set(existing.filter((r) => r.status === 'PUBLISHED').map((r) => r.studentId));
+
     const results = await this.prisma.$transaction(
       dto.entries.map((entry) => {
         const {
-          studentId, attendanceDays, attendancePresent, attendanceLate,
-          attendanceAbsent, attendanceExcluded, warnings, commendations,
+          studentId, attendanceDays, attendancePresent,
+          attendanceExcluded, attendanceAbsentHours, warnings, commendations,
           honorCouncil, conductRating, teacherComment,
         } = entry;
 
+        // Absences / retards : seules les clés envoyées sont modifiées
+        const att: Record<string, number | null> = {};
+        for (const k of ['attendanceAbsent', 'attendanceExcused', 'attendanceLate', 'attendanceLateMinutes'] as const) {
+          if (entry[k] !== undefined) att[k] = entry[k] ?? null;
+        }
+        const autoFill = publishedIds.has(studentId) ? this.autoAttendanceFillSync(classAttendance, studentId, att) : {};
+
         const fields = {
-          attendanceDays, attendancePresent, attendanceLate,
-          attendanceAbsent, attendanceExcluded, warnings, commendations,
+          attendanceDays, attendancePresent,
+          attendanceExcluded, attendanceAbsentHours, warnings, commendations,
           honorCouncil, conductRating: conductRating as any, teacherComment,
+          ...att,
+          ...autoFill,
         };
 
         return this.prisma.reportCard.upsert({

@@ -223,3 +223,11 @@
 /* Conduite proposée automatiquement (absences, retards, discipline) */
 .tit__conduct-auto { display: block; margin-top: 3px; font-size: 0.68rem; color: #6d28d9; line-height: 1.25; max-width: 170px; }
 .tit__conduct-warning { display: block; width: 100%; color: #92400e; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.82rem; }
+
+/* Absences / retards : vert = rempli depuis les appels, orange = corrigé par le titulaire */
+.tit__att { display: inline-flex; align-items: center; gap: 2px; }
+.tit__att--auto .tit__input { background: #dcfce7; border-color: #86efac; color: #15803d; font-weight: 700; }
+.tit__att--edited .tit__input { background: #ffedd5; border-color: #fdba74; color: #c2410c; font-weight: 700; }
+.tit__att-reset { border: none; background: none; color: #c2410c; cursor: pointer; font-size: .9rem; padding: 0 2px; line-height: 1; }
+.tit__att-hint { display: block; font-size: .68rem; color: #9a3412; white-space: nowrap; }
+.tit__edited-chip { display: inline-block; padding: .05rem .4rem; border-radius: 6px; background: #ffedd5; color: #c2410c; font-weight: 700; }

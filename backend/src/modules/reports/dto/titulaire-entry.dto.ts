@@ -16,8 +16,12 @@ export class TitulaireStudentEntryDto {
 
   @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) attendanceDays?: number;
   @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) attendancePresent?: number;
-  @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) attendanceLate?: number;
-  @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) attendanceAbsent?: number;
+  // Absences / retards : null = suivre les appels des professeurs (pré-remplissage), un nombre = correction du titulaire
+  @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) attendanceLate?: number | null;
+  @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) attendanceLateMinutes?: number | null;
+  @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) attendanceAbsent?: number | null;
+  @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) attendanceExcused?: number | null;
+  @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) attendanceAbsentHours?: number;
   @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) attendanceExcluded?: number;
   @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) warnings?: number;
   @ApiPropertyOptional() @IsOptional() @IsInt() @Min(0) commendations?: number;
