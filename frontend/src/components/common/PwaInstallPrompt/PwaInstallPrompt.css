@@ -35,7 +35,7 @@
 .pwa-prompt__text span   { font-size: 0.75rem;  color: #6b7280; }
 
 .pwa-prompt__install {
-  background: #1E2A78;
+  background: #002347;
   color: #fff;
   border: none;
   border-radius: 10px;
@@ -64,3 +64,5 @@
 
 /* Jamais imprimée (bulletins, fiches, relevés imprimés depuis le navigateur) */
 @media print { .pwa-prompt { display: none !important; } }
+.pwa-prompt__text b { color: #111827; }
+.pwa-prompt__text a { color: #002347; font-weight: 700; text-decoration: underline; }

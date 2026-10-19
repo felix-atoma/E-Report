@@ -127,6 +127,7 @@ export default function EdustageLanding() {
           <nav className={`es-nav${menuOpen ? ' es-nav--open' : ''}`} onClick={() => setMenuOpen(false)}>
             <a href="#top" className="es-nav__link es-nav__link--active">{t('Accueil', 'Home')}</a>
             {NAV.map(([href, label]) => <a key={href} href={href} className="es-nav__link">{label}</a>)}
+            <Link to="/installer" className="es-nav__link">📲 {t("Installer l'app", 'Install app')}</Link>
             <Link to="/login" className="es-nav__link">{t('Connexion', 'Log in')}</Link>
             <div className="es-lang" role="group" aria-label={t('Langue', 'Language')}>
               <button type="button" className={isFr ? 'is-active' : ''} onClick={() => setLanguage('fr')}>FR</button>
@@ -416,6 +417,7 @@ export default function EdustageLanding() {
               <li><Link to="/login">{t('Connexion', 'Log in')}</Link></li>
               <li><Link to="/register-school">{t('Inscrire mon école', 'Register my school')}</Link></li>
               <li><Link to="/verify">{t('Vérifier un bulletin', 'Verify a report card')}</Link></li>
+              <li><Link to="/installer">📲 {t("Installer l'application", 'Install the app')}</Link></li>
             </ul>
           </div>
           <div>

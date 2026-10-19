@@ -152,6 +152,9 @@ function LoginPage() {
             <GoogleIcon />
             Continuer avec Google
           </button>
+
+          {/* Installer l'application (icône sur l'écran d'accueil) */}
+          <Link to="/installer" className="asl-install-link">📲 Installer l'application</Link>
         </div>
       </div>
     </div>

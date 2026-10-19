@@ -450,3 +450,14 @@
   div.asl-page, div.asl-page.asl-page--register { padding: 0 !important; align-items: stretch; background: #fff; }
   .asl-page .asl-card-wrap, .asl-page .asl-card-wrap--wide { max-width: none; width: 100%; min-height: 100vh; border-radius: 0; box-shadow: none; }
 }
+
+/* Lien « Installer l'application » sous le formulaire de connexion */
+.asl-install-link {
+  display: block;
+  margin-top: 16px;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #002347;
+  text-decoration: underline;
+}

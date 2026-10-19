@@ -12,6 +12,7 @@ const LoginPage              = lazy(() => import('../pages/auth/LoginPage/LoginP
 const RegisterPage           = lazy(() => import('../pages/auth/RegisterPage/RegisterPage'));
 const RegisterSchoolPage     = lazy(() => import('../pages/public/RegisterSchoolPage/RegisterSchoolPage'));
 const LegalPage              = lazy(() => import('../pages/public/LegalPage/LegalPage'));
+const InstallPage            = lazy(() => import('../pages/public/InstallPage/InstallPage'));
 const ForgotPasswordPage     = lazy(() => import('../pages/auth/ForgotPasswordPage/ForgotPasswordPage'));
 const ResetPasswordPage      = lazy(() => import('../pages/auth/ResetPasswordPage/ResetPasswordPage'));
 const OtpLoginPage           = lazy(() => import('../pages/auth/OtpLoginPage/OtpLoginPage'));
@@ -150,6 +151,9 @@ function AppRouter() {
         <Route path="/verify-bulletin"    element={<BulletinVerifyPage />} />
         {/* Adresse imprimée en pied de bulletin et de relevé */}
         <Route path="/verify"             element={<BulletinVerifyPage />} />
+        {/* Lien à partager : installer l'application sur le téléphone / l'ordinateur */}
+        <Route path="/installer"          element={<InstallPage />} />
+        <Route path="/install"            element={<Navigate to="/installer" replace />} />
         <Route path="/legal/:type"        element={<LegalPage />} />
         <Route path="/unauthorized"       element={<UnauthorizedPage />} />
         <Route path="/error"             element={<ErrorPage />} />
