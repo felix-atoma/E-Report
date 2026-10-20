@@ -135,7 +135,7 @@ function TimetableEditor({ cls, academicYear, slots, onSaved, t }) {
   );
 }
 
-function FichesPanel({ classId, academicYear, t }) {
+export function FichesPanel({ classId, academicYear, t }) {
   const qc = useQueryClient();
   const [term, setTerm] = useState(1);
   const [verifyingAll, setVerifyingAll] = useState(false);
@@ -418,6 +418,12 @@ function ClassDetailPage() {
         )}
       </div>
 
+      {/* En premier : fiches de notes à vérifier ou corriger (coefficient, notes) */}
+      <section className="acd__section">
+        <h2 className="acd__section-title">{t('classDetail.fichesSection')} — vérifier / ✏️ corriger</h2>
+        <FichesPanel classId={id} academicYear={academicYear} t={t} />
+      </section>
+
       <section className="acd__section">
         <h2 className="acd__section-title">
           {t('classDetail.studentsSection')}
@@ -468,10 +474,6 @@ function ClassDetailPage() {
         )}
       </section>
 
-      <section className="acd__section">
-        <h2 className="acd__section-title">{t('classDetail.fichesSection')}</h2>
-        <FichesPanel classId={id} academicYear={academicYear} t={t} />
-      </section>
     </AppShell>
   );
 }

@@ -21,6 +21,7 @@ const NAV = {
     { to: '/admin/import',        icon: 'upload',    labelKey: 'nav.bulkImport' },
     { to: '/admin/subjects',      icon: 'book',      labelKey: 'nav.subjects' },
     { divider: true,              sectionKey: 'section.pedagogy' },
+    { to: '/admin/fiches',        icon: 'fichexam',  labelKey: 'nav.adminFiches' },
     { to: '/admin/reports',       icon: 'clipboard', labelKey: 'nav.reports' },
     { to: '/admin/statistics',    icon: 'stats',     labelKey: 'nav.statistics' },
     { to: '/palmares',            icon: 'trophy',    labelKey: 'nav.palmares' },
