@@ -56,8 +56,13 @@ export class WhatsAppService {
     }
   }
 
-  /** Envoi automatique réellement configuré (sinon les messages sont seulement écrits dans le journal). */
+  /**
+   * Envoi automatique réellement possible vers n'importe quel parent. Le numéro « bac à sable » de
+   * Twilio (+1 415 523 8886) ne livre qu'aux téléphones inscrits au sandbox (erreur 63015 sinon, signalée
+   * après coup) : il ne compte pas, pour que l'école se voie proposer l'envoi depuis son téléphone.
+   */
   get enabled(): boolean {
+    if (this.provider === 'TWILIO' && this.twilioFrom.replace(/\D/g, '').endsWith('14155238886')) return false;
     return this.provider !== 'NONE';
   }
 
