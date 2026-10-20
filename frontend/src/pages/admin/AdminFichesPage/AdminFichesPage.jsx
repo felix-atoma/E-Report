@@ -20,7 +20,8 @@ export default function AdminFichesPage() {
     queryKey: ['classes'],
     queryFn: () => classesService.list().then((r) => r.data),
   });
-  const sorted = [...classes].sort((a, b) => a.name.localeCompare(b.name, 'fr', { numeric: true }));
+  // Déjà dans l'ordre croissant des niveaux (CI, CP… Terminale), fourni par le serveur
+  const sorted = classes;
   const cls = sorted.find((c) => c.id === classId);
 
   return (

@@ -9,26 +9,10 @@ import { CreateClassDto } from './dto/create-class.dto';
 import { UpdateClassDto } from './dto/update-class.dto';
 import { EnrollStudentDto } from './dto/enroll-student.dto';
 import { AssignSubjectDto } from './dto/assign-subject.dto';
+import { compareClasses, levelRank } from '../../common/utils/class-order.util';
 
-function levelSortOrder(level: string): number {
-  const l = (level ?? '').toLowerCase().replace(/[\s\-_éèê]/g, '');
-  if (/cp1/.test(l)) return 1;
-  if (/cp2/.test(l)) return 2;
-  if (/ce1/.test(l)) return 3;
-  if (/ce2/.test(l)) return 4;
-  if (/cm1/.test(l)) return 5;
-  if (/cm2/.test(l)) return 6;
-  // Collège: 6ème (lowest) → 3ème. Higher number = lower class.
-  if (/6/.test(l)) return 7;
-  if (/5/.test(l)) return 8;
-  if (/4/.test(l)) return 9;
-  if (/3/.test(l)) return 10;
-  // Lycée
-  if (/2nde|second/.test(l)) return 11;
-  if (/1[eè]?re|premi/.test(l)) return 12;
-  if (/terminale|tle|term/.test(l)) return 13;
-  return 50;
-}
+// Rang du niveau (CI → Terminale) : enregistré dans sortOrder et utilisé pour trier les listes de classes
+const levelSortOrder = (level: string, name?: string) => levelRank(level, name);
 
 @Injectable()
 export class ClassesService {
@@ -44,14 +28,15 @@ export class ClassesService {
       ];
     }
 
-    return this.prisma.class.findMany({
+    const classes = await this.prisma.class.findMany({
       where,
       include: {
         teacher: { select: { id: true, name: true, email: true } },
         _count: { select: { students: true, subjects: true } },
       },
-      orderBy: [{ academicYear: 'desc' }, { sortOrder: 'asc' }, { name: 'asc' }],
     });
+    // Ordre croissant des niveaux (CI, CP… Terminale), calculé à chaque fois : jamais faussé par un rang ancien
+    return classes.sort(compareClasses);
   }
 
   async findOne(id: string, institutionId: string, userId?: string, role?: string) {
@@ -93,7 +78,7 @@ export class ClassesService {
 
   async create(dto: CreateClassDto, institutionId: string) {
     return this.prisma.class.create({
-      data: { ...dto, institutionId, sortOrder: levelSortOrder(dto.level) },
+      data: { ...dto, institutionId, sortOrder: levelSortOrder(dto.level, dto.name) },
       include: { teacher: { select: { id: true, name: true, email: true } } },
     });
   }
