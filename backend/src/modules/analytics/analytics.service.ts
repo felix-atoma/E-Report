@@ -1,6 +1,8 @@
 import { appreciationOn20 } from '../../common/utils/appreciation.util';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { SmsService } from '../sms/sms.service';
+import { parentPhone } from '../fees/fee-reminders.service';
 import { WhatsAppService } from '../whatsapp/whatsapp.service';
 import { AttendanceService } from '../attendance/attendance.service';
 
@@ -9,6 +11,7 @@ export class AnalyticsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly whatsapp: WhatsAppService,
+    private readonly sms: SmsService,
     private readonly attendance: AttendanceService,
   ) {}
 
@@ -147,6 +150,7 @@ export class AnalyticsService {
               admissionNumber: true,
               fatherPhone: true,
               motherPhone: true,
+              emergencyContactPhone: true,
               user:   { select: { name: true } },
               parent: { select: { whatsappNumber: true } },
             },
@@ -181,15 +185,18 @@ export class AnalyticsService {
       if (paid >= due) continue; // fully paid — skip
 
       const remaining = Math.max(0, due - paid);
-      const phone = student.parent?.whatsappNumber || student.fatherPhone || student.motherPhone;
+      const phone = parentPhone(student);
       if (!phone) { skipped++; continue; }
 
       const studentName = student.user?.name ?? student.admissionNumber;
       const fmt = (n: number) => n.toLocaleString('fr-FR');
       const message = this.buildReminderMessage(schoolName, studentName, year, due, paid, remaining, fmt);
 
-      const ok = await this.whatsapp.sendText(phone, message, institution?.country);
-      if (ok) sent++; else failed++;
+      // WhatsApp et SMS (selon ce qui est configuré) ; sans envoi automatique, le rappel est compté « échoué »
+      const wa = this.whatsapp.enabled && await this.whatsapp.sendText(phone, message, institution?.country).catch(() => false);
+      const smsText = message.replace(/\*/g, '').replace(/\n+/g, ' ');
+      const sms = this.sms.enabled && await this.sms.sendText(phone, smsText, institution?.country).catch(() => false);
+      if (wa || sms) sent++; else failed++;
     }
 
     return { sent, skipped, failed, academicYear: year };

@@ -89,6 +89,85 @@ function RecordPayment({ row, year, onClose, onDone }) {
   );
 }
 
+/** Numéro au format international pour wa.me (chiffres seulement) : 0XX XXX XXXX (Ghana) → 233…, 8 chiffres (Togo) → 228… */
+function intlDigits(phone) {
+  let d = String(phone ?? '').replace(/\D/g, '');
+  if (d.startsWith('00')) d = d.slice(2);
+  if (d.length === 10 && d.startsWith('0')) d = `233${d.slice(1)}`;
+  else if (d.length === 8) d = `228${d}`;
+  return d;
+}
+const waLink = (phone, text) => `https://wa.me/${intlDigits(phone)}?text=${encodeURIComponent(text)}`;
+const smsLink = (phone, text) => `sms:${String(phone).replace(/[^\d+]/g, '')}?body=${encodeURIComponent(text)}`;
+
+const CHANNELS = [
+  { key: 'WHATSAPP', label: 'WhatsApp', avail: 'whatsapp' },
+  { key: 'SMS', label: 'SMS', avail: 'sms' },
+  { key: 'EMAIL', label: 'E-mail', avail: 'email' },
+];
+
+/* ── Rappels à envoyer depuis le téléphone de l'école (WhatsApp / SMS déjà rédigés) ── */
+function ManualReminders({ items, onClose }) {
+  const [done, setDone] = useState(new Set());
+  if (!items?.length) return null;
+  const mark = (id) => setDone((s) => new Set(s).add(id));
+  return (
+    <OffCanvas open onClose={onClose} title={`Envoyer depuis votre téléphone (${items.length})`} size="md"
+      footer={<Button onClick={onClose}>Terminé</Button>}>
+      <p className="pst-manual__intro">
+        Ces parents n'ont pas pu être prévenus automatiquement. Le message est déjà rédigé : touchez
+        <strong> WhatsApp</strong> ou <strong>SMS</strong>, votre application s'ouvre, il ne reste qu'à appuyer sur Envoyer.
+      </p>
+      <ul className="pst-manual">
+        {items.map((m) => (
+          <li key={m.studentId} className={done.has(m.studentId) ? 'pst-manual__item pst-manual__item--done' : 'pst-manual__item'}>
+            <div className="pst-manual__who"><strong>{m.name}</strong><span>{m.phone}</span></div>
+            <div className="pst-manual__btns">
+              <a className="pst-manual__wa" href={waLink(m.phone, m.message)} target="_blank" rel="noopener noreferrer" onClick={() => mark(m.studentId)}>💬 WhatsApp</a>
+              <a className="pst-manual__sms" href={smsLink(m.phone, m.message)} onClick={() => mark(m.studentId)}>✉️ SMS</a>
+              {done.has(m.studentId) && <span className="pst-manual__ok">✓</span>}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </OffCanvas>
+  );
+}
+
+/* ── Numéro du parent (père ou mère), pour pouvoir le relancer ── */
+function ParentPhoneForm({ row, onClose, onDone }) {
+  const [phone, setPhone] = useState('');
+  const [who, setWho] = useState('FATHER');
+  const [name, setName] = useState('');
+  const [busy, setBusy] = useState(false);
+  if (!row) return null;
+  const submit = async () => {
+    if (phone.replace(/\D/g, '').length < 8) { toast.error('Indiquez un numéro de téléphone valide.'); return; }
+    setBusy(true);
+    try {
+      await api.patch(`/fees/students/${row.studentId}/parent-phone`, { phone, who, name: name || undefined });
+      toast.success('Numéro enregistré.');
+      onDone();
+    } catch (err) {
+      const m = err?.response?.data?.message;
+      toast.error(m ? [].concat(m).join(' · ') : "L'enregistrement a échoué.");
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <OffCanvas open onClose={onClose} title={`Numéro du parent — ${row.name}`} size="sm"
+      footer={<><Button variant="ghost" onClick={onClose} disabled={busy}>Annuler</Button><Button onClick={submit} disabled={busy}>{busy ? 'Enregistrement…' : 'Enregistrer'}</Button></>}>
+      <div className="pst-pay">
+        <Select label="Parent" value={who} options={[{ value: 'FATHER', label: 'Père' }, { value: 'MOTHER', label: 'Mère' }]} onChange={(e) => setWho(e.target.value)} />
+        <Input label="Téléphone (WhatsApp de préférence)" value={phone} placeholder="ex. 024 123 4567" onChange={(e) => setPhone(e.target.value)} />
+        <Input label="Nom (facultatif)" value={name} onChange={(e) => setName(e.target.value)} />
+        <p className="pst-pay__hint">Enregistré sur la fiche de l'élève ; utilisé pour les rappels de paiement et les reçus.</p>
+      </div>
+    </OffCanvas>
+  );
+}
+
 export default function PaymentStatusPage() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
@@ -101,6 +180,16 @@ export default function PaymentStatusPage() {
   const [selected, setSelected] = useState(new Set());
   const [paying, setPaying] = useState(null);
   const [sending, setSending] = useState(false);
+  const [channels, setChannels] = useState(new Set(['WHATSAPP', 'SMS', 'EMAIL']));
+  const [manual, setManual] = useState(null);
+  const [phoneFor, setPhoneFor] = useState(null);
+  // Canaux d'envoi automatique configurés sur la plateforme
+  const { data: available } = useQuery({
+    queryKey: ['reminder-channels'],
+    queryFn: () => api.get('/fees/reminders/channels').then((r) => r.data),
+    staleTime: 10 * 60 * 1000,
+  });
+  const toggleChannel = (k) => setChannels((s) => { const n = new Set(s); if (n.has(k)) n.delete(k); else n.add(k); return n; });
 
   const { data: classes = [] } = useQuery({ queryKey: ['classes'], queryFn: () => classesService.list().then((r) => r.data) });
   const { data, isLoading, isError, refetch } = useQuery({
@@ -136,8 +225,15 @@ export default function PaymentStatusPage() {
     if (ids.length > 1 && !window.confirm(`Envoyer un rappel de paiement aux parents de ${ids.length} élève(s) ?`)) return;
     setSending(true);
     try {
-      const { data: res } = await api.post('/fees/reminders/send', { studentIds: ids, academicYear: year });
-      toast.success(`${res.sent} rappel(s) envoyé(s)${res.noContact ? ` · ${res.noContact} sans contact parent` : ''}${res.noBalance ? ` · ${res.noBalance} déjà à jour` : ''}.`);
+      const { data: res } = await api.post('/fees/reminders/send', { studentIds: ids, academicYear: year, channels: [...channels] });
+      const by = res.byChannel ?? {};
+      const parts = [
+        by.whatsapp ? `${by.whatsapp} WhatsApp` : '', by.sms ? `${by.sms} SMS` : '', by.email ? `${by.email} e-mail` : '',
+      ].filter(Boolean).join(', ');
+      const extra = `${res.manual?.length ? ` · ${res.manual.length} à envoyer depuis votre téléphone` : ''}${res.noContact ? ` · ${res.noContact} sans numéro de parent` : ''}${res.noBalance ? ` · ${res.noBalance} déjà à jour` : ''}`;
+      if (res.sent) toast.success(`${res.sent} parent(s) prévenu(s)${parts ? ` (${parts})` : ''}${extra}.`, { duration: 7000 });
+      else toast(`Aucun envoi automatique${extra}.`, { icon: '📲', duration: 7000 });
+      if (res.manual?.length) setManual(res.manual);
       setSelected(new Set());
     } catch (err) {
       const m = err?.response?.data?.message;
@@ -175,10 +271,22 @@ export default function PaymentStatusPage() {
         <span>Payé <strong className="pst-green">{money(totals.paid)} FCFA</strong></span>
         <span>Reste <strong className="pst-red">{money(totals.balance)} FCFA</strong></span>
         {selected.size > 0 && (
-          <Button size="sm" onClick={() => remind([...selected])} disabled={sending}>
+          <Button size="sm" onClick={() => remind([...selected])} disabled={sending || channels.size === 0}>
             {sending ? 'Envoi…' : `📲 Rappeler ${selected.size} parent(s)`}
           </Button>
         )}
+      </div>
+
+      {/* Canaux des rappels de paiement */}
+      <div className="pst-channels">
+        <span className="pst-channels__label">Rappels envoyés par :</span>
+        {CHANNELS.map((c) => (
+          <label key={c.key} className={`pst-channel${available && !available[c.avail] ? ' pst-channel--off' : ''}`}
+            title={available && !available[c.avail] ? "Envoi automatique non activé : le message vous sera proposé pour l'envoyer depuis votre téléphone" : ''}>
+            <input type="checkbox" checked={channels.has(c.key)} onChange={() => toggleChannel(c.key)} />
+            {c.label}{available && !available[c.avail] && c.key !== 'EMAIL' ? ' (depuis votre téléphone)' : ''}
+          </label>
+        ))}
       </div>
 
       {isLoading ? (
@@ -213,7 +321,10 @@ export default function PaymentStatusPage() {
                     <td className={`pst-num${r.balance > 0 ? ' pst-red' : ''}`}><strong>{money(r.balance)}</strong></td>
                     <td><span className={`pst-status pst-status--${st.cls}`}>{st.icon} {st.label}</span></td>
                     <td>{r.lastPayment ? <>{fmtDate(r.lastPayment.date)}<div className="pst-sub">{money(r.lastPayment.amount)} FCFA</div></> : <span className="pst-sub">Aucun</span>}</td>
-                    <td>{r.parent ? <>{r.parent.name}<div className="pst-sub">{r.parent.phone || r.parent.email || 'Pas de contact'}</div></> : <span className="pst-sub">Aucun parent</span>}</td>
+                    <td>
+                      {r.parent ? <>{r.parent.name ?? 'Parent'}<div className="pst-sub">{r.parent.phone || r.parent.email || 'Pas de contact'}</div></> : <span className="pst-sub">Aucun numéro</span>}
+                      {!r.parent?.phone && <button type="button" className="pst-addphone" onClick={() => setPhoneFor(r)}>📞 Ajouter le numéro</button>}
+                    </td>
                     <td className="pst-actions">
                       {r.expected > 0 && r.balance > 0 && <button type="button" onClick={() => setPaying(r)}>💵 Encaisser</button>}
                       {r.balance > 0 && <button type="button" onClick={() => remind([r.studentId])} disabled={sending}>📲 Rappeler</button>}
@@ -236,6 +347,14 @@ export default function PaymentStatusPage() {
             qc.invalidateQueries({ queryKey: ['students-status'] });
             qc.invalidateQueries({ queryKey: ['collection-overview'] });
           }}
+        />
+      )}
+      {manual && <ManualReminders items={manual} onClose={() => setManual(null)} />}
+      {phoneFor && (
+        <ParentPhoneForm
+          row={phoneFor}
+          onClose={() => setPhoneFor(null)}
+          onDone={() => { setPhoneFor(null); qc.invalidateQueries({ queryKey: ['students-status'] }); }}
         />
       )}
     </AppShell>

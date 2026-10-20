@@ -56,6 +56,11 @@ export class WhatsAppService {
     }
   }
 
+  /** Envoi automatique réellement configuré (sinon les messages sont seulement écrits dans le journal). */
+  get enabled(): boolean {
+    return this.provider !== 'NONE';
+  }
+
   async sendBulletinReady(payload: WhatsAppBulletinPayload): Promise<boolean> {
     const message = this.buildMessage(payload);
     return this.send(payload.toPhone, message, payload.country);

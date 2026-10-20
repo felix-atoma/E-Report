@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateFeeDto } from './dto/create-fee.dto';
 import { AssignFeeDto } from './dto/assign-fee.dto';
+import { parentPhone } from './fee-reminders.service';
 
 @Injectable()
 export class FeesService {
@@ -67,6 +68,25 @@ export class FeesService {
    * Situation des paiements de chaque élève inscrit pour l'année (y compris ceux qui n'ont rien
    * payé) : attendu, payé, reste, statut, dernier paiement et contact du parent.
    */
+  /**
+   * Numéro du parent saisi depuis la situation des paiements (économe ou admin), pour les rappels :
+   * enregistré sur la fiche de l'élève comme téléphone du père ou de la mère (et son nom si donné).
+   */
+  async setParentPhone(institutionId: string, studentId: string, dto: { phone: string; who: 'FATHER' | 'MOTHER'; name?: string }) {
+    const student = await this.prisma.student.findFirst({ where: { id: studentId, institutionId }, select: { id: true } });
+    if (!student) throw new NotFoundException('Élève introuvable');
+    const phone = dto.phone.trim();
+    if (phone.replace(/\D/g, '').length < 8) throw new BadRequestException('Numéro de téléphone invalide');
+    const name = dto.name?.trim() || undefined;
+    await this.prisma.student.update({
+      where: { id: studentId },
+      data: dto.who === 'MOTHER'
+        ? { motherPhone: phone, ...(name ? { motherName: name } : {}) }
+        : { fatherPhone: phone, ...(name ? { fatherName: name } : {}) },
+    });
+    return { ok: true, phone };
+  }
+
   async studentsPaymentStatus(institutionId: string, academicYear?: string, classId?: string) {
     const year = academicYear || await this.defaultFeeYear(institutionId);
     const enrolments = await this.prisma.classStudent.findMany({
@@ -79,6 +99,7 @@ export class FeesService {
             admissionNumber: true,
             user: { select: { name: true } },
             parent: { select: { name: true, whatsappNumber: true, email: true } },
+            fatherName: true, fatherPhone: true, motherName: true, motherPhone: true, emergencyContactPhone: true,
           },
         },
       },
@@ -127,8 +148,13 @@ export class FeesService {
         balance,
         status,
         lastPayment: last.get(e.studentId) ?? null,
-        parent: e.student.parent
-          ? { name: e.student.parent.name, phone: e.student.parent.whatsappNumber, email: e.student.parent.email }
+        // Contact du parent pour les rappels : compte parent, sinon père / mère de la fiche élève
+        parent: e.student.parent || parentPhone(e.student)
+          ? {
+              name: e.student.parent?.name ?? (e.student.fatherPhone ? e.student.fatherName : e.student.motherName) ?? null,
+              phone: parentPhone(e.student),
+              email: e.student.parent?.email ?? null,
+            }
           : null,
       };
     });

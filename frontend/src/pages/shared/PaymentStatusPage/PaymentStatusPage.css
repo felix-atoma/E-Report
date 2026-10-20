@@ -28,3 +28,23 @@ a.pst-name:hover { color: var(--color-primary, #1e3a8a); text-decoration: underl
 .pst-pay__summary { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; font-size: 0.85rem; color: #475569; background: #f8fafc; border-radius: 8px; padding: 0.6rem 0.75rem; }
 .pst-pay__hint { margin: 0; font-size: 0.8rem; color: #64748b; }
 @media (max-width: 720px) { .pst-filters { grid-template-columns: 1fr; } }
+
+/* Canaux des rappels de paiement */
+.pst-channels { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; margin: 0 0 .9rem; font-size: .88rem; }
+.pst-channels__label { font-weight: 700; color: #002347; }
+.pst-channel { display: inline-flex; align-items: center; gap: .35rem; font-weight: 600; cursor: pointer; }
+.pst-channel--off { color: #6b7280; }
+.pst-addphone { display: inline-block; white-space: nowrap; margin-top: .25rem; border: 1px dashed #94a3b8; background: #f8fafc; color: #002347; border-radius: 6px; padding: .15rem .5rem; font-size: .75rem; font-weight: 700; cursor: pointer; }
+
+/* Rappels à envoyer depuis le téléphone */
+.pst-manual__intro { font-size: .88rem; color: #374151; margin: 0 0 .8rem; line-height: 1.5; }
+.pst-manual { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .5rem; }
+.pst-manual__item { display: flex; justify-content: space-between; align-items: center; gap: .6rem; flex-wrap: wrap; border: 1px solid #e5e7eb; border-radius: 10px; padding: .55rem .7rem; }
+.pst-manual__item--done { background: #f0fdf4; border-color: #bbf7d0; }
+.pst-manual__who { display: flex; flex-direction: column; font-size: .88rem; }
+.pst-manual__who span { color: #6b7280; font-size: .8rem; }
+.pst-manual__btns { display: flex; align-items: center; gap: .4rem; }
+.pst-manual__wa, .pst-manual__sms { text-decoration: none; border-radius: 8px; padding: .4rem .7rem; font-weight: 700; font-size: .8rem; }
+.pst-manual__wa { background: #25d366; color: #fff; }
+.pst-manual__sms { background: #002347; color: #fff; }
+.pst-manual__ok { color: #15803d; font-weight: 900; }

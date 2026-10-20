@@ -5,8 +5,21 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { WhatsAppService } from '../whatsapp/whatsapp.service';
 import { MailService } from '../mail/mail.service';
 import { SmsService } from '../sms/sms.service';
+import { ReminderChannel } from './dto/send-reminders.dto';
 
 type Severity = 'FRIENDLY' | 'URGENT';
+
+/** Numéro du parent : compte parent, sinon père, mère ou contact d'urgence de la fiche élève. */
+export function parentPhone(st: {
+  parent?: { whatsappNumber?: string | null } | null;
+  fatherPhone?: string | null; motherPhone?: string | null; emergencyContactPhone?: string | null;
+}): string | null {
+  return [st.parent?.whatsappNumber, st.fatherPhone, st.motherPhone, st.emergencyContactPhone]
+    .map((p) => (p ?? '').trim()).find((p) => p.replace(/\D/g, '').length >= 8) ?? null;
+}
+
+/** Texte SMS : sans la mise en forme WhatsApp (*gras*) ni sauts de ligne. */
+const toSms = (message: string) => message.replace(/\*/g, '').replace(/\n+/g, ' ');
 
 /** Months elapsed since school resumption (assumed Sept 1 of the academic year's first year). */
 function monthsSinceResumption(academicYear: string, now = new Date()): number {
@@ -49,11 +62,20 @@ export class FeeRemindersService {
     return this.runReminders(severity);
   }
 
+  /** Canaux d'envoi automatique réellement configurés sur la plateforme. */
+  channels() {
+    return { whatsapp: this.whatsapp.enabled, sms: this.sms.enabled, email: this.mail.isConfigured };
+  }
+
   /**
-   * Rappel envoyé tout de suite (bouton « Rappeler » de la situation des paiements) aux parents des
-   * élèves choisis qui ont un solde : WhatsApp, SMS (si configuré) et e-mail. Ton « amical ».
+   * Rappel envoyé tout de suite (boutons « Rappeler » de la situation des paiements) aux parents des
+   * élèves choisis qui ont un solde, par les canaux choisis : WhatsApp, SMS, e-mail. Ton « amical ».
+   * Numéro du parent : celui de son compte, sinon le téléphone du père, de la mère ou du contact
+   * d'urgence saisi sur la fiche de l'élève. Les élèves joignables par téléphone mais pas en
+   * automatique sont renvoyés dans `manual` : message prêt à envoyer depuis le téléphone de l'école.
    */
-  async sendNow(institutionId: string, studentIds: string[], academicYear: string) {
+  async sendNow(institutionId: string, studentIds: string[], academicYear: string, channels?: ReminderChannel[]) {
+    const want = new Set<ReminderChannel>(channels?.length ? channels : ['WHATSAPP', 'SMS', 'EMAIL']);
     const institution = await this.prisma.institution.findUnique({ where: { id: institutionId }, select: { name: true, country: true } });
     const students = await this.prisma.student.findMany({
       where: { id: { in: studentIds }, institutionId },
@@ -64,34 +86,42 @@ export class FeeRemindersService {
         payments: { where: { academicYear }, select: { amount: true } },
       },
     });
+    const byChannel = { whatsapp: 0, sms: 0, email: 0 };
+    const manual: { studentId: string; name: string; phone: string; message: string }[] = [];
     let sent = 0; let noBalance = 0; let noContact = 0;
     for (const st of students) {
       const balance = st.studentFees.reduce((s, f) => s + Number(f.amountDue), 0) - st.payments.reduce((s, p) => s + Number(p.amount), 0);
       if (balance <= 0) { noBalance++; continue; }
       const parent = st.parent;
+      const phone = parentPhone(st);
       const language = (parent?.language as 'FR' | 'EN' | undefined) ?? 'FR';
       const studentName = st.user?.name ?? st.admissionNumber;
       const balanceLabel = `${Math.round(balance).toLocaleString('fr-FR')} FCFA`;
+      const message = this.buildWhatsAppMessage({
+        severity: 'FRIENDLY', parentName: parent?.name, studentName, balanceLabel, institutionName: institution?.name ?? '', language,
+      });
       let delivered = false;
-      if (parent?.whatsappNumber) {
-        const message = this.buildWhatsAppMessage({
-          severity: 'FRIENDLY', parentName: parent.name, studentName, balanceLabel, institutionName: institution?.name ?? '', language,
-        });
-        delivered = (await this.whatsapp.sendText(parent.whatsappNumber, message, institution?.country).catch(() => false)) || delivered;
-        if (this.sms.enabled) {
-          delivered = (await this.sms.sendText(parent.whatsappNumber, message.replace(/\*/g, '').replace(/\n+/g, ' '), institution?.country).catch(() => false)) || delivered;
-        }
+      if (phone && want.has('WHATSAPP') && this.whatsapp.enabled
+        && await this.whatsapp.sendText(phone, message, institution?.country).catch(() => false)) {
+        byChannel.whatsapp++; delivered = true;
       }
-      if (parent?.email) {
-        delivered = (await this.mail.sendFeeReminder({
+      if (phone && want.has('SMS') && this.sms.enabled
+        && await this.sms.sendText(phone, toSms(message), institution?.country).catch(() => false)) {
+        byChannel.sms++; delivered = true;
+      }
+      if (parent?.email && want.has('EMAIL') && this.mail.isConfigured
+        && await this.mail.sendFeeReminder({
           to: parent.email, parentName: parent.name, studentName, balance: balanceLabel,
           institutionName: institution?.name ?? '', severity: 'FRIENDLY', language,
-        }).catch(() => false)) || delivered;
+        }).catch(() => false)) {
+        byChannel.email++; delivered = true;
       }
-      if (delivered) sent++; else noContact++;
+      if (delivered) sent++;
+      else if (phone) manual.push({ studentId: st.id, name: studentName, phone, message: toSms(message) });
+      else noContact++;
     }
-    this.logger.log(`Rappels immédiats : ${sent} envoyé(s), ${noBalance} à jour, ${noContact} sans contact`);
-    return { sent, noBalance, noContact };
+    this.logger.log(`Rappels immédiats : ${sent} envoyé(s) (WA ${byChannel.whatsapp}, SMS ${byChannel.sms}, mail ${byChannel.email}), ${manual.length} à envoyer à la main, ${noBalance} à jour, ${noContact} sans contact`);
+    return { sent, noBalance, noContact, byChannel, manual, available: this.channels() };
   }
 
   private async runReminders(severity: Severity) {
@@ -160,21 +190,23 @@ export class FeeRemindersService {
 
           let delivered = false;
 
-          if (parent?.whatsappNumber) {
+          // Numéro du compte parent, sinon père / mère / contact d'urgence de la fiche élève
+          const phone = parentPhone(student);
+          if (phone) {
             const message = this.buildWhatsAppMessage({
               severity,
-              parentName: parent.name,
+              parentName: parent?.name,
               studentName,
               balanceLabel,
               institutionName: institution.name,
               language,
             });
-            const ok = await this.whatsapp.sendText(parent.whatsappNumber, message, institution.country).catch(() => false);
+            const ok = this.whatsapp.enabled && await this.whatsapp.sendText(phone, message, institution.country).catch(() => false);
             delivered = delivered || ok;
             // SMS en plus (parents sans WhatsApp ou sans internet), seulement si Twilio SMS est configuré
             if (this.sms.enabled) {
               const smsText = message.replace(/\*/g, '').replace(/\n+/g, ' ');
-              const smsOk = await this.sms.sendText(parent.whatsappNumber, smsText, institution.country).catch(() => false);
+              const smsOk = await this.sms.sendText(phone, smsText, institution.country).catch(() => false);
               delivered = delivered || smsOk;
             }
           }

@@ -16,6 +16,7 @@ import { CreateFeeDto } from './dto/create-fee.dto';
 import { AssignFeeDto } from './dto/assign-fee.dto';
 import { ImportArrearsDto } from './dto/import-arrears.dto';
 import { SendRemindersDto } from './dto/send-reminders.dto';
+import { ParentPhoneDto } from './dto/parent-phone.dto';
 import { FeeRemindersService } from './fee-reminders.service';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -70,7 +71,21 @@ export class FeesController {
   @Roles(Role.ADMIN, Role.BURSAR)
   @ApiOperation({ summary: 'Envoyer tout de suite un rappel de paiement aux parents des élèves choisis' })
   sendReminders(@CurrentUser() user: any, @Body() body: SendRemindersDto) {
-    return this.reminders.sendNow(user.institutionId, body.studentIds, body.academicYear);
+    return this.reminders.sendNow(user.institutionId, body.studentIds, body.academicYear, body.channels);
+  }
+
+  @Get('reminders/channels')
+  @Roles(Role.ADMIN, Role.BURSAR)
+  @ApiOperation({ summary: "Canaux d'envoi automatique configurés (WhatsApp, SMS, e-mail)" })
+  reminderChannels() {
+    return this.reminders.channels();
+  }
+
+  @Patch('students/:studentId/parent-phone')
+  @Roles(Role.ADMIN, Role.BURSAR)
+  @ApiOperation({ summary: 'Enregistrer le numéro du parent (père ou mère) pour les rappels' })
+  setParentPhone(@CurrentUser() user: any, @Param('studentId') studentId: string, @Body() body: ParentPhoneDto) {
+    return this.service.setParentPhone(user.institutionId, studentId, body);
   }
 
   @Get('collection-overview')
