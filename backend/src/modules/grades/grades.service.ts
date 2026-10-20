@@ -402,6 +402,25 @@ export class GradesService {
       }
     }
 
+    // Correction par l'administrateur (fiche déjà signée possible) : journal, puis les bulletins déjà
+    // publiés de la classe sont recalculés (moyennes, rangs) et leurs PDF refaits
+    if (requestingRole === Role.ADMIN) {
+      const fiche = await this.prisma.gradeFiche.findUnique({
+        where: { classId_subjectId_academicYear_termNumber: { classId, subjectId, academicYear: dto.academicYear, termNumber: dto.termNumber } },
+        select: { signedAt: true, signedByName: true },
+      });
+      if (fiche?.signedAt) {
+        await this.prisma.auditLog.create({
+          data: {
+            userId: requestingUserId, action: 'ADMIN_CORRECTION', resource: 'GradeFiche', resourceId: `${classId}:${subjectId}`,
+            metadata: { subject: subject.nameFr, academicYear: dto.academicYear, termNumber: dto.termNumber, signedBy: fiche.signedByName,
+              coefficients: [...new Set(dto.grades.map((g) => g.coefficient ?? 1))] } as any,
+          },
+        }).catch(() => undefined);
+      }
+      this.events.emit('grades.corrected', { classId, academicYear: dto.academicYear, termNumber: dto.termNumber, institutionId: cls.institutionId });
+    }
+
     // Return the updated fiche
     return this.getForClassSubject(classId, subjectId, dto.academicYear, dto.termNumber, requestingUserId, requestingRole);
   }

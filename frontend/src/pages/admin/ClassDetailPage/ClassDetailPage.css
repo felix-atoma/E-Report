@@ -466,3 +466,8 @@
   color: var(--color-text-muted, #6b7280);
 }
 .acd__fiche-btn--unsign:not(:disabled):hover { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
+
+/* Ouvrir / corriger une fiche de notes (administrateur) */
+.acd__fiche-actions { display: flex; gap: 6px; align-items: center; }
+.acd__fiche-btn--open { background: #002347; color: #fff; text-decoration: none; display: inline-flex; align-items: center; }
+.acd__fiche-btn--open:hover { opacity: 0.88; }

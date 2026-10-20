@@ -228,7 +228,10 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
 
   // A fiche is locked once signed; teacher must click "Modifier les notes" to unsign first
   const canUnsign = isAdmin || currentUser?.id === signedById;
-  const isLocked = isSigned;
+  // Correction par l'administrateur : fiche signée ou examen publié modifiable sans retirer la signature
+  const [adminEdit, setAdminEdit] = useState(false);
+  const isLocked = isSigned && !adminEdit;
+  const canWrite = isEditable && !isLocked && (!isPublished || adminEdit);
 
   const setScore = (studentId, val) => {
     setScores((p) => ({ ...p, [studentId]: val }));
@@ -305,7 +308,7 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
           {/* Editable coefficient on screen */}
           <span className="mfiche-subj-coeff no-print">
             Coeff.&nbsp;
-            {isEditable && !isPublished && !isLocked ? (
+            {canWrite ? (
               <input
                 type="text" inputMode="numeric"
                 className={`mfiche-coeff-input${coeffValid ? '' : ' mfiche-coeff-input--error'}`}
@@ -334,7 +337,7 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
           )}
 
           {/* Save button — only when not signed */}
-          {isEditable && !isPublished && !isLocked && (
+          {canWrite && (
             <>
               {dirty && (
                 <button className="mfiche-save-btn" onClick={handleSave} disabled={saving}>
@@ -346,11 +349,16 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
           )}
 
           {/* Sign button — only after saving, when not yet signed */}
-          {isEditable && !isPublished && !isLocked && !dirty && !isSigned && (
+          {canWrite && !isPublished && !dirty && !isSigned && (
             <button className="mfiche-sign-btn" onClick={() => setSignModal(true)} disabled={signing}>
               {signing ? 'Signature…' : '✍️ Signer la fiche'}
             </button>
           )}
+
+          {isAdmin && (isSigned || isPublished) && !adminEdit && (
+            <button className="mfiche-admin-fix-btn" onClick={() => setAdminEdit(true)}>✏️ Corriger (admin)</button>
+          )}
+          {adminEdit && <span className="mfiche-admin-fix-hint">Correction administrateur — signature conservée</span>}
 
           {/* Unsign: admin always, or the teacher who originally signed */}
           {isSigned && canUnsign && (
@@ -367,7 +375,7 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
         )}
       </div>
 
-      {isSmallScreen && !focusMode && isEditable && !isPublished && !isLocked && (
+      {isSmallScreen && !focusMode && canWrite && (
         <div className="fdn__landscape-cta no-print">
           <span className="fdn__landscape-cta__icon" aria-hidden="true">📱↻</span>
           <div className="fdn__landscape-cta__text">
@@ -436,7 +444,7 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
                 <td className="mfiche-td mfiche-td--name">{student.studentName}</td>
                 <td className="mfiche-td mfiche-td--mat">{student.admissionNumber}</td>
                 <td className="mfiche-td mfiche-td--score">
-                  {isEditable && !isPublished && !isLocked ? (
+                  {canWrite ? (
                     <input
                       type="number"
                       inputMode="decimal"

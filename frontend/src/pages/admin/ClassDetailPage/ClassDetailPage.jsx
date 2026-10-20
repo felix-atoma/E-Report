@@ -231,6 +231,14 @@ function FichesPanel({ classId, academicYear, t }) {
                 )}
               </div>
               <div className="acd__fiche-actions">
+                {/* Ouvrir la fiche : l'administrateur peut corriger notes et coefficient, même signée */}
+                <Link
+                  className="acd__fiche-btn acd__fiche-btn--open"
+                  to={`/teacher/classes/${classId}/grades/${f.subjectId}?academicYear=${encodeURIComponent(academicYear)}&termNumber=${term}&termName=${encodeURIComponent(`${term === 1 ? '1er' : `${term}e`} Trimestre`)}`}
+                  title="Ouvrir la fiche de notes (correction possible même si elle est signée)"
+                >
+                  ✏️ Corriger
+                </Link>
                 {f.isSigned ? (
                   <button
                     className="acd__fiche-btn acd__fiche-btn--unsign"

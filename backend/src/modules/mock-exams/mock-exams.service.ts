@@ -376,8 +376,17 @@ export class MockExamsService {
   ) {
     const exam = await this.findExamOrThrow(examId, institutionId);
     await this.assertSubjectAccess(exam.classId, subjectId, userId, userRole);
-    if (exam.status === 'PUBLISHED') {
+    // Examen publié : seul l'administrateur peut encore corriger (coefficient mal mis, note erronée)
+    if (exam.status === 'PUBLISHED' && userRole !== 'ADMIN') {
       throw new ForbiddenException('Impossible de modifier un examen publié.');
+    }
+    if (userRole === 'ADMIN') {
+      const signed = await this.prisma.mockExamSubjectFiche.findUnique({ where: { mockExamId_subjectId: { mockExamId: examId, subjectId } }, select: { signedAt: true } });
+      if (signed?.signedAt || exam.status === 'PUBLISHED') {
+        await this.prisma.auditLog.create({
+          data: { userId: userId ?? null, action: 'ADMIN_CORRECTION', resource: 'MockExamFiche', resourceId: `${examId}:${subjectId}`, metadata: { coefficient, published: exam.status === 'PUBLISHED' } as any },
+        }).catch(() => undefined);
+      }
     }
     // Block edits on a signed fiche (unless admin)
     if (userRole !== 'ADMIN') {
@@ -476,7 +485,7 @@ export class MockExamsService {
   // ─── Save grades for an exam ─────────────────────────────────────────────────
   async saveGrades(examId: string, dto: SaveMockExamGradesDto, institutionId: string, userRole = 'TEACHER', userId?: string) {
     const exam = await this.findExamOrThrow(examId, institutionId);
-    if (exam.status === 'PUBLISHED') {
+    if (exam.status === 'PUBLISHED' && userRole !== 'ADMIN') {
       throw new ForbiddenException('Impossible de modifier un examen publié.');
     }
     // Same rules as the per-subject fiche: a teacher only writes their own subjects, never on a signed fiche

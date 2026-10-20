@@ -11,6 +11,7 @@ import Loading from '../../../components/common/Loading/Loading';
 import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
 import SignaturePad from '../../../components/common/SignaturePad/SignaturePad';
 import { gradesService } from '../../../services/gradesService';
+import { useAuth } from '../../../context/AuthContext';
 import { enqueueGrade, dequeueAll, removeFromQueue, queueCount } from '../../../utils/offlineGradeQueue';
 import { subjectHoursService } from '../../../services/subjectHoursService';
 import './GradeEntryPage.css';
@@ -205,6 +206,11 @@ export default function GradeEntryPage() {
   }
 
   const isSigned = data?.fiche?.isSigned ?? false;
+  // Correction par l'administrateur : fiche signée modifiable (coefficient, notes) sans retirer la signature
+  const { user: me } = useAuth();
+  const isAdmin = me?.role === 'ADMIN';
+  const [adminEdit, setAdminEdit] = useState(false);
+  const locked = isSigned && !adminEdit;
 
   const [pendingCount, setPendingCount] = useState(0);
   const [syncing, setSyncing] = useState(false);
@@ -494,7 +500,7 @@ export default function GradeEntryPage() {
                   min={0.5} max={20} step={0.5}
                   value={coef}
                   onChange={(e) => setCoef(parseFloat(e.target.value))}
-                  disabled={isSigned}
+                  disabled={locked}
                 />
               </label>
             )}
@@ -535,6 +541,13 @@ export default function GradeEntryPage() {
                 >
                   {t('gradeEntry.sign')}
                 </button>
+              </>
+            ) : adminEdit ? (
+              <>
+                <button className="fdn__btn fdn__btn--primary" onClick={handleSave} disabled={mutation.isPending}>
+                  {mutation.isPending ? t('gradeEntry.saving') : '💾 Enregistrer la correction'}
+                </button>
+                <button className="fdn__btn fdn__btn--secondary" onClick={() => setAdminEdit(false)}>Terminer</button>
               </>
             ) : (
               <button
@@ -577,6 +590,17 @@ export default function GradeEntryPage() {
               date: fmtSignedAt(data.fiche.signedAt),
             })}</span>
           </div>
+          {isAdmin && !adminEdit && (
+            <button type="button" className="fdn__admin-fix-btn" onClick={() => setAdminEdit(true)}>
+              ✏️ Corriger (administrateur)
+            </button>
+          )}
+        </div>
+      )}
+      {isSigned && adminEdit && (
+        <div className="fdn__admin-fix-banner">
+          ✏️ <strong>Correction administrateur</strong> — modifiez le coefficient ou les notes puis « Enregistrer la correction ».
+          La signature du professeur est conservée ; si les bulletins sont déjà publiés, moyennes, rangs et PDF sont recalculés automatiquement.
         </div>
       )}
 
@@ -651,12 +675,12 @@ export default function GradeEntryPage() {
                   min={0.5} max={20} step={0.5}
                   value={coef}
                   onChange={(e) => setCoef(parseFloat(e.target.value))}
-                  disabled={isSigned}
+                  disabled={locked}
                 />
               </label>
             )}
             {saved && <span className="fdn-focus__saved">✓ {t('gradeEntry.saved')}</span>}
-            {!isSigned && (
+            {(!isSigned || adminEdit) && (
               <button
                 type="button"
                 className="fdn__btn fdn__btn--primary"
@@ -732,13 +756,13 @@ export default function GradeEntryPage() {
                     <div className="fdn__student-name">{row.studentName}</div>
                     <div className="fdn__student-id">{row.admissionNumber}</div>
                   </td>
-                  <td className="fdn__td"><NoteInput row={idx} col="i1" value={row.noteInterro1} onChange={(v) => updateRow(idx, 'noteInterro1', v)} disabled={isSigned} maxScore={maxScore} /></td>
-                  <td className="fdn__td"><NoteInput row={idx} col="i2" value={row.noteInterro2} onChange={(v) => updateRow(idx, 'noteInterro2', v)} disabled={isSigned} maxScore={maxScore} /></td>
-                  <td className="fdn__td"><NoteInput row={idx} col="i3" value={row.noteInterro3} onChange={(v) => updateRow(idx, 'noteInterro3', v)} disabled={isSigned} maxScore={maxScore} /></td>
-                  <td className="fdn__td"><NoteInput row={idx} col="i4" value={row.noteInterro4} onChange={(v) => updateRow(idx, 'noteInterro4', v)} disabled={isSigned} maxScore={maxScore} /></td>
+                  <td className="fdn__td"><NoteInput row={idx} col="i1" value={row.noteInterro1} onChange={(v) => updateRow(idx, 'noteInterro1', v)} disabled={locked} maxScore={maxScore} /></td>
+                  <td className="fdn__td"><NoteInput row={idx} col="i2" value={row.noteInterro2} onChange={(v) => updateRow(idx, 'noteInterro2', v)} disabled={locked} maxScore={maxScore} /></td>
+                  <td className="fdn__td"><NoteInput row={idx} col="i3" value={row.noteInterro3} onChange={(v) => updateRow(idx, 'noteInterro3', v)} disabled={locked} maxScore={maxScore} /></td>
+                  <td className="fdn__td"><NoteInput row={idx} col="i4" value={row.noteInterro4} onChange={(v) => updateRow(idx, 'noteInterro4', v)} disabled={locked} maxScore={maxScore} /></td>
                   <td className="fdn__td fdn__td--computed">{fmt(moyI)}</td>
-                  <td className="fdn__td fdn__td--devoir"><NoteInput row={idx} col="dev" value={row.noteDevoir} onChange={(v) => updateRow(idx, 'noteDevoir', v)} disabled={isSigned} maxScore={maxScore} /></td>
-                  <td className="fdn__td fdn__td--compo"><NoteInput row={idx} col="comp" value={row.noteComposition} onChange={(v) => updateRow(idx, 'noteComposition', v)} disabled={isSigned} maxScore={maxScore} /></td>
+                  <td className="fdn__td fdn__td--devoir"><NoteInput row={idx} col="dev" value={row.noteDevoir} onChange={(v) => updateRow(idx, 'noteDevoir', v)} disabled={locked} maxScore={maxScore} /></td>
+                  <td className="fdn__td fdn__td--compo"><NoteInput row={idx} col="comp" value={row.noteComposition} onChange={(v) => updateRow(idx, 'noteComposition', v)} disabled={locked} maxScore={maxScore} /></td>
                   <td className={`fdn__td fdn__td--moy ${moy !== null && moy < 10 ? 'fdn__td--fail' : ''}`}>{fmt(moy)}</td>
                   {hasCoefficient && <td className="fdn__td fdn__td--coef">{coef}</td>}
                   {hasCoefficient && <td className="fdn__td fdn__td--total">{moy !== null ? fmt(moy * coef) : '—'}</td>}
@@ -753,8 +777,8 @@ export default function GradeEntryPage() {
                       value={row.teacherName ?? ''}
                       onChange={(e) => updateRow(idx, 'teacherName', e.target.value)}
                       placeholder="Nom…"
-                      disabled={isSigned}
-                      readOnly={isSigned}
+                      disabled={locked}
+                      readOnly={locked}
                     />
                   </td>
                 </tr>

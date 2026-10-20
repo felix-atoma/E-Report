@@ -345,8 +345,75 @@ export class ReportsService {
   }
 
   async update(id: string, dto: UpdateReportDto, institutionId: string, userId: string, role: Role) {
-    await this.ensureEditable(id, institutionId, userId, role);
-    return this.prisma.reportCard.update({ where: { id }, data: dto });
+    const report = await this.ensureEditable(id, institutionId, userId, role);
+    const updated = await this.prisma.reportCard.update({ where: { id }, data: dto });
+    // Correction par l'administrateur d'un bulletin déjà publié : journal + PDF refait pour les parents
+    if (report.status === 'PUBLISHED') {
+      await this.prisma.auditLog.create({
+        data: { userId, action: 'ADMIN_CORRECTION', resource: 'ReportCard', resourceId: id, metadata: { fields: Object.keys(dto) } as any },
+      }).catch(() => undefined);
+      this.regeneratePdf(id, institutionId).catch((e) => this.logger.warn(`PDF non régénéré après correction ${id} : ${e?.message ?? e}`));
+    }
+    return updated;
+  }
+
+  /**
+   * Après une correction de l'administrateur sur une fiche de notes (coefficient, note…) : les bulletins
+   * déjà publiés de la classe pour ce trimestre sont recalculés (moyenne, mention, rang, statistiques
+   * de la classe, moyenne annuelle au dernier trimestre) puis leurs PDF refaits.
+   */
+  @OnEvent('grades.corrected')
+  async recomputePublishedClassTerm(payload: { classId: string; academicYear: string; termNumber: number; institutionId: string }) {
+    const { classId, academicYear, termNumber, institutionId } = payload;
+    try {
+      const reports = await this.prisma.reportCard.findMany({
+        where: { classId, academicYear, termNumber, status: 'PUBLISHED' },
+        include: { grades: { include: { subject: { select: { maxScore: true, category: true } } } }, class: { select: { level: true } } },
+      });
+      if (!reports.length) return { recomputed: 0 };
+      const averages = reports.map((r) => ({ r, avg: this.computeOverallAverage(r.grades as any, r.class.level) }));
+      const sorted = [...averages].sort((a, b) => (b.avg ?? 0) - (a.avg ?? 0));
+      const rankMap = new Map(sorted.map((x, i) => [x.r.id, i + 1]));
+      const values = averages.map((x) => x.avg ?? 0);
+      const round2 = (v: number) => Math.round(v * 100) / 100;
+      const classHighest = round2(Math.max(...values));
+      const classLowest = round2(Math.min(...values));
+      const classAverage = round2(values.reduce((s, v) => s + v, 0) / values.length);
+
+      const inst = await this.prisma.institution.findUnique({ where: { id: institutionId }, select: { academicSettings: true } });
+      const settings = annualSettings(inst?.academicSettings);
+      for (const { r, avg } of averages) {
+        const expected = r.termType === 'SEMESTRE' ? 2 : r.termType === 'TRIMESTRE' ? 3 : null;
+        let annual: { annualAverage?: number | null; councilDecision?: string | null } = {};
+        if (expected !== null && r.termNumber === expected && avg !== null) {
+          const prior = await this.prisma.reportCard.findMany({
+            where: { studentId: r.studentId, academicYear, status: 'PUBLISHED', id: { not: r.id } },
+            select: { termNumber: true, overallAverage: true },
+          });
+          const annualAverage = computeAnnualAverage([...prior, { termNumber: r.termNumber, overallAverage: avg }], expected, settings.weighting);
+          annual = {
+            annualAverage,
+            councilDecision: (r as any).councilDecisionManual ? (r as any).councilDecision : proposedDecision(annualAverage, settings.promotionThreshold),
+          };
+        }
+        await this.prisma.reportCard.update({
+          where: { id: r.id },
+          data: {
+            overallAverage: avg, mention: avg !== null ? computeMention(avg) : null,
+            classRank: rankMap.get(r.id), classSize: reports.length, classHighest, classLowest, classAverage, ...annual,
+          },
+        });
+      }
+      // PDF refaits en arrière-plan (les parents téléchargent la version corrigée)
+      (async () => {
+        for (const r of reports) await this.regeneratePdf(r.id, institutionId).catch(() => undefined);
+      })();
+      this.logger.log(`Correction : ${reports.length} bulletin(s) publiés recalculés (classe ${classId}, T${termNumber})`);
+      return { recomputed: reports.length };
+    } catch (err: any) {
+      this.logger.error(`recomputePublishedClassTerm failed: ${err?.message ?? err}`);
+      return { recomputed: 0 };
+    }
   }
 
   async submit(id: string, institutionId: string, userId: string, role: Role) {
@@ -800,6 +867,15 @@ export class ReportsService {
         });
       }),
     );
+
+    // Admin qui corrige des bulletins déjà publiés (conduite, absences, observation…) : PDF refaits
+    if (role === Role.ADMIN && publishedIds.size) {
+      const ids = results.filter((r) => publishedIds.has(r.studentId)).map((r) => r.id);
+      await this.prisma.auditLog.create({
+        data: { userId, action: 'ADMIN_CORRECTION', resource: 'TitulaireEntry', resourceId: dto.classId, metadata: { termNumber: dto.termNumber, reports: ids.length } as any },
+      }).catch(() => undefined);
+      (async () => { for (const id of ids) await this.regeneratePdf(id, institutionId).catch(() => undefined); })();
+    }
 
     return { count: results.length };
   }
@@ -1529,7 +1605,8 @@ export class ReportsService {
       where: { id, class: { institutionId } },
     });
     if (!report) throw new NotFoundException('Report card not found');
-    if (report.status === 'PUBLISHED') throw new ForbiddenException('Cannot edit a published report');
+    // Un bulletin publié n'est plus modifiable… sauf par l'administrateur (correction d'une erreur)
+    if (report.status === 'PUBLISHED' && role !== Role.ADMIN) throw new ForbiddenException('Cannot edit a published report');
 
     if (role !== Role.ADMIN) {
       const cls = await this.prisma.class.findFirst({ where: { id: report.classId, teacherId: userId } });
