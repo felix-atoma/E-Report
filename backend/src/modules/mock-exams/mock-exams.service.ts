@@ -32,6 +32,14 @@ export function subjectScale(examType: string | null | undefined, subjectMaxScor
   return isPrimaryComposition(examType) ? primarySubjectMax(subjectMaxScore) : examScale(examType);
 }
 
+/**
+ * Sessions dont les notes vont dans la colonne « Devoir » de la fiche de notes du trimestre : devoirs
+ * surveillés, et au primaire compositions mensuelles et compositions d'anglais.
+ */
+export function feedsTermDevoir(examType: string | null | undefined): boolean {
+  return examType === 'DEVOIR_SURVEILLE' || examType === 'COMPOSITION_MENSUELLE' || examType === 'COMPOSITION_ANGLAIS';
+}
+
 /** Composition d'anglais : tous ses documents sont en anglais (relevé, appréciations, palmarès). */
 export function isEnglishSession(examType: string | null | undefined): boolean {
   return examType === 'COMPOSITION_ANGLAIS';
@@ -550,7 +558,7 @@ export class MockExamsService {
   /** Notes du DS avant l'enregistrement (élève:matière → note), pour reconnaître une correction. */
   private async previousDsScores(exam: { id?: string; examType: string }, keys: { studentId: string; subjectId: string }[]) {
     const map = new Map<string, number | null>();
-    if (exam.examType !== 'DEVOIR_SURVEILLE' || !exam.id || !keys.length) return map;
+    if (!feedsTermDevoir(exam.examType) || !exam.id || !keys.length) return map;
     const rows = await this.prisma.mockExamGrade.findMany({
       where: { mockExamId: exam.id, OR: keys.map((k) => ({ studentId: k.studentId, subjectId: k.subjectId })) },
       select: { studentId: true, subjectId: true, score: true },
@@ -590,7 +598,7 @@ export class MockExamsService {
     entries: { studentId: string; subjectId: string; score?: number | null; coefficient?: number | null }[],
     previous: Map<string, number | null> = new Map(),
   ): Promise<string> {
-    if (exam.examType !== 'DEVOIR_SURVEILLE') return '';
+    if (!feedsTermDevoir(exam.examType)) return '';
     try {
       const cls = await this.prisma.class.findUnique({
         where: { id: exam.classId },
@@ -640,8 +648,9 @@ export class MockExamsService {
           const existing = await this.prisma.grade.findUnique({
             where: { reportCardId_subjectId: { reportCardId: reportCard.id, subjectId } },
           });
-          // DS sur 20 → barème de la matière sur la fiche
-          const toFiche = (v: number) => Math.round((v * maxScore / 20) * 100) / 100;
+          // Barème de la session (DS sur 20, composition du primaire sur 10 ou 20) → barème de la matière sur la fiche
+          const examMax = subjectScale(exam.examType, subject.maxScore);
+          const toFiche = (v: number) => Math.round((v * maxScore / examMax) * 100) / 100;
           const devoir = toFiche(e.score as number);
           // Une autre note « Devoir » est déjà sur la fiche (pas celle de ce DS) : on n'écrase pas
           const before = previous.get(`${e.studentId}:${subjectId}`);
