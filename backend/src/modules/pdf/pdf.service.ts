@@ -612,9 +612,10 @@ export class PdfService {
       watermark: buildWatermark(institution.name),
       generatedAt: new Date().toLocaleDateString(en ? 'en-GB' : 'fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }),
     });
-    // Devoir surveillé (page entière) : gros caractères et tout en gras, pour les personnes qui voient mal.
+    // Devoir surveillé et compositions du primaire (page entière) : gros caractères et tout en gras,
+    // pour les personnes qui voient mal.
     // Le contenu est agrandi pour remplir la page A4 ; s'il dépassait, renderOnePagePdf le ramènerait à une page.
-    const large = !half && exam.examType === 'DEVOIR_SURVEILLE';
+    const large = !half && (exam.examType === 'DEVOIR_SURVEILLE' || isCm);
     return this.renderOnePagePdf(large ? html.replace('</head>', `<style>${RELEVE_LARGE_CSS}</style></head>`) : html, half, large);
   }
 
