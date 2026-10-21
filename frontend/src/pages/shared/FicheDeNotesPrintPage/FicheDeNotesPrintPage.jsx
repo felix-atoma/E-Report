@@ -152,6 +152,11 @@ export default function FicheDeNotesPrintPage() {
   const passRate = rowsWithMoy.length > 0 ? Math.round((passing / rowsWithMoy.length) * 100) : null;
 
   const hasAnyGrade = rowsWithMoy.length > 0;
+  // Barème de la matière : moyenne enregistrée sur 20, affichée sur 10 pour une matière notée sur 10 (primaire)
+  const sc = (v) => (v == null ? v : maxScore === 20 ? v : Math.round((v * maxScore / 20) * 100) / 100);
+  const f = (n) => String(n).replace('.', ',');
+  const scaleText = [[18, 'Excellent'], [16, 'TB'], [14, 'B'], [12, 'AB'], [10, 'P'], [8, 'Insuf.']]
+    .map(([t, l]) => `${l} ≥ ${f(t * maxScore / 20)}`).join(' · ') + ` · TI < ${f(8 * maxScore / 20)}`;
 
   return (
     <div className="fdnp__page">
@@ -254,7 +259,7 @@ export default function FicheDeNotesPrintPage() {
                 <th className="fdnp__th fdnp__th--group" colSpan={5}>Interrogations</th>
                 <th className="fdnp__th fdnp__th--note" rowSpan={2}>Devoir<br /><span className="fdnp__th-sub">/{maxScore}</span></th>
                 <th className="fdnp__th fdnp__th--note" rowSpan={2}>Examen<br /><span className="fdnp__th-sub">/{maxScore}</span></th>
-                <th className="fdnp__th fdnp__th--moy" rowSpan={2}>Moy.<br /><span className="fdnp__th-sub">/20</span></th>
+                <th className="fdnp__th fdnp__th--moy" rowSpan={2}>Moy.<br /><span className="fdnp__th-sub">/{maxScore}</span></th>
                 {hasCoefficient && (
                   <th className="fdnp__th fdnp__th--total" rowSpan={2}>Total<br /><span className="fdnp__th-sub">×{coef}</span></th>
                 )}
@@ -295,11 +300,11 @@ export default function FicheDeNotesPrintPage() {
                     <td className="fdnp__td fdnp__td--devoir"><ScoreCell v={row.noteDevoir} maxScore={maxScore} /></td>
                     <td className="fdnp__td fdnp__td--compo"><ScoreCell v={row.noteComposition} maxScore={maxScore} /></td>
                     <td className={`fdnp__td fdnp__td--moy${moy !== null && moy < 10 ? ' fdnp__td--fail' : ''}`}>
-                      {isBlank(moy) ? <span className="fdnp__blank-cell" /> : fmt(moy)}
+                      {isBlank(moy) ? <span className="fdnp__blank-cell" /> : fmt(sc(moy))}
                     </td>
                     {hasCoefficient && (
                       <td className="fdnp__td fdnp__td--total">
-                        {moy !== null ? fmt(moy * effectiveCoef) : <span className="fdnp__blank-cell" />}
+                        {moy !== null ? fmt(sc(moy) * effectiveCoef) : <span className="fdnp__blank-cell" />}
                       </td>
                     )}
                     <td className="fdnp__td fdnp__td--rang">
@@ -317,10 +322,10 @@ export default function FicheDeNotesPrintPage() {
               <tfoot>
                 <tr className="fdnp__totals">
                   <td className="fdnp__td fdnp__totals-label" colSpan={10}>Totaux / Moyennes</td>
-                  <td className="fdnp__td fdnp__totals-val">{fmt(moyClasse)}</td>
+                  <td className="fdnp__td fdnp__totals-val">{fmt(sc(moyClasse))}</td>
                   {hasCoefficient && (
                     <td className="fdnp__td fdnp__totals-val">
-                      {moyClasse !== null ? fmt(moyClasse * effectiveCoef) : '—'}
+                      {moyClasse !== null ? fmt(sc(moyClasse) * effectiveCoef) : '—'}
                     </td>
                   )}
                   <td className="fdnp__td" colSpan={2}></td>
@@ -339,15 +344,15 @@ export default function FicheDeNotesPrintPage() {
             </div>
             <div className="fdnp__stat fdnp__stat--blue">
               <span className="fdnp__stat__label">Moy. classe</span>
-              <span className="fdnp__stat__val">{fmt(moyClasse)}<small>/20</small></span>
+              <span className="fdnp__stat__val">{fmt(sc(moyClasse))}<small>/{maxScore}</small></span>
             </div>
             <div className="fdnp__stat fdnp__stat--green">
               <span className="fdnp__stat__label">Maximum</span>
-              <span className="fdnp__stat__val">{fmt(highest)}</span>
+              <span className="fdnp__stat__val">{fmt(sc(highest))}</span>
             </div>
             <div className="fdnp__stat fdnp__stat--red">
               <span className="fdnp__stat__label">Minimum</span>
-              <span className="fdnp__stat__val">{fmt(lowest)}</span>
+              <span className="fdnp__stat__val">{fmt(sc(lowest))}</span>
             </div>
             <div className="fdnp__stat fdnp__stat--green">
               <span className="fdnp__stat__label">Admis ≥10</span>
@@ -387,10 +392,10 @@ export default function FicheDeNotesPrintPage() {
         {/* ── Formula footnote ── */}
         <div className="fdnp__footnote">
           {maxScore !== 20
-            ? `Notes sur /${maxScore} — Moy. normalisée sur /20 : (moy.interros×1 + devoir×2 + examen×3)÷6 × 20/${maxScore}`
+            ? `Notes et moyennes sur /${maxScore} — Moy = (moy.interros × 1 + devoir × 2 + examen × 3) ÷ 6`
             : 'Formule : Moy = (moy.interros × 1 + devoir × 2 + examen × 3) ÷ 6'}
           &nbsp;|&nbsp;
-          TB ≥ 16 &nbsp;·&nbsp; B ≥ 14 &nbsp;·&nbsp; AB ≥ 12 &nbsp;·&nbsp; P ≥ 10 &nbsp;·&nbsp; Insuf. &lt; 10
+          {scaleText}
           &nbsp;|&nbsp; Imprimé le {new Date().toLocaleDateString('fr-FR')}
         </div>
 

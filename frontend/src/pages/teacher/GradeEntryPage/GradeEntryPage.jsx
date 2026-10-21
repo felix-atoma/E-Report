@@ -438,6 +438,8 @@ export default function GradeEntryPage() {
   const displayRows = rows ?? data?.students ?? [];
   const ranks = computeRanks(displayRows);
 
+  // Barème de la matière : moyenne enregistrée sur 20, affichée sur 10 pour une matière notée sur 10 (primaire)
+  const sc = (v) => (v == null ? v : maxScore === 20 ? v : Math.round((v * maxScore / 20) * 100) / 100);
   const totalCoef    = displayRows.filter((r) => r.moyenneMatiere !== null).length * coef;
   const totalPoints  = displayRows.reduce((s, r) => s + (r.moyenneMatiere !== null ? r.moyenneMatiere * coef : 0), 0);
   const moyClasse    = displayRows.filter((r) => r.moyenneMatiere !== null).length > 0
@@ -727,7 +729,7 @@ export default function GradeEntryPage() {
               <th className="fdn__th fdn__th--group" colSpan={5}>{t('gradeEntry.columns.classnotes')}</th>
               <th className="fdn__th fdn__th--note fdn__th--devoir" rowSpan={2}>{t('gradeEntry.columns.devoir')}<span>/{maxScore}</span></th>
               <th className="fdn__th fdn__th--note fdn__th--compo" rowSpan={2}>{t('gradeEntry.columns.examen')}<span>/{maxScore}</span></th>
-              <th className="fdn__th fdn__th--moy" rowSpan={2}>{t('gradeEntry.columns.moy')}<span>/20</span></th>
+              <th className="fdn__th fdn__th--moy" rowSpan={2}>{t('gradeEntry.columns.moy')}<span>/{maxScore}</span></th>
               {hasCoefficient && <th className="fdn__th fdn__th--coef" rowSpan={2}>{t('gradeEntry.columns.coef')}</th>}
               {hasCoefficient && <th className="fdn__th fdn__th--total" rowSpan={2}>{t('gradeEntry.columns.total')}</th>}
               <th className="fdn__th fdn__th--rang" rowSpan={2}>{t('gradeEntry.columns.rang')}</th>
@@ -763,9 +765,9 @@ export default function GradeEntryPage() {
                   <td className="fdn__td fdn__td--computed">{fmt(moyI)}</td>
                   <td className="fdn__td fdn__td--devoir"><NoteInput row={idx} col="dev" value={row.noteDevoir} onChange={(v) => updateRow(idx, 'noteDevoir', v)} disabled={locked} maxScore={maxScore} /></td>
                   <td className="fdn__td fdn__td--compo"><NoteInput row={idx} col="comp" value={row.noteComposition} onChange={(v) => updateRow(idx, 'noteComposition', v)} disabled={locked} maxScore={maxScore} /></td>
-                  <td className={`fdn__td fdn__td--moy ${moy !== null && moy < 10 ? 'fdn__td--fail' : ''}`}>{fmt(moy)}</td>
+                  <td className={`fdn__td fdn__td--moy ${moy !== null && moy < 10 ? 'fdn__td--fail' : ''}`}>{fmt(sc(moy))}</td>
                   {hasCoefficient && <td className="fdn__td fdn__td--coef">{coef}</td>}
-                  {hasCoefficient && <td className="fdn__td fdn__td--total">{moy !== null ? fmt(moy * coef) : '—'}</td>}
+                  {hasCoefficient && <td className="fdn__td fdn__td--total">{moy !== null ? fmt(sc(moy) * coef) : '—'}</td>}
                   <td className="fdn__td fdn__td--rang">{ranks[idx] !== null ? `${ranks[idx]}e` : '—'}</td>
                   <td className={`fdn__td fdn__td--appr ${apprCls(moy)}`}>
                     {appreciation(moy, data?.subject?.nameFr) || '—'}
@@ -789,18 +791,18 @@ export default function GradeEntryPage() {
           <tfoot>
             <tr className="fdn__totals">
               <td className="fdn__td fdn__td--name fdn__totals-label" colSpan={8}>{t('gradeEntry.totals')}</td>
-              <td className="fdn__td fdn__td--moy fdn__totals-val">{fmt(moyClasse)}</td>
+              <td className="fdn__td fdn__td--moy fdn__totals-val">{fmt(sc(moyClasse))}</td>
               {hasCoefficient && <td className="fdn__td fdn__td--coef fdn__totals-val">{coef}</td>}
-              {hasCoefficient && <td className="fdn__td fdn__td--total fdn__totals-val">{fmt(totalPoints)}</td>}
+              {hasCoefficient && <td className="fdn__td fdn__td--total fdn__totals-val">{fmt(sc(totalPoints))}</td>}
               <td className="fdn__td" colSpan={hasCoefficient ? 3 : 5}></td>
             </tr>
             <tr className="fdn__stats">
               <td colSpan={14} className="fdn__stats-row">
-                <span><strong>{t('gradeEntry.stats.strongest')} :</strong> {fmt(classHighest)} {strongestRow ? `— ${strongestRow.studentName}` : ''}</span>
+                <span><strong>{t('gradeEntry.stats.strongest')} :</strong> {fmt(sc(classHighest))} {strongestRow ? `— ${strongestRow.studentName}` : ''}</span>
                 <span className="fdn__legend-sep">|</span>
-                <span><strong>{t('gradeEntry.stats.weakest')} :</strong> {fmt(classLowest)} {weakestRow ? `— ${weakestRow.studentName}` : ''}</span>
+                <span><strong>{t('gradeEntry.stats.weakest')} :</strong> {fmt(sc(classLowest))} {weakestRow ? `— ${weakestRow.studentName}` : ''}</span>
                 <span className="fdn__legend-sep">|</span>
-                <span><strong>{t('gradeEntry.stats.classAvg')} :</strong> {fmt(moyClasse)}</span>
+                <span><strong>{t('gradeEntry.stats.classAvg')} :</strong> {fmt(sc(moyClasse))}</span>
                 <span className="fdn__legend-sep">|</span>
                 <span><strong>{t('gradeEntry.stats.count')} :</strong> {rowsWithMoy.length} / {displayRows.length}</span>
               </td>
@@ -814,20 +816,20 @@ export default function GradeEntryPage() {
         <div className="fdn__extra-stats">
           <div className="fdn__extra-stat fdn__extra-stat--high">
             <div className="fdn__extra-stat__label">{t('gradeEntry.stats.strongest')}</div>
-            <div className="fdn__extra-stat__value">{fmt(strongestRow.moyenneMatiere)}<span>/20</span></div>
+            <div className="fdn__extra-stat__value">{fmt(sc(strongestRow.moyenneMatiere))}<span>/{maxScore}</span></div>
             <div className="fdn__extra-stat__name">{t('gradeEntry.stats.obtainedBy')} <strong>{strongestRow.studentName}</strong></div>
           </div>
           <div className="fdn__extra-stat fdn__extra-stat--low">
             <div className="fdn__extra-stat__label">{t('gradeEntry.stats.weakest')}</div>
-            <div className="fdn__extra-stat__value">{fmt(weakestRow.moyenneMatiere)}<span>/20</span></div>
+            <div className="fdn__extra-stat__value">{fmt(sc(weakestRow.moyenneMatiere))}<span>/{maxScore}</span></div>
             <div className="fdn__extra-stat__name">{t('gradeEntry.stats.obtainedBy')} <strong>{weakestRow.studentName}</strong></div>
           </div>
           {mostImproved ? (
             <div className="fdn__extra-stat fdn__extra-stat--up">
               <div className="fdn__extra-stat__label">{t('gradeEntry.stats.improved')}</div>
-              <div className="fdn__extra-stat__value">+{fmt(mostImproved.delta)}<span>pts</span></div>
+              <div className="fdn__extra-stat__value">+{fmt(sc(mostImproved.delta))}<span>pts</span></div>
               <div className="fdn__extra-stat__name"><strong>{mostImproved.studentName}</strong></div>
-              <div className="fdn__extra-stat__sub">T{prevTerm} → T{termNumber} · {fmt(prevData.students.find(s => s.studentId === mostImproved.studentId)?.moyenneMatiere)} → {fmt(mostImproved.moyenneMatiere)}</div>
+              <div className="fdn__extra-stat__sub">T{prevTerm} → T{termNumber} · {fmt(sc(prevData.students.find(s => s.studentId === mostImproved.studentId)?.moyenneMatiere))} → {fmt(sc(mostImproved.moyenneMatiere))}</div>
             </div>
           ) : prevTerm && (
             <div className="fdn__extra-stat fdn__extra-stat--up fdn__extra-stat--muted">
@@ -838,9 +840,9 @@ export default function GradeEntryPage() {
           {mostDeclined ? (
             <div className="fdn__extra-stat fdn__extra-stat--down">
               <div className="fdn__extra-stat__label">{t('gradeEntry.stats.declined')}</div>
-              <div className="fdn__extra-stat__value">{fmt(mostDeclined.delta)}<span>pts</span></div>
+              <div className="fdn__extra-stat__value">{fmt(sc(mostDeclined.delta))}<span>pts</span></div>
               <div className="fdn__extra-stat__name"><strong>{mostDeclined.studentName}</strong></div>
-              <div className="fdn__extra-stat__sub">T{prevTerm} → T{termNumber} · {fmt(prevData.students.find(s => s.studentId === mostDeclined.studentId)?.moyenneMatiere)} → {fmt(mostDeclined.moyenneMatiere)}</div>
+              <div className="fdn__extra-stat__sub">T{prevTerm} → T{termNumber} · {fmt(sc(prevData.students.find(s => s.studentId === mostDeclined.studentId)?.moyenneMatiere))} → {fmt(sc(mostDeclined.moyenneMatiere))}</div>
             </div>
           ) : prevTerm && (
             <div className="fdn__extra-stat fdn__extra-stat--down fdn__extra-stat--muted">
@@ -894,15 +896,12 @@ export default function GradeEntryPage() {
       <div className="fdn__legend">
         <span><strong>{t('gradeEntry.legend.formula').split(':')[0]} :</strong> {t('gradeEntry.legend.formula').split(':')[1]?.trim()}</span>
         <span className="fdn__legend-sep">|</span>
-        <span className="appr--good">{t('gradeEntry.legend.tb')}</span>
-        <span className="fdn__legend-sep">·</span>
-        <span className="appr--good">{t('gradeEntry.legend.b')}</span>
-        <span className="fdn__legend-sep">·</span>
-        <span className="appr--pass">{t('gradeEntry.legend.ab')}</span>
-        <span className="fdn__legend-sep">·</span>
-        <span className="appr--pass">{t('gradeEntry.legend.p')}</span>
-        <span className="fdn__legend-sep">·</span>
-        <span className="appr--fail">{t('gradeEntry.legend.insuf')}</span>
+        {/* Barème des appréciations exprimé sur le barème de la matière (sur 10 au primaire) */}
+        {[[18, 'Excellent', 'good'], [16, 'TB', 'good'], [14, 'B', 'good'], [12, 'AB', 'pass'], [10, 'P', 'pass'], [8, 'Insuf.', 'fail']].map(([v, l, c]) => (
+          <span key={l} className={`appr--${c}`}>{l} ≥ {String(v * maxScore / 20).replace('.', ',')}<span className="fdn__legend-sep">·</span></span>
+        ))}
+        <span className="appr--fail">TI &lt; {String(8 * maxScore / 20).replace('.', ',')}</span>
+        {maxScore !== 20 && <span className="fdn__legend-sep">| Notes et moyennes sur /{maxScore}</span>}
       </div>
     </AppShell>
   );
