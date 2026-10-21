@@ -69,6 +69,7 @@ export default function StatsSheetPage() {
         <div className="ssheet-meta">
           <span><b>Professeur titulaire :</b> {s.classTeacher ?? '……………………………'}</span>
           <span><b>Effectif :</b> {s.enrolled}</span>
+          {s.scale === 10 && <span><b>Moyennes :</b> sur 10</span>}
           <span><b>Classés :</b> {s.classified}</span>
         </div>
 

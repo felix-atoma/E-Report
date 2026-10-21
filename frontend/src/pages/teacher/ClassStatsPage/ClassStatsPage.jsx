@@ -71,16 +71,6 @@ function ClassStatsPage() {
     3: t('fees.terms.TRIMESTRE_3'),
   };
 
-  const DIST_CONFIG = [
-    { key: 'EX',    label: t('mention.excellent'),   range: '18 – 20',    color: '#6d28d9', bg: '#ede9fe' },
-    { key: 'TB',    label: t('mention.tresBien'),    range: '16 – 17,99', color: '#16a34a', bg: '#dcfce7' },
-    { key: 'B',     label: t('mention.bien'),         range: '14 – 15,99', color: '#2563eb', bg: '#dbeafe' },
-    { key: 'AB',    label: t('mention.assezBien'),    range: '12 – 13,99', color: '#7c3aed', bg: '#ede9fe' },
-    { key: 'P',     label: t('mention.passable'),     range: '10 – 11,99', color: '#d97706', bg: '#fef9c3' },
-    { key: 'Insuf', label: t('mention.insuffisant'),  range: '8 – 9,99',   color: '#dc2626', bg: '#fee2e2' },
-    { key: 'TresInsuf', label: t('mention.tresInsuffisant'), range: '0 – 7,99', color: '#7f1d1d', bg: '#fecaca' },
-  ];
-
   const { data: classes, isLoading: loadingClasses } = useQuery({
     queryKey: ['classes'],
     queryFn: () => classesService.list().then((r) => r.data),
@@ -101,6 +91,21 @@ function ClassStatsPage() {
   });
 
   const selectedClass = classes?.find((c) => c.id === classId);
+
+  // Tranches exprimées sur le barème de la classe (sur 10 au primaire, comme le bulletin) :
+  // « 16 – 17,99 » sur 20 devient « 8 – 8,99 » sur 10
+  const sk = (stats?.scale ?? 20) / 20;
+  const n2 = (v) => String(Math.round(v * 100) / 100).replace('.', ',');
+  const rg = (lo, top = false) => `${n2(lo * sk)} – ${top ? n2(20 * sk) : n2((lo + 2) * sk - 0.01)}`;
+  const DIST_CONFIG = [
+    { key: 'EX',    label: t('mention.excellent'),   range: rg(18, true), color: '#6d28d9', bg: '#ede9fe' },
+    { key: 'TB',    label: t('mention.tresBien'),    range: rg(16), color: '#16a34a', bg: '#dcfce7' },
+    { key: 'B',     label: t('mention.bien'),         range: rg(14), color: '#2563eb', bg: '#dbeafe' },
+    { key: 'AB',    label: t('mention.assezBien'),    range: rg(12), color: '#7c3aed', bg: '#ede9fe' },
+    { key: 'P',     label: t('mention.passable'),     range: rg(10), color: '#d97706', bg: '#fef9c3' },
+    { key: 'Insuf', label: t('mention.insuffisant'),  range: rg(8),  color: '#dc2626', bg: '#fee2e2' },
+    { key: 'TresInsuf', label: t('mention.tresInsuffisant'), range: `0 – ${n2(8 * sk - 0.01)}`, color: '#7f1d1d', bg: '#fecaca' },
+  ];
 
   // Compute bar widths for distribution
   const distTotal = stats?.totalStudents ?? 0;
@@ -244,10 +249,10 @@ function ClassStatsPage() {
 
               {/* Écart-type interpretation */}
               {stats.classStdDev != null && (
-                <div className={`cstats-stddev-hint ${stats.classStdDev < 2 ? 'homogeneous' : stats.classStdDev < 4 ? 'moderate' : 'heterogeneous'}`}>
-                  {stats.classStdDev < 2
+                <div className={`cstats-stddev-hint ${stats.classStdDev < 2 * sk ? 'homogeneous' : stats.classStdDev < 4 * sk ? 'moderate' : 'heterogeneous'}`}>
+                  {stats.classStdDev < 2 * sk
                     ? '✓ Classe très homogène — les résultats sont groupés autour de la moyenne.'
-                    : stats.classStdDev < 4
+                    : stats.classStdDev < 4 * sk
                     ? '↔ Dispersion modérée — hétérogénéité normale pour une classe.'
                     : '⚠ Forte hétérogénéité — grands écarts entre élèves, accompagnement différencié recommandé.'}
                 </div>

@@ -1,4 +1,5 @@
 import { appreciationOn20 } from '../../common/utils/appreciation.util';
+import { isPrimaryLevel } from '../pdf/pdf.service';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SmsService } from '../sms/sms.service';
@@ -381,6 +382,11 @@ export class AnalyticsService {
     ]);
 
     const round2 = (v: number) => Math.round(v * 100) / 100;
+    // Primaire : moyennes générales sur 10, comme sur le bulletin (stockées sur 20 ; tranches identiques)
+    const scale = isPrimaryLevel(cls.level) ? 10 : 20;
+    const k = scale / 20;
+    const sv = (v: number) => round2(v * k);
+    const num = (v: number) => String(round2(v * k)).replace('.', ',');
     const rows = current
       .map((r) => ({ name: r.student.user?.name ?? r.student.admissionNumber, avg: Number(r.overallAverage), storedRank: r.classRank }))
       .sort((a, b) => b.avg - a.avg);
@@ -388,11 +394,11 @@ export class AnalyticsService {
     const pct = (k: number) => (n ? Math.round((k / n) * 1000) / 10 : 0);   // une décimale
 
     const bands = [
-      { label: 'Moyenne ≥ 10',        test: (a: number) => a >= 10 },
-      { label: '9 ≤ moyenne < 10',    test: (a: number) => a >= 9 && a < 10 },
-      { label: '8 ≤ moyenne < 9',     test: (a: number) => a >= 8 && a < 9 },
-      { label: '7 ≤ moyenne < 8',     test: (a: number) => a >= 7 && a < 8 },
-      { label: 'Moyenne < 7',         test: (a: number) => a < 7 },
+      { label: `Moyenne ≥ ${num(10)}`,                test: (a: number) => a >= 10 },
+      { label: `${num(9)} ≤ moyenne < ${num(10)}`,   test: (a: number) => a >= 9 && a < 10 },
+      { label: `${num(8)} ≤ moyenne < ${num(9)}`,    test: (a: number) => a >= 8 && a < 9 },
+      { label: `${num(7)} ≤ moyenne < ${num(8)}`,    test: (a: number) => a >= 7 && a < 8 },
+      { label: `Moyenne < ${num(7)}`,                 test: (a: number) => a < 7 },
     ].map((b) => { const count = rows.filter((r) => b.test(r.avg)).length; return { label: b.label, count, percentage: pct(count) }; });
 
     const classAverage = n ? round2(rows.reduce((s, r) => s + r.avg, 0) / n) : null;
@@ -449,7 +455,10 @@ export class AnalyticsService {
     };
 
     const termLabel = termNumber === 1 ? '1er trimestre' : `${termNumber}e trimestre`;
+    // Valeurs affichées sur le barème de la classe (sur 10 au primaire)
+    const scaleBack = (v: number | null) => (v == null ? null : sv(v));
     return {
+      scale,
       institution: cls.institution,
       className: cls.name.trim(),
       classTeacher: cls.teacher?.name ?? null,
@@ -460,18 +469,22 @@ export class AnalyticsService {
       classified: n,
       bands,
       passing: bands[0],
-      highest,
-      lowest,
-      classAverage,
-      atClassAverage,
-      previousClassAverage,
-      progress,
-      top5,
+      highest: highest && { ...highest, value: sv(highest.value) },
+      lowest: lowest && { ...lowest, value: sv(lowest.value) },
+      classAverage: scaleBack(classAverage),
+      atClassAverage: atClassAverage && { ...atClassAverage, value: scaleBack(atClassAverage.value) },
+      previousClassAverage: scaleBack(previousClassAverage),
+      progress: scaleBack(progress),
+      top5: top5.map((t) => ({ ...t, average: sv(t.average) })),
       attendance: attendanceStats,
     };
   }
 
   async getClassStats(institutionId: string, classId: string, academicYear: string, termNumber: number) {
+    const clsLevel = await this.prisma.class.findFirst({ where: { id: classId, institutionId }, select: { level: true } });
+    // Primaire : moyennes générales sur 10, comme sur le bulletin (stockées sur 20)
+    const scale = isPrimaryLevel(clsLevel?.level) ? 10 : 20;
+    const k = scale / 20;
     const [currentReports, previousReports] = await Promise.all([
       this.prisma.reportCard.findMany({
         where: { classId, academicYear, termNumber, overallAverage: { not: null }, class: { institutionId } },
@@ -509,12 +522,12 @@ export class AnalyticsService {
 
       if (delta > 0) {
         progressed++;
-        if (!bestProgress || delta > bestProgress.delta)
-          bestProgress = { studentName, admissionNumber, delta, currentAvg: currAvg, previousAvg: prevAvg };
+        if (!bestProgress || delta * k > bestProgress.delta)
+          bestProgress = { studentName, admissionNumber, delta: Math.round(delta * k * 100) / 100, currentAvg: Math.round(currAvg * k * 100) / 100, previousAvg: Math.round(prevAvg * k * 100) / 100 };
       } else if (delta < 0) {
         declined++;
-        if (!worstDecline || delta < worstDecline.delta)
-          worstDecline = { studentName, admissionNumber, delta, currentAvg: currAvg, previousAvg: prevAvg };
+        if (!worstDecline || delta * k < worstDecline.delta)
+          worstDecline = { studentName, admissionNumber, delta: Math.round(delta * k * 100) / 100, currentAvg: Math.round(currAvg * k * 100) / 100, previousAvg: Math.round(prevAvg * k * 100) / 100 };
       } else {
         stable++;
       }
@@ -573,11 +586,12 @@ export class AnalyticsService {
       stable:     { count: stable,     percentage: pct(stable)     },
       bestProgress,
       worstDecline,
-      classAverage,
-      classMedian,
-      classMin,
-      classMax,
-      classStdDev,
+      scale,
+      classAverage: classAverage == null ? null : round2(classAverage * k),
+      classMedian: classMedian == null ? null : round2(classMedian * k),
+      classMin: classMin == null ? null : round2(classMin * k),
+      classMax: classMax == null ? null : round2(classMax * k),
+      classStdDev: classStdDev == null ? null : round2(classStdDev * k),
       distribution,
       passingRate,
       passingCount,
