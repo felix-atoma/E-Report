@@ -252,6 +252,8 @@ export default function GradeEntryPage() {
     mutationFn: (payload) => gradesService.saveForClassSubject(classId, subjectId, payload),
     onSuccess: () => {
       setSaved(true);
+      dirtyRef.current = false;
+      setAutoState(null);
       qc.invalidateQueries({ queryKey: ficheKey });
       setTimeout(() => setSaved(false), 3000);
     },
@@ -397,7 +399,15 @@ export default function GradeEntryPage() {
   const maxScoreRef = useRef(20);
   maxScoreRef.current = maxScore;
 
+  // Saisie non encore enregistrée (pour l'enregistrement automatique)
+  const dirtyRef = useRef(false);
+  const editVersion = useRef(0);
+  const markDirty = () => { dirtyRef.current = true; editVersion.current += 1; };
+  const changeCoef = (v) => { setCoef(v); markDirty(); };
+
   const updateRow = useCallback((idx, field, value) => {
+    dirtyRef.current = true;
+    editVersion.current += 1;
     setRows((prev) => {
       const next = prev.map((r, i) => i === idx ? { ...r, [field]: value } : r);
       const moy = computeMoy(next[idx], maxScoreRef.current);
@@ -405,6 +415,73 @@ export default function GradeEntryPage() {
       return next;
     });
   }, []);
+
+  const buildPayload = () => {
+    const effectiveCoef = hasCoefficient ? coef : 1;
+    return {
+      academicYear, termName, termNumber,
+      grades: rows.map((r) => ({
+        studentId: r.studentId,
+        noteInterro1: r.noteInterro1,
+        noteInterro2: r.noteInterro2,
+        noteInterro3: r.noteInterro3,
+        noteInterro4: r.noteInterro4,
+        noteDevoir: r.noteDevoir,
+        noteComposition: r.noteComposition,
+        coefficient: effectiveCoef,
+        teacherComment: r.teacherComment,
+        teacherName: r.teacherName,
+      })),
+    };
+  };
+
+  // ── Enregistrement automatique : 3 s après la dernière note saisie, au cas où le professeur
+  // oublie « Enregistrer » (le bouton garde son rôle). Pas en correction administrateur : là,
+  // chaque enregistrement recalcule les bulletins publiés, on attend le bouton.
+  const [autoState, setAutoState] = useState(null);   // 'saving' | 'saved' | 'offline' | 'error'
+  const [autoAt, setAutoAt] = useState(null);
+  const [autoError, setAutoError] = useState('');
+  const autoSave = useCallback(async () => {
+    if (!dirtyRef.current || !rows) return;
+    const version = editVersion.current;
+    const payload = buildPayload();
+    const bad = payload.grades.some((g) => [g.noteInterro1, g.noteInterro2, g.noteInterro3, g.noteInterro4, g.noteDevoir, g.noteComposition]
+      .some((n) => n !== '' && n != null && (Number(n) < 0 || Number(n) > maxScore)));
+    if (bad) { setAutoState('error'); setAutoError(`Une note dépasse le barème (/${maxScore}) : corrigez-la pour que la fiche s'enregistre.`); return; }
+    setAutoState('saving');
+    try {
+      await gradesService.saveForClassSubject(classId, subjectId, payload);
+      if (editVersion.current === version) dirtyRef.current = false;
+      setAutoState('saved'); setAutoAt(new Date()); setAutoError('');
+    } catch (err) {
+      if (!navigator.onLine || err?.code === 'ERR_NETWORK') {
+        // Hors ligne : gardé sur l'appareil, envoyé au retour du réseau (comme l'enregistrement manuel)
+        await enqueueGrade({ classId, subjectId, payload }).catch(() => {});
+        setPendingCount((n) => n + 1);
+        if (editVersion.current === version) dirtyRef.current = false;
+        setAutoState('offline');
+      } else {
+        setAutoState('error');
+        setAutoError(err?.response?.data?.message ? [].concat(err.response.data.message).join(' · ') : "L'enregistrement automatique a échoué : cliquez sur « Enregistrer ».");
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, coef, hasCoefficient, maxScore, classId, subjectId, academicYear, termName, termNumber]);
+
+  useEffect(() => {
+    if (!dirtyRef.current || !rows || locked || adminEdit) return undefined;
+    const tmr = setTimeout(autoSave, 3000);
+    return () => clearTimeout(tmr);
+  }, [rows, coef, locked, adminEdit, autoSave]);
+
+  // Page quittée ou appli mise en arrière-plan (téléphone) : on enregistre tout de suite
+  useEffect(() => {
+    const flush = () => { if (document.visibilityState === 'hidden' && dirtyRef.current && !locked && !adminEdit) autoSave(); };
+    const warn = (e) => { if (dirtyRef.current && !locked) { e.preventDefault(); e.returnValue = ''; } };
+    document.addEventListener('visibilitychange', flush);
+    window.addEventListener('beforeunload', warn);
+    return () => { document.removeEventListener('visibilitychange', flush); window.removeEventListener('beforeunload', warn); };
+  }, [autoSave, locked, adminEdit]);
 
   const handleSave = () => {
     if (!rows) return;
@@ -501,7 +578,7 @@ export default function GradeEntryPage() {
                   className="fdn__coef-input"
                   min={0.5} max={20} step={0.5}
                   value={coef}
-                  onChange={(e) => setCoef(parseFloat(e.target.value))}
+                  onChange={(e) => changeCoef(parseFloat(e.target.value))}
                   disabled={locked}
                 />
               </label>
@@ -568,6 +645,16 @@ export default function GradeEntryPage() {
         <div className="fdn__toast">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           {t('gradeEntry.saved')}
+        </div>
+      )}
+
+      {/* État de l'enregistrement automatique */}
+      {autoState && !locked && (
+        <div className={`fdn__autosave fdn__autosave--${autoState}`} role="status">
+          {autoState === 'saving' && '⏳ Enregistrement automatique…'}
+          {autoState === 'saved' && `✓ Notes enregistrées automatiquement à ${autoAt?.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`}
+          {autoState === 'offline' && "📶 Pas d'internet : notes gardées sur l'appareil, envoyées automatiquement au retour du réseau"}
+          {autoState === 'error' && `⚠️ ${autoError}`}
         </div>
       )}
 
@@ -676,12 +763,16 @@ export default function GradeEntryPage() {
                   className="fdn-focus__coef-input"
                   min={0.5} max={20} step={0.5}
                   value={coef}
-                  onChange={(e) => setCoef(parseFloat(e.target.value))}
+                  onChange={(e) => changeCoef(parseFloat(e.target.value))}
                   disabled={locked}
                 />
               </label>
             )}
             {saved && <span className="fdn-focus__saved">✓ {t('gradeEntry.saved')}</span>}
+            {!saved && autoState === 'saving' && <span className="fdn-focus__saved">⏳ …</span>}
+            {!saved && autoState === 'saved' && <span className="fdn-focus__saved">✓ Enregistré auto.</span>}
+            {!saved && autoState === 'offline' && <span className="fdn-focus__saved">📶 Gardé sur l'appareil</span>}
+            {!saved && autoState === 'error' && <span className="fdn-focus__saved" style={{ color: '#fca5a5' }}>⚠️ Non enregistré</span>}
             {(!isSigned || adminEdit) && (
               <button
                 type="button"

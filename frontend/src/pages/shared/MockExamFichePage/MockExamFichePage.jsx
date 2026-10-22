@@ -104,7 +104,11 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
   // Texte libre pendant la saisie (on peut effacer le 1 pour taper 3) ; vérifié à l'enregistrement
   const [coeff, setCoeff] = useState(String(subject.coefficient ?? 1));
 
+  // Saisie non encore enregistrée (enregistrement automatique) : un rechargement ne l'efface pas
+  const dirtyRef = useRef(false);
+  const editVersion = useRef(0);
   useEffect(() => {
+    if (dirtyRef.current) return;
     const init = {};
     students.forEach((s) => {
       const g = s.grades.find((g) => g.subjectId === subject.id);
@@ -235,17 +239,66 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
 
   const setScore = (studentId, val) => {
     setScores((p) => ({ ...p, [studentId]: val }));
+    dirtyRef.current = true; editVersion.current += 1;
     setDirty(true);
     setSaved(false);
   };
 
   const handleCoeffChange = (val) => {
     setCoeff(val.replace(/[^0-9]/g, '').slice(0, 2));
+    dirtyRef.current = true; editVersion.current += 1;
     setDirty(true);
     setSaved(false);
   };
   const coeffNum = parseInt(coeff, 10);
   const coeffValid = coeffNum >= 1 && coeffNum <= 20;
+
+  const buildGrades = () => students.map((s) => {
+    const raw = scores[s.studentId];
+    const num = raw !== '' && raw != null ? parseFloat(raw) : null;
+    return { studentId: s.studentId, score: isNaN(num) ? null : num };
+  });
+
+  // ── Enregistrement automatique : 3 s après la dernière note saisie, au cas où le professeur oublie
+  // « Enregistrer » (le bouton garde son rôle). Pas en correction administrateur (bouton seulement).
+  const [autoState, setAutoState] = useState(null); // 'saving' | 'saved' | 'error'
+  const [autoAt, setAutoAt] = useState(null);
+  const [autoError, setAutoError] = useState('');
+  const autoSave = async () => {
+    if (!dirtyRef.current) return;
+    if (!coeffValid) { setAutoState('error'); setAutoError('Coefficient invalide (1 à 20) : corrigez-le pour enregistrer.'); return; }
+    const grades = buildGrades();
+    if (grades.some((g) => g.score != null && (g.score < 0 || g.score > scale))) {
+      setAutoState('error'); setAutoError(`Une note dépasse le barème (/${scale}) : corrigez-la pour enregistrer.`); return;
+    }
+    const version = editVersion.current;
+    setAutoState('saving');
+    try {
+      await mockExamsService.saveSubjectGrades(examId, subject.id, grades, coeffNum);
+      if (editVersion.current === version) { dirtyRef.current = false; setDirty(false); }
+      setAutoState('saved'); setAutoAt(new Date()); setAutoError('');
+    } catch (err) {
+      setAutoState('error');
+      setAutoError(!navigator.onLine || err?.code === 'ERR_NETWORK'
+        ? "Pas d'internet : les notes ne sont pas encore enregistrées. Gardez la page ouverte."
+        : (err?.response?.data?.message ? [].concat(err.response.data.message).join(' · ') : 'Enregistrement automatique impossible : cliquez sur « Enregistrer ».'));
+    }
+  };
+  const autoSaveRef = useRef(autoSave);
+  autoSaveRef.current = autoSave;
+  useEffect(() => {
+    if (!dirty || !canWrite || adminEdit) return undefined;
+    const tmr = setTimeout(() => autoSaveRef.current(), 3000);
+    return () => clearTimeout(tmr);
+  }, [scores, coeff, dirty, canWrite, adminEdit]);
+  // Réseau revenu : on retente
+  useEffect(() => {
+    const retry = () => { if (dirtyRef.current && canWrite && !adminEdit) autoSaveRef.current(); };
+    const flush = () => { if (document.visibilityState === 'hidden') retry(); };
+    window.addEventListener('online', retry);
+    document.addEventListener('visibilitychange', flush);
+    return () => { window.removeEventListener('online', retry); document.removeEventListener('visibilitychange', flush); };
+  }, [canWrite, adminEdit]);
 
   const handleSave = async () => {
     if (!coeffValid) { alert('Le coefficient doit être un nombre entier de 1 à 20.'); return; }
@@ -258,6 +311,8 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
       });
       const res = await mockExamsService.saveSubjectGrades(examId, subject.id, grades, coeffNum);
       showFicheSync(res?.data?.message);
+      dirtyRef.current = false;
+      setAutoState(null);
       setDirty(false);
       setSaved(true);
       qc.invalidateQueries({ queryKey: ['mock-exam-fiche', examId] });
@@ -345,6 +400,9 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
                 </button>
               )}
               {saved && !dirty && <span className="mfiche-saved-hint">✓ Enregistré</span>}
+              {!saved && autoState === 'saving' && <span className="mfiche-saved-hint">⏳ Enregistrement auto…</span>}
+              {!saved && autoState === 'saved' && !dirty && <span className="mfiche-saved-hint">✓ Enregistré automatiquement à {autoAt?.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>}
+              {autoState === 'error' && <span className="mfiche-saved-hint" style={{ color: '#b91c1c' }}>⚠️ {autoError}</span>}
             </>
           )}
 

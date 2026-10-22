@@ -624,3 +624,10 @@
 .fdn__signature-banner { flex-wrap: wrap; }
 .fdn__admin-fix-btn { margin-left: auto; background: #002347; color: #fff; border: none; border-radius: 8px; padding: .45rem .9rem; font-weight: 700; font-size: .82rem; cursor: pointer; font-family: inherit; }
 .fdn__admin-fix-banner { background: #fff7ed; border: 1px solid #fdba74; color: #9a3412; border-radius: 10px; padding: .65rem .9rem; margin: 0 0 .9rem; font-size: .86rem; line-height: 1.5; }
+
+/* Enregistrement automatique des notes */
+.fdn__autosave { display: inline-block; margin: 0 0 .7rem; padding: .35rem .8rem; border-radius: 8px; font-size: .82rem; font-weight: 600; }
+.fdn__autosave--saving { background: #eff6ff; color: #1e40af; }
+.fdn__autosave--saved { background: #f0fdf4; color: #166534; }
+.fdn__autosave--offline { background: #fff7ed; color: #9a3412; }
+.fdn__autosave--error { background: #fef2f2; color: #b91c1c; }
