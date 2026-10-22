@@ -27,7 +27,8 @@ if (import.meta.env.PROD) {
     registerSW({
       immediate: true,
       onRegisteredSW(_url, registration) {
-        if (registration) setInterval(() => registration.update(), 60 * 60 * 1000);
+        // Vérification horaire d'une nouvelle version ; sans réseau elle échoue : on réessaiera l'heure suivante
+        if (registration) setInterval(() => { registration.update().catch(() => {}); }, 60 * 60 * 1000);
       },
     });
   }).catch(() => { /* navigateur sans service worker */ });
@@ -36,6 +37,8 @@ if (import.meta.env.PROD) {
 Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN,
   environment: import.meta.env.MODE,
+  // Coupures réseau côté utilisateur (mise à jour de l'application impossible hors ligne) : pas des bugs
+  ignoreErrors: [/Failed to update a ServiceWorker/i, /Failed to register a ServiceWorker/i],
   sendDefaultPii: true,
   integrations: [Sentry.browserTracingIntegration(), Sentry.replayIntegration()],
   tracesSampleRate: 0.2,
