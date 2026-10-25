@@ -6,6 +6,7 @@ import { Role } from '../../common/enums/role.enum';
 import { byStudentName } from '../../common/utils/student-order.util';
 import { BulkGradesDto } from './dto/bulk-grades.dto';
 import { SaveClassGradesDto } from './dto/save-class-grades.dto';
+import { examTermNumber } from '../../common/utils/exam-term.util';
 
 /** Appréciation de la moyenne (sur 20) dans la langue de la matière — barème commun (appreciation.util). */
 export function computeAppreciation(moy: number | null, subjectName?: string): string | null {
@@ -302,6 +303,14 @@ export class GradesService {
     const cls = await this.prisma.class.findUnique({ where: { id: classId } });
     if (!cls) throw new NotFoundException('Class not found');
 
+    // Colonne « Devoir » avant cet enregistrement (report vers la fiche du devoir surveillé)
+    const previousDevoir = new Map(
+      (await this.prisma.grade.findMany({
+        where: { subjectId, reportCard: { classId, academicYear: dto.academicYear, termNumber: dto.termNumber } },
+        select: { noteDevoir: true, reportCard: { select: { studentId: true } } },
+      })).map((g) => [g.reportCard.studentId, g.noteDevoir]),
+    );
+
     // Block editing a signed fiche (unless admin)
     if (requestingRole !== Role.ADMIN) {
       const existingFiche = await this.prisma.gradeFiche.findUnique({
@@ -421,8 +430,65 @@ export class GradesService {
       this.events.emit('grades.corrected', { classId, academicYear: dto.academicYear, termNumber: dto.termNumber, institutionId: cls.institutionId });
     }
 
+    // Colonne « Devoir » → fiche du devoir surveillé de ce trimestre (si l'administration l'a créé)
+    const dsSync = await this.syncDevoirToDs(cls, subject, dto, previousDevoir).catch(() => null);
+
     // Return the updated fiche
-    return this.getForClassSubject(classId, subjectId, dto.academicYear, dto.termNumber, requestingUserId, requestingRole);
+    const fiche = await this.getForClassSubject(classId, subjectId, dto.academicYear, dto.termNumber, requestingUserId, requestingRole);
+    return dsSync ? { ...fiche, dsSync } : fiche;
+  }
+
+  /**
+   * Les notes de la colonne « Devoir » de la fiche du trimestre sont reportées sur la fiche du devoir
+   * surveillé de la classe pour ce trimestre (créé par l'administration), dans la même matière — signée
+   * ou non. Une note du DS saisie autrement (différente de l'ancienne note « Devoir ») n'est pas écrasée ;
+   * une note « Devoir » effacée ne vide pas le DS ; un DS publié n'est pas modifié.
+   */
+  private async syncDevoirToDs(
+    cls: { id: string; institutionId: string },
+    subject: { id: string; nameFr: string; maxScore: number | null; hasCoefficient?: boolean | null },
+    dto: SaveClassGradesDto,
+    previousDevoir: Map<string, number | null>,
+  ): Promise<{ label: string; copied: number; kept: number } | null> {
+    const rows = dto.grades.filter((g) => g.noteDevoir !== undefined && g.noteDevoir !== null && (g.noteDevoir as any) !== '');
+    if (!rows.length) return null;
+    const [exams, inst] = await Promise.all([
+      this.prisma.mockExam.findMany({
+        where: { classId: cls.id, academicYear: dto.academicYear, examType: 'DEVOIR_SURVEILLE' as any, status: { not: 'PUBLISHED' as any } },
+        select: { id: true, label: true, examDate: true, academicYear: true },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.institution.findUnique({ where: { id: cls.institutionId }, select: { academicSettings: true } }),
+    ]);
+    const exam = exams.find((e) => examTermNumber(e, inst?.academicSettings) === dto.termNumber);
+    if (!exam) return null;
+
+    const maxScore = subject.maxScore ?? 20;
+    const to20 = (v: number) => Math.round(((v * 20) / maxScore) * 100) / 100; // DS sur 20
+    const existing = await this.prisma.mockExamGrade.findMany({
+      where: { mockExamId: exam.id, subjectId: subject.id },
+      select: { studentId: true, score: true, coefficient: true },
+    });
+    const byStudent = new Map(existing.map((g) => [g.studentId, g]));
+    // Coefficient du DS : celui déjà utilisé sur le DS, sinon celui de la fiche du trimestre
+    const coefficient = existing.find((g) => g.coefficient)?.coefficient
+      ?? (subject.hasCoefficient === false ? 1 : Math.round(rows[0].coefficient ?? 1));
+    let copied = 0;
+    let kept = 0;
+    for (const r of rows) {
+      const score = to20(Number(r.noteDevoir));
+      const cur = byStudent.get(r.studentId)?.score;
+      const before = previousDevoir.get(r.studentId);
+      if (cur != null && Math.abs(cur - score) > 0.001 && (before == null || Math.abs(cur - to20(before)) > 0.001)) { kept++; continue; }
+      if (cur != null && Math.abs(cur - score) <= 0.001) continue;
+      await this.prisma.mockExamGrade.upsert({
+        where: { mockExamId_studentId_subjectId: { mockExamId: exam.id, studentId: r.studentId, subjectId: subject.id } },
+        create: { mockExamId: exam.id, studentId: r.studentId, subjectId: subject.id, score, coefficient },
+        update: { score },
+      });
+      copied++;
+    }
+    return copied || kept ? { label: exam.label, copied, kept } : null;
   }
 
   // ─── List all fiche statuses for a class/term ────────────────────────────

@@ -250,7 +250,11 @@ export default function GradeEntryPage() {
 
   const mutation = useMutation({
     mutationFn: (payload) => gradesService.saveForClassSubject(classId, subjectId, payload),
-    onSuccess: () => {
+    onSuccess: (res) => {
+      // Colonne « Devoir » reportée sur la fiche du devoir surveillé du trimestre
+      const ds = res?.data?.dsSync;
+      if (ds?.copied) toast.success(`Notes « Devoir » reportées sur la fiche du DS « ${ds.label} ».`);
+      if (ds?.kept) toast(`${ds.kept} élève(s) avai(en)t déjà une autre note au DS « ${ds.label} » : laissée(s) telle(s) quelle(s).`, { icon: 'ℹ️' });
       setSaved(true);
       dirtyRef.current = false;
       setAutoState(null);
