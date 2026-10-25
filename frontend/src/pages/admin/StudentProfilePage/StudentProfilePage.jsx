@@ -14,7 +14,7 @@ import { healthRecordsService } from '../../../services/healthRecordsService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Card from '../../../components/common/Card/Card';
-import Avatar from '../../../components/common/Avatar/Avatar';
+import ZoomableAvatar from '../../../components/common/ZoomableAvatar/ZoomableAvatar';
 import Badge from '../../../components/common/Badge/Badge';
 import Loading from '../../../components/common/Loading/Loading';
 import AttendanceInput from '../../../components/reports/AttendanceInput/AttendanceInput';
@@ -213,7 +213,7 @@ function AdminStudentProfilePage() {
 
         {/* Identity */}
         <Card className="asp-identity">
-          <Avatar name={name} src={student?.user?.profileImage} size="xl" />
+          <ZoomableAvatar name={name} src={student?.user?.profileImage} size="xl" />
           <div className="asp-identity__main">
             <h2 className="asp-identity__name">{name}</h2>
             <p className="asp-identity__matricule">{student?.admissionNumber ?? '—'}</p>

@@ -1,5 +1,6 @@
 import { appreciationOn20 } from '../../common/utils/appreciation.util';
-import { BadRequestException, Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException, ForbiddenException, Optional } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import archiver = require('archiver');
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -60,6 +61,7 @@ export class MockExamsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly pdf: PdfService,
+    @Optional() private readonly events?: EventEmitter2,
   ) {}
 
   // ─── List exams for a class (or all for institution) ────────────────────────
@@ -589,7 +591,7 @@ export class MockExamsService {
    * Les notes d'un devoir surveillé sont reportées dans la colonne « Devoir » de la fiche de notes du
    * trimestre (même matière, mêmes élèves) : le professeur ne saisit qu'une fois. La moyenne de la
    * matière, l'appréciation et le rang sont recalculés comme sur la fiche. Une fiche trimestrielle déjà
-   * signée n'est jamais modifiée. Une note de DS effacée ne vide pas la fiche. Une note « Devoir » déjà
+   * signée reçoit aussi la note (signature conservée). Une note de DS effacée ne vide pas la fiche. Une note « Devoir » déjà
    * saisie autrement sur la fiche (différente de l'ancienne note du DS) est laissée telle quelle.
    * Renvoie un court message à ajouter à « Notes sauvegardées. ».
    */
@@ -631,7 +633,8 @@ export class MockExamsService {
           where: { classId_subjectId_academicYear_termNumber: { classId: exam.classId, subjectId, academicYear: exam.academicYear, termNumber } },
           select: { signedAt: true },
         });
-        if (fiche?.signedAt) { signedSubjects.push(subject.nameFr); continue; }
+        // Fiche déjà signée : la note du DS y est reportée quand même (la signature est conservée)
+        if (fiche?.signedAt) signedSubjects.push(subject.nameFr);
         const maxScore = subject.maxScore ?? 20;
 
         for (const e of list) {
@@ -695,7 +698,9 @@ export class MockExamsService {
 
       const term = termNumber === 1 ? '1er trimestre' : `${termNumber}e trimestre`;
       let msg = copied ? ` Notes reportées dans la colonne « Devoir » de la fiche du ${term}.` : '';
-      if (signedSubjects.length) msg += ` Fiche du ${term} déjà signée (${signedSubjects.join(', ')}) : note « Devoir » non reportée.`;
+      if (copied && signedSubjects.length) msg += ` (Fiche déjà signée pour ${signedSubjects.join(', ')} : note « Devoir » reportée, signature conservée.)`;
+      // Bulletins déjà publiés de la classe : moyennes, rangs et PDF recalculés
+      if (copied) this.events?.emit('grades.corrected', { classId: exam.classId, academicYear: exam.academicYear, termNumber, institutionId: cls?.institutionId });
       if (kept) msg += ` ${kept} élève(s) avai(en)t déjà une autre note « Devoir » sur la fiche : laissée(s) telle(s) quelle(s).`;
       return msg;
     } catch (err) {

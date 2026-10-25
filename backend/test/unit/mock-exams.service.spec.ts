@@ -304,11 +304,12 @@ describe('MockExamsService', () => {
       expect(prisma.grade.upsert.mock.calls[0][0].update.noteDevoir).toBe(14);
     });
 
-    it('never touches a term grade sheet that is already signed', async () => {
+    it('also fills a term grade sheet that is already signed (signature kept)', async () => {
       prisma.gradeFiche.findUnique.mockResolvedValue({ signedAt: new Date() });
       const res = await service.saveSubjectGrades(exam.id, 'math', [{ studentId: 'stu-1', score: 14 }], INST, 3, 'TEACHER', 'teacher-1');
-      expect(prisma.grade.upsert).not.toHaveBeenCalled();
-      expect(res.message).toContain('déjà signée');
+      expect(prisma.grade.upsert.mock.calls[0][0].update.noteDevoir).toBe(14);
+      expect(prisma.gradeFiche.update?.mock?.calls?.length ?? 0).toBe(0); // la signature n'est pas retirée
+      expect(res.message).toContain('signature conservée');
     });
   });
 });

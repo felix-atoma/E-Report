@@ -1,0 +1,27 @@
+.zavatar { position: relative; display: inline-flex; padding: 0; border: none; background: none; border-radius: 50%; cursor: zoom-in; }
+.zavatar:focus-visible { outline: 3px solid #fdc632; outline-offset: 3px; }
+.zavatar__hint {
+  position: absolute; right: -2px; bottom: -2px; width: 26px; height: 26px; border-radius: 50%;
+  background: #002347; color: #fff; font-size: 13px; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .25); opacity: .9;
+}
+.zavatar:hover .zavatar__hint { opacity: 1; transform: scale(1.08); }
+
+.zavatar-overlay {
+  position: fixed; inset: 0; z-index: 9500; background: rgba(0, 18, 40, .82);
+  display: flex; align-items: center; justify-content: center; padding: 24px; cursor: zoom-out;
+  animation: zavatar-in .18s ease-out both;
+}
+@keyframes zavatar-in { from { opacity: 0; } to { opacity: 1; } }
+.zavatar-overlay__figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: default; }
+.zavatar-overlay__img {
+  max-width: min(90vw, 520px); max-height: 80vh; width: auto; height: auto; object-fit: contain;
+  border-radius: 10px; background: #fff; box-shadow: 0 20px 50px rgba(0, 0, 0, .45);
+}
+.zavatar-overlay__name { color: #fff; font-weight: 700; font-size: 1.05rem; text-align: center; }
+.zavatar-overlay__close {
+  position: absolute; top: 16px; right: 16px; width: 42px; height: 42px; border-radius: 50%; border: none;
+  background: rgba(255, 255, 255, .15); color: #fff; font-size: 1.2rem; cursor: pointer;
+}
+.zavatar-overlay__close:hover { background: rgba(255, 255, 255, .28); }
+@media print { .zavatar__hint, .zavatar-overlay { display: none !important; } }

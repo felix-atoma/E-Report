@@ -7,7 +7,7 @@ import { feesService } from '../../../services/feesService';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Card from '../../../components/common/Card/Card';
-import Avatar from '../../../components/common/Avatar/Avatar';
+import ZoomableAvatar from '../../../components/common/ZoomableAvatar/ZoomableAvatar';
 import Badge from '../../../components/common/Badge/Badge';
 import Loading from '../../../components/common/Loading/Loading';
 import './StudentProfilePage.css';
@@ -64,7 +64,7 @@ function StudentProfilePage() {
       <div className="sp-grid">
         {/* Identity card */}
         <Card className="sp-identity">
-          <Avatar name={fullName} size="xl" />
+          <ZoomableAvatar name={fullName} src={student?.user?.profileImage} size="xl" />
           <div className="sp-identity__info">
             <h2 className="sp-identity__name">{fullName}</h2>
             <p className="sp-identity__sub">{student?.admissionNumber ?? '—'}</p>
