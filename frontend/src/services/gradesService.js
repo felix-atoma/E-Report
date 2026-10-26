@@ -22,6 +22,12 @@ export const gradesService = {
       { params: { academicYear, termNumber } },
     ),
 
+  // Dernière signature manuscrite de l'utilisateur, réutilisée pour signer en un clic
+  mySignature: () => api.get('/grades/my-signature'),
+  // Toutes mes fiches remplies de la classe pour ce trimestre, signées avec ma signature enregistrée
+  signAllMine: (classId, academicYear, termNumber) =>
+    api.post(`/grades/class/${classId}/sign-all`, {}, { params: { academicYear, termNumber } }),
+
   unsignFiche: (classId, subjectId, academicYear, termNumber) =>
     api.delete(`/grades/class/${classId}/subject/${subjectId}/sign`, {
       params: { academicYear, termNumber },

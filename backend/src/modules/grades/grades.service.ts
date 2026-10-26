@@ -610,6 +610,53 @@ export class GradesService {
     return updated;
   }
 
+  // ─── Signature enregistrée (réutilisée d'une fiche à l'autre) ────────────
+
+  /** Dernière signature manuscrite de l'utilisateur (fiche de notes ou fiche de DS / composition). */
+  async mySignature(userId: string): Promise<{ signatureData: string | null; signedAt: Date | null }> {
+    const handwritten = { signedById: userId, signedAt: { not: null }, signatureData: { not: null }, NOT: { signatureData: 'ADMIN_VERIFIED' } };
+    const [term, exam] = await Promise.all([
+      this.prisma.gradeFiche.findFirst({ where: handwritten, orderBy: { signedAt: 'desc' }, select: { signatureData: true, signedAt: true } }),
+      this.prisma.mockExamSubjectFiche.findFirst({ where: handwritten, orderBy: { signedAt: 'desc' }, select: { signatureData: true, signedAt: true } }),
+    ]);
+    const latest = [term, exam].filter(Boolean).sort((a, b) => +new Date(b!.signedAt!) - +new Date(a!.signedAt!))[0];
+    return { signatureData: latest?.signatureData ?? null, signedAt: latest?.signedAt ?? null };
+  }
+
+  /**
+   * Maître / professeur : signe en une fois toutes SES fiches remplies de la classe pour ce trimestre,
+   * avec sa signature enregistrée. Fiches sans aucune note ou déjà signées : laissées telles quelles.
+   */
+  async signAllMine(classId: string, academicYear: string, termNumber: number, userId: string, role: Role) {
+    if (role !== Role.TEACHER) throw new ForbiddenException('Réservé aux enseignants');
+    const { signatureData } = await this.mySignature(userId);
+    if (!signatureData) throw new BadRequestException('Signez d\'abord une fiche avec votre signature : elle sera ensuite réutilisée.');
+    const mine = await this.prisma.classSubject.findMany({
+      where: { classId, teacherId: userId },
+      select: { subjectId: true, subject: { select: { nameFr: true } } },
+    });
+    const signed: string[] = []; const empty: string[] = []; const already: string[] = [];
+    for (const cs of mine) {
+      const name = cs.subject.nameFr.trim();
+      const fiche = await this.prisma.gradeFiche.findUnique({
+        where: { classId_subjectId_academicYear_termNumber: { classId, subjectId: cs.subjectId, academicYear, termNumber } },
+        select: { signedAt: true },
+      });
+      if (fiche?.signedAt) { already.push(name); continue; }
+      const hasMarks = await this.prisma.grade.count({
+        where: {
+          subjectId: cs.subjectId, reportCard: { classId, academicYear, termNumber },
+          OR: [{ noteInterro1: { not: null } }, { noteInterro2: { not: null } }, { noteInterro3: { not: null } },
+            { noteInterro4: { not: null } }, { noteDevoir: { not: null } }, { noteComposition: { not: null } }],
+        },
+      });
+      if (!hasMarks) { empty.push(name); continue; }
+      await this.signFiche(classId, cs.subjectId, academicYear, termNumber, userId, role, signatureData);
+      signed.push(name);
+    }
+    return { signed, empty, already };
+  }
+
   // ─── Private helpers ─────────────────────────────────────────────────────
 
   private async assertReportAccess(report: { createdById: string | null; classId: string }, userId: string, role: Role) {

@@ -187,3 +187,7 @@
 .fp__eval-kind { font-size: 0.72rem; font-weight: 700; color: #0f766e; text-transform: uppercase; letter-spacing: 0.3px; }
 .fp__eval-class { color: #475569; }
 .fp__eval-cta { margin-left: auto; font-weight: 700; color: #0f766e; }
+
+/* Maître de classe : signer toutes ses fiches remplies en une fois */
+.fp__sign-all { display: block; width: 100%; margin: 0 0 .7rem; padding: .55rem .9rem; border: none; border-radius: 8px; background: #002347; color: #fff; font-weight: 700; font-size: .85rem; cursor: pointer; font-family: inherit; }
+.fp__sign-all:disabled { opacity: .6; cursor: wait; }

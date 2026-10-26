@@ -96,6 +96,26 @@ export class GradesController {
     );
   }
 
+  @Get('my-signature')
+  @Roles(Role.ADMIN, Role.TEACHER)
+  @ApiOperation({ summary: 'Dernière signature manuscrite de l\'utilisateur (réutilisée pour signer)' })
+  mySignature(@CurrentUser() user: any) {
+    return this.service.mySignature(user.id);
+  }
+
+  @Post('class/:classId/sign-all')
+  @Roles(Role.TEACHER)
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Signer en une fois toutes mes fiches remplies de la classe (signature enregistrée)' })
+  signAllMine(
+    @Param('classId') classId: string,
+    @Query('academicYear') academicYear: string,
+    @Query('termNumber') termNumber: string,
+    @CurrentUser() user: any,
+  ) {
+    return this.service.signAllMine(classId, academicYear, parseInt(termNumber, 10), user.id, user.role);
+  }
+
   @Post('class/:classId/subject/:subjectId/import-csv')
   @Roles(Role.ADMIN, Role.TEACHER)
   @HttpCode(200)

@@ -2,7 +2,8 @@ import { fmtSignedAt } from '../../../utils/fmtSignedAt';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Loading from '../../../components/common/Loading/Loading';
@@ -56,6 +57,25 @@ function ClassFicheCard({ cls, term, termLabel }) {
   const signedCount = fiches.filter((f) => f.isSigned).length;
   const allSigned = fiches.length > 0 && signedCount === fiches.length;
 
+  // Maître de classe : toutes ses fiches remplies signées en une fois avec sa signature enregistrée
+  const qc = useQueryClient();
+  const [signingAll, setSigningAll] = useState(false);
+  const signAll = async () => {
+    if (!window.confirm(`Signer toutes vos fiches remplies de ${cls.name.trim()} (${termLabel}) avec votre signature enregistrée ?`)) return;
+    setSigningAll(true);
+    try {
+      const { data: r } = await gradesService.signAllMine(cls.id, cls.academicYear, term);
+      if (r.signed.length) toast.success(`${r.signed.length} fiche(s) signée(s) : ${r.signed.join(', ')}.`, { duration: 7000 });
+      else toast('Aucune fiche à signer.', { icon: 'ℹ️' });
+      if (r.empty.length) toast(`Sans notes, non signée(s) : ${r.empty.join(', ')}.`, { icon: '📝', duration: 7000 });
+      qc.invalidateQueries({ queryKey: ['fiches', cls.id, cls.academicYear, term] });
+    } catch (err) {
+      toast.error(err?.response?.data?.message ?? 'La signature a échoué.');
+    } finally {
+      setSigningAll(false);
+    }
+  };
+
   return (
     <div className="fp__card">
       <div className="fp__card-header">
@@ -83,6 +103,13 @@ function ClassFicheCard({ cls, term, termLabel }) {
             <span>{Math.round((signedCount / fiches.length) * 100)}%</span>
           </div>
         </div>
+      )}
+
+      {!isLoading && fiches.length > 0 && !allSigned && (
+        <button type="button" className="fp__sign-all" onClick={signAll} disabled={signingAll}
+          title="Signe, avec votre signature enregistrée, toutes vos fiches de cette classe qui ont des notes">
+          {signingAll ? 'Signature…' : '✍️ Signer toutes mes fiches remplies'}
+        </button>
       )}
 
       {isLoading ? (

@@ -318,11 +318,20 @@ export default function GradeEntryPage() {
     URL.revokeObjectURL(url);
   };
 
+  // Signature déjà faite sur une autre fiche : proposée pour signer en un clic
+  const { data: savedSig } = useQuery({
+    queryKey: ['my-signature'],
+    queryFn: () => gradesService.mySignature().then((r) => r.data),
+    enabled: signModal,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const signMutation = useMutation({
     mutationFn: (signatureData) =>
       gradesService.signFiche(classId, subjectId, academicYear, termNumber, signatureData),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ficheKey });
+      qc.invalidateQueries({ queryKey: ['my-signature'] });
       setSignModal(false);
       setSigData(null);
       toast.success(t('gradeEntry.toast.signed'));
@@ -983,6 +992,21 @@ export default function GradeEntryPage() {
         }
       >
         <div className="fdn__sign-modal-body">
+          {savedSig?.signatureData && savedSig.signatureData !== 'ADMIN_VERIFIED' && (
+            <div className="fdn__saved-sig">
+              <div className="fdn__saved-sig__label">Votre signature enregistrée</div>
+              <img src={savedSig.signatureData} alt="Ma signature" className="fdn__saved-sig__img" />
+              <button
+                type="button"
+                className="fdn__btn fdn__btn--sign"
+                disabled={signMutation.isPending}
+                onClick={() => signMutation.mutate(savedSig.signatureData)}
+              >
+                {signMutation.isPending ? t('gradeEntry.signModal.confirming') : '✍️ Signer avec ma signature'}
+              </button>
+              <div className="fdn__saved-sig__or">— ou dessinez / importez une autre signature ci-dessous —</div>
+            </div>
+          )}
           <p className="fdn__sign-modal-info">{t('gradeEntry.signModal.info')}</p>
           <SignaturePad onChange={setSigData} width={460} height={180} />
         </div>
