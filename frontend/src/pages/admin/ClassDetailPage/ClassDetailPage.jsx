@@ -373,6 +373,9 @@ function ClassDetailPage() {
         subtitle={`${cls.level ?? ''} — ${cls.academicYear ?? ''}`}
         actions={
           <>
+            <Link to={`/classes/${id}/liste`} className="acd__back-btn" style={{ marginRight: '8px' }}>
+              📄 Liste de classe
+            </Link>
             <Link
               to={`/admin/classes/${id}/appreciation-directeur`}
               className="acd__back-btn"
