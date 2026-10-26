@@ -65,7 +65,7 @@ export default function ClassListPage() {
       a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 2000);
     } catch {
-      toast.error('Le PDF n'a pas pu être préparé. Réessayez.');
+      toast.error("Le PDF n'a pas pu être préparé. Réessayez.");
     } finally {
       setDownloading(false);
     }
