@@ -66,20 +66,43 @@ function cleanAndCrop(src) {
   const px = image.data;
   let minX = width, minY = height, maxX = -1, maxY = -1;
 
+  // Teinte du papier mesurée sur la photo (papier gris, ombre, lumière jaune…) : la plupart des pixels
+  // sont du papier ; tout ce qui est à peine plus foncé que lui (grain, ombre légère) devient transparent
+  const hist = new Uint32Array(256);
+  for (let i = 0; i < px.length; i += 4) hist[Math.round(0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2])]++;
+  let acc = 0, paper = 255;
+  for (let l = 0; l < 256; l++) { acc += hist[l]; if (acc >= (px.length / 4) * 0.4) { paper = l; break; } }
+  const cut = Math.min(215, paper - 45);   // plus clair que ça : fond
+  const soft = cut - 55;                   // entre les deux : bord adouci
+
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       const i = (y * width + x) * 4;
       const lum = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
-      if (px[i + 3] < 20 || lum > 215) {
+      if (px[i + 3] < 20 || lum > cut) {
         px[i + 3] = 0;                       // papier / fond → transparent
       } else {
-        if (lum > 160) px[i + 3] = Math.round(px[i + 3] * (215 - lum) / 55); // bords adoucis
+        if (lum > soft) px[i + 3] = Math.round(px[i + 3] * (cut - lum) / 55); // bords adoucis
         if (x < minX) minX = x; if (x > maxX) maxX = x;
         if (y < minY) minY = y; if (y > maxY) maxY = y;
       }
     }
   }
   if (maxX < 0) throw new Error('Aucune signature détectée dans ce fichier');
+
+  // Encre d'une seule couleur (moyenne des traits foncés) : rendu net et image très légère
+  // (une photo garde des centaines de nuances qui alourdissaient l'envoi au serveur)
+  let r = 0, g = 0, b = 0, n = 0;
+  for (let i = 0; i < px.length; i += 4) {
+    if (px[i + 3] > 200) { r += px[i]; g += px[i + 1]; b += px[i + 2]; n++; }
+  }
+  const ink = n ? [Math.round(r / n * 0.6), Math.round(g / n * 0.6), Math.round(b / n * 0.6)] : [17, 24, 39];
+  for (let i = 0; i < px.length; i += 4) {
+    if (px[i + 3] === 0) continue;
+    px[i] = ink[0]; px[i + 1] = ink[1]; px[i + 2] = ink[2];
+    // Alpha arrondi par paliers : bords lisses, beaucoup moins de valeurs différentes à compresser
+    px[i + 3] = px[i + 3] > 230 ? 255 : Math.round(px[i + 3] / 32) * 32;
+  }
   ctx.putImageData(image, 0, 0);
 
   const pad = Math.round(Math.max(maxX - minX, maxY - minY) * 0.04) + 2;

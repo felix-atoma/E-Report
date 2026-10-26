@@ -30,6 +30,15 @@ export class AllExceptionsFilter implements ExceptionFilter {
         message = (res as any).message || message;
         error = (res as any).error || error;
       }
+    } else if ((exception as any)?.type === 'entity.too.large' || (exception as any)?.status === 413) {
+      // Requête trop volumineuse (ex. image de signature énorme) : 413 explicite, pas « erreur interne »
+      status = HttpStatus.PAYLOAD_TOO_LARGE;
+      error = 'Payload Too Large';
+      message = 'Fichier trop volumineux. Utilisez une image plus légère (photo recadrée sur la signature).';
+    } else if ((exception as any)?.type === 'entity.parse.failed') {
+      status = HttpStatus.BAD_REQUEST;
+      error = 'Bad Request';
+      message = 'Données envoyées illisibles. Réessayez.';
     } else {
       this.logger.error('Unhandled exception', exception);
     }
