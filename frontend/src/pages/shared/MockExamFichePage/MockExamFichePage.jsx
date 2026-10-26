@@ -5,6 +5,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { mockExamsService } from '../../../services/mockExamsService';
+import { gradesService } from '../../../services/gradesService';
 import { useAuth } from '../../../context/AuthContext';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import Loading from '../../../components/common/Loading/Loading';
@@ -192,18 +193,28 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
     setSignature(subject.signatureData ?? null);
   }, [subject.isSigned, subject.signedAt, subject.signedByName, subject.signedById, subject.signatureData]);
 
-  const handleSign = async () => {
-    if (!sigData) { alert('Dessinez ou importez votre signature.'); return; }
+  // Signature déjà faite sur une autre fiche : proposée pour signer en un clic
+  const { data: savedSig } = useQuery({
+    queryKey: ['my-signature'],
+    queryFn: () => gradesService.mySignature().then((r) => r.data),
+    enabled: signModal,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const handleSign = async (override) => {
+    const data = typeof override === 'string' ? override : sigData;
+    if (!data) { alert('Dessinez ou importez votre signature.'); return; }
     setSigning(true);
     try {
-      const res = await mockExamsService.signSubjectFiche(examId, subject.id, sigData);
+      const res = await mockExamsService.signSubjectFiche(examId, subject.id, data);
       setIsSigned(true);
       setSignedAt(res.data.signedAt);
       setSignedBy(res.data.signedByName);
       setSignedById(res.data.signedById);
-      setSignature(res.data.signatureData ?? sigData);
+      setSignature(res.data.signatureData ?? data);
       setSignModal(false);
       setSigData(null);
+      qc.invalidateQueries({ queryKey: ['my-signature'] });
       qc.invalidateQueries({ queryKey: ['mock-exam-fiche', examId] });
     } catch (err) {
       alert(err?.response?.data?.message ? [].concat(err.response.data.message).join(' · ') : 'Erreur lors de la signature. Réessayez.');
@@ -592,12 +603,22 @@ function SubjectFiche({ examId, exam, subject, students, isEditable, isPublished
         footer={
           <>
             <button className="mfiche-unsign-btn" onClick={() => setSignModal(false)} disabled={signing}>Annuler</button>
-            <button className="mfiche-sign-btn" onClick={handleSign} disabled={signing || !sigData}>
+            <button className="mfiche-sign-btn" onClick={() => handleSign()} disabled={signing || !sigData}>
               {signing ? 'Signature…' : '✍️ Valider la signature'}
             </button>
           </>
         }
       >
+        {savedSig?.signatureData && savedSig.signatureData !== 'ADMIN_VERIFIED' && (
+          <div className="fdn__saved-sig">
+            <div className="fdn__saved-sig__label">Votre signature enregistrée</div>
+            <img src={savedSig.signatureData} alt="Ma signature" className="fdn__saved-sig__img" />
+            <button type="button" className="mfiche-sign-btn" disabled={signing} onClick={() => handleSign(savedSig.signatureData)}>
+              {signing ? 'Signature…' : '✍️ Signer avec ma signature'}
+            </button>
+            <div className="fdn__saved-sig__or">— ou dessinez / importez une autre signature ci-dessous —</div>
+          </div>
+        )}
         <p className="mfiche-sign-info">
           Dessinez votre signature ou importez-la (PNG, JPG ou PDF). Une fois signée, la fiche est verrouillée :
           les notes ne peuvent plus être modifiées sans annuler la signature.
