@@ -1,6 +1,8 @@
 import { useContext, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
+import api from '../../../services/api';
 import { classesService } from '../../../services/classesService';
 import { AuthContext } from '../../../context/AuthContext';
 import { useInstitution } from '../../../context/InstitutionContext';
@@ -21,6 +23,7 @@ export default function ClassListPage() {
   const { institution } = useInstitution() ?? {};
   const [extra, setExtra] = useState(5);          // colonnes vides
   const [extraTitle, setExtraTitle] = useState('');
+  const [downloading, setDownloading] = useState(false);
 
   const { data: cls, isLoading, isError } = useQuery({
     queryKey: ['class', id],
@@ -50,6 +53,24 @@ export default function ClassListPage() {
   const back = user?.role === 'ADMIN' ? `/admin/classes/${cls.id}` : `/teacher/classes/${cls.id}`;
   const cols = Array.from({ length: extra }, (_, i) => i);
 
+  // PDF préparé par le serveur (même présentation), téléchargé directement — pratique sur téléphone
+  const downloadPdf = async () => {
+    setDownloading(true);
+    try {
+      const res = await api.get(`/classes/${cls.id}/list-pdf`, { params: { extra, title: extraTitle || undefined }, responseType: 'blob' });
+      const name = /filename="([^"]+)"/.exec(res.headers?.['content-disposition'] ?? '')?.[1] ?? `liste-${cls.name.trim()}.pdf`;
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      a.download = name;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    } catch {
+      toast.error('Le PDF n'a pas pu être préparé. Réessayez.');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   const exportCsv = () => {
     const head = ['N°', 'Nom et prénoms', 'Matricule', 'Sexe', 'Date de naissance'];
     const lines = students.map((s, i) => [i + 1, s.name, s.admissionNumber ?? '', s.sex ?? '', fmtDate(s.dateOfBirth)]
@@ -77,6 +98,7 @@ export default function ClassListPage() {
           <input value={extraTitle} placeholder="ex. Appel, Interrogations…" onChange={(e) => setExtraTitle(e.target.value)} />
         </label>
         <button type="button" className="clist-toolbar__btn clist-toolbar__btn--ghost" onClick={exportCsv}>⬇️ Excel</button>
+        <button type="button" className="clist-toolbar__btn clist-toolbar__btn--ghost" onClick={downloadPdf} disabled={downloading}>{downloading ? 'Préparation…' : '📄 Télécharger en PDF'}</button>
         <button type="button" className="clist-toolbar__btn" onClick={() => window.print()}>🖨️ Imprimer</button>
       </div>
 

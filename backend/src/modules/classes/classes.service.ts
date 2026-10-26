@@ -10,13 +10,36 @@ import { UpdateClassDto } from './dto/update-class.dto';
 import { EnrollStudentDto } from './dto/enroll-student.dto';
 import { AssignSubjectDto } from './dto/assign-subject.dto';
 import { compareClasses, levelRank } from '../../common/utils/class-order.util';
+import { PdfService } from '../pdf/pdf.service';
+import { classListHtml } from './class-list-html';
 
 // Rang du niveau (CI → Terminale) : enregistré dans sortOrder et utilisé pour trier les listes de classes
 const levelSortOrder = (level: string, name?: string) => levelRank(level, name);
 
 @Injectable()
 export class ClassesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly pdf: PdfService) {}
+
+  /** Liste de classe en PDF (A4) : élèves de l'année de la classe par ordre alphabétique, colonnes vides au choix. */
+  async classListPdf(id: string, institutionId: string, userId: string, role: string, extra = 5, extraTitle = '') {
+    const cls: any = await this.findOne(id, institutionId, userId, role);
+    const institution = await this.prisma.institution.findUnique({ where: { id: institutionId }, select: { name: true, address: true, logo: true, crest: true } });
+    const seen = new Set<string>();
+    const collator = new Intl.Collator('fr', { sensitivity: 'base', numeric: true });
+    const students = (cls.students ?? [])
+      .filter((cs: any) => !cs.academicYear || cs.academicYear === cls.academicYear)
+      .map((cs: any) => cs.student)
+      .filter((s: any) => s && !seen.has(s.id) && seen.add(s.id))
+      .map((s: any) => ({ name: (s.user?.name ?? s.admissionNumber ?? '').trim(), admissionNumber: s.admissionNumber, sex: s.sex, dateOfBirth: s.dateOfBirth }))
+      .sort((a: any, b: any) => collator.compare(a.name, b.name));
+    const html = classListHtml({
+      institution: institution ?? { name: '' }, className: cls.name.trim(), academicYear: cls.academicYear, teacherName: cls.teacher?.name ?? null,
+      students, extra: Math.max(0, Math.min(12, Math.round(extra) || 0)), extraTitle: extraTitle.slice(0, 60),
+    });
+    const buffer = await this.pdf.generateFromHtml(html);
+    const filename = `liste-${cls.name.trim()}-${cls.academicYear}`.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-zA-Z0-9-]+/g, '-') + '.pdf';
+    return { buffer, filename };
+  }
 
   async findAll(institutionId: string, userId?: string, role?: string) {
     const where: any = { institutionId, isActive: true };

@@ -8,7 +8,10 @@ import {
   Param,
   Patch,
   Post,
+  Query,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { IsArray, IsString } from 'class-validator';
 
 class BulkDeleteDto {
@@ -51,6 +54,21 @@ export class ClassesController {
   @ApiOperation({ summary: 'Get a class with its students and subjects' })
   findOne(@Param('id') id: string, @CurrentUser() user: any) {
     return this.service.findOne(id, user.institutionId, user.id, user.role);
+  }
+
+  @Get(':id/list-pdf')
+  @Roles(Role.ADMIN, Role.TEACHER)
+  @ApiOperation({ summary: 'Liste de classe en PDF (élèves A-Z, colonnes vides au choix)' })
+  async classListPdf(
+    @Param('id') id: string,
+    @CurrentUser() user: any,
+    @Res() res: Response,
+    @Query('extra') extra?: string,
+    @Query('title') title?: string,
+  ) {
+    const { buffer, filename } = await this.service.classListPdf(id, user.institutionId, user.id, user.role, Number(extra ?? 5), title ?? '');
+    res.set({ 'Content-Type': 'application/pdf', 'Content-Disposition': `attachment; filename="${filename}"`, 'Content-Length': buffer.length });
+    res.end(buffer);
   }
 
   @Patch(':id')
