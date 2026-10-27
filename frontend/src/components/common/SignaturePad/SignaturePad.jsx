@@ -49,8 +49,10 @@ export default function SignaturePad({ onChange, width = 480, height = 180 }) {
       const canvas = canvasRef.current;
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const margin = 8;
-      const ratio = Math.min((canvas.width - margin * 2) / sig.width, (canvas.height - margin * 2) / sig.height);
+      // Marge confortable tout autour : la signature reste bien dans le cadre (même très large ou très haute)
+      const mx = Math.round(canvas.width * 0.08);
+      const my = Math.round(canvas.height * 0.14);
+      const ratio = Math.min((canvas.width - mx * 2) / sig.width, (canvas.height - my * 2) / sig.height, 3);
       const w = sig.width * ratio;
       const h = sig.height * ratio;
       ctx.drawImage(sig, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
