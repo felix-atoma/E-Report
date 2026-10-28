@@ -24,6 +24,11 @@ export class UpdateBrandingDto {
   @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(1_500_000) directorSignature?: string;
   /** Nom imprimé sous la signature du directeur (ex. « M. KOFFI Mensah ») */
   @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(120) directorName?: string;
+  /** Deux cycles sous un même compte : nom et directeur du primaire (ceux ci-dessus = secondaire) */
+  @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(1_500_000) directorSignaturePrimary?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(120) directorNamePrimary?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(160) schoolNamePrimary?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(160) schoolNameSecondary?: string;
 
   @ApiPropertyOptional() @IsOptional() @IsString() bulletinFontFamily?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() bulletinFontSize?: string;

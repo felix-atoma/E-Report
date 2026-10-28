@@ -83,6 +83,15 @@ export class InstitutionsService {
       mergedBranding.directorSignature = dto.directorSignature || null;
     }
     if (dto.directorName !== undefined)      mergedBranding.directorName      = dto.directorName.trim() || null;
+    if (dto.directorSignaturePrimary !== undefined) {
+      if (dto.directorSignaturePrimary && !/^data:image\/(png|jpeg);base64,/.test(dto.directorSignaturePrimary)) {
+        throw new BadRequestException('Signature invalide : image PNG ou JPG attendue.');
+      }
+      mergedBranding.directorSignaturePrimary = dto.directorSignaturePrimary || null;
+    }
+    if (dto.directorNamePrimary !== undefined) mergedBranding.directorNamePrimary = dto.directorNamePrimary.trim() || null;
+    if (dto.schoolNamePrimary !== undefined)   mergedBranding.schoolNamePrimary   = dto.schoolNamePrimary.trim() || null;
+    if (dto.schoolNameSecondary !== undefined) mergedBranding.schoolNameSecondary = dto.schoolNameSecondary.trim() || null;
     if (dto.bulletinFontFamily !== undefined) mergedBranding.bulletinFontFamily = dto.bulletinFontFamily;
     if (dto.bulletinFontSize   !== undefined) mergedBranding.bulletinFontSize   = dto.bulletinFontSize;
     if (dto.bulletinH1Size     !== undefined) mergedBranding.bulletinH1Size     = dto.bulletinH1Size;

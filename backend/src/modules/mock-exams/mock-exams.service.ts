@@ -11,6 +11,7 @@ import { CreateMockExamDto } from './dto/create-mock-exam.dto';
 import { SaveMockExamGradesDto } from './dto/save-grades.dto';
 import { computeAppreciation, computeMoyenneMatiere } from '../grades/grades.service';
 import { examTermNumber } from '../../common/utils/exam-term.util';
+import { schoolIdentity } from '../../common/utils/school-identity.util';
 
 /** Compositions du primaire (CI → CM2) : composition mensuelle et composition d'anglais. */
 export function isPrimaryComposition(examType: string | null | undefined): boolean {
@@ -265,7 +266,7 @@ export class MockExamsService {
         examEndDate: exam.examEndDate,
         academicYear: exam.academicYear,
         status: exam.status,
-        class: { id: exam.classId, name: (exam as any).class?.name },
+        class: { id: exam.classId, name: (exam as any).class?.name, level: (exam as any).class?.level ?? null },
       },
       subjects,
       students: students.map((s) => ({
@@ -781,14 +782,14 @@ export class MockExamsService {
 
     return {
       institution: {
-        name: institution?.name ?? '',
+        // Nom de l'établissement et directeur du cycle de la classe (primaire / secondaire)
+        name: schoolIdentity(institution?.brandingSettings, institution?.name ?? '', sheet.exam.class?.level).name,
         address: institution?.address ?? '',
         phone: institution?.phone ?? '',
         logo: institution?.logo ?? null,
         circonscription: (institution?.brandingSettings as any)?.circonscription ?? null,
-        // Signature du directeur enregistrée dans Personnalisation
-        directorSignature: (institution?.brandingSettings as any)?.directorSignature ?? null,
-        directorName: (institution?.brandingSettings as any)?.directorName ?? null,
+        directorSignature: schoolIdentity(institution?.brandingSettings, institution?.name ?? '', sheet.exam.class?.level).directorSignature,
+        directorName: schoolIdentity(institution?.brandingSettings, institution?.name ?? '', sheet.exam.class?.level).directorName,
       },
       exam: sheet.exam,
       subjects: sheet.subjects,
@@ -891,6 +892,7 @@ export class MockExamsService {
         scale: examScale(sheet.exam.examType),
         typeLabel: isEnglishSession(sheet.exam.examType) ? 'English Test' : (MockExamsService.TYPE_LABELS[sheet.exam.examType] ?? sheet.exam.examType),
         className: sheet.exam.class?.name ?? '',
+        classLevel: sheet.exam.class?.level ?? null,
         academicYear: sheet.exam.academicYear,
         examDate: sheet.exam.examDate,
         examEndDate: sheet.exam.examEndDate,
@@ -1111,7 +1113,7 @@ export class MockExamsService {
   private async findExamOrThrow(examId: string, institutionId: string) {
     const exam = await this.prisma.mockExam.findFirst({
       where: { id: examId, institutionId },
-      include: { class: { select: { name: true } } },
+      include: { class: { select: { name: true, level: true } } },
     });
     if (!exam) throw new NotFoundException('Examen introuvable.');
     return exam;

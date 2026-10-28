@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../../../context/AuthContext';
 import { reportsService } from '../../../services/reportsService';
 import { institutionsService } from '../../../services/institutionsService';
+import { schoolIdentity } from '../../../utils/schoolIdentity';
 import { gradesService } from '../../../services/gradesService';
 import Loading from '../../../components/common/Loading/Loading';
 import PrintFormatPicker from '../../../components/common/PrintFormatPicker/PrintFormatPicker';
@@ -299,7 +300,9 @@ export default function PrintReportCardPage() {
   const photo = report.student?.user?.profileImage ?? null;
   const termLabel = report.termName ?? `Trimestre ${report.termNumber}`;
 
-  const watermark = buildWatermark(institution?.name);
+  // Nom de l'établissement et directeur du cycle de la classe (primaire / secondaire)
+  const ident = schoolIdentity(institution?.brandingSettings, institution?.name ?? '', report.class?.level);
+  const watermark = buildWatermark(ident.name);
   const countryLine = [institution?.country, institution?.countryMotto].filter(Boolean).join(' — ');
   const circonscription = institution?.brandingSettings?.circonscription ?? null;
   const headerLogo = institution?.logo || institution?.crest || null;
@@ -371,7 +374,7 @@ export default function PrintReportCardPage() {
               {circonscription && <span>{circonscription}</span>}
             </div>
           )}
-          <div className="prh__name">{institution?.name ?? 'Établissement scolaire'}</div>
+          <div className="prh__name">{ident.name || 'Établissement scolaire'}</div>
           <div className="prh__body">
             {headerLogo && <img src={headerLogo} alt="Logo" className="prh__logo" />}
             <ul className="prh__contacts">
@@ -728,11 +731,11 @@ export default function PrintReportCardPage() {
           </div>
           <div className="pr-sig">
             {/* Signature du directeur (Personnalisation) : seulement sur un bulletin publié */}
-            {report.status === 'PUBLISHED' && institution?.brandingSettings?.directorSignature
-              ? <div className="pr-sig__area pr-sig__area--signed"><img src={institution.brandingSettings.directorSignature} alt="Signature du directeur" /></div>
+            {report.status === 'PUBLISHED' && ident.directorSignature
+              ? <div className="pr-sig__area pr-sig__area--signed"><img src={ident.directorSignature} alt="Signature du directeur" /></div>
               : <div className="pr-sig__area" />}
             <div className="pr-sig__line" />
-            <div className="pr-sig__name">{institution?.brandingSettings?.directorName || (institution?.name ? `Direction — ${institution.name}` : 'Le Directeur')}</div>
+            <div className="pr-sig__name">{ident.directorName || (ident.name ? `Direction — ${ident.name}` : 'Le Directeur')}</div>
             <div className="pr-sig__label">Le Directeur</div>
           </div>
           <div className="pr-sig pr-sig--visa">
@@ -747,7 +750,7 @@ export default function PrintReportCardPage() {
         <div className="pr-footer">
           <span>
             Généré le {new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
-            {institution?.name ? ` — ${institution.name}` : ''}
+            {ident.name ? ` — ${ident.name}` : ''}
           </span>
           <span className="pr-footer__security">
             N° Série : <strong>{report.securityCode ?? fallbackSerial(report)}</strong>

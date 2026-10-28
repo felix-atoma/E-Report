@@ -1,6 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { parseStudentCardCode, studentCardCode } from '../../common/utils/student-card.util';
+import { schoolIdentity } from '../../common/utils/school-identity.util';
 
 const collator = new Intl.Collator('fr', { sensitivity: 'base', numeric: true });
 
@@ -11,6 +12,7 @@ export async function classCardsData(prisma: PrismaService, cls: any, institutio
     select: { name: true, address: true, phone: true, logo: true, crest: true, stamp: true, country: true, brandingSettings: true },
   });
   const branding = (institution?.brandingSettings as Record<string, unknown>) ?? {};
+  const ident = schoolIdentity(branding, institution?.name ?? '', cls.level);
   const seen = new Set<string>();
   const students = (cls.students ?? [])
     .filter((cs: any) => !cs.academicYear || cs.academicYear === cls.academicYear)
@@ -29,11 +31,11 @@ export async function classCardsData(prisma: PrismaService, cls: any, institutio
   return {
     class: { id: cls.id, name: cls.name.trim(), academicYear: cls.academicYear },
     institution: {
-      name: institution?.name ?? '', address: institution?.address ?? null, phone: institution?.phone ?? null,
+      name: ident.name, address: institution?.address ?? null, phone: institution?.phone ?? null,
       logo: institution?.logo || institution?.crest || null, stamp: institution?.stamp ?? null, country: institution?.country ?? null,
       primaryColor: (branding.primaryColor as string) || '#002347',
-      directorSignature: (branding.directorSignature as string) || null,
-      directorName: (branding.directorName as string) || null,
+      directorSignature: ident.directorSignature,
+      directorName: ident.directorName,
     },
     students,
   };
@@ -48,8 +50,8 @@ export async function verifyStudentCard(prisma: PrismaService, code: string) {
     select: {
       admissionNumber: true, sex: true, dateOfBirth: true,
       user: { select: { name: true, profileImage: true } },
-      institution: { select: { name: true, logo: true, crest: true, address: true } },
-      classes: { select: { academicYear: true, class: { select: { name: true } } }, orderBy: { academicYear: 'desc' }, take: 1 },
+      institution: { select: { name: true, logo: true, crest: true, address: true, brandingSettings: true } },
+      classes: { select: { academicYear: true, class: { select: { name: true, level: true } } }, orderBy: { academicYear: 'desc' }, take: 1 },
     },
   });
   if (!student) throw new NotFoundException('Carte invalide');
@@ -63,6 +65,6 @@ export async function verifyStudentCard(prisma: PrismaService, code: string) {
     photo: student.user?.profileImage ?? null,
     className: enrol?.class?.name?.trim() ?? null,
     academicYear: enrol?.academicYear ?? null,
-    school: { name: student.institution?.name ?? '', logo: student.institution?.logo || student.institution?.crest || null, address: student.institution?.address ?? null },
+    school: { name: schoolIdentity(student.institution?.brandingSettings, student.institution?.name ?? '', enrol?.class?.level).name, logo: student.institution?.logo || student.institution?.crest || null, address: student.institution?.address ?? null },
   };
 }

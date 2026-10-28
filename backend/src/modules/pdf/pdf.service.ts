@@ -1,4 +1,5 @@
 ﻿import { formatSessionDays } from '../../common/utils/session-dates.util';
+import { schoolIdentity } from '../../common/utils/school-identity.util';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
@@ -497,7 +498,10 @@ export class PdfService {
    */
   /** half : relevé au format demi-feuille (A5 paysage), pour l'impression deux par feuille. */
   async generateRelevePdfBuffer(data: ReleveData, half = false): Promise<Buffer> {
-    const { institution, exam, student } = data;
+    const { exam, student } = data;
+    // Nom de l'établissement et directeur du cycle de la classe (primaire / secondaire)
+    const ident = schoolIdentity(data.institution.brandingSettings, data.institution.name, exam.classLevel);
+    const institution = { ...data.institution, name: ident.name };
     const branding = (institution.brandingSettings as Record<string, unknown>) ?? {};
     const inst = institution as any;
     // Devoir surveillé et composition mensuelle : pas d'« admis / ajourné » (ce ne sont pas des examens)
@@ -593,8 +597,8 @@ export class PdfService {
       showClassTeacher: !en,
       classSignatures: en ? [] : (data.teacherSignatures ?? []).filter((t) => t.classTeacher),
       // Devoir surveillé : pas de cadre « Professeur(s) de matière » sur le relevé
-      directorSignature: typeof branding.directorSignature === 'string' ? branding.directorSignature : null,
-      directorName: (branding.directorName as string) || null,
+      directorSignature: ident.directorSignature,
+      directorName: ident.directorName,
       subjectSignatures: exam.examType === 'DEVOIR_SURVEILLE' ? []
         : en
           ? (data.teacherSignatures ?? []).filter((t) => t.fromSession !== false)
@@ -657,7 +661,10 @@ export class PdfService {
   }
 
   private async buildHtml(data: ReportCardData): Promise<string> {
-    const { report, student, grades, institution } = data;
+    const { report, student, grades } = data;
+    // Nom de l'établissement et directeur du cycle de la classe (primaire / secondaire)
+    const ident = schoolIdentity(data.institution.brandingSettings, data.institution.name, data.classLevel);
+    const institution = { ...data.institution, name: ident.name };
     const isPrimary = isPrimaryLevel(data.classLevel);
     // Toutes les moyennes sont stockées sur 20 ; au primaire on les affiche sur 10.
     const denom = isPrimary ? 10 : 20;
@@ -820,8 +827,8 @@ export class PdfService {
       // (jamais sur un brouillon). Sinon, case vide à tamponner à la main.
       digitalStamp: digitalStampFor(branding, inst.stamp, report.status) ? pdfImage(inst.stamp) : null,
       // Signature du directeur (enregistrée une fois dans Personnalisation) : bulletins publiés seulement
-      directorSignature: report.status === 'PUBLISHED' && typeof branding.directorSignature === 'string' ? branding.directorSignature : null,
-      directorName: (branding.directorName as string) || null,
+      directorSignature: report.status === 'PUBLISHED' ? ident.directorSignature : null,
+      directorName: ident.directorName,
       // Rappel des périodes précédentes (2e et 3e trimestres) ; au dernier : moyenne annuelle + décision
       recap: data.termRecap && (data.termRecap.previous.length || data.termRecap.isLastTerm)
         ? {
@@ -954,6 +961,8 @@ export interface ReleveData {
   };
   exam: {
     label: string; examType: string; typeLabel: string; className: string; academicYear: string;
+    /** Niveau de la classe (CE1, 6eme…) : nom de l'établissement et directeur du bon cycle */
+    classLevel?: string | null;
     /** Barème des notes : 20 (par défaut) ou 10 (compositions mensuelles du primaire). */
     scale?: number;
     examDate?: Date | string | null; examEndDate?: Date | string | null;

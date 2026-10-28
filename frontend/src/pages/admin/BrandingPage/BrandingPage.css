@@ -305,3 +305,9 @@
 .branding-dirsig__img { max-width: 260px; max-height: 100px; object-fit: contain; background: #fff; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 6px; }
 .branding-dirsig__name { font-weight: 700; color: #002347; }
 .branding-dirsig__input { width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: .55rem .7rem; font: inherit; }
+.branding-cycles { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
+.branding-cycle { border: 1px solid #e5e7eb; border-radius: 12px; padding: .9rem; display: flex; flex-direction: column; gap: .6rem; background: #fff; }
+.branding-cycle__head { display: flex; justify-content: space-between; gap: .8rem; align-items: flex-start; }
+.branding-cycle__title { font-weight: 800; color: #002347; }
+.branding-cycle__hint { font-size: .78rem; color: #6b7280; }
+.branding-cycle__school { font-weight: 700; color: #b45309; }
