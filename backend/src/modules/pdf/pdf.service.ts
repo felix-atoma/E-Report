@@ -593,6 +593,8 @@ export class PdfService {
       showClassTeacher: !en,
       classSignatures: en ? [] : (data.teacherSignatures ?? []).filter((t) => t.classTeacher),
       // Devoir surveillé : pas de cadre « Professeur(s) de matière » sur le relevé
+      directorSignature: typeof branding.directorSignature === 'string' ? branding.directorSignature : null,
+      directorName: (branding.directorName as string) || null,
       subjectSignatures: exam.examType === 'DEVOIR_SURVEILLE' ? []
         : en
           ? (data.teacherSignatures ?? []).filter((t) => t.fromSession !== false)
@@ -817,6 +819,9 @@ export class PdfService {
       // Cachet numérique : seulement si l'école l'a choisi, et seulement sur un bulletin publié
       // (jamais sur un brouillon). Sinon, case vide à tamponner à la main.
       digitalStamp: digitalStampFor(branding, inst.stamp, report.status) ? pdfImage(inst.stamp) : null,
+      // Signature du directeur (enregistrée une fois dans Personnalisation) : bulletins publiés seulement
+      directorSignature: report.status === 'PUBLISHED' && typeof branding.directorSignature === 'string' ? branding.directorSignature : null,
+      directorName: (branding.directorName as string) || null,
       // Rappel des périodes précédentes (2e et 3e trimestres) ; au dernier : moyenne annuelle + décision
       recap: data.termRecap && (data.termRecap.previous.length || data.termRecap.isLastTerm)
         ? {

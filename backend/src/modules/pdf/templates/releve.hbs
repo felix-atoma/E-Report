@@ -320,7 +320,9 @@ body {
     <div class="sig-box">
       <div class="sig-title">{{L.head}}</div>
       <div class="sig-hint">{{L.stampSign}}</div>
+      {{#if directorSignature}}<img src="{{directorSignature}}" alt="Signature du directeur" class="sig-img" />{{/if}}
       <div class="sig-line"></div>
+      {{#if directorName}}<div class="sig-name">{{directorName}}</div>{{/if}}
       <div class="sig-name">{{L.doneOn}} {{generatedAt}}</div>
     </div>
     <div class="sig-box">

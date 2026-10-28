@@ -786,6 +786,9 @@ export class MockExamsService {
         phone: institution?.phone ?? '',
         logo: institution?.logo ?? null,
         circonscription: (institution?.brandingSettings as any)?.circonscription ?? null,
+        // Signature du directeur enregistrée dans Personnalisation
+        directorSignature: (institution?.brandingSettings as any)?.directorSignature ?? null,
+        directorName: (institution?.brandingSettings as any)?.directorName ?? null,
       },
       exam: sheet.exam,
       subjects: sheet.subjects,

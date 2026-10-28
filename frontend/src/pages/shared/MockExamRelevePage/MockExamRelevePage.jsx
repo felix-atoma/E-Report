@@ -310,8 +310,10 @@ function StudentCard({ student, subjects, exam, institution, teacherSignatures =
         )}
         <div className="mrel-sig">
           <div className="mrel-sig__title">{T.head}</div>
-          <div className="mrel-sig__space" />
-          <div className="mrel-sig__name">{T.headSign}</div>
+          {institution.directorSignature
+            ? <div className="mrel-sig__imgs"><img src={institution.directorSignature} alt="Signature du directeur" className="mrel-sig__img" /></div>
+            : <div className="mrel-sig__space" />}
+          <div className="mrel-sig__name">{institution.directorName || T.headSign}</div>
         </div>
         <div className="mrel-sig">
           <div className="mrel-sig__title">{T.parentTitle}</div>

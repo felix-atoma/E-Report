@@ -588,9 +588,9 @@ body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       <div class="pr-sig__label pr-sig__label--stamp">Cachet de l'établissement</div>
     </div>
     <div class="pr-sig">
-      <div class="pr-sig__area"></div>
+      {{#if directorSignature}}<div class="pr-sig__area pr-sig__area--signed"><img src="{{directorSignature}}" alt="Signature du directeur" /></div>{{else}}<div class="pr-sig__area"></div>{{/if}}
       <div class="pr-sig__line"></div>
-      <div class="pr-sig__name">{{#if institution.name}}Direction — {{institution.name}}{{else}}Le Directeur{{/if}}</div>
+      <div class="pr-sig__name">{{#if directorName}}{{directorName}}{{else}}{{#if institution.name}}Direction — {{institution.name}}{{else}}Le Directeur{{/if}}{{/if}}</div>
       <div class="pr-sig__label">Le Directeur</div>
     </div>
     <div class="pr-sig pr-sig--visa">

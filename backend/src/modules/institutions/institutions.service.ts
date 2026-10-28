@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UpdateInstitutionDto } from './dto/update-institution.dto';
@@ -75,6 +75,14 @@ export class InstitutionsService {
     if (dto.faviconUrl !== undefined)        mergedBranding.faviconUrl        = dto.faviconUrl;
     if (dto.circonscription !== undefined)   mergedBranding.circonscription   = dto.circonscription;
     if (dto.stampMode !== undefined)         mergedBranding.stampMode         = dto.stampMode;
+    // Signature du directeur : image PNG uniquement ; chaîne vide = retirée
+    if (dto.directorSignature !== undefined) {
+      if (dto.directorSignature && !/^data:image\/(png|jpeg);base64,/.test(dto.directorSignature)) {
+        throw new BadRequestException('Signature invalide : image PNG ou JPG attendue.');
+      }
+      mergedBranding.directorSignature = dto.directorSignature || null;
+    }
+    if (dto.directorName !== undefined)      mergedBranding.directorName      = dto.directorName.trim() || null;
     if (dto.bulletinFontFamily !== undefined) mergedBranding.bulletinFontFamily = dto.bulletinFontFamily;
     if (dto.bulletinFontSize   !== undefined) mergedBranding.bulletinFontSize   = dto.bulletinFontSize;
     if (dto.bulletinH1Size     !== undefined) mergedBranding.bulletinH1Size     = dto.bulletinH1Size;

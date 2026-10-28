@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsObject, IsOptional, IsString } from 'class-validator';
+import { IsIn, IsObject, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class UpdateBrandingDto {
   @ApiPropertyOptional() @IsOptional() @IsString() logo?: string;
@@ -19,6 +19,11 @@ export class UpdateBrandingDto {
 
   /** Cachet sur les bulletins : MANUAL (case vide, tampon à la main) ou DIGITAL (image du cachet, bulletins publiés) */
   @ApiPropertyOptional({ enum: ['MANUAL', 'DIGITAL'] }) @IsOptional() @IsIn(['MANUAL', 'DIGITAL']) stampMode?: 'MANUAL' | 'DIGITAL';
+
+  /** Signature du directeur (image PNG en data URL) — chaîne vide pour la retirer */
+  @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(1_500_000) directorSignature?: string;
+  /** Nom imprimé sous la signature du directeur (ex. « M. KOFFI Mensah ») */
+  @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(120) directorName?: string;
 
   @ApiPropertyOptional() @IsOptional() @IsString() bulletinFontFamily?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() bulletinFontSize?: string;

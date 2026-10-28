@@ -727,9 +727,12 @@ export default function PrintReportCardPage() {
             <div className="pr-sig__label pr-sig__label--stamp">Cachet de l'établissement</div>
           </div>
           <div className="pr-sig">
-            <div className="pr-sig__area" />
+            {/* Signature du directeur (Personnalisation) : seulement sur un bulletin publié */}
+            {report.status === 'PUBLISHED' && institution?.brandingSettings?.directorSignature
+              ? <div className="pr-sig__area pr-sig__area--signed"><img src={institution.brandingSettings.directorSignature} alt="Signature du directeur" /></div>
+              : <div className="pr-sig__area" />}
             <div className="pr-sig__line" />
-            <div className="pr-sig__name">{institution?.name ? `Direction — ${institution.name}` : 'Le Directeur'}</div>
+            <div className="pr-sig__name">{institution?.brandingSettings?.directorName || (institution?.name ? `Direction — ${institution.name}` : 'Le Directeur')}</div>
             <div className="pr-sig__label">Le Directeur</div>
           </div>
           <div className="pr-sig pr-sig--visa">

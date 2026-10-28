@@ -12,6 +12,7 @@ import ColorPicker from '../../../components/common/ColorPicker/ColorPicker';
 import FileUpload from '../../../components/common/FileUpload/FileUpload';
 import Button from '../../../components/common/Button/Button';
 import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
+import DirectorSignatureCard from './DirectorSignatureCard';
 import './BrandingPage.css';
 
 const FONT_PRESETS = [
@@ -235,6 +236,9 @@ function BrandingPage() {
               : <div className="branding-images-preview__placeholder">Tampon</div>}
           </div>
         </Card>
+
+        <DirectorSignatureCard institution={institution} />
+
 
         <Card className="branding-section">
           <div className="branding-section__header">
