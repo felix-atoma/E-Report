@@ -36,10 +36,14 @@ describe('SmsService', () => {
     const msg: string = (svc as any).buildBulletinMessage({
       toPhone: '90123456', studentName: 'AMEGAN Kafui', termName: '1er Trimestre', academicYear: '2025-2026',
       average: '13,42', mention: 'Très Bien', pdfUrl: 'https://x.io/b.pdf', institutionName: 'Lycée de Lomé',
+      parentName: 'M. AMEGAN Kodjo',
     });
+    // Français puis anglais, avec le nom du parent ; sans accents ni emojis
     expect(msg).toBe(
-      'Lycee de Lome: le bulletin du 1er Trimestre 2025-2026 de AMEGAN Kafui est disponible. ' +
-      'Moyenne : 13,42/20 (Tres Bien). Telecharger : https://x.io/b.pdf',
+      'Bonjour M. AMEGAN Kodjo, Bulletin disponible - 1er Trimestre 2025-2026. Eleve : AMEGAN Kafui. ' +
+      'Moyenne : 13,42 | Mention : Tres Bien. Telecharger : https://x.io/b.pdf | ' +
+      'Hello Mr AMEGAN Kodjo, Report card available - 1st term 2025-2026. Student: AMEGAN Kafui. ' +
+      'Average: 13.42 | Grade: Very good. Download: https://x.io/b.pdf | Lycee de Lome.',
     );
     expect(/^[\x20-\x7E]*$/.test(msg)).toBe(true);
   });

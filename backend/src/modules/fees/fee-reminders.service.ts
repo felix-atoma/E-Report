@@ -6,6 +6,7 @@ import { WhatsAppService } from '../whatsapp/whatsapp.service';
 import { MailService } from '../mail/mail.service';
 import { SmsService } from '../sms/sms.service';
 import { ReminderChannel } from './dto/send-reminders.dto';
+import { feeReminderMessage } from '../../common/utils/parent-messages.util';
 
 type Severity = 'FRIENDLY' | 'URGENT';
 
@@ -246,41 +247,8 @@ export class FeeRemindersService {
     institutionName: string;
     language: 'FR' | 'EN';
   }): string {
-    const en = p.language === 'EN';
-    const greeting = p.parentName ? `${en ? 'Hello' : 'Bonjour'} ${p.parentName},` : (en ? 'Hello,' : 'Bonjour,');
-
-    if (p.severity === 'URGENT') {
-      return en
-        ? [
-            `⚠️ *IMPORTANT NOTICE*`,
-            greeting,
-            `School fees for *${p.studentName}* remain unpaid (*${p.balanceLabel}*) for more than two months.`,
-            `Without prompt payment, the school reserves the right to exclude the student in accordance with its internal regulations.`,
-            `Please settle this matter urgently to avoid this measure.`,
-            `🏫 ${p.institutionName}`,
-          ].join('\n\n')
-        : [
-            `⚠️ *AVIS IMPORTANT*`,
-            greeting,
-            `Les frais scolaires de *${p.studentName}* restent impayés (*${p.balanceLabel}*) depuis plus de deux mois.`,
-            `Sans régularisation rapide, l'établissement se réserve le droit d'exclure l'élève conformément à son règlement intérieur.`,
-            `Merci de régulariser la situation dans les plus brefs délais pour éviter cette mesure.`,
-            `🏫 ${p.institutionName}`,
-          ].join('\n\n');
-    }
-
-    return en
-      ? [
-          greeting,
-          `This is a friendly reminder that school fees for *${p.studentName}* have not yet been settled (*${p.balanceLabel}* outstanding).`,
-          `Please make payment as soon as possible so your child can continue to enjoy all school services.`,
-          `🏫 ${p.institutionName}`,
-        ].join('\n\n')
-      : [
-          greeting,
-          `Nous vous rappelons amicalement que les frais scolaires de *${p.studentName}* ne sont pas encore réglés (*${p.balanceLabel}* restant).`,
-          `Merci de procéder au paiement dans les meilleurs délais.`,
-          `🏫 ${p.institutionName}`,
-        ].join('\n\n');
+    // Français puis anglais, avec le nom du parent
+    const balance = Number(String(p.balanceLabel).replace(/[^\d]/g, '')) || 0;
+    return feeReminderMessage({ severity: p.severity, parentName: p.parentName, studentName: p.studentName, balance, school: p.institutionName });
   }
 }

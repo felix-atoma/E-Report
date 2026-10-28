@@ -1,3 +1,5 @@
+import { receiptMessage, toSmsText } from '../../common/utils/parent-messages.util';
+import { schoolIdentity } from '../../common/utils/school-identity.util';
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { WhatsAppService } from '../whatsapp/whatsapp.service';
@@ -30,10 +32,11 @@ export class PaymentReceiptNotifier {
     const payment = await this.prisma.payment.findUnique({
       where: { id: paymentId },
       include: {
-        institution: { select: { name: true, country: true } },
+        institution: { select: { name: true, country: true, brandingSettings: true } },
         student: {
           include: {
             user: { select: { name: true } },
+            classes: { select: { class: { select: { level: true } } }, orderBy: { academicYear: 'desc' }, take: 1 },
             parent: { select: { name: true, email: true, whatsappNumber: true, language: true } },
           },
         },
@@ -62,7 +65,8 @@ export class PaymentReceiptNotifier {
     const en = parent.language === 'EN';
     const studentName = payment.student.user?.name ?? payment.student.admissionNumber;
     const date = payment.paymentDate.toLocaleDateString(en ? 'en-GB' : 'fr-FR');
-    const school = payment.institution.name;
+    // Nom de l'établissement du cycle de l'élève (École / Collège…)
+    const school = schoolIdentity(payment.institution.brandingSettings, payment.institution.name, (payment.student as any).classes?.[0]?.class?.level).name;
     const lines = en
       ? [
         `✅ Payment received — ${school}`,
@@ -81,8 +85,13 @@ export class PaymentReceiptNotifier {
     if (parent.whatsappNumber) {
       // Pays de l'école : indicatif des numéros saisis sans indicatif
       const country = payment.institution.country;
-      if (await this.whatsapp.sendText(parent.whatsappNumber, lines.join('\n'), country).catch(() => false)) sent.push('WhatsApp');
-      if (this.sms.enabled && await this.sms.sendText(parent.whatsappNumber, lines.join(' '), country).catch(() => false)) sent.push('SMS');
+      // Français puis anglais, avec le nom du parent
+      const message = receiptMessage({
+        parentName: parent.name, school, studentName, amount: Number(payment.amount), currency,
+        date: payment.paymentDate, receiptNumber: payment.receiptNumber, academicYear: payment.academicYear, balance,
+      });
+      if (await this.whatsapp.sendText(parent.whatsappNumber, message, country).catch(() => false)) sent.push('WhatsApp');
+      if (this.sms.enabled && await this.sms.sendText(parent.whatsappNumber, toSmsText(message), country).catch(() => false)) sent.push('SMS');
     }
     if (parent.email) {
       if (await this.mail.sendPaymentReceipt(parent.email, `${en ? 'Payment receipt' : 'Reçu de paiement'} ${payment.receiptNumber} — ${school}`, lines).catch(() => false)) sent.push('e-mail');

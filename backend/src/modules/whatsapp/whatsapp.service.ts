@@ -1,3 +1,4 @@
+import { bulletinMessage } from '../../common/utils/parent-messages.util';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
@@ -12,6 +13,8 @@ export interface WhatsAppBulletinPayload {
   mention: string;
   pdfUrl: string | null;
   institutionName: string;
+  /** Nom du parent (salutation) */
+  parentName?: string | null;
   language?: 'FR' | 'EN';
   /** Pays de l'école : indicatif ajouté aux numéros saisis sans indicatif */
   country?: string | null;
@@ -161,31 +164,8 @@ export class WhatsAppService {
   }
 
   private buildMessage(p: WhatsAppBulletinPayload): string {
-    const en = p.language === 'EN';
-    const lines = en
-      ? [
-          `📋 *Report card available — ${p.termName} ${p.academicYear}*`,
-          `📚 Student: ${p.studentName}`,
-          `📊 Average: ${p.average}  |  Grade: ${p.mention}`,
-          `🏫 ${p.institutionName}`,
-        ]
-      : [
-          `📋 *Bulletin disponible — ${p.termName} ${p.academicYear}*`,
-          `📚 Élève : ${p.studentName}`,
-          `📊 Moyenne : ${p.average}  |  Mention : ${p.mention}`,
-          `🏫 ${p.institutionName}`,
-        ];
-
-    if (p.pdfUrl) {
-      lines.push(en
-        ? `\n📥 Download: ${p.pdfUrl}`
-        : `\n📥 Télécharger : ${p.pdfUrl}`);
-    } else {
-      lines.push(en
-        ? '\n⚠️ Report card on hold — please settle outstanding school fees.'
-        : '\n⚠️ Bulletin retenu — veuillez régulariser les frais scolaires.');
-    }
-    return lines.join('\n');
+    // Français puis anglais, avec le nom du parent
+    return bulletinMessage({ ...p, school: p.institutionName });
   }
 
   /** Chiffres au format international sans « + » (indicatif du pays de l'école si absent) */

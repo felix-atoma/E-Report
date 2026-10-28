@@ -1,3 +1,4 @@
+import { bulletinMessage, toSmsText } from '../../common/utils/parent-messages.util';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
@@ -92,19 +93,8 @@ export class SmsService {
   }
 
   private buildBulletinMessage(p: SmsBulletinPayload): string {
-    const en = p.language === 'EN';
-    const parts = en
-      ? [
-          `${p.institutionName}: ${p.termName} ${p.academicYear} report card for ${p.studentName} is available.`,
-          `Average: ${p.average}/20 (${p.mention}).`,
-          p.pdfUrl ? `Download: ${p.pdfUrl}` : 'On hold - please settle outstanding school fees.',
-        ]
-      : [
-          `${p.institutionName}: le bulletin du ${p.termName} ${p.academicYear} de ${p.studentName} est disponible.`,
-          `Moyenne : ${p.average}/20 (${p.mention}).`,
-          p.pdfUrl ? `Telecharger : ${p.pdfUrl}` : 'Bulletin retenu - veuillez regulariser les frais scolaires.',
-        ];
-    return toGsm(parts.join(' '));
+    // Français puis anglais, avec le nom du parent
+    return toGsm(toSmsText(bulletinMessage({ ...p, parentName: (p as any).parentName, school: p.institutionName })));
   }
 }
 
