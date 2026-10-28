@@ -265,7 +265,10 @@ function ClassDetailPage() {
       <PageHeader
         title={cls.name}
         subtitle={`${cls.level ?? ''} — ${academicYear}`}
-        actions={<Link to={`/classes/${cls.id}/liste`} className="class-detail__titulaire-btn">📄 Liste de classe</Link>}
+        actions={<div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <Link to={`/classes/${cls.id}/liste`} className="class-detail__titulaire-btn">📄 Liste de classe</Link>
+          <Link to={`/classes/${cls.id}/cartes`} className="class-detail__titulaire-btn">🪪 Cartes d'élèves</Link>
+        </div>}
       />
 
       <div className="class-detail__meta">

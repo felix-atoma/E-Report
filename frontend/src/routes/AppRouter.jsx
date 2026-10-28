@@ -123,6 +123,8 @@ const MockExamFichePage      = lazy(() => import('../pages/shared/MockExamFicheP
 const MockExamFichePrintPage = lazy(() => import('../pages/shared/MockExamFichePrintPage/MockExamFichePrintPage'));
 const FicheDeNotesPrintPage  = lazy(() => import('../pages/shared/FicheDeNotesPrintPage/FicheDeNotesPrintPage'));
 const ClassListPage          = lazy(() => import('../pages/shared/ClassListPage/ClassListPage'));
+const StudentCardsPage       = lazy(() => import('../pages/shared/StudentCardsPage/StudentCardsPage'));
+const VerifyCardPage         = lazy(() => import('../pages/public/VerifyCardPage/VerifyCardPage'));
 const MockExamFichesListPage = lazy(() => import('../pages/shared/MockExamFichesListPage/MockExamFichesListPage'));
 const MockExamResultsPage    = lazy(() => import('../pages/shared/MockExamResultsPage/MockExamResultsPage'));
 
@@ -153,6 +155,8 @@ function AppRouter() {
         <Route path="/verify-bulletin"    element={<BulletinVerifyPage />} />
         {/* Adresse imprimée en pied de bulletin et de relevé */}
         <Route path="/verify"             element={<BulletinVerifyPage />} />
+        {/* QR code des cartes d'élève */}
+        <Route path="/verify/carte/:code" element={<VerifyCardPage />} />
         {/* Lien à partager : installer l'application sur le téléphone / l'ordinateur */}
         <Route path="/installer"          element={<InstallPage />} />
         <Route path="/install"            element={<Navigate to="/installer" replace />} />
@@ -303,6 +307,7 @@ function AppRouter() {
         <Route path="/council/statistiques" element={<ProtectedRoute roles={['ADMIN','TEACHER']}><StatsSheetPage /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route path="/reports/:id/print" element={<ProtectedRoute><PrintReportCardPage /></ProtectedRoute>} />
+        <Route path="/classes/:id/cartes"          element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><StudentCardsPage /></ProtectedRoute>} />
         <Route path="/classes/:id/liste"           element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><ClassListPage /></ProtectedRoute>} />
         <Route path="/mock-exams/:id/fiche"          element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamFichePage /></ProtectedRoute>} />
         <Route path="/mock-exams/:id/fiche/print"    element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamFichePrintPage /></ProtectedRoute>} />

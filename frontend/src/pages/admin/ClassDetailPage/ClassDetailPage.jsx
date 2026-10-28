@@ -376,6 +376,9 @@ function ClassDetailPage() {
             <Link to={`/classes/${id}/liste`} className="acd__back-btn" style={{ marginRight: '8px' }}>
               📄 Liste de classe
             </Link>
+            <Link to={`/classes/${id}/cartes`} className="acd__back-btn" style={{ marginRight: '8px' }}>
+              🪪 Cartes d'élèves
+            </Link>
             <Link
               to={`/admin/classes/${id}/appreciation-directeur`}
               className="acd__back-btn"

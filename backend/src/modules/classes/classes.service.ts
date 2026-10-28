@@ -12,6 +12,7 @@ import { AssignSubjectDto } from './dto/assign-subject.dto';
 import { compareClasses, levelRank } from '../../common/utils/class-order.util';
 import { PdfService } from '../pdf/pdf.service';
 import { classListHtml } from './class-list-html';
+import { classCardsData, verifyStudentCard } from './student-cards';
 
 // Rang du niveau (CI → Terminale) : enregistré dans sortOrder et utilisé pour trier les listes de classes
 const levelSortOrder = (level: string, name?: string) => levelRank(level, name);
@@ -19,6 +20,17 @@ const levelSortOrder = (level: string, name?: string) => levelRank(level, name);
 @Injectable()
 export class ClassesService {
   constructor(private readonly prisma: PrismaService, private readonly pdf: PdfService) {}
+
+  /** Cartes d'élève d'une classe (données + code QR signé par élève). */
+  async classCards(id: string, institutionId: string, userId: string, role: string) {
+    const cls = await this.findOne(id, institutionId, userId, role);
+    return classCardsData(this.prisma, cls, institutionId);
+  }
+
+  /** Vérification publique d'une carte d'élève (QR). */
+  verifyCard(code: string) {
+    return verifyStudentCard(this.prisma, code);
+  }
 
   /** Liste de classe en PDF (A4) : élèves de l'année de la classe par ordre alphabétique, colonnes vides au choix. */
   async classListPdf(id: string, institutionId: string, userId: string, role: string, extra = 5, extraTitle = '') {

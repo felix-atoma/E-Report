@@ -28,6 +28,7 @@ import { AssignSubjectDto } from './dto/assign-subject.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Role } from '../../common/enums/role.enum';
+import { Public } from '../../common/decorators/public.decorator';
 
 @ApiTags('classes')
 @ApiBearerAuth()
@@ -54,6 +55,20 @@ export class ClassesController {
   @ApiOperation({ summary: 'Get a class with its students and subjects' })
   findOne(@Param('id') id: string, @CurrentUser() user: any) {
     return this.service.findOne(id, user.institutionId, user.id, user.role);
+  }
+
+  @Get('cards/verify/:code')
+  @Public()
+  @ApiOperation({ summary: "Public : vérifier une carte d'élève (QR code)" })
+  verifyCard(@Param('code') code: string) {
+    return this.service.verifyCard(code);
+  }
+
+  @Get(':id/cards')
+  @Roles(Role.ADMIN, Role.TEACHER)
+  @ApiOperation({ summary: "Cartes d'élève de la classe (QR code signé par élève)" })
+  classCards(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.service.classCards(id, user.institutionId, user.id, user.role);
   }
 
   @Get(':id/list-pdf')

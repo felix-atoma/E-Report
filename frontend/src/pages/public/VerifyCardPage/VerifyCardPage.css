@@ -1,0 +1,22 @@
+.vcard { min-height: 100vh; background: linear-gradient(160deg, #002347, #0b3a6b); display: flex; align-items: flex-start; justify-content: center; padding: 32px 16px; font-family: 'Poppins', system-ui, sans-serif; }
+.vcard__box { background: #fff; border-radius: 18px; max-width: 460px; width: 100%; padding: 26px 22px; box-shadow: 0 20px 50px rgba(0, 0, 0, .25); display: flex; flex-direction: column; gap: 16px; }
+.vcard__wait { text-align: center; color: #475569; }
+.vcard__result { text-align: center; border-radius: 14px; padding: 16px; }
+.vcard__result h1 { margin: 6px 0 4px; font-size: 1.35rem; }
+.vcard__result p { margin: 0; font-size: .92rem; }
+.vcard__result--ok { background: #ecfdf5; color: #065f46; }
+.vcard__result--bad { background: #fef2f2; color: #991b1b; }
+.vcard__icon { width: 48px; height: 48px; border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: 900; color: #fff; }
+.vcard__result--ok .vcard__icon { background: #10b981; }
+.vcard__result--bad .vcard__icon { background: #ef4444; }
+.vcard__student { display: flex; gap: 14px; align-items: center; }
+.vcard__photo { width: 96px; height: 124px; object-fit: cover; border-radius: 8px; border: 2px solid #002347; background: #c9dcef; flex-shrink: 0; }
+.vcard__info { display: flex; flex-direction: column; gap: 6px; font-size: .9rem; min-width: 0; }
+.vcard__info span { display: block; font-size: .68rem; text-transform: uppercase; color: #64748b; font-weight: 700; }
+.vcard__info b { color: #0f172a; }
+.vcard__name { font-size: 1.05rem; font-weight: 800; color: #002347; text-transform: uppercase; }
+.vcard__school { display: flex; align-items: center; gap: 10px; border-top: 1px solid #e5e7eb; padding-top: 12px; font-size: .82rem; color: #475569; }
+.vcard__school img { width: 42px; height: 42px; object-fit: contain; }
+.vcard__school b { color: #002347; }
+.vcard__note { margin: 0; font-size: .8rem; color: #64748b; text-align: center; font-style: italic; }
+.vcard__brand { align-self: center; font-size: .75rem; color: #94a3b8; text-decoration: none; }
