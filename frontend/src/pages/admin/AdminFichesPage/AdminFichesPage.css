@@ -3,3 +3,8 @@
 .afp-class:hover { border-color: #002347; }
 .afp-class--on { background: #002347; border-color: #002347; color: #fff; }
 .afp-empty { color: #6b7280; font-size: .9rem; }
+.afp-exams { display: flex; flex-direction: column; gap: .5rem; }
+.afp-exam { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .6rem .8rem; border: 1px solid #e5e7eb; border-radius: 10px; background: #fff; }
+.afp-exam__kind { font-size: .75rem; font-weight: 700; color: #b45309; text-transform: uppercase; letter-spacing: .3px; }
+.afp-exam__label { font-weight: 700; color: #002347; }
+.afp-hint { margin: .6rem 0 0; font-size: .82rem; color: #6b7280; }
