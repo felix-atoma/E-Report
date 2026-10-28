@@ -9,6 +9,8 @@
     "subjects":       "Subjects",
     "reports":        "Report Cards",
     "adminFiches":    "Grade sheets (corrections)",
+    "studentCards":   "Student ID cards",
+    "directorSignature": "Head teacher signature",
     "statistics":     "Statistics",
     "bulletins":      "Announcements",
     "fees":           "Fees",

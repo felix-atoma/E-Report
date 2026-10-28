@@ -9,6 +9,8 @@
     "subjects":       "Matières",
     "reports":        "Bulletins",
     "adminFiches":    "Fiches de notes (corriger)",
+    "studentCards":   "Cartes d'élèves",
+    "directorSignature": "Signature du directeur",
     "statistics":     "Statistiques",
     "bulletins":      "Annonces",
     "fees":           "Frais",

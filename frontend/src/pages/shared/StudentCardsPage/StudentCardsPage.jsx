@@ -96,8 +96,11 @@ export default function StudentCardsPage() {
         <span className="scards-toolbar__info">
           {students.length} carte(s) · {data.class.name} · {data.class.academicYear}
           {missingPhotos > 0 && ` · ${missingPhotos} sans photo`}
-          {!data.institution.directorSignature && ' · signature du directeur non enregistrée (Personnalisation)'}
+          {!data.institution.directorSignature && ' · signature du directeur non enregistrée'}
         </span>
+        {!data.institution.directorSignature && user?.role === 'ADMIN' && (
+          <Link to="/admin/signature-directeur" className="scards-toolbar__btn" style={{ textDecoration: 'none' }}>✍️ Ajouter la signature du directeur</Link>
+        )}
         <button type="button" className="scards-toolbar__btn" onClick={() => window.print()} disabled={Object.keys(qrs).length < students.length}>
           🖨️ Imprimer les cartes
         </button>

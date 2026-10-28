@@ -18,6 +18,7 @@ const NAV = {
     { to: '/admin/users',         icon: 'users',     labelKey: 'nav.users' },
     { to: '/admin/classes',       icon: 'school',    labelKey: 'nav.classes' },
     { to: '/admin/students',      icon: 'backpack',  labelKey: 'nav.students' },
+    { to: '/admin/cartes',        icon: 'users',     labelKey: 'nav.studentCards' },
     { to: '/admin/import',        icon: 'upload',    labelKey: 'nav.bulkImport' },
     { to: '/admin/subjects',      icon: 'book',      labelKey: 'nav.subjects' },
     { divider: true,              sectionKey: 'section.pedagogy' },
@@ -65,6 +66,7 @@ const NAV = {
     { to: '/admin/analytics',     icon: 'chart',     labelKey: 'nav.analytics' },
     { to: '/admin/subscription',  icon: 'subscription', labelKey: 'nav.subscription' },
     { to: '/admin/branding',      icon: 'palette',   labelKey: 'nav.branding' },
+    { to: '/admin/signature-directeur', icon: 'fichexam', labelKey: 'nav.directorSignature' },
     { to: '/admin/settings',      icon: 'settings',  labelKey: 'nav.settings' },
   ],
   TEACHER: [
