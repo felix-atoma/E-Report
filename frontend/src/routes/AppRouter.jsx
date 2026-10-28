@@ -35,6 +35,7 @@ const ClassesPage            = lazy(() => import('../pages/admin/ClassesPage/Cla
 const AdminClassDetailPage   = lazy(() => import('../pages/admin/ClassDetailPage/ClassDetailPage'));
 const AdminFichesPage        = lazy(() => import('../pages/admin/AdminFichesPage/AdminFichesPage'));
 const AdminCardsPage         = lazy(() => import('../pages/admin/AdminCardsPage/AdminCardsPage'));
+const ParentContactsPage     = lazy(() => import('../pages/admin/ParentContactsPage/ParentContactsPage'));
 const DirectorSignaturePage  = lazy(() => import('../pages/admin/DirectorSignaturePage/DirectorSignaturePage'));
 const AdminStudentProfilePage = lazy(() => import('../pages/admin/StudentProfilePage/StudentProfilePage'));
 const StudentsPage           = lazy(() => import('../pages/admin/StudentsPage/StudentsPage'));
@@ -173,6 +174,8 @@ function AppRouter() {
         <Route path="/admin"               element={<ProtectedRoute roles={['ADMIN']}><AdminDashboardPage /></ProtectedRoute>} />
         <Route path="/admin/users"         element={<ProtectedRoute roles={['ADMIN']}><UsersPage /></ProtectedRoute>} />
         <Route path="/admin/classes"       element={<ProtectedRoute roles={['ADMIN']}><ClassesPage /></ProtectedRoute>} />
+        <Route path="/admin/parents"    element={<ProtectedRoute roles={['ADMIN']}><ParentContactsPage /></ProtectedRoute>} />
+        <Route path="/bursar/parents"   element={<ProtectedRoute roles={['BURSAR']}><ParentContactsPage /></ProtectedRoute>} />
         <Route path="/admin/cartes"     element={<ProtectedRoute roles={['ADMIN']}><AdminCardsPage /></ProtectedRoute>} />
         <Route path="/admin/signature-directeur" element={<ProtectedRoute roles={['ADMIN']}><DirectorSignaturePage /></ProtectedRoute>} />
         <Route path="/admin/fiches"     element={<ProtectedRoute roles={['ADMIN']}><AdminFichesPage /></ProtectedRoute>} />

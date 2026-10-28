@@ -18,6 +18,7 @@ const NAV = {
     { to: '/admin/users',         icon: 'users',     labelKey: 'nav.users' },
     { to: '/admin/classes',       icon: 'school',    labelKey: 'nav.classes' },
     { to: '/admin/students',      icon: 'backpack',  labelKey: 'nav.students' },
+    { to: '/admin/parents',       icon: 'users',     labelKey: 'nav.parentContacts' },
     { to: '/admin/cartes',        icon: 'users',     labelKey: 'nav.studentCards' },
     { to: '/admin/import',        icon: 'upload',    labelKey: 'nav.bulkImport' },
     { to: '/admin/subjects',      icon: 'book',      labelKey: 'nav.subjects' },
@@ -103,6 +104,7 @@ const NAV = {
     { to: '/bursar/payments',       icon: 'card',      labelKey: 'nav.payments' },
     { to: '/bursar/payment-status', icon: 'card', labelKey: 'nav.paymentStatus' },
     { to: '/bursar/payment-plans',  icon: 'plan',      labelKey: 'nav.paymentPlans' },
+    { to: '/bursar/parents',        icon: 'users',     labelKey: 'nav.parentContacts' },
     { to: '/bursar/notifications',  icon: 'bell',      labelKey: 'nav.heldBulletins' },
   ],
   PARENT: [

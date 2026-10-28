@@ -18,6 +18,20 @@ class BulkImportStudentRowDto {
   @IsOptional() @IsString() className?: string;
 }
 
+class ParentContactRowDto {
+  @IsString() @IsNotEmpty() studentId: string;
+  @IsOptional() @IsString() parentName?: string;
+  @IsOptional() @IsString() phone?: string;
+  @IsOptional() @IsString() email?: string;
+}
+
+class SaveParentContactsDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ParentContactRowDto)
+  rows: ParentContactRowDto[];
+}
+
 class BulkImportStudentsDto {
   @IsArray()
   @ValidateNested({ each: true })
@@ -65,6 +79,21 @@ export class StudentsController {
   @ApiOperation({ summary: 'Create a new student (Admin only)' })
   create(@Body() dto: CreateStudentDto, @CurrentUser() user: any) {
     return this.service.create(dto, user.institutionId);
+  }
+
+  @Get('parent-contacts')
+  @Roles(Role.ADMIN, Role.BURSAR)
+  @ApiOperation({ summary: "Contacts des parents d'une classe (nom, téléphone WhatsApp / SMS, e-mail)" })
+  parentContacts(@Query('classId') classId: string, @CurrentUser() user: any) {
+    return this.service.parentContacts(user.institutionId, classId);
+  }
+
+  @Post('parent-contacts')
+  @Roles(Role.ADMIN, Role.BURSAR)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Enregistrer les contacts des parents (comptes parents créés / reliés aux élèves)' })
+  saveParentContacts(@Body() dto: SaveParentContactsDto, @CurrentUser() user: any) {
+    return this.service.saveParentContacts(user.institutionId, dto.rows);
   }
 
   @Get(':id')

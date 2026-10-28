@@ -11,6 +11,7 @@ import { PdfService } from '../pdf/pdf.service';
 import { MailService } from '../mail/mail.service';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
+import { listParentContacts, saveParentContacts } from './parent-contacts';
 
 const STUDENT_INCLUDE = {
   user: { select: { id: true, name: true, email: true, profileImage: true } },
@@ -25,6 +26,16 @@ export class StudentsService {
     private readonly pdf: PdfService,
     private readonly mail: MailService,
   ) {}
+
+  /** Contacts des parents d'une classe (nom, téléphone, e-mail) */
+  parentContacts(institutionId: string, classId: string) {
+    return listParentContacts(this.prisma, institutionId, classId);
+  }
+
+  /** Enregistre les contacts : crée / met à jour les comptes parents et les relie aux élèves */
+  saveParentContacts(institutionId: string, rows: Array<{ studentId: string; parentName?: string; phone?: string; email?: string }>) {
+    return saveParentContacts(this.prisma, institutionId, rows);
+  }
 
   /** STUDENT: fetch their own profile via linked userId */
   async findMe(userId: string, institutionId: string) {

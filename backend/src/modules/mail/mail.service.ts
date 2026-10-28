@@ -60,6 +60,8 @@ export class MailService {
 
   // ─── Central send helper ────────────────────────────────────────────────────
   private async send({ to, subject, html, text }: SendParams): Promise<boolean> {
+    // Adresses de remplacement (élèves, parents enregistrés par leur seul numéro) : jamais d'envoi
+    if (/@noreply\.local$/i.test(String(to ?? '').trim())) return false;
     try {
       if (this.provider === 'smtp' && this.smtpTransport) {
         await this.smtpTransport.sendMail({
