@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Loading from '../../../components/common/Loading/Loading';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
@@ -176,7 +177,7 @@ export default function TransfersPage() {
 
       {/* List */}
       {isLoading ? (
-        <p className="transfers-page__loading">Chargement…</p>
+        <Loading />
       ) : transfers.length === 0 ? (
         <Card>
           <div className="transfers-page__empty">

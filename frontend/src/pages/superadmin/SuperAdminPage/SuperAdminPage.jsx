@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
+import Loading from '../../../components/common/Loading/Loading';
 import toast from 'react-hot-toast';
 import { institutionsService } from '../../../services/institutionsService';
 import { subscriptionService } from '../../../services/subscriptionService';
@@ -665,7 +666,7 @@ function SuperAdminPage() {
         {/* Content states */}
         {loading && (
           <div className="sa-loading">
-            <div className="sa-spinner" /><span>Chargement...</span>
+            <Loading />
           </div>
         )}
 

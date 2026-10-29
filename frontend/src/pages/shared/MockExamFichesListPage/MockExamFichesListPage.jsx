@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Loading from '../../../components/common/Loading/Loading';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { mockExamsService } from '../../../services/mockExamsService';
@@ -90,7 +91,7 @@ function MockExamFichesListPage({ kind = 'ESSAI' }) {
       />
 
       {isLoading && (
-        <div className="mfl-empty"><div className="mfl-spinner" /> Chargement...</div>
+        <Loading />
       )}
       {isError && (
         <div className="mfl-error">Erreur de chargement. Vérifiez votre connexion.</div>

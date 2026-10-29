@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Loading from '../../../components/common/Loading/Loading';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -76,7 +77,7 @@ export default function ParentAbsencesPage() {
       )}
 
       {loadingChildren || loadingAbs ? (
-        <Card><p className="pabs-empty">{t('action.loading')}</p></Card>
+        <Loading />
       ) : absences.length === 0 ? (
         <Card>
           <div className="pabs-empty">

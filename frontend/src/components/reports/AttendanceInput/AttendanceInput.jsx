@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import Loading from '../../common/Loading/Loading';
 import { attendanceService } from '../../../services/attendanceService';
 import './AttendanceInput.css';
 
@@ -12,7 +13,7 @@ export default function AttendanceInput({ studentId }) {
     enabled: !!studentId,
   });
 
-  if (isLoading) return <div className="att-widget att-widget--loading">Chargement…</div>;
+  if (isLoading) return <Loading size={70} />;
   if (!records.length) return <div className="att-widget att-widget--empty">Aucun relevé de présence.</div>;
 
   const counts = records.reduce(

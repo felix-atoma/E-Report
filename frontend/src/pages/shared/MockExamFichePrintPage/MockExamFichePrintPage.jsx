@@ -1,4 +1,5 @@
 import { fmtSignedAt } from '../../../utils/fmtSignedAt';
+import Loading from '../../../components/common/Loading/Loading';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { mockExamsService } from '../../../services/mockExamsService';
@@ -238,7 +239,7 @@ export default function MockExamFichePrintPage() {
     queryFn: () => mockExamsService.getFicheData(id).then((r) => r.data),
   });
 
-  if (isLoading) return <div className="mfp-loading">Chargement…</div>;
+  if (isLoading) return <Loading fullPage />;
   if (isError || !data) return <div className="mfp-error">Impossible de charger les fiches.</div>;
 
   const { institution, exam, subjects, students } = data;

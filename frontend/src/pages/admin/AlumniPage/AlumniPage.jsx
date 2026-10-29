@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Loading from '../../../components/common/Loading/Loading';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -170,7 +171,7 @@ export default function AlumniPage() {
       </div>
 
       {isLoading ? (
-        <p className="alumni-page__loading">{t('action.loading')}</p>
+        <Loading />
       ) : alumni.length === 0 ? (
         <Card>
           <div className="alumni-page__empty">

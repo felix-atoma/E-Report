@@ -1,4 +1,5 @@
 import { fmtSignedAt } from '../../../utils/fmtSignedAt';
+import Loading from '../../../components/common/Loading/Loading';
 import { appreciationOn20 } from '../../../utils/appreciation';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -123,7 +124,7 @@ export default function FicheDeNotesPrintPage() {
   const source    = snapshot ?? ficheData;
   const fromCache = !!snapshot;
 
-  if (!source && ficheLoading) return <div className="fdnp__loading">Chargement de la fiche…</div>;
+  if (!source && ficheLoading) return <Loading fullPage label="Chargement de la fiche…" />;
   if (!source && (ficheError || !ficheData)) return <div className="fdnp__error">Impossible de charger la fiche. Ouvrez la fiche en ligne avant de l'imprimer hors-ligne.</div>;
 
   const cls            = snapshot ? null : classes.find((c) => c.id === classId);

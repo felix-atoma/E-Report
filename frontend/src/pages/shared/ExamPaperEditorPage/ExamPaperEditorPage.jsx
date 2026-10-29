@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import Loading from '../../../components/common/Loading/Loading';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../../context/AuthContext';
@@ -170,7 +171,7 @@ export default function ExamPaperEditorPage() {
     }
   };
 
-  if (isLoading) return <AppShell title="Épreuve"><div className="epe-empty">Chargement…</div></AppShell>;
+  if (isLoading) return <AppShell title="Épreuve"><Loading /></AppShell>;
   if (isError || !paper) return <AppShell title="Épreuve"><div className="epe-empty">Épreuve introuvable.</div></AppShell>;
 
   return (

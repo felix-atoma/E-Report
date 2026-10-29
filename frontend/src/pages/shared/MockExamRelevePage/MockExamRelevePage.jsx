@@ -1,4 +1,5 @@
 import { appreciationOn20 } from '../../../utils/appreciation';
+import Loading from '../../../components/common/Loading/Loading';
 import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
@@ -362,7 +363,7 @@ function MockExamRelevePage() {
     }
   }
 
-  if (isLoading) return <div className="mrel-loading">Chargement...</div>;
+  if (isLoading) return <Loading fullPage />;
   if (isError || !data) return (
     <div className="mrel-screen-error">Impossible de charger le relevé. Vérifiez l'identifiant.</div>
   );

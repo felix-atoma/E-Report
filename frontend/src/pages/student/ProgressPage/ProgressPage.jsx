@@ -177,7 +177,7 @@ function ProgressPage() {
 
             {showSubjects && (
               loadingAnnual ? (
-                <div className="progress-subject-card__loading">{t('action.loading')}</div>
+                <Loading size={70} />
               ) : subjects.length === 0 ? (
                 <p className="progress-subject-card__empty">{t('progress.noSubjectData')}</p>
               ) : (

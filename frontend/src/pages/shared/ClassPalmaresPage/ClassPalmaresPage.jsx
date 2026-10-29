@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import Loading from '../../../components/common/Loading/Loading';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../../context/AuthContext';
 import { useInstitution } from '../../../context/InstitutionContext';
@@ -179,7 +180,7 @@ export default function ClassPalmaresPage() {
           </div>
         </Card>
       ) : isLoading || isFetching ? (
-        <Card><div className="pal-empty"><p>Chargement…</p></div></Card>
+        <Loading />
       ) : ranked.length === 0 ? (
         <Card>
           <div className="pal-empty">

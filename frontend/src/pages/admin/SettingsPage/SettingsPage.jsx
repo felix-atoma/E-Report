@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Loading from '../../../components/common/Loading/Loading';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -262,7 +263,7 @@ function SettingsPage() {
   const bs = institution?.brandingSettings ?? {};
   const ac = institution?.academicSettings ?? {};
 
-  if (isLoading) return <AppShell title={t('settings.title')}><div className="settings-loading">{t('action.loading')}</div></AppShell>;
+  if (isLoading) return <AppShell title={t('settings.title')}><Loading /></AppShell>;
 
   return (
     <AppShell title={t('settings.title')}>

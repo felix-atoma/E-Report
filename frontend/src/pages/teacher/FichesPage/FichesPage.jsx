@@ -113,7 +113,7 @@ function ClassFicheCard({ cls, term, termLabel }) {
       )}
 
       {isLoading ? (
-        <div className="fp__row-placeholder">{t('action.loading')}</div>
+        <Loading size={70} />
       ) : fiches.length === 0 ? (
         <div className="fp__row-placeholder">{t('fiches.noSubjects')}</div>
       ) : (

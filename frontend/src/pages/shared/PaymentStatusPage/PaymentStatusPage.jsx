@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import Loading from '../../../components/common/Loading/Loading';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -290,7 +291,7 @@ export default function PaymentStatusPage() {
       </div>
 
       {isLoading ? (
-        <div className="pst-empty">Chargement de la situation des élèves…</div>
+        <Loading label="Chargement de la situation des élèves…" />
       ) : isError ? (
         <div className="pst-empty">Impossible de charger la situation. <button type="button" onClick={() => refetch()}>Réessayer</button></div>
       ) : rows.length === 0 ? (

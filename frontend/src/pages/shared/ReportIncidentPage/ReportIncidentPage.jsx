@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Loading from '../../../components/common/Loading/Loading';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
@@ -92,7 +93,7 @@ export default function ReportIncidentPage() {
 
       <div className="ri-list">
         {isLoading ? (
-          <p className="ri-empty">{t('action.loading')}</p>
+          <Loading />
         ) : reports.length === 0 ? (
           <div className="ri-empty-state">
             <div className="ri-empty-state__icon">🛡️</div>

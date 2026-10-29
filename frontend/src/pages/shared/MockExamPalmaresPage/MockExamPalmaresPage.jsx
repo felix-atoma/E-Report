@@ -1,4 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
+import Loading from '../../../components/common/Loading/Loading';
 import { useQuery } from '@tanstack/react-query';
 import { mockExamsService } from '../../../services/mockExamsService';
 import PrintFormatPicker from '../../../components/common/PrintFormatPicker/PrintFormatPicker';
@@ -30,7 +31,7 @@ function MockExamPalmaresPage() {
     queryFn: () => mockExamsService.getPalmares(id).then((r) => r.data),
   });
 
-  if (isLoading) return <div className="mpal-loading">Chargement...</div>;
+  if (isLoading) return <Loading fullPage />;
   if (isError || !data) return (
     <div className="mpal-screen-error">Impossible de charger le palmarès.</div>
   );

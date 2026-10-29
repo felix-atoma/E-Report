@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import Loading from '../../../components/common/Loading/Loading';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../../context/AuthContext';
@@ -169,7 +170,7 @@ export default function ExamPapersPage() {
       </div>
 
       {isLoading ? (
-        <div className="ep-empty">Chargement…</div>
+        <Loading />
       ) : papers.length === 0 ? (
         <div className="ep-empty">{isAdmin ? 'Aucune épreuve dans cette catégorie.' : 'Aucune épreuve. Cliquez sur « Nouvelle épreuve » pour importer un sujet.'}</div>
       ) : (
