@@ -131,7 +131,7 @@ export default function StatsSheetPage() {
             <div className="ssheet-sign__hint">Signature et cachet</div>
           </div>
         </div>
-        <div className="ssheet-foot">Fait le {new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })} · NovaBulletin</div>
+        <div className="ssheet-foot">Fait le {new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}{inst.name ? ` · ${inst.name}` : ''}</div>
       </div>
     </div>
   );

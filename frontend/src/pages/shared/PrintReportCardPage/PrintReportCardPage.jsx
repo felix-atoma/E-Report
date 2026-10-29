@@ -748,10 +748,7 @@ export default function PrintReportCardPage() {
 
         {/* ── Footer ─────────────────────────────────────────────────────── */}
         <div className="pr-footer">
-          <span>
-            Généré le {new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
-            {ident.name ? ` — ${ident.name}` : ''}
-          </span>
+          <span>{ident.name}</span>
           <span className="pr-footer__security">
             N° Série : <strong>{report.securityCode ?? fallbackSerial(report)}</strong>
             {' '}· Vérifier sur{' '}
