@@ -44,7 +44,7 @@ services:
 
       # ── URLs (set in Render dashboard) ───────────────────────────────────────
       # FRONTEND_URL  → https://e-report-frontend.vercel.app
-      # BASE_URL      → https://e-report-c47o.onrender.com
+      # BASE_URL      → https://novabulletin-api.onrender.com
       # APP_URL       → same as BASE_URL (used by payment service)
       - key: FRONTEND_URL
         sync: false
@@ -86,7 +86,7 @@ services:
         sync: false
 
       # ── Google OAuth ──────────────────────────────────────────────────────────
-      # GOOGLE_CALLBACK_URL → https://e-report-c47o.onrender.com/api/auth/google/callback
+      # GOOGLE_CALLBACK_URL → https://novabulletin-api.onrender.com/api/auth/google/callback
       - key: GOOGLE_CLIENT_ID
         sync: false
       - key: GOOGLE_CLIENT_SECRET

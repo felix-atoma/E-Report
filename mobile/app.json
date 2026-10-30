@@ -37,7 +37,7 @@
       ]
     ],
     "extra": {
-      "apiUrl": "https://e-report-c47o.onrender.com/api",
+      "apiUrl": "https://novabulletin-api.onrender.com/api",
       "eas": {
         "projectId": "novabulletin-mobile"
       }

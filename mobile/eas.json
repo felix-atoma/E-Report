@@ -16,13 +16,13 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://e-report-c47o.onrender.com/api"
+        "EXPO_PUBLIC_API_URL": "https://novabulletin-api.onrender.com/api"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://e-report-c47o.onrender.com/api"
+        "EXPO_PUBLIC_API_URL": "https://novabulletin-api.onrender.com/api"
       }
     }
   },
