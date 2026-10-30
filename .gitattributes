@@ -1,0 +1,5 @@
+
+# Scripts et réglages exécutés sur le serveur Linux : toujours des fins de ligne Unix
+*.sh text eol=lf
+deploy/** text eol=lf
+backend/Dockerfile text eol=lf
