@@ -1,0 +1,11 @@
+# Adresse HTTPS du serveur (ex. 129-151-10-20.sslip.io) : certificat automatique et gratuit
+{$API_DOMAIN} {
+	encode gzip
+	reverse_proxy api:4000 {
+		# Génération de PDF / ZIP de bulletins : peut prendre du temps
+		transport http {
+			read_timeout 300s
+			write_timeout 300s
+		}
+	}
+}

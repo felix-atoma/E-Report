@@ -1,0 +1,46 @@
+# NovaBulletin — serveur (API) sur une machine Oracle Cloud « Always Free » (Ubuntu, ARM).
+# Le serveur Node (PDF avec Chromium) + Caddy, qui fournit l'adresse HTTPS (certificat gratuit
+# Let's Encrypt renouvelé automatiquement). Base de données : Supabase ; fichiers : Cloudinary.
+services:
+  api:
+    build:
+      context: ../../backend
+    container_name: novabulletin-api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      PORT: "4000"
+      GLOBAL_PREFIX: api
+      PUPPETEER_SKIP_DOWNLOAD: "true"
+      PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium-browser
+    expose:
+      - "4000"
+    # Chromium (bulletins PDF) a besoin de mémoire partagée
+    shm_size: "512m"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4000/api/health"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  caddy:
+    image: caddy:2
+    container_name: novabulletin-caddy
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      API_DOMAIN: ${API_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

@@ -8,7 +8,8 @@ COPY . .
 RUN npx prisma generate && npm run build
 
 FROM node:20-alpine
-RUN apk add --no-cache openssl chromium nss freetype harfbuzz ca-certificates ttf-freefont
+# Chromium pour les PDF ; polices Liberation (mêmes dimensions qu Arial) et DejaVu pour une mise en page identique
+RUN apk add --no-cache openssl chromium nss freetype harfbuzz ca-certificates ttf-freefont font-liberation ttf-dejavu
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 WORKDIR /app
