@@ -1,4 +1,4 @@
-# NovaBulletin — serveur (API) sur une machine Oracle Cloud « Always Free » (Ubuntu, ARM).
+# NovaBulletin — serveur (API) sur une machine Linux gratuite (Google Cloud e2-micro ou Oracle Cloud).
 # Le serveur Node (PDF avec Chromium) + Caddy, qui fournit l'adresse HTTPS (certificat gratuit
 # Let's Encrypt renouvelé automatiquement). Base de données : Supabase ; fichiers : Cloudinary.
 services:
