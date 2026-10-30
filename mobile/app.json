@@ -38,7 +38,11 @@
       ]
     ],
     "extra": {
-      "apiUrl": "https://novabulletin-api.onrender.com/api"
-    }
+      "apiUrl": "https://novabulletin-api.onrender.com/api",
+      "eas": {
+        "projectId": "090bf992-a81c-4f7c-8e1c-bd044964a3f3"
+      }
+    },
+    "owner": "felixatoma23"
   }
 }
