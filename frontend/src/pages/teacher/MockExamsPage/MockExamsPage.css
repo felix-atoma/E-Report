@@ -205,3 +205,11 @@
 
 .mex-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
 .mex-alert { background: #fef9c3; border: 1px solid #fbbf24; color: #92400e; border-radius: 6px; padding: 0.5rem 0.75rem; font-size: 0.8rem; }
+
+/* Choix de plusieurs classes : tout cocher / effacer */
+.mex-form__class-tools { display: flex; gap: .75rem; margin-top: -.5rem; }
+.mex-form__class-tools button {
+  border: none; background: none; padding: 0; font-size: .82rem; font-weight: 600;
+  color: #1d4ed8; cursor: pointer;
+}
+.mex-form__class-tools button:hover { text-decoration: underline; }

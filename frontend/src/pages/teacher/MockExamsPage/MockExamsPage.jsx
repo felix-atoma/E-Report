@@ -12,6 +12,7 @@ import OffCanvas from '../../../components/common/OffCanvas/OffCanvas';
 import Input from '../../../components/common/Input/Input';
 import Select from '../../../components/common/Select/Select';
 import Button from '../../../components/common/Button/Button';
+import toast from 'react-hot-toast';
 import { fmtSessionDates } from '../../../utils/fmtSessionDates';
 import { DS_TYPE_CFG, CM_TYPE_CFG, CA_TYPE_CFG, KIND_TEXT, isNonExamType, isPrimaryCompoType, isDsType, isPrimaryLevel, isSecondaryLevel, typesForKind } from '../../../utils/examKinds';
 import './MockExamsPage.css';
@@ -81,16 +82,24 @@ function CreateForm({ examType, classes, classesLoading, onClose, onCreate, serv
   const classOptions = eligibleClasses.map((c) => ({ value: c.id, label: `${c.name} (${c.academicYear})` }));
 
   const [form, setForm] = useState({
-    classId: '', academicYear: DEFAULT_YEAR,
+    classIds: [], academicYear: DEFAULT_YEAR,
     examType, label: '', examDate: '', examEndDate: '',
   });
   const [error, setError] = useState('');
   const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
 
   const handleSubmit = () => {
-    if (!form.classId || !form.label.trim()) { setError(t('mockExams.classRequired')); return; }
+    if (!form.classIds.length || !form.label.trim()) { setError(t('mockExams.classRequired')); return; }
     setError('');
-    onCreate(form);
+    // Une session par classe choisie ; plusieurs classes : chacune dans l'année scolaire de sa classe
+    const { classIds, ...rest } = form;
+    onCreate(classIds.map((classId) => ({
+      ...rest,
+      classId,
+      academicYear: classIds.length > 1
+        ? eligibleClasses.find((c) => c.id === classId)?.academicYear || form.academicYear
+        : form.academicYear,
+    })));
   };
 
   return (
@@ -104,18 +113,31 @@ function CreateForm({ examType, classes, classesLoading, onClose, onCreate, serv
       {(error || serverError) && <div className="mex-alert">{error || serverError}</div>}
 
       <Select
-        label={t('mockExams.form.class')}
+        label={t('mockExams.form.classes')}
         required
-        value={form.classId}
+        isMulti
+        value={form.classIds}
         options={classOptions}
         // Chargement en cours : on l'indique au lieu d'afficher une liste vide
         placeholder={classesLoading ? 'Chargement des classes…' : t('mockExams.form.selectClass')}
         onChange={(e) => {
-          // L'année scolaire suit celle de la classe choisie
-          const cls = eligibleClasses.find((c) => c.id === e.target.value);
-          setForm((p) => ({ ...p, classId: e.target.value, academicYear: cls?.academicYear || p.academicYear }));
+          // L'année scolaire suit celle de la première classe choisie
+          const cls = eligibleClasses.find((c) => c.id === e.target.value[0]);
+          setForm((p) => ({ ...p, classIds: e.target.value, academicYear: cls?.academicYear || p.academicYear }));
         }}
       />
+      {classOptions.length > 1 && (
+        <div className="mex-form__class-tools">
+          <button type="button" onClick={() => setForm((p) => ({
+            ...p, classIds: eligibleClasses.map((c) => c.id), academicYear: eligibleClasses[0]?.academicYear || p.academicYear,
+          }))}>
+            {t('mockExams.form.allClasses', { count: classOptions.length })}
+          </button>
+          {form.classIds.length > 0 && (
+            <button type="button" onClick={() => set('classIds', [])}>{t('mockExams.form.clearClasses')}</button>
+          )}
+        </div>
+      )}
       {!classesLoading && classOptions.length === 0 && (
         <div className="mex-alert">
           {isDsType(examType)
@@ -135,13 +157,15 @@ function CreateForm({ examType, classes, classesLoading, onClose, onCreate, serv
       />
 
       <div className="mex-row">
-        <Input
-          label={t('mockExams.form.academicYear')}
-          required
-          placeholder="2024-2025"
-          value={form.academicYear}
-          onChange={(e) => set('academicYear', e.target.value)}
-        />
+        {form.classIds.length <= 1 && (
+          <Input
+            label={t('mockExams.form.academicYear')}
+            required
+            placeholder="2024-2025"
+            value={form.academicYear}
+            onChange={(e) => set('academicYear', e.target.value)}
+          />
+        )}
         <Input
           label={t('mockExams.form.dateStart')}
           type="date"
@@ -158,7 +182,13 @@ function CreateForm({ examType, classes, classesLoading, onClose, onCreate, serv
 
       <div className="mex-form__actions">
         <Button variant="ghost" onClick={onClose}>{t('action.cancel')}</Button>
-        <Button onClick={handleSubmit} disabled={isSaving}>{t('mockExams.form.create')}</Button>
+        <Button onClick={handleSubmit} disabled={isSaving}>
+          {isSaving
+            ? t('action.saving')
+            : form.classIds.length > 1
+              ? t('mockExams.form.createMany', { count: form.classIds.length })
+              : t('mockExams.form.create')}
+        </Button>
       </div>
     </div>
   );
@@ -412,8 +442,24 @@ function MockExamsPage({ kind = 'ESSAI' }) {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => mockExamsService.create(data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['mock-exams'] }); setCreateType(null); },
+    // Plusieurs classes : une session par classe ; on signale celles qui ont échoué sans perdre les autres
+    mutationFn: async (items) => {
+      const failed = [];
+      for (const data of items) {
+        try { await mockExamsService.create(data); } catch (err) {
+          const name = classes.find((c) => c.id === data.classId)?.name ?? data.classId;
+          failed.push(`${name} : ${[].concat(err.response?.data?.message ?? 'échec').join(' · ')}`);
+        }
+      }
+      return { created: items.length - failed.length, failed };
+    },
+    onSuccess: ({ created, failed }) => {
+      qc.invalidateQueries({ queryKey: ['mock-exams'] });
+      setCreateType(null);
+      if (created) toast.success(t('mockExams.createdMany', { count: created }));
+      // Les classes en échec sont listées : les recréer seules (les autres sont déjà créées)
+      if (failed.length) toast.error(t('mockExams.createFailed', { list: failed.join(' — ') }), { duration: 12000 });
+    },
   });
 
   const deleteMutation = useMutation({
