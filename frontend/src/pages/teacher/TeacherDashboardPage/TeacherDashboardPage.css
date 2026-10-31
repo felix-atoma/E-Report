@@ -351,3 +351,28 @@
 .teacher-dash__cm--tit .teacher-dash__cm-sub { color: #1e40af; }
 .teacher-dash__cm--tit .teacher-dash__cm-link--main { background: #1d4ed8; color: #fff; border-color: #1d4ed8; }
 .teacher-dash__cm--tit .teacher-dash__cm-link--main:hover { background: #1e40af; }
+
+/* Évaluations programmées par l'administration : alerte « saisir les notes » (orange) */
+.teacher-dash__evals { margin-bottom: 1.25rem; border-left: 4px solid #ea580c; background: #fff7ed; }
+.teacher-dash__evals-title { margin: 0 0 .6rem; font-size: 1.05rem; font-weight: 800; color: #9a3412; }
+.teacher-dash__evals-list { display: flex; flex-direction: column; gap: .5rem; }
+.teacher-dash__eval {
+  display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap;
+  padding: .65rem .8rem; border-radius: 8px; background: #fff; border: 1px solid #fed7aa;
+}
+.teacher-dash__eval--due { border-color: #fb923c; box-shadow: 0 0 0 1px #fb923c inset; }
+.teacher-dash__eval-body { flex: 1 1 240px; min-width: 0; }
+.teacher-dash__eval-head { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.teacher-dash__eval-kind {
+  padding: .1rem .5rem; border-radius: 999px; font-size: .72rem; font-weight: 700;
+  background: #ffedd5; color: #c2410c;
+}
+.teacher-dash__eval-meta { margin-top: .2rem; font-size: .8rem; color: #6b7280; }
+.teacher-dash__eval-status { margin-top: .2rem; font-size: .82rem; font-weight: 700; color: #9a3412; }
+.teacher-dash__eval-actions { display: flex; align-items: center; gap: .5rem; }
+.teacher-dash__evals .teacher-dash__cm-link--main { background: #ea580c; border-color: #ea580c; }
+.teacher-dash__evals .teacher-dash__cm-link--main:hover { background: #c2410c; }
+.teacher-dash__eval-hide {
+  border: none; background: none; padding: .3rem .4rem; font-size: .8rem; color: #6b7280; cursor: pointer;
+}
+.teacher-dash__eval-hide:hover { color: #111827; text-decoration: underline; }

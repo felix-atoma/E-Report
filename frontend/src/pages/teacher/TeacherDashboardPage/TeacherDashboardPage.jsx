@@ -12,6 +12,7 @@ import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Card from '../../../components/common/Card/Card';
 import StatusPill from '../../../components/common/StatusPill/StatusPill';
 import Loading from '../../../components/common/Loading/Loading';
+import EvaluationAlerts from './EvaluationAlerts';
 import './TeacherDashboardPage.css';
 
 const TODAY_MAP = { 1:'LUNDI', 2:'MARDI', 3:'MERCREDI', 4:'JEUDI', 5:'VENDREDI', 6:'SAMEDI' };
@@ -124,6 +125,9 @@ function TeacherDashboardPage() {
           <span className="teacher-dash__stat-label">Programme couvert</span>
         </Card>
       </div>
+
+      {/* Interrogations, devoirs, compositions et examens programmés par l'administration */}
+      <EvaluationAlerts classes={classes} />
 
       {/* Maîtres du primaire (CI → CM2) : compositions mensuelles, chaque matière sur son barème (10 ou 20) */}
       {primaryClasses.length > 0 && (

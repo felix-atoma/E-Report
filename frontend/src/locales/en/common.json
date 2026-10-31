@@ -91,6 +91,7 @@
   },
 
   "action": {
+    "description": "Description",
     "save":       "Save",
     "saving":     "Saving…",
     "cancel":     "Cancel",
@@ -2100,6 +2101,9 @@
     "confirmLabel":   "Delete",
     "types": {
       "HOLIDAY":       "Holiday/Break",
+      "INTERROGATION": "Quiz (interrogation)",
+      "DEVOIR":        "Test (devoir)",
+      "COMPOSITION":   "Composition",
       "EXAM":          "Exam",
       "EVENT":         "Event",
       "MEETING":       "Meeting",
@@ -2116,6 +2120,9 @@
       "typeLabel":      "Type",
       "startDate":      "Start date",
       "endDate":        "End date",
+      "classLabel":     "Class",
+      "allClasses":     "All classes",
+      "evaluationHint": "The class's teachers will get an alert on their dashboard to enter the marks.",
       "descPlaceholder":"Optional description…"
     },
     "errors": {
@@ -2127,6 +2134,15 @@
       "deleted": "Event deleted",
       "error":   "Error"
     }
+  },
+
+  "evalAlerts": {
+    "title": "Assessments — marks to enter",
+    "due": "Time to enter the marks",
+    "upcoming": "In {{count}} day(s)",
+    "enter": "Enter marks →",
+    "hide": "Hide",
+    "allClasses": "All your classes"
   },
 
   "nationalExamPage": {

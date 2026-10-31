@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { calendarService } from '../../../services/calendarService';
+import { classesService } from '../../../services/classesService';
 import { useAuth } from '../../../context/AuthContext';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
@@ -16,10 +17,13 @@ import Loading from '../../../components/common/Loading/Loading';
 import EmptyState from '../../../components/common/EmptyState/EmptyState';
 import './CalendarPage.css';
 
-const EVENT_TYPE_KEYS = ['HOLIDAY', 'EXAM', 'EVENT', 'MEETING', 'PARENT_MEETING', 'SPORT', 'CULTURAL', 'DEADLINE', 'OTHER'];
+const EVENT_TYPE_KEYS = ['HOLIDAY', 'INTERROGATION', 'DEVOIR', 'COMPOSITION', 'EXAM', 'EVENT', 'MEETING', 'PARENT_MEETING', 'SPORT', 'CULTURAL', 'DEADLINE', 'OTHER'];
 
 const EVENT_TYPE_STYLE = {
   HOLIDAY:        { bg: '#fee2e2', color: '#b91c1c' },
+  INTERROGATION:  { bg: '#e0f2fe', color: '#0369a1' },
+  DEVOIR:         { bg: '#ede9fe', color: '#6d28d9' },
+  COMPOSITION:    { bg: '#ffe4e6', color: '#be123c' },
   EXAM:           { bg: '#ffedd5', color: '#c2410c' },
   EVENT:          { bg: '#dbeafe', color: '#1d4ed8' },
   MEETING:        { bg: '#f3e8ff', color: '#7e22ce' },
@@ -30,11 +34,14 @@ const EVENT_TYPE_STYLE = {
   OTHER:          { bg: '#f3f4f6', color: '#4b5563' },
 };
 
+// Évaluations : les professeurs concernés reçoivent une alerte « saisir les notes » (réservé à l'administration)
+const EVALUATION_TYPES = ['INTERROGATION', 'DEVOIR', 'COMPOSITION', 'EXAM'];
+
 const PRESET_COLORS = ['#1E2A78', '#FF7A59', '#E94F8A', '#0ea5e9', '#22c55e', '#f59e0b'];
 
 const EMPTY_FORM = {
   title: '', type: 'EVENT', startDate: '', endDate: '',
-  allDay: true, description: '', isPublic: true, color: '',
+  allDay: true, description: '', isPublic: true, color: '', classId: '',
 };
 
 function ColorPicker({ value, onChange }) {
@@ -83,14 +90,26 @@ function CalendarPage() {
     ...EVENT_TYPE_KEYS.map((k) => ({ value: k, label: t(`calendar.types.${k}`) })),
   ], [t]);
 
-  const typeSelectOptions = EVENT_TYPE_KEYS.map((k) => ({
-    value: k, label: t(`calendar.types.${k}`),
-  }));
+  const typeSelectOptions = EVENT_TYPE_KEYS
+    .filter((k) => isAdmin || !EVALUATION_TYPES.includes(k))
+    .map((k) => ({ value: k, label: t(`calendar.types.${k}`) }));
+  const isEvaluation = EVALUATION_TYPES.includes(form.type);
 
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['calendar'],
     queryFn: () => calendarService.list().then((r) => r.data),
   });
+
+  const { data: classes = [] } = useQuery({
+    queryKey: ['classes'],
+    queryFn: () => classesService.list().then((r) => r.data),
+    enabled: isAdmin,
+  });
+  const className = useMemo(() => Object.fromEntries(classes.map((c) => [c.id, c.name])), [classes]);
+  const classOptions = [
+    { value: '', label: t('calendar.form.allClasses') },
+    ...classes.map((c) => ({ value: c.id, label: c.name })),
+  ];
 
   const filtered = useMemo(() => {
     return typeFilter ? events.filter((e) => e.type === typeFilter) : events;
@@ -131,7 +150,7 @@ function CalendarPage() {
 
   function validate() {
     const errs = {};
-    if (!form.title.trim()) errs.title = t('calendar.errors.title');
+    if (!form.title.trim() && !isEvaluation) errs.title = t('calendar.errors.title');
     if (!form.startDate) errs.startDate = t('calendar.errors.startDate');
     return errs;
   }
@@ -140,7 +159,7 @@ function CalendarPage() {
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
     createMutation.mutate({
-      title:       form.title,
+      title:       form.title.trim() || t(`calendar.types.${form.type}`),
       type:        form.type,
       startDate:   form.startDate,
       endDate:     form.endDate || undefined,
@@ -148,6 +167,7 @@ function CalendarPage() {
       description: form.description || undefined,
       isPublic:    form.isPublic,
       color:       form.color || undefined,
+      classId:     isEvaluation && form.classId ? form.classId : undefined,
     });
   }
 
@@ -199,6 +219,9 @@ function CalendarPage() {
                           <span className="cal-chip" style={{ background: style.bg, color: style.color }}>
                             {t(`calendar.types.${ev.type}`, ev.type)}
                           </span>
+                          {ev.classId && className[ev.classId] && (
+                            <span className="cal-event-row__private">🏫 {className[ev.classId]}</span>
+                          )}
                           {!ev.isPublic && (
                             <span className="cal-event-row__private">{t('calendar.private')}</span>
                           )}
@@ -252,7 +275,7 @@ function CalendarPage() {
           <Input
             id="title"
             label={t('calendar.form.titleLabel')}
-            required
+            required={!isEvaluation}
             value={form.title}
             error={errors.title}
             placeholder={t('calendar.form.titlePlaceholder')}
@@ -265,6 +288,18 @@ function CalendarPage() {
             options={typeSelectOptions}
             onChange={(e) => handleChange('type', e.target.value)}
           />
+          {isEvaluation && (
+            <>
+              <Select
+                id="classId"
+                label={t('calendar.form.classLabel')}
+                value={form.classId}
+                options={classOptions}
+                onChange={(e) => handleChange('classId', e.target.value)}
+              />
+              <p className="cal-form__hint">{t('calendar.form.evaluationHint')}</p>
+            </>
+          )}
           <div className="cal-form__row">
             <Input
               id="startDate"

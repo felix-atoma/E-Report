@@ -199,6 +199,12 @@
   margin-bottom: 0.4rem;
 }
 
+.cal-form__hint {
+  margin: -0.5rem 0 0;
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
 .cal-form__textarea {
   width: 100%;
   padding: 0.625rem 0.75rem;

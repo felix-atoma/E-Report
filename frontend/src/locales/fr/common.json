@@ -91,6 +91,7 @@
   },
 
   "action": {
+    "description": "Description",
     "save":       "Enregistrer",
     "saving":     "Enregistrement…",
     "cancel":     "Annuler",
@@ -2182,6 +2183,9 @@
     "confirmLabel":   "Supprimer",
     "types": {
       "HOLIDAY":       "Congé/Fête",
+      "INTERROGATION": "Interrogation",
+      "DEVOIR":        "Devoir",
+      "COMPOSITION":   "Composition",
       "EXAM":          "Examen",
       "EVENT":         "Événement",
       "MEETING":       "Réunion",
@@ -2198,6 +2202,9 @@
       "typeLabel":      "Type",
       "startDate":      "Date de début",
       "endDate":        "Date de fin",
+      "classLabel":     "Classe concernée",
+      "allClasses":     "Toutes les classes",
+      "evaluationHint": "Les professeurs de la classe recevront une alerte sur leur tableau de bord pour saisir les notes.",
       "descPlaceholder":"Description optionnelle…"
     },
     "errors": {
@@ -2209,6 +2216,15 @@
       "deleted": "Événement supprimé",
       "error":   "Erreur"
     }
+  },
+
+  "evalAlerts": {
+    "title": "Évaluations — notes à saisir",
+    "due": "C'est le moment de saisir les notes",
+    "upcoming": "Prévue dans {{count}} jour(s)",
+    "enter": "Saisir les notes →",
+    "hide": "Masquer",
+    "allClasses": "Toutes vos classes"
   },
 
   "nationalExamPage": {

@@ -1284,6 +1284,10 @@ enum StudentStatus {
 enum CalendarEventType {
   HOLIDAY
   EXAM
+  // Évaluations programmées par l'administration : alerte « saisir les notes » sur le tableau de bord des professeurs
+  INTERROGATION
+  DEVOIR
+  COMPOSITION
   EVENT
   MEETING
   SPORT

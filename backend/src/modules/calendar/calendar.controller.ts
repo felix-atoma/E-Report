@@ -16,13 +16,13 @@ export class CalendarController {
   @Post()
   @Roles(Role.ADMIN, Role.TEACHER)
   create(@Body() dto: CreateCalendarEventDto, @Req() req: any) {
-    return this.service.create(dto, req.user.institutionId, req.user.id);
+    return this.service.create(dto, req.user.institutionId, req.user.id, req.user.role);
   }
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.TEACHER)
   update(@Param('id') id: string, @Body() dto: Partial<CreateCalendarEventDto>, @Req() req: any) {
-    return this.service.update(id, dto, req.user.institutionId);
+    return this.service.update(id, dto, req.user.institutionId, req.user.role);
   }
 
   @Delete(':id')
