@@ -5,11 +5,12 @@ import { useTranslation } from 'react-i18next';
 import { calendarService } from '../../../services/calendarService';
 import Card from '../../../components/common/Card/Card';
 
-// Évaluations programmées par l'administration dans le calendrier scolaire
-const EVALUATION_TYPES = ['INTERROGATION', 'DEVOIR', 'COMPOSITION', 'EXAM'];
-// Annoncée 7 jours avant, rappelée jusqu'à 14 jours après la date (fin) de l'évaluation
+// Annoncée 7 jours avant, rappelée jusqu'à 30 jours après la date (fin) de l'évaluation ;
+// notes toujours incomplètes 3 jours après : l'alerte passe en retard (rouge clignotant)
 const DAYS_BEFORE = 7;
-const DAYS_AFTER = 14;
+const OVERDUE_AFTER = 3;
+const DAYS_AFTER = 30;
+// Seules les évaluations à venir peuvent être masquées : ensuite l'alerte ne part qu'une fois les notes saisies
 const DISMISS_KEY = 'evalAlerts.dismissed';
 
 const DAY_MS = 86400000;
@@ -26,33 +27,45 @@ function readDismissed() {
   try { return JSON.parse(localStorage.getItem(DISMISS_KEY) || '[]'); } catch { return []; }
 }
 
+const COLUMN_LABEL = {
+  noteInterro1: 'Interro 1', noteInterro2: 'Interro 2', noteInterro3: 'Interro 3', noteInterro4: 'Interro 4',
+  noteDevoir: 'Devoir', noteComposition: 'Composition',
+};
+
+function ficheLink(f) {
+  const termName = `Trimestre ${f.termNumber}`;
+  return `/teacher/classes/${f.classId}/grades/${f.subjectId}?academicYear=${encodeURIComponent(f.academicYear)}`
+    + `&termNumber=${f.termNumber}&termName=${encodeURIComponent(termName)}`;
+}
+
 /**
- * Alerte du tableau de bord : « c'est le moment de saisir les notes » de l'interrogation, du devoir,
- * de la composition ou de l'examen programmé par l'administration (toutes classes ou une classe du professeur).
+ * Alerte du tableau de bord : interrogation, devoir, composition ou examen programmé par l'administration.
+ * Le serveur vérifie sur chaque fiche du professeur (classe × matière) si la colonne correspondante est
+ * remplie pour tous les élèves (ou la fiche signée) : l'alerte disparaît d'elle-même une fois les notes saisies.
  */
-function EvaluationAlerts({ classes }) {
+function EvaluationAlerts() {
   const { t, i18n } = useTranslation();
   const [dismissed, setDismissed] = useState(readDismissed);
 
   const { data: events = [] } = useQuery({
-    queryKey: ['calendar'],
-    queryFn: () => calendarService.list().then((r) => r.data),
+    queryKey: ['my-evaluations'],
+    queryFn: () => calendarService.myEvaluations().then((r) => r.data),
+    // Relu à chaque retour sur le tableau de bord : l'alerte part dès que les notes sont enregistrées
+    staleTime: 0,
   });
 
-  const classIds = new Set(classes.map((c) => c.id));
-  const className = Object.fromEntries(classes.map((c) => [c.id, c.name]));
   const today = localToday();
 
   const alerts = events
-    .filter((ev) => EVALUATION_TYPES.includes(ev.type) && !dismissed.includes(ev.id))
-    .filter((ev) => !ev.classId || classIds.has(ev.classId))
+    .filter((ev) => !ev.complete)
     .map((ev) => {
       const daysUntil = Math.round((dayOf(ev.startDate) - today) / DAY_MS);
       const daysSinceEnd = Math.round((today - dayOf(ev.endDate || ev.startDate)) / DAY_MS);
-      return { ...ev, daysUntil, daysSinceEnd, due: daysUntil <= 0 };
+      return { ...ev, daysUntil, daysSinceEnd, due: daysUntil <= 0, overdue: daysSinceEnd >= OVERDUE_AFTER };
     })
     .filter((ev) => ev.daysUntil <= DAYS_BEFORE && ev.daysSinceEnd <= DAYS_AFTER)
-    .sort((a, b) => (b.due - a.due) || (a.daysUntil - b.daysUntil));
+    .filter((ev) => ev.due || !dismissed.includes(ev.id))
+    .sort((a, b) => (b.overdue - a.overdue) || (b.due - a.due) || (a.daysUntil - b.daysUntil));
 
   if (!alerts.length) return null;
 
@@ -67,39 +80,55 @@ function EvaluationAlerts({ classes }) {
   });
 
   return (
-    <Card className="teacher-dash__evals">
+    <Card className={`teacher-dash__evals ${alerts.some((ev) => ev.overdue) ? 'teacher-dash__evals--overdue' : ''}`}>
       <h3 className="teacher-dash__evals-title">🔔 {t('evalAlerts.title')}</h3>
       <div className="teacher-dash__evals-list">
-        {alerts.map((ev) => (
-          <div key={ev.id} className={`teacher-dash__eval ${ev.due ? 'teacher-dash__eval--due' : ''}`}>
-            <div className="teacher-dash__eval-body">
-              <div className="teacher-dash__eval-head">
-                <span className="teacher-dash__eval-kind">{t(`calendar.types.${ev.type}`)}</span>
-                <strong>{ev.title}</strong>
+        {alerts.map((ev) => {
+          const missing = ev.fiches.filter((f) => !f.complete);
+          return (
+            <div key={ev.id} className={`teacher-dash__eval ${ev.overdue ? 'teacher-dash__eval--overdue' : ev.due ? 'teacher-dash__eval--due' : ''}`}
+              role={ev.overdue ? 'alert' : undefined}>
+              <div className="teacher-dash__eval-body">
+                <div className="teacher-dash__eval-head">
+                  <span className="teacher-dash__eval-kind">{t(`calendar.types.${ev.type}`)}</span>
+                  <strong>{ev.title}</strong>
+                </div>
+                <div className="teacher-dash__eval-meta">
+                  📅 {fmt(ev.startDate)}
+                  {ev.endDate && dayOf(ev.endDate) !== dayOf(ev.startDate) && <> — {fmt(ev.endDate)}</>}
+                </div>
+                <div className="teacher-dash__eval-status">
+                  {ev.overdue
+                    ? `⚠️ ${t('evalAlerts.overdue', { count: ev.daysSinceEnd })}`
+                    : ev.due
+                    ? `⏰ ${t('evalAlerts.due')}`
+                    : t('evalAlerts.upcoming', { count: ev.daysUntil })}
+                </div>
+                {ev.due && (
+                  <div className="teacher-dash__eval-fiches">
+                    {missing.map((f) => (
+                      <Link key={`${f.classId}-${f.subjectId}`} to={ficheLink(f)} className="teacher-dash__eval-fiche">
+                        <span>🏫 {f.className} · {f.subjectName}</span>
+                        <span className="teacher-dash__eval-col">{COLUMN_LABEL[f.column]}</span>
+                        <span className="teacher-dash__eval-count">
+                          {t('evalAlerts.progress', { filled: f.filled, total: f.total })}
+                        </span>
+                        <span className="teacher-dash__eval-go">{t('evalAlerts.enter')}</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
-              <div className="teacher-dash__eval-meta">
-                📅 {fmt(ev.startDate)}
-                {ev.endDate && dayOf(ev.endDate) !== dayOf(ev.startDate) && <> — {fmt(ev.endDate)}</>}
-                {' · 🏫 '}{ev.classId ? className[ev.classId] : t('evalAlerts.allClasses')}
-              </div>
-              <div className="teacher-dash__eval-status">
-                {ev.due
-                  ? `⏰ ${t('evalAlerts.due')}`
-                  : t('evalAlerts.upcoming', { count: ev.daysUntil })}
-              </div>
-            </div>
-            <div className="teacher-dash__eval-actions">
-              {ev.due && (
-                <Link to="/teacher/fiches" className="teacher-dash__cm-link teacher-dash__cm-link--main">
-                  {t('evalAlerts.enter')}
-                </Link>
+              {!ev.due && (
+                <div className="teacher-dash__eval-actions">
+                  <button type="button" className="teacher-dash__eval-hide" onClick={() => dismiss(ev.id)}>
+                    {t('evalAlerts.hide')}
+                  </button>
+                </div>
               )}
-              <button type="button" className="teacher-dash__eval-hide" onClick={() => dismiss(ev.id)}>
-                {t('evalAlerts.hide')}
-              </button>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </Card>
   );

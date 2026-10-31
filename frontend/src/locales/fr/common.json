@@ -2221,10 +2221,11 @@
   "evalAlerts": {
     "title": "Évaluations — notes à saisir",
     "due": "C'est le moment de saisir les notes",
+    "overdue": "En retard de {{count}} jour(s) — saisissez les notes sans attendre",
+    "progress": "{{filled}}/{{total}} notes",
     "upcoming": "Prévue dans {{count}} jour(s)",
     "enter": "Saisir les notes →",
-    "hide": "Masquer",
-    "allClasses": "Toutes vos classes"
+    "hide": "Masquer"
   },
 
   "nationalExamPage": {

@@ -127,7 +127,7 @@ function TeacherDashboardPage() {
       </div>
 
       {/* Interrogations, devoirs, compositions et examens programmés par l'administration */}
-      <EvaluationAlerts classes={classes} />
+      <EvaluationAlerts />
 
       {/* Maîtres du primaire (CI → CM2) : compositions mensuelles, chaque matière sur son barème (10 ou 20) */}
       {primaryClasses.length > 0 && (

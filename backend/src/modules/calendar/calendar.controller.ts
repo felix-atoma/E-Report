@@ -13,6 +13,13 @@ export class CalendarController {
     return this.service.list(req.user.institutionId, req.user.role);
   }
 
+  // Professeur : évaluations programmées et état réel de la saisie des notes sur ses fiches
+  @Get('my-evaluations')
+  @Roles(Role.TEACHER)
+  myEvaluations(@Req() req: any) {
+    return this.service.myEvaluations(req.user.institutionId, req.user.id);
+  }
+
   @Post()
   @Roles(Role.ADMIN, Role.TEACHER)
   create(@Body() dto: CreateCalendarEventDto, @Req() req: any) {

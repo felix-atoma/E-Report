@@ -376,3 +376,37 @@
   border: none; background: none; padding: .3rem .4rem; font-size: .8rem; color: #6b7280; cursor: pointer;
 }
 .teacher-dash__eval-hide:hover { color: #111827; text-decoration: underline; }
+
+/* En retard (notes non saisies 3 jours après) : rouge clair qui clignote doucement */
+.teacher-dash__evals--overdue { border-left-color: #dc2626; background: #fef2f2; }
+.teacher-dash__evals--overdue .teacher-dash__evals-title { color: #991b1b; }
+.teacher-dash__eval--overdue {
+  border-color: #f87171; background: #fee2e2;
+  animation: teacher-dash-eval-pulse 1.6s ease-in-out infinite;
+}
+.teacher-dash__eval--overdue .teacher-dash__eval-kind { background: #fecaca; color: #b91c1c; }
+.teacher-dash__eval--overdue .teacher-dash__eval-status { color: #b91c1c; }
+.teacher-dash__evals .teacher-dash__eval--overdue .teacher-dash__cm-link--main { background: #dc2626; border-color: #dc2626; }
+.teacher-dash__evals .teacher-dash__eval--overdue .teacher-dash__cm-link--main:hover { background: #b91c1c; }
+@keyframes teacher-dash-eval-pulse {
+  0%, 100% { background: #fee2e2; box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.35); }
+  50%      { background: #fecaca; box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .teacher-dash__eval--overdue { animation: none; }
+}
+
+/* Fiches encore incomplètes pour l'évaluation : lien direct vers la fiche, avec l'avancement */
+.teacher-dash__eval-fiches { display: flex; flex-direction: column; gap: .35rem; margin-top: .55rem; }
+.teacher-dash__eval-fiche {
+  display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+  padding: .45rem .65rem; border-radius: 6px; background: #fff; border: 1px solid #fed7aa;
+  font-size: .84rem; color: #1f2937; text-decoration: none;
+}
+.teacher-dash__eval-fiche:hover { border-color: #ea580c; }
+.teacher-dash__eval-col { font-size: .72rem; font-weight: 700; color: #6b7280; }
+.teacher-dash__eval-count { margin-left: auto; font-weight: 700; color: #9a3412; }
+.teacher-dash__eval-go { font-weight: 700; color: #ea580c; white-space: nowrap; }
+.teacher-dash__eval--overdue .teacher-dash__eval-fiche { border-color: #fca5a5; }
+.teacher-dash__eval--overdue .teacher-dash__eval-count,
+.teacher-dash__eval--overdue .teacher-dash__eval-go { color: #b91c1c; }
