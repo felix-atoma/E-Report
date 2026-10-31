@@ -18,4 +18,7 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
 COPY package*.json ./
 EXPOSE 4000
-CMD ["node", "dist/main"]
+# Au démarrage : met la base au niveau du schéma Prisma (ajouts seulement — sans --accept-data-loss, un
+# changement qui supprimerait des données est refusé et signalé dans les logs), puis lance le serveur.
+# Un échec n'empêche pas le démarrage : le serveur reste joignable et l'erreur est visible dans les logs Render.
+CMD ["sh", "-c", "npx prisma db push --skip-generate || echo 'PRISMA DB PUSH FAILED: schema not applied, see error above'; exec node dist/main"]

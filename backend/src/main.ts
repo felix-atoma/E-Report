@@ -97,6 +97,16 @@ async function bootstrap() {
   const port = config.get<number>('PORT', 4000);
   await app.listen(port);
   console.log(`🚀 NovaBulletin API running on http://localhost:${port}/${globalPrefix}`);
+
+  // Render (offre gratuite) endort le serveur après 15 min sans visite : le premier utilisateur attend alors
+  // 30 à 60 s. Un appel à sa propre adresse publique toutes les 10 min le garde éveillé (un seul service
+  // gratuit tourne en continu dans les 750 h mensuelles). RENDER_EXTERNAL_URL n'existe que sur Render.
+  const publicUrl = process.env.RENDER_EXTERNAL_URL;
+  if (publicUrl) {
+    setInterval(() => {
+      fetch(`${publicUrl}/${globalPrefix}/health`).catch(() => {});
+    }, 10 * 60 * 1000).unref();
+  }
 }
 
 bootstrap().catch((err) => {
