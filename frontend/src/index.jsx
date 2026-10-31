@@ -21,14 +21,37 @@ if (import.meta.env.DEV && 'serviceWorker' in navigator) {
 }
 
 // Application installée (PWA) : prend la nouvelle version dès qu'elle est déployée
-// (rechargement automatique) et vérifie toutes les heures si l'app reste ouverte.
+// (rechargement automatique) et vérifie toutes les heures, et au retour sur l'onglet, si l'app reste ouverte.
 if (import.meta.env.PROD) {
+  // Nouvelle version installée pendant que l'onglet est ouvert : la charger au prochain clic sur un lien
+  // de l'appli ou au retour sur l'onglet (jamais au milieu d'une saisie de notes).
+  let updateReady = false;
+  let hadController = !!navigator.serviceWorker?.controller;
+  navigator.serviceWorker?.addEventListener('controllerchange', () => {
+    if (hadController) updateReady = true;
+    hadController = true;
+  });
+  document.addEventListener('click', (e) => {
+    if (!updateReady || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey) return;
+    const a = e.target.closest?.('a[href]');
+    if (!a || a.target === '_blank' || a.origin !== window.location.origin) return;
+    e.preventDefault();
+    window.location.assign(a.href);
+  }, true);
+
   import('virtual:pwa-register').then(({ registerSW }) => {
     registerSW({
       immediate: true,
       onRegisteredSW(_url, registration) {
         // Vérification horaire d'une nouvelle version ; sans réseau elle échoue : on réessaiera l'heure suivante
-        if (registration) setInterval(() => { registration.update().catch(() => {}); }, 60 * 60 * 1000);
+        if (!registration) return;
+        setInterval(() => { registration.update().catch(() => {}); }, 60 * 60 * 1000);
+        // Onglet laissé ouvert : vérifier aussi quand l'utilisateur y revient
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState !== 'visible') return;
+          if (updateReady) window.location.reload();
+          else registration.update().catch(() => {});
+        });
       },
     });
   }).catch(() => { /* navigateur sans service worker */ });
