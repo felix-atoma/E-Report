@@ -45,6 +45,8 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         // pdf.js (import de signature en PDF) : chargé à la demande, pas pré-téléchargé pour tous
         globIgnores: ['**/pdf.worker*.js', '**/pdf-*.js'],
+        // Anciennes adresses du serveur → serveur actuel (onglets restés ouverts sur une ancienne version)
+        importScripts: ['/sw-api-redirect.js'],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         skipWaiting: true,
