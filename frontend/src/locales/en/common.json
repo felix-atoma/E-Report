@@ -2127,9 +2127,9 @@
       "typeLabel":      "Type",
       "startDate":      "Start date",
       "endDate":        "End date",
-      "classLabel":     "Class",
+      "classLabel":     "Classes",
       "allClasses":     "All classes",
-      "evaluationHint": "The class's teachers will get an alert on their dashboard to enter the marks.",
+      "evaluationHint": "Leave empty for all classes. Their teachers will get an alert on their dashboard to enter the marks.",
       "descPlaceholder":"Optional description…"
     },
     "errors": {

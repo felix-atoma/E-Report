@@ -2209,9 +2209,9 @@
       "typeLabel":      "Type",
       "startDate":      "Date de début",
       "endDate":        "Date de fin",
-      "classLabel":     "Classe concernée",
+      "classLabel":     "Classes concernées",
       "allClasses":     "Toutes les classes",
-      "evaluationHint": "Les professeurs de la classe recevront une alerte sur leur tableau de bord pour saisir les notes.",
+      "evaluationHint": "Laissez vide pour toutes les classes. Les professeurs de ces classes recevront une alerte sur leur tableau de bord pour saisir les notes.",
       "descPlaceholder":"Description optionnelle…"
     },
     "errors": {

@@ -1,4 +1,4 @@
-import { IsBoolean, IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { CalendarEventType } from '@prisma/client';
 
 export class CreateCalendarEventDto {
@@ -10,6 +10,7 @@ export class CreateCalendarEventDto {
   @IsOptional() @IsEnum(CalendarEventType) type?: CalendarEventType;
   @IsOptional() @IsString() description?: string;
   @IsOptional() @IsString() classId?: string;
+  @IsOptional() @IsArray() @IsString({ each: true }) classIds?: string[];
   @IsOptional() @IsString() color?: string;
   @IsOptional() @IsBoolean() isPublic?: boolean;
 }

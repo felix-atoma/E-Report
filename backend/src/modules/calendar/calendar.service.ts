@@ -15,6 +15,12 @@ const ALERT_DAYS_BEFORE = 7;
 const ALERT_DAYS_AFTER = 30;
 const DAY_MS = 86400000;
 
+// Classes concernées : liste choisie, sinon la classe unique (anciens événements), sinon toutes
+function concernsClass(ev: { classId: string | null; classIds: string[] }, classId: string) {
+  if (ev.classIds?.length) return ev.classIds.includes(classId);
+  return !ev.classId || ev.classId === classId;
+}
+
 function assertCanSchedule(type: string | undefined, role: Role) {
   if (type && EVALUATION_TYPES.includes(type) && role !== Role.ADMIN) {
     throw new ForbiddenException("Seule l'administration programme les évaluations");
@@ -77,7 +83,7 @@ export class CalendarService {
     const columnFor = (ev: (typeof events)[number], classId: string, academicYear: string, term: number): NoteColumn => {
       if (ev.type === 'DEVOIR') return 'noteDevoir';
       if (ev.type !== 'INTERROGATION') return 'noteComposition';
-      const sameTerm = events.filter((e) => e.type === 'INTERROGATION' && (!e.classId || e.classId === classId)
+      const sameTerm = events.filter((e) => e.type === 'INTERROGATION' && concernsClass(e, classId)
         && termOf(e, academicYear) === term);
       const rank = Math.min(4, Math.max(1, sameTerm.findIndex((e) => e.id === ev.id) + 1));
       return `noteInterro${rank}` as NoteColumn;
@@ -85,7 +91,7 @@ export class CalendarService {
 
     // Fiches à vérifier, puis lecture groupée des élèves, notes et signatures
     const targets = inWindow.flatMap((ev) => assignments
-      .filter((a) => !ev.classId || ev.classId === a.classId)
+      .filter((a) => concernsClass(ev, a.classId))
       .map((a) => {
         const academicYear = a.class.academicYear;
         const termNumber = termOf(ev, academicYear);

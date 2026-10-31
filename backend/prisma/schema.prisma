@@ -1243,6 +1243,8 @@ model CalendarEvent {
   allDay        Boolean           @default(true)
   type          CalendarEventType @default(EVENT)
   classId       String?
+  // Évaluation programmée pour plusieurs classes (vide : classId, sinon toutes les classes)
+  classIds      String[]          @default([])
   color         String?
   isPublic      Boolean           @default(true)
   createdById   String?

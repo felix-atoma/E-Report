@@ -41,7 +41,7 @@ const PRESET_COLORS = ['#1E2A78', '#FF7A59', '#E94F8A', '#0ea5e9', '#22c55e', '#
 
 const EMPTY_FORM = {
   title: '', type: 'EVENT', startDate: '', endDate: '',
-  allDay: true, description: '', isPublic: true, color: '', classId: '',
+  allDay: true, description: '', isPublic: true, color: '', classIds: [],
 };
 
 function ColorPicker({ value, onChange }) {
@@ -106,10 +106,7 @@ function CalendarPage() {
     enabled: isAdmin,
   });
   const className = useMemo(() => Object.fromEntries(classes.map((c) => [c.id, c.name])), [classes]);
-  const classOptions = [
-    { value: '', label: t('calendar.form.allClasses') },
-    ...classes.map((c) => ({ value: c.id, label: c.name })),
-  ];
+  const classOptions = classes.map((c) => ({ value: c.id, label: c.name }));
 
   const filtered = useMemo(() => {
     return typeFilter ? events.filter((e) => e.type === typeFilter) : events;
@@ -167,7 +164,7 @@ function CalendarPage() {
       description: form.description || undefined,
       isPublic:    form.isPublic,
       color:       form.color || undefined,
-      classId:     isEvaluation && form.classId ? form.classId : undefined,
+      classIds:    isEvaluation && form.classIds.length ? form.classIds : undefined,
     });
   }
 
@@ -219,8 +216,10 @@ function CalendarPage() {
                           <span className="cal-chip" style={{ background: style.bg, color: style.color }}>
                             {t(`calendar.types.${ev.type}`, ev.type)}
                           </span>
-                          {ev.classId && className[ev.classId] && (
-                            <span className="cal-event-row__private">🏫 {className[ev.classId]}</span>
+                          {(ev.classIds?.length ? ev.classIds : ev.classId ? [ev.classId] : []).some((id) => className[id]) && (
+                            <span className="cal-event-row__private">
+                              🏫 {(ev.classIds?.length ? ev.classIds : [ev.classId]).map((id) => className[id]).filter(Boolean).join(', ')}
+                            </span>
                           )}
                           {!ev.isPublic && (
                             <span className="cal-event-row__private">{t('calendar.private')}</span>
@@ -291,11 +290,13 @@ function CalendarPage() {
           {isEvaluation && (
             <>
               <Select
-                id="classId"
+                id="classIds"
+                isMulti
+                placeholder={t('calendar.form.allClasses')}
                 label={t('calendar.form.classLabel')}
-                value={form.classId}
+                value={form.classIds}
                 options={classOptions}
-                onChange={(e) => handleChange('classId', e.target.value)}
+                onChange={(e) => handleChange('classIds', e.target.value)}
               />
               <p className="cal-form__hint">{t('calendar.form.evaluationHint')}</p>
             </>
