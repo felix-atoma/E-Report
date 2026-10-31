@@ -2230,6 +2230,8 @@
     "due": "C'est le moment de saisir les notes",
     "overdue": "En retard de {{count}} jour(s) — saisissez les notes sans attendre",
     "progress": "{{filled}}/{{total}} notes",
+    "toSign": "Fiche à signer",
+    "sign": "Signer la fiche →",
     "upcoming": "Prévue dans {{count}} jour(s)",
     "enter": "Saisir les notes →",
     "hide": "Masquer"

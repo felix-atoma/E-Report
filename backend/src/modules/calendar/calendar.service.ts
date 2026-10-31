@@ -45,7 +45,8 @@ export class CalendarService {
   /**
    * Évaluations programmées qui concernent le professeur, avec pour chacune de ses fiches (classe × matière)
    * l'état réel de la saisie : la colonne correspondante (Interro n, Devoir, Composition) est-elle remplie
-   * pour tous les élèves, ou la fiche signée ? La n-ième interrogation du trimestre d'une classe remplit « Interro n ».
+   * pour tous les élèves, et, pour la composition, la fiche signée ? La n-ième interrogation du trimestre
+   * d'une classe remplit « Interro n ».
    */
   async myEvaluations(institutionId: string, userId: string) {
     const now = Date.now();
@@ -128,13 +129,18 @@ export class CalendarService {
       if (!students.length) continue; // classe sans élève : rien à saisir
       const filled = students.filter((s) => gradeMap.get(gradeKey(s.studentId, t.a.subjectId, t.academicYear, t.termNumber))?.[t.column] != null).length;
       const isSigned = signed.has(ficheKey(t.a.classId, t.a.subjectId, t.academicYear, t.termNumber));
+      // Toutes les notes de la colonne sont exigées. La signature verrouille la fiche du trimestre et
+      // déclenche les bulletins : elle n'est demandée qu'à la composition (ou l'examen) de fin de trimestre.
+      const needsSignature = t.column === 'noteComposition';
+      const marksDone = filled === students.length;
       if (!byEvent.has(t.ev.id)) byEvent.set(t.ev.id, { ...t.ev, fiches: [] });
       byEvent.get(t.ev.id).fiches.push({
         classId: t.a.classId, className: t.a.class.name,
         subjectId: t.a.subjectId, subjectName: t.a.subject.nameFr,
         academicYear: t.academicYear, termNumber: t.termNumber, column: t.column,
-        filled, total: students.length, signed: isSigned,
-        complete: isSigned || filled === students.length,
+        filled, total: students.length, signed: isSigned, needsSignature,
+        missing: !marksDone ? 'MARKS' : needsSignature && !isSigned ? 'SIGNATURE' : null,
+        complete: marksDone && (!needsSignature || isSigned),
       });
     }
     return [...byEvent.values()].map((ev) => ({ ...ev, complete: ev.fiches.every((f: any) => f.complete) }));

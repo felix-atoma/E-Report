@@ -183,6 +183,19 @@ export class MailService {
     return this.send({ to, subject, html, text: lines.join('\n') });
   }
 
+  // ─── Rappel au professeur : notes d'une évaluation à saisir ─────────────────
+  async sendEvaluationReminder(to: string, subject: string, lines: string[], url: string, late: boolean): Promise<boolean> {
+    const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    const color = late ? '#b91c1c' : '#c2410c';
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;">
+        <h2 style="color:${color};">${esc(lines[0])}</h2>
+        ${lines.slice(1).map((l) => `<p style="font-size:15px;color:#111827;margin:6px 0;">${esc(l)}</p>`).join('')}
+        <p style="margin-top:18px;"><a href="${url}" style="background:${color};color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:700;">Saisir les notes</a></p>
+      </div>`;
+    return this.send({ to, subject, html, text: `${lines.join('\n')}\n${url}` });
+  }
+
   // ─── Code de connexion administrateur (double authentification) ─────────────
   async sendAdminLoginOtp(to: string, name: string, otp: string): Promise<boolean> {
     const subject = `Votre code de connexion NovaBulletin : ${otp}`;

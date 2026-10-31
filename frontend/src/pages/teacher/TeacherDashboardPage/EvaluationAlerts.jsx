@@ -111,9 +111,13 @@ function EvaluationAlerts() {
                         <span>🏫 {f.className} · {f.subjectName}</span>
                         <span className="teacher-dash__eval-col">{COLUMN_LABEL[f.column]}</span>
                         <span className="teacher-dash__eval-count">
-                          {t('evalAlerts.progress', { filled: f.filled, total: f.total })}
+                          {f.missing === 'SIGNATURE'
+                            ? `✍️ ${t('evalAlerts.toSign')}`
+                            : t('evalAlerts.progress', { filled: f.filled, total: f.total })}
                         </span>
-                        <span className="teacher-dash__eval-go">{t('evalAlerts.enter')}</span>
+                        <span className="teacher-dash__eval-go">
+                          {f.missing === 'SIGNATURE' ? t('evalAlerts.sign') : t('evalAlerts.enter')}
+                        </span>
                       </Link>
                     ))}
                   </div>

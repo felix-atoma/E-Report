@@ -1,12 +1,16 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { CalendarService } from './calendar.service';
+import { EvaluationRemindersService } from './evaluation-reminders.service';
 import { CreateCalendarEventDto } from './dto/create-calendar-event.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
 
 @Controller('calendar')
 export class CalendarController {
-  constructor(private readonly service: CalendarService) {}
+  constructor(
+    private readonly service: CalendarService,
+    private readonly reminders: EvaluationRemindersService,
+  ) {}
 
   @Get()
   list(@Req() req: any) {
@@ -18,6 +22,14 @@ export class CalendarController {
   @Roles(Role.TEACHER)
   myEvaluations(@Req() req: any) {
     return this.service.myEvaluations(req.user.institutionId, req.user.id);
+  }
+
+  // Admin : professeurs qui recevront demain matin le rappel « notes à saisir » (aucun message envoyé)
+  @Get('evaluation-reminders/preview')
+  @Roles(Role.ADMIN)
+  previewReminders(@Req() req: any) {
+    const tomorrow = new Date(Date.now() + 86400000);
+    return this.reminders.run(req.user.institutionId, true, tomorrow);
   }
 
   @Post()

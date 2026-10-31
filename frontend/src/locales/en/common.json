@@ -2148,6 +2148,8 @@
     "due": "Time to enter the marks",
     "overdue": "{{count}} day(s) late — please enter the marks now",
     "progress": "{{filled}}/{{total}} marks",
+    "toSign": "Sheet to sign",
+    "sign": "Sign the sheet →",
     "upcoming": "In {{count}} day(s)",
     "enter": "Enter marks →",
     "hide": "Hide"
