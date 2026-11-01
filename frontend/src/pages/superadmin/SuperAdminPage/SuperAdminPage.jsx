@@ -380,6 +380,20 @@ function PendingSubscriptionsPanel() {
 }
 
 // ─── Main page ─────────────────────────────────────────────────────────────────
+// Guide réservé au super-admin, servi par le serveur (pas dans les fichiers publics du site)
+async function openTwilioGuide() {
+  const tab = window.open('', '_blank'); // ouvert tout de suite, sinon bloqué comme fenêtre surgissante
+  try {
+    const { data } = await api.get('/superadmin/guides/twilio', { responseType: 'blob' });
+    const url = URL.createObjectURL(data);
+    if (tab) tab.location.href = url;
+    else window.location.assign(url);
+  } catch {
+    tab?.close();
+    toast.error("Impossible d'ouvrir le guide. Réessayez.");
+  }
+}
+
 function SuperAdminPage() {
   const [institutions, setInstitutions] = useState([]);
   const [networkStats, setNetworkStats] = useState(null);
@@ -591,6 +605,10 @@ function SuperAdminPage() {
         {/* Header */}
         <div className="sa-header">
           <h1 className="sa-title">Gestion des établissements</h1>
+          <div className="sa-header__actions">
+          <button className="sa-refresh-btn" onClick={openTwilioGuide} title="Activer les SMS et WhatsApp automatiques (compte Twilio)">
+            📘 Guide Twilio (SMS / WhatsApp)
+          </button>
           <button className="sa-refresh-btn" onClick={load} disabled={loading} aria-label="Actualiser">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
@@ -598,6 +616,7 @@ function SuperAdminPage() {
             </svg>
             Actualiser
           </button>
+          </div>
         </div>
 
         {/* Network KPI banner */}

@@ -836,3 +836,9 @@
 .sa-access-panel__hint { color: #6b7280; font-style: italic; }
 .sa-access-panel__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1rem; }
 .sa-access-panel__group { display: inline-flex; gap: 0.4rem; align-items: center; }
+
+.sa-header__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}

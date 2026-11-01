@@ -3,12 +3,17 @@ import {
   Controller,
   Get,
   MessageEvent,
+  NotFoundException,
   Param,
   Patch,
   Post,
+  Res,
   Sse,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Response } from 'express';
+import * as fs from 'fs';
+import * as path from 'path';
 import { fromEventPattern, interval, merge, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { SuperAdminService } from './superadmin.service';
@@ -16,6 +21,11 @@ import { RegisterInstitutionDto } from './dto/register-institution.dto';
 import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
+
+// Nom public → fichier (liste fermée : aucun autre fichier ne peut être demandé)
+const SUPERADMIN_GUIDES: Record<string, string> = {
+  twilio: 'guide-twilio-sms-whatsapp.pdf',
+};
 
 @Controller('superadmin')
 export class SuperAdminController {
@@ -104,5 +114,16 @@ export class SuperAdminController {
   @Post('institutions/:id/remind')
   sendLoginReminder(@Param('id') id: string) {
     return this.superAdminService.sendLoginReminder(id);
+  }
+
+  // Guides réservés au propriétaire de la plateforme (backend/assets/guides, hors du site public)
+  @Roles(Role.SUPERADMIN)
+  @Get('guides/:name')
+  downloadGuide(@Param('name') name: string, @Res() res: Response) {
+    const file = SUPERADMIN_GUIDES[name];
+    const fullPath = file && path.resolve(process.cwd(), 'assets', 'guides', file);
+    if (!fullPath || !fs.existsSync(fullPath)) throw new NotFoundException('Guide introuvable');
+    res.set({ 'Content-Type': 'application/pdf', 'Content-Disposition': `inline; filename="${file}"` });
+    fs.createReadStream(fullPath).pipe(res);
   }
 }

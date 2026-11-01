@@ -16,6 +16,8 @@ WORKDIR /app
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
+# Guides réservés au super-admin (servis par /api/superadmin/guides/:name, pas publics)
+COPY --from=builder /app/assets ./assets
 COPY package*.json ./
 EXPOSE 4000
 # Au démarrage : met la base au niveau du schéma Prisma (ajouts seulement — sans --accept-data-loss, un

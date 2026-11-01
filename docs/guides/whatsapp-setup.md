@@ -5,7 +5,7 @@ WhatsApp is the main channel to reach parents and teachers in Togo; SMS is the f
 - WhatsApp: **Twilio** or **Meta Cloud API** — `backend/src/modules/whatsapp/whatsapp.service.ts`
 - SMS: **Twilio** — `backend/src/modules/sms/sms.service.ts`
 
-A step-by-step guide with screenshots for Twilio is in [Guide-Twilio-SMS-WhatsApp.pdf](Guide-Twilio-SMS-WhatsApp.pdf).
+A step-by-step guide in French for the platform owner (paid account, sender name, Ghana registration, WhatsApp Business, costs) is available **to the super-admin only**: super-admin dashboard → **📘 Guide Twilio (SMS / WhatsApp)**. The file is `backend/assets/guides/guide-twilio-sms-whatsapp.pdf`, served by `GET /api/superadmin/guides/twilio` (SUPERADMIN role) — it is not part of the public website.
 
 ## What is sent
 
