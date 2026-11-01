@@ -7,7 +7,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 import { classesService } from '../../services/classesService';
+import { gradesService } from '../../services/gradesService';
 import { fontSize, fontWeight, radius, spacing } from '../../theme';
 
 const TERMS = [
@@ -26,21 +28,31 @@ export default function FichesListScreen({ route, navigation }) {
   const { classId, className } = route.params;
   const { colors } = useTheme();
 
+  const { user } = useAuth();
   const [subjects, setSubjects] = useState([]);
+  const [signed, setSigned]     = useState({}); // subjectId → fiche signée pour ce trimestre
+  const [academicYear, setAcademicYear] = useState(currentAcademicYear());
   const [loading, setLoading]   = useState(true);
   const [termNum, setTermNum]   = useState(1);
-  const academicYear = currentAcademicYear();
 
   useFocusEffect(useCallback(() => {
     (async () => {
       setLoading(true);
       try {
         const res = await classesService.getById(classId);
-        setSubjects(res.data.data?.subjects ?? []);
+        const cls = res.data.data ?? {};
+        // Comme sur le site : l'année scolaire de la classe (les notes y sont rangées)
+        const year = cls.academicYear ?? currentAcademicYear();
+        setAcademicYear(year);
+        // Seules les matières que le professeur peut saisir : les siennes, ou toutes s'il est titulaire
+        const isTitulaire = cls.teacherId === user?.id;
+        setSubjects((cls.subjects ?? []).filter((cs) => isTitulaire || cs.teacher?.id === user?.id || cs.teacherId === user?.id));
+        const fiches = await gradesService.listFiches(classId, year, termNum).catch(() => null);
+        setSigned(Object.fromEntries((fiches?.data?.data ?? []).map((f) => [f.subjectId, f.isSigned])));
       } catch { /* silent */ }
       finally { setLoading(false); }
     })();
-  }, [classId]));
+  }, [classId, termNum, user?.id]));
 
   return (
     <SafeAreaView edges={['bottom']} style={[styles.safe, { backgroundColor: colors.bgSubtle }]}>
@@ -77,7 +89,7 @@ export default function FichesListScreen({ route, navigation }) {
       ) : (
         <FlatList
           data={subjects}
-          keyExtractor={(s) => s.id}
+          keyExtractor={(s) => s.subjectId ?? s.subject?.id ?? s.id}
           contentContainerStyle={styles.list}
           ListEmptyComponent={
             <View style={styles.empty}>
@@ -94,7 +106,7 @@ export default function FichesListScreen({ route, navigation }) {
               onPress={() => navigation.navigate('FicheGradeEntry', {
                 classId,
                 className,
-                subjectId: item.id ?? item.subjectId,
+                subjectId: item.subjectId ?? item.subject?.id ?? item.id,
                 subjectName: item.nameFr ?? item.subject?.nameFr ?? '—',
                 academicYear,
                 termNumber: termNum,
@@ -109,8 +121,8 @@ export default function FichesListScreen({ route, navigation }) {
                 <Text style={[styles.subjectName, { color: colors.text }]}>
                   {item.nameFr ?? item.subject?.nameFr ?? '—'}
                 </Text>
-                <Text style={[styles.subjectMeta, { color: colors.textMuted }]}>
-                  Coef. {item.defaultCoefficient ?? item.coefficient ?? '—'} · Trimestre {termNum}
+                <Text style={[styles.subjectMeta, { color: signed[item.subjectId ?? item.subject?.id] ? colors.success : colors.textMuted }]}>
+                  Trimestre {termNum} · {signed[item.subjectId ?? item.subject?.id] ? '✓ Fiche signée' : 'Non signée'}
                 </Text>
               </View>
               <View style={[styles.arrow, { backgroundColor: colors.primary + '12' }]}>

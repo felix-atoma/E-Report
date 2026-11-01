@@ -8,95 +8,138 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import { mockExamsService } from '../../services/mockExamsService';
+import { gradesService } from '../../services/gradesService';
+import SignatureModal from '../../components/common/SignatureModal';
 import { fontSize, fontWeight, radius, spacing } from '../../theme';
 
-function scoreColor(n) {
-  if (n >= 14) return '#15803d';
-  if (n >= 10) return '#1d4ed8';
-  return '#dc2626';
-}
+const toText = (v) => (v == null ? '' : String(v).replace('.', ','));
+const parse = (t) => {
+  const clean = String(t ?? '').trim().replace(',', '.');
+  if (clean === '') return null;
+  const n = Number(clean);
+  return Number.isFinite(n) ? n : NaN;
+};
 
+// Fiche d'une session (examen blanc, devoir surveillé, composition mensuelle…) : une matière à la fois,
+// sur le barème de la matière pour cette session (/10 ou /20), signature manuscrite pour verrouiller.
 export default function MockExamFicheScreen({ route }) {
   const { examId } = route.params;
   const { colors } = useTheme();
-  const [ficheData, setFicheData] = useState(null);
-  const [selectedSubject, setSelectedSubject] = useState(null);
-  const [grades, setGrades]   = useState({});  // studentId → score string
-  const [coef, setCoef]       = useState('1');
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving]   = useState(false);
-  const [signing, setSigning] = useState(false);
+  const [data, setData]         = useState(null);
+  const [subjectId, setSubjectId] = useState(null);
+  const [values, setValues]     = useState({});   // studentId → texte saisi (matière sélectionnée)
+  const [coef, setCoef]         = useState('1');
+  const [loading, setLoading]   = useState(true);
+  const [saving, setSaving]     = useState(false);
+  const [dirty, setDirty]       = useState(false);
+  const [signOpen, setSignOpen] = useState(false);
+  const [signing, setSigning]   = useState(false);
+  const [savedSignature, setSavedSignature] = useState(null);
   const inputRefs = useRef({});
 
-  useFocusEffect(useCallback(() => {
-    (async () => {
-      setLoading(true);
-      try {
-        const res = await mockExamsService.getFicheData(examId);
-        const data = res.data.data;
-        setFicheData(data);
-        if (data?.subjects?.length) {
-          selectSubject(data.subjects[0], data);
-        }
-      } catch { /* silent */ }
-      finally { setLoading(false); }
-    })();
-  }, [examId]));
-
-  function selectSubject(subj, data) {
-    setSelectedSubject(subj);
+  function showSubject(d, id) {
+    const subj = d?.subjects?.find((s) => s.id === id);
+    if (!subj) return;
+    setSubjectId(id);
     setCoef(String(subj.coefficient ?? 1));
-    const existing = {};
-    (subj.grades ?? []).forEach((g) => {
-      if (g.score != null) existing[g.studentId] = String(g.score);
-    });
-    setGrades(existing);
+    setValues(Object.fromEntries((d.students ?? []).map((st) => [
+      st.studentId, toText(st.grades?.find((g) => g.subjectId === id)?.score),
+    ])));
+    setDirty(false);
+  }
+
+  const load = useCallback(async (keepSubject) => {
+    setLoading(true);
+    try {
+      const res = await mockExamsService.getFicheData(examId);
+      const d = res.data.data;
+      setData(d);
+      const editable = d?.editableSubjectIds;
+      const subjects = (d?.subjects ?? []).filter((s) => !editable || editable.includes(s.id));
+      const target = subjects.find((s) => s.id === keepSubject) ?? subjects[0];
+      if (target) showSubject(d, target.id);
+    } catch (err) {
+      Alert.alert('Erreur', err.response?.data?.message ?? 'Impossible de charger la fiche.');
+    } finally { setLoading(false); }
+  }, [examId]);
+
+  useFocusEffect(useCallback(() => { load(subjectId); }, [load])); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const editableIds = data?.editableSubjectIds;
+  const subjects = (data?.subjects ?? []).filter((s) => !editableIds || editableIds.includes(s.id));
+  const students = data?.students ?? [];
+  const subject = subjects.find((s) => s.id === subjectId);
+  const maxScore = subject?.maxScore ?? 20;
+  const isSigned = !!subject?.isSigned;
+  const filled = students.filter((st) => parse(values[st.studentId]) != null).length;
+
+  function pickSubject(id) {
+    if (id === subjectId) return;
+    if (dirty) {
+      Alert.alert('Notes non enregistrées', 'Changer de matière sans enregistrer ?', [
+        { text: 'Rester', style: 'cancel' },
+        { text: 'Changer', style: 'destructive', onPress: () => showSubject(data, id) },
+      ]);
+    } else showSubject(data, id);
   }
 
   async function handleSave() {
-    const payload = Object.entries(grades)
-      .map(([studentId, val]) => ({ studentId, score: parseFloat(val) }))
-      .filter((r) => !isNaN(r.score));
-    if (!payload.length) { Alert.alert('Aucune note', 'Saisissez au moins une note.'); return; }
+    const grades = [];
+    for (const st of students) {
+      const v = parse(values[st.studentId]);
+      if (Number.isNaN(v) || (v != null && (v < 0 || v > maxScore))) {
+        Alert.alert('Note invalide', `${st.studentName} : la note doit être entre 0 et ${maxScore}.`);
+        return;
+      }
+      grades.push({ studentId: st.studentId, score: v });
+    }
     setSaving(true);
     try {
-      await mockExamsService.saveSubjectGrades(examId, selectedSubject.id, {
-        grades: payload,
-        coefficient: parseFloat(coef) || 1,
-      });
-      Alert.alert('Enregistré', 'Notes sauvegardées.');
-      // refresh
-      const res = await mockExamsService.getFicheData(examId);
-      const data = res.data.data;
-      setFicheData(data);
-      const updated = data.subjects.find((s) => s.id === selectedSubject.id);
-      if (updated) selectSubject(updated, data);
+      await mockExamsService.saveSubjectGrades(examId, subjectId, { grades, coefficient: Math.round(parse(coef) || 1) });
+      Alert.alert('Enregistré', 'Les notes ont été enregistrées.');
+      await load(subjectId);
     } catch (err) {
-      Alert.alert('Erreur', err.response?.data?.message ?? 'Erreur de sauvegarde.');
+      Alert.alert('Erreur', err.response?.data?.message ?? 'Erreur lors de l\'enregistrement.');
     } finally { setSaving(false); }
   }
 
-  async function handleSign() {
-    const isSigned = selectedSubject?.isSigned;
+  async function openSign() {
+    if (dirty) {
+      Alert.alert('Notes non enregistrées', 'Enregistrez d\'abord les notes, puis signez la fiche.');
+      return;
+    }
+    const sig = await gradesService.mySignature().catch(() => null);
+    setSavedSignature(sig?.data?.data?.signatureData ?? null);
+    setSignOpen(true);
+  }
+
+  async function confirmSign(signatureData) {
     setSigning(true);
     try {
-      if (isSigned) await mockExamsService.unsignFiche(examId, selectedSubject.id);
-      else await mockExamsService.signFiche(examId, selectedSubject.id);
-      const res = await mockExamsService.getFicheData(examId);
-      const data = res.data.data;
-      setFicheData(data);
-      const updated = data.subjects.find((s) => s.id === selectedSubject.id);
-      if (updated) selectSubject(updated, data);
+      await mockExamsService.signFiche(examId, subjectId, signatureData);
+      setSignOpen(false);
+      Alert.alert('Fiche signée', 'La fiche de cette matière est signée et verrouillée.');
+      await load(subjectId);
     } catch (err) {
-      Alert.alert('Erreur', err.response?.data?.message ?? 'Erreur.');
+      Alert.alert('Erreur', err.response?.data?.message ?? 'La signature a échoué.');
     } finally { setSigning(false); }
   }
 
-  const subjects = ficheData?.subjects ?? [];
-  const students = ficheData?.students ?? [];
-  const isSigned = selectedSubject?.isSigned;
+  function askUnsign() {
+    Alert.alert('Annuler la signature', 'La fiche redeviendra modifiable. Continuer ?', [
+      { text: 'Non', style: 'cancel' },
+      { text: 'Oui', onPress: async () => {
+        try {
+          await mockExamsService.unsignFiche(examId, subjectId);
+          await load(subjectId);
+        } catch (err) {
+          Alert.alert('Erreur', err.response?.data?.message ?? 'Impossible d\'annuler la signature.');
+        }
+      } },
+    ]);
+  }
 
-  if (loading) {
+  if (loading && !data) {
     return (
       <View style={[styles.center, { backgroundColor: colors.bgSubtle }]}>
         <ActivityIndicator size="large" color={colors.primary} />
@@ -104,92 +147,86 @@ export default function MockExamFicheScreen({ route }) {
     );
   }
 
+  if (!subjects.length) {
+    return (
+      <View style={[styles.center, { backgroundColor: colors.bgSubtle }]}>
+        <Text style={[styles.empty, { color: colors.textMuted }]}>Aucune matière à saisir pour vous dans cette session.</Text>
+      </View>
+    );
+  }
+
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: colors.bgSubtle }]}>
-      {/* Subject tabs */}
+    <SafeAreaView edges={['bottom']} style={[styles.safe, { backgroundColor: colors.bgSubtle }]}>
       <FlatList
         horizontal
         data={subjects}
         keyExtractor={(s) => s.id}
-        style={[styles.subjectTabs, { borderBottomColor: colors.border, backgroundColor: colors.bg }]}
-        contentContainerStyle={styles.subjectTabsContent}
+        style={[styles.tabs, { borderBottomColor: colors.border, backgroundColor: colors.bg }]}
+        contentContainerStyle={styles.tabsContent}
         showsHorizontalScrollIndicator={false}
         renderItem={({ item }) => {
-          const active = item.id === selectedSubject?.id;
+          const active = item.id === subjectId;
           return (
-            <TouchableOpacity onPress={() => selectSubject(item, ficheData)}
-              style={[styles.subjectTab, {
-                borderBottomColor: active ? colors.primary : 'transparent',
-                borderBottomWidth: 2,
-              }]}>
-              <Text style={[styles.subjectTabText, { color: active ? colors.primary : colors.textMuted }]}>
-                {item.name ?? item.nameFr}
-              </Text>
-              {item.isSigned && <Ionicons name="checkmark-circle" size={12} color="#10b981" />}
+            <TouchableOpacity onPress={() => pickSubject(item.id)}
+              style={[styles.tab, { borderBottomColor: active ? colors.primary : 'transparent' }]}>
+              <Text style={[styles.tabText, { color: active ? colors.primary : colors.textMuted }]}>{item.nameFr}</Text>
+              {item.isSigned && <Ionicons name="checkmark-circle" size={13} color={colors.success} />}
             </TouchableOpacity>
           );
         }}
       />
 
-      {/* Coefficient + sign */}
-      <View style={[styles.coefBar, { backgroundColor: colors.bgMuted, borderBottomColor: colors.border }]}>
-        <Text style={[styles.coefLabel, { color: colors.text }]}>Coef :</Text>
+      <View style={[styles.head, { backgroundColor: colors.bgMuted, borderBottomColor: colors.border }]}>
+        <Text style={[styles.headText, { color: colors.text }]}>Sur {maxScore} · {filled}/{students.length} notes</Text>
+        <Text style={[styles.coefLabel, { color: colors.textMuted }]}>Coef.</Text>
         <TextInput
           value={coef}
-          onChangeText={setCoef}
-          keyboardType="decimal-pad"
-          selectTextOnFocus
+          onChangeText={(t) => { setCoef(t.replace(/[^0-9]/g, '')); setDirty(true); }}
+          keyboardType="number-pad"
           editable={!isSigned}
+          selectTextOnFocus
           style={[styles.coefInput, { borderColor: colors.border, color: colors.text }]}
         />
-        <TouchableOpacity onPress={handleSign} disabled={signing}
-          style={[styles.signBtn, { backgroundColor: isSigned ? '#10b981' : colors.bgMuted, borderColor: isSigned ? '#10b981' : colors.border }]}>
-          {signing ? <ActivityIndicator size="small" color={isSigned ? '#fff' : colors.text} />
-            : <>
-                <Ionicons name={isSigned ? 'lock-closed' : 'lock-open-outline'} size={14} color={isSigned ? '#fff' : colors.text} />
-                <Text style={[styles.signBtnText, { color: isSigned ? '#fff' : colors.text }]}>
-                  {isSigned ? 'Signé' : 'Signer'}
-                </Text>
-              </>
-          }
-        </TouchableOpacity>
       </View>
 
-      {/* Grade list */}
+      {isSigned && (
+        <View style={[styles.locked, { backgroundColor: '#ecfdf5', borderColor: '#a7f3d0' }]}>
+          <Ionicons name="lock-closed" size={16} color="#047857" />
+          <Text style={styles.lockedText}>
+            Signée{subject?.signedByName ? ` par ${subject.signedByName}` : ''} — verrouillée.
+          </Text>
+          <TouchableOpacity onPress={askUnsign}>
+            <Text style={styles.unsign}>Annuler</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <FlatList
           data={students}
-          keyExtractor={(s) => s.id}
+          keyExtractor={(s) => s.studentId}
           keyboardShouldPersistTaps="handled"
-          ListFooterComponent={<View style={{ height: 100 }} />}
+          contentContainerStyle={{ paddingBottom: 120 }}
           renderItem={({ item, index }) => {
-            const score = parseFloat(grades[item.id]);
+            const v = parse(values[item.studentId]);
+            const bad = Number.isNaN(v) || (v != null && (v < 0 || v > maxScore));
             return (
-              <View style={[styles.row, {
-                backgroundColor: index % 2 === 0 ? colors.bg : colors.bgSubtle,
-                borderBottomColor: colors.border,
-              }]}>
-                <Text style={[styles.studentName, { color: colors.text }]} numberOfLines={1}>
-                  {item.user?.name ?? item.admissionNumber ?? '—'}
-                </Text>
+              <View style={[styles.row, { backgroundColor: index % 2 ? colors.bgSubtle : colors.bg, borderBottomColor: colors.border }]}>
+                <Text style={[styles.name, { color: colors.text }]} numberOfLines={1}>{item.studentName}</Text>
                 <TextInput
                   ref={(r) => { inputRefs.current[index] = r; }}
-                  value={grades[item.id] ?? ''}
-                  onChangeText={(v) => setGrades((p) => ({ ...p, [item.id]: v.replace(',', '.') }))}
+                  value={values[item.studentId] ?? ''}
+                  onChangeText={(t) => { setValues((p) => ({ ...p, [item.studentId]: t.replace(/[^0-9.,]/g, '') })); setDirty(true); }}
                   keyboardType="decimal-pad"
                   returnKeyType="next"
+                  blurOnSubmit={false}
                   onSubmitEditing={() => inputRefs.current[index + 1]?.focus()}
-                  selectTextOnFocus
                   editable={!isSigned}
-                  style={[styles.scoreInput, { borderColor: colors.border, color: colors.text }]}
+                  selectTextOnFocus
                   placeholder="—"
                   placeholderTextColor={colors.textMuted}
+                  style={[styles.input, { borderColor: bad ? colors.danger : colors.border, color: colors.text, backgroundColor: colors.bg }]}
                 />
-                {!isNaN(score) && (
-                  <Text style={[styles.colorLabel, { color: scoreColor(score) }]}>
-                    {score >= 10 ? '✓' : '✗'}
-                  </Text>
-                )}
               </View>
             );
           }}
@@ -197,59 +234,69 @@ export default function MockExamFicheScreen({ route }) {
 
         {!isSigned && (
           <View style={[styles.footer, { backgroundColor: colors.bg, borderTopColor: colors.border }]}>
-            <TouchableOpacity onPress={handleSave} disabled={saving}
-              style={[styles.saveBtn, { backgroundColor: colors.primary, opacity: saving ? 0.6 : 1 }]}>
-              {saving ? <ActivityIndicator color="#fff" size="small" />
-                : <Text style={styles.saveBtnText}>Enregistrer</Text>}
+            <TouchableOpacity onPress={openSign} disabled={saving} style={[styles.btn, { borderColor: colors.primary }]}>
+              <Ionicons name="create-outline" size={16} color={colors.primary} />
+              <Text style={[styles.btnText, { color: colors.primary }]}>Signer</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleSave} disabled={saving} style={[styles.btn, styles.btnPrimary, { backgroundColor: colors.primary, opacity: saving ? 0.6 : 1 }]}>
+              {saving ? <ActivityIndicator color="#fff" size="small" /> : <Text style={styles.btnPrimaryText}>Enregistrer</Text>}
             </TouchableOpacity>
           </View>
         )}
       </KeyboardAvoidingView>
+
+      <SignatureModal
+        visible={signOpen}
+        title="Signer la fiche"
+        message={`${subject?.nameFr ?? ''} — ${data?.exam?.label ?? ''}. La fiche de cette matière sera verrouillée.`}
+        savedSignature={savedSignature}
+        busy={signing}
+        onConfirm={confirmSign}
+        onClose={() => setSignOpen(false)}
+      />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe:   { flex: 1 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  subjectTabs: { maxHeight: 44, borderBottomWidth: 1 },
-  subjectTabsContent: { paddingHorizontal: spacing.md },
-  subjectTab: {
+  safe: { flex: 1 },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl },
+  empty: { fontSize: fontSize.sm, textAlign: 'center' },
+  tabs: { maxHeight: 46, borderBottomWidth: 1 },
+  tabsContent: { paddingHorizontal: spacing.md },
+  tab: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: spacing.md, height: 44,
+    paddingHorizontal: spacing.md, height: 46, borderBottomWidth: 2,
   },
-  subjectTabText: { fontSize: fontSize.sm, fontWeight: fontWeight.medium },
-  coefBar: {
+  tabText: { fontSize: fontSize.sm, fontWeight: fontWeight.semibold },
+  head: {
+    flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
+    paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderBottomWidth: 1,
+  },
+  headText: { flex: 1, fontSize: fontSize.sm, fontWeight: fontWeight.semibold },
+  coefLabel: { fontSize: fontSize.sm },
+  coefInput: { borderWidth: 1.5, borderRadius: radius.sm, width: 48, paddingVertical: 4, textAlign: 'center', fontSize: fontSize.sm },
+  locked: {
+    flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
+    margin: spacing.md, marginBottom: 0, padding: spacing.sm, borderWidth: 1, borderRadius: radius.md,
+  },
+  lockedText: { flex: 1, color: '#047857', fontSize: fontSize.sm, fontWeight: fontWeight.medium },
+  unsign: { color: '#b91c1c', fontSize: fontSize.sm, fontWeight: fontWeight.semibold },
+  row: {
     flexDirection: 'row', alignItems: 'center', gap: spacing.md,
     paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderBottomWidth: 1,
   },
-  coefLabel: { fontSize: fontSize.sm, fontWeight: fontWeight.semibold },
-  coefInput: {
-    borderWidth: 1.5, borderRadius: radius.sm,
-    paddingVertical: 4, paddingHorizontal: spacing.sm,
-    fontSize: fontSize.sm, textAlign: 'center', width: 60,
-    backgroundColor: 'transparent',
+  name: { flex: 1, fontSize: fontSize.sm },
+  input: { borderWidth: 1.5, borderRadius: radius.sm, width: 72, paddingVertical: spacing.xs, textAlign: 'center', fontSize: fontSize.md },
+  footer: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    flexDirection: 'row', gap: spacing.sm, padding: spacing.md, borderTopWidth: 1,
   },
-  signBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    marginLeft: 'auto', paddingHorizontal: spacing.md, paddingVertical: spacing.xs,
-    borderRadius: radius.full, borderWidth: 1.5,
+  btn: {
+    flex: 1, flexDirection: 'row', gap: spacing.xs, alignItems: 'center', justifyContent: 'center',
+    paddingVertical: spacing.md, borderRadius: radius.md, borderWidth: 1.5, minHeight: 48,
   },
-  signBtnText: { fontSize: fontSize.xs, fontWeight: fontWeight.semibold },
-  row: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: spacing.lg, paddingVertical: spacing.sm,
-    borderBottomWidth: 1, gap: spacing.md,
-  },
-  studentName: { flex: 1, fontSize: fontSize.sm },
-  scoreInput: {
-    borderWidth: 1.5, borderRadius: radius.sm,
-    paddingVertical: spacing.xs, paddingHorizontal: spacing.sm,
-    fontSize: fontSize.sm, textAlign: 'center', width: 70,
-    backgroundColor: 'transparent',
-  },
-  colorLabel: { fontSize: fontSize.md, fontWeight: fontWeight.bold, width: 20, textAlign: 'center' },
-  footer: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: spacing.md, borderTopWidth: 1 },
-  saveBtn: { borderRadius: radius.md, paddingVertical: spacing.md, alignItems: 'center' },
-  saveBtnText: { color: '#fff', fontSize: fontSize.md, fontWeight: fontWeight.semibold },
+  btnText: { fontSize: fontSize.md, fontWeight: fontWeight.semibold },
+  btnPrimary: { borderWidth: 0 },
+  btnPrimaryText: { color: '#fff', fontSize: fontSize.md, fontWeight: fontWeight.semibold },
 });

@@ -10,6 +10,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { classesService } from '../../services/classesService';
 import { reportsService } from '../../services/reportsService';
+import { calendarService } from '../../services/calendarService';
+import EvaluationAlerts from '../../components/teacher/EvaluationAlerts';
 import HeroHeader from '../../components/common/HeroHeader';
 import StatusPill from '../../components/common/StatusPill';
 import { fontSize, fontWeight, radius, shadow, spacing } from '../../theme';
@@ -29,20 +31,24 @@ export default function TeacherDashboardScreen({ navigation }) {
   const { colors } = useTheme();
   const [classes, setClasses]   = useState([]);
   const [reports, setReports]   = useState([]);
+  const [evaluations, setEvaluations] = useState([]);
   const [loading, setLoading]   = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchAll = useCallback(async () => {
     try {
-      const [clRes, rpRes] = await Promise.all([
+      const [clRes, rpRes, evRes] = await Promise.all([
         classesService.getAll(),
         reportsService.getAll(),
+        // Évaluations programmées : alerte « notes à saisir » (absente si le serveur ne répond pas)
+        user?.role === 'TEACHER' ? calendarService.myEvaluations().catch(() => null) : null,
       ]);
       setClasses(clRes.data.data ?? []);
       setReports(rpRes.data.data ?? []);
+      setEvaluations(evRes?.data?.data ?? []);
     } catch { /* silent */ }
     finally { setLoading(false); setRefreshing(false); }
-  }, []);
+  }, [user?.role]);
 
   useFocusEffect(fetchAll);
 
@@ -82,6 +88,13 @@ export default function TeacherDashboardScreen({ navigation }) {
               </View>
             ))}
           </View>
+          <EvaluationAlerts
+            events={evaluations}
+            onOpenFiche={(f) => navigation.navigate('FicheGradeEntry', {
+              classId: f.classId, className: f.className, subjectId: f.subjectId, subjectName: f.subjectName,
+              academicYear: f.academicYear, termNumber: f.termNumber,
+            })}
+          />
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Mes classes</Text>
         </>
       ),

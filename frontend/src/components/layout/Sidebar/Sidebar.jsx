@@ -8,6 +8,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useInstitution } from '../../../context/InstitutionContext';
 import Avatar from '../../common/Avatar/Avatar';
 import LanguageSwitcher from '../../common/LanguageSwitcher/LanguageSwitcher';
+import { isStandalone } from '../../../utils/pwaInstall';
 import logoIcon from '../../../assets/images/novabulletin-tablet.svg';
 import './Sidebar.css';
 
@@ -520,6 +521,19 @@ function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
               <span className="sidebar__link-icon" aria-hidden="true">{ICONS.user}</span>
               {!collapsed && <span className="sidebar__link-label">{t('nav.myProfile')}</span>}
             </NavLink>
+
+            {/* Toujours proposé tant que le site n'est pas ouvert comme application installée */}
+            {!isStandalone() && (
+              <NavLink
+                to="/installer"
+                onClick={onMobileClose}
+                title={t('nav.installApp')}
+                className={({ isActive }) => `sidebar__link${isActive ? ' sidebar__link--active' : ''}`}
+              >
+                <span className="sidebar__link-icon" aria-hidden="true">📲</span>
+                {!collapsed && <span className="sidebar__link-label">{t('nav.installApp')}</span>}
+              </NavLink>
+            )}
 
             <div className={`sidebar__lang-wrap${collapsed ? ' sidebar__lang-wrap--collapsed' : ''}`}>
               <LanguageSwitcher collapsed={collapsed} />

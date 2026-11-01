@@ -1,17 +1,20 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../context/ThemeContext';
 import { reportsService } from '../../services/reportsService';
 import StatusPill from '../../components/common/StatusPill';
 import Card from '../../components/common/Card';
-import { fontSize, fontWeight, spacing } from '../../theme';
+import { openPdf } from '../../utils/openPdf';
+import { fontSize, fontWeight, radius, spacing } from '../../theme';
 
 export default function ReportCardDetailScreen({ route }) {
   const { reportId } = route.params;
   const { colors } = useTheme();
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     reportsService.getById(reportId)
@@ -30,6 +33,16 @@ export default function ReportCardDetailScreen({ route }) {
   if (!report) return null;
 
   const avg = report.overallAverage?.toFixed(2) ?? '—';
+
+  // Bulletin officiel (PDF signé, avec code de vérification) : ouvert, enregistré ou partagé depuis le téléphone
+  async function downloadPdf() {
+    setDownloading(true);
+    try {
+      await openPdf(`/reports/${report.id}/pdf-download`, `Bulletin-${report.termName}-${report.academicYear}.pdf`);
+    } catch (err) {
+      Alert.alert('Bulletin PDF', err.message ?? 'Téléchargement impossible.');
+    } finally { setDownloading(false); }
+  }
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.bgSubtle }]}>
@@ -58,6 +71,18 @@ export default function ReportCardDetailScreen({ route }) {
             </Text>
           )}
         </Card>
+
+        {report.status === 'PUBLISHED' && (
+          <TouchableOpacity
+            onPress={downloadPdf}
+            disabled={downloading}
+            style={[styles.pdfBtn, { backgroundColor: colors.primary, opacity: downloading ? 0.7 : 1 }]}
+          >
+            {downloading
+              ? <ActivityIndicator color="#fff" />
+              : <><Ionicons name="document-text-outline" size={18} color="#fff" /><Text style={styles.pdfBtnText}>Télécharger le bulletin (PDF)</Text></>}
+          </TouchableOpacity>
+        )}
 
         {/* Grades table */}
         {report.grades?.length > 0 && (
@@ -134,4 +159,9 @@ const styles = StyleSheet.create({
   colCoef: { flex: 1, textAlign: 'center' },
   colPoints: { flex: 1, textAlign: 'right' },
   comment: { fontSize: fontSize.sm, lineHeight: 22 },
+  pdfBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm,
+    paddingVertical: spacing.md, borderRadius: radius.md, marginBottom: spacing.md, minHeight: 48,
+  },
+  pdfBtnText: { color: '#fff', fontSize: fontSize.md, fontWeight: fontWeight.semibold },
 });
