@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
@@ -384,7 +385,23 @@ const ICONS = {
   ),
 };
 
+// Chaque page affiche son propre menu : sans cela, un clic sur un lien du bas du menu le faisait
+// revenir tout en haut. La position de défilement est gardée pour l'onglet et remise avant l'affichage.
+const NAV_SCROLL_KEY = 'sidebar.navScroll';
+
 function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
+  const navRef = useRef(null);
+  useLayoutEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    try { nav.scrollTop = Number(sessionStorage.getItem(NAV_SCROLL_KEY)) || 0; } catch { /* stockage indisponible */ }
+    // Lien de la page ouverte toujours visible (ex. arrivée par un lien hors du menu)
+    nav.querySelector('.sidebar__link--active')?.scrollIntoView({ block: 'nearest' });
+  }, []);
+  const saveNavScroll = (e) => {
+    try { sessionStorage.setItem(NAV_SCROLL_KEY, String(e.currentTarget.scrollTop)); } catch { /* stockage indisponible */ }
+  };
+
   const { user } = useAuth();
   const { institution } = useInstitution();
   const { t } = useTranslation();
@@ -457,7 +474,7 @@ function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
         )}
 
         {/* Nav items */}
-        <nav className="sidebar__nav" aria-label="Navigation principale">
+        <nav className="sidebar__nav" aria-label="Navigation principale" ref={navRef} onScroll={saveNavScroll}>
           {items.map((item, idx) => {
             if (item.divider) {
               return !collapsed ? (

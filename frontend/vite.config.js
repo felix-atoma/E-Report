@@ -4,6 +4,13 @@ import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
 
 export default defineConfig({
+  // Version affichée dans la console du navigateur (commit Vercel, sinon « local ») et date du build
+  define: {
+    __APP_BUILD__: JSON.stringify({
+      commit: (process.env.VERCEL_GIT_COMMIT_SHA || 'local').slice(0, 7),
+      date: new Date().toISOString(),
+    }),
+  },
   plugins: [
     react(),
     VitePWA({

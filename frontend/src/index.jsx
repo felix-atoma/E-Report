@@ -6,6 +6,7 @@ import ErrorBoundary from './components/common/ErrorBoundary/ErrorBoundary';
 import './locales/i18n';
 // Capte dès le démarrage l'événement « installer l'application » (il ne se produit qu'une fois)
 import './utils/pwaInstall';
+import { printConsoleBanner } from './utils/consoleBanner';
 import './styles/main.scss';
 
 // In dev mode, unregister any stale service worker left from a production build.
@@ -19,6 +20,8 @@ if (import.meta.env.DEV && 'serviceWorker' in navigator) {
     }
   });
 }
+
+if (import.meta.env.PROD) printConsoleBanner();
 
 // Application installée (PWA) : prend la nouvelle version dès qu'elle est déployée
 // (rechargement automatique) et vérifie toutes les heures, et au retour sur l'onglet, si l'app reste ouverte.
