@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateHealthRecordDto } from './dto/create-health-record.dto';
+import { UpdateHealthRecordDto } from './dto/update-health-record.dto';
 import { HealthVisitType } from '@prisma/client';
 
 @Injectable()
@@ -67,7 +68,7 @@ export class HealthRecordsService {
     });
   }
 
-  async update(id: string, dto: Partial<CreateHealthRecordDto>, institutionId: string) {
+  async update(id: string, dto: UpdateHealthRecordDto, institutionId: string) {
     const record = await this.prisma.healthRecord.findFirst({ where: { id, institutionId } });
     if (!record) throw new NotFoundException('Dossier médical introuvable');
     return this.prisma.healthRecord.update({

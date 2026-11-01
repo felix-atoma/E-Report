@@ -43,3 +43,12 @@
 .pp-inst-row { display: grid; grid-template-columns: 24px 1fr 1fr auto; gap: 0.5rem; align-items: end; }
 .pp-inst-row__num { font-size: 0.75rem; color: var(--color-text-muted); padding-bottom: 0.5rem; }
 .pp-inst-row__remove { background: none; border: none; cursor: pointer; color: #dc2626; font-size: 0.9rem; padding: 4px 8px; align-self: end; margin-bottom: 0.25rem; }
+
+/* Cible assez grande pour le doigt (32 px minimum) */
+.pp-inst-row__remove {
+  min-width: 32px;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}

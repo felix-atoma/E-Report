@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateDisciplinaryDto } from './dto/create-disciplinary.dto';
+import { UpdateDisciplinaryDto } from './dto/update-disciplinary.dto';
 import { DisciplinaryType } from '@prisma/client';
 
 @Injectable()
@@ -75,7 +76,7 @@ export class DisciplinaryService {
     });
   }
 
-  async update(id: string, dto: Partial<CreateDisciplinaryDto>, institutionId: string) {
+  async update(id: string, dto: UpdateDisciplinaryDto, institutionId: string) {
     const record = await this.prisma.disciplinaryRecord.findFirst({ where: { id, institutionId } });
     if (!record) throw new NotFoundException('Disciplinary record not found');
 

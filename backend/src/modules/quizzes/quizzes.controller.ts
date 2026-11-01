@@ -1,7 +1,9 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
 import { QuizzesService } from './quizzes.service';
 import { CreateQuizDto } from './dto/create-quiz.dto';
+import { UpdateQuizDto } from './dto/update-quiz.dto';
 import { CreateQuestionDto } from './dto/create-question.dto';
+import { UpdateQuestionDto } from './dto/update-question.dto';
 import { SubmitAttemptDto } from './dto/submit-attempt.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
@@ -28,7 +30,7 @@ export class QuizzesController {
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.TEACHER)
-  update(@Param('id') id: string, @Body() dto: Partial<CreateQuizDto>, @Req() req: any) {
+  update(@Param('id') id: string, @Body() dto: UpdateQuizDto, @Req() req: any) {
     return this.service.update(id, dto, req.user.institutionId, req.user.id, req.user.role);
   }
 
@@ -53,7 +55,7 @@ export class QuizzesController {
 
   @Patch(':id/questions/:qId')
   @Roles(Role.ADMIN, Role.TEACHER)
-  updateQuestion(@Param('id') id: string, @Param('qId') qId: string, @Body() dto: Partial<CreateQuestionDto>, @Req() req: any) {
+  updateQuestion(@Param('id') id: string, @Param('qId') qId: string, @Body() dto: UpdateQuestionDto, @Req() req: any) {
     return this.service.updateQuestion(id, qId, dto, req.user.institutionId, req.user.id, req.user.role);
   }
 

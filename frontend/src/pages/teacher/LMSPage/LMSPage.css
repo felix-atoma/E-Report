@@ -127,3 +127,12 @@
   .lms__sub-table { font-size: 0.78rem; }
   .lms__sub-table th, .lms__sub-table td { padding: 0.45rem 0.5rem; }
 }
+
+/* Cible assez grande pour le doigt (32 px minimum) */
+.lms__file-chip-remove {
+  min-width: 28px;
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}

@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateSchoolDocumentDto } from './dto/create-school-document.dto';
+import { UpdateSchoolDocumentDto } from './dto/update-school-document.dto';
 import { DocumentCategory } from '@prisma/client';
 import { Role } from '../../common/enums/role.enum';
 
@@ -25,7 +26,7 @@ export class SchoolDocumentsService {
     });
   }
 
-  async update(id: string, dto: Partial<CreateSchoolDocumentDto>, institutionId: string) {
+  async update(id: string, dto: UpdateSchoolDocumentDto, institutionId: string) {
     const doc = await this.prisma.schoolDocument.findFirst({ where: { id, institutionId } });
     if (!doc) throw new NotFoundException('Document not found');
     return this.prisma.schoolDocument.update({ where: { id }, data: dto });

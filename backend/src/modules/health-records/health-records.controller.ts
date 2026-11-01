@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { HealthRecordsService } from './health-records.service';
 import { CreateHealthRecordDto } from './dto/create-health-record.dto';
+import { UpdateHealthRecordDto } from './dto/update-health-record.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -35,7 +36,7 @@ export class HealthRecordsController {
   @Roles(Role.ADMIN, Role.TEACHER)
   update(
     @Param('id') id: string,
-    @Body() dto: Partial<CreateHealthRecordDto>,
+    @Body() dto: UpdateHealthRecordDto,
     @CurrentUser() user: any,
   ) {
     return this.service.update(id, dto, user.institutionId);

@@ -158,6 +158,18 @@ function MockExamGradePage() {
     navigate(`/mock-exams/${id}/releve`);
   };
 
+  // Publiée par erreur ou à corriger : la session repasse en brouillon (relevés retirés, notes modifiables)
+  const handleUnpublish = async () => {
+    if (!confirm(t('mockExamGrade.confirmUnpublish'))) return;
+    try {
+      await mockExamsService.unpublish(id);
+      qc.invalidateQueries({ queryKey: ['mock-exam-sheet', id] });
+      qc.invalidateQueries({ queryKey: ['mock-exams'] });
+    } catch {
+      alert(t('mockExamGrade.saveError'));
+    }
+  };
+
   if (isLoading) return <AppShell title={t('mockExamGrade.title')}><Loading /></AppShell>;
   if (isError || !data) return (
     <AppShell title={t('mockExamGrade.title')}>
@@ -214,6 +226,11 @@ function MockExamGradePage() {
               <Link to={`/mock-exams/${id}/releve`} className="meg-btn meg-btn--releve">
                 {t('mockExamGrade.actions.releve')}
               </Link>
+              {isAdmin && (
+                <button type="button" className="meg-btn meg-btn--unpublish" onClick={handleUnpublish}>
+                  {t('mockExamGrade.actions.unpublish')}
+                </button>
+              )}
             </div>
           )}
         </div>

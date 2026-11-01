@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/commo
 import { PrismaService } from '../../prisma/prisma.service';
 import { Role } from '../../common/enums/role.enum';
 import { CreateCalendarEventDto } from './dto/create-calendar-event.dto';
+import { UpdateCalendarEventDto } from './dto/update-calendar-event.dto';
 import { examTermNumber } from '../../common/utils/exam-term.util';
 
 // Évaluations : chaque professeur concerné voit une alerte « saisir les notes » sur son tableau de bord.
@@ -159,9 +160,13 @@ export class CalendarService {
     });
   }
 
-  async update(id: string, dto: Partial<CreateCalendarEventDto>, institutionId: string, role: Role) {
+  async update(id: string, dto: UpdateCalendarEventDto, institutionId: string, role: Role, userId?: string) {
     const event = await this.prisma.calendarEvent.findFirst({ where: { id, institutionId } });
     if (!event) throw new NotFoundException('Calendar event not found');
+    // Un professeur ne modifie que ses propres événements ; l'administration modifie tout
+    if (role === Role.TEACHER && event.createdById !== userId) {
+      throw new ForbiddenException("Seule l'administration peut modifier cet événement");
+    }
     assertCanSchedule(event.type, role);
     assertCanSchedule(dto.type, role);
     return this.prisma.calendarEvent.update({
@@ -169,7 +174,8 @@ export class CalendarService {
       data: {
         ...dto,
         startDate: dto.startDate ? new Date(dto.startDate) : undefined,
-        endDate: dto.endDate ? new Date(dto.endDate) : undefined,
+        // null : date de fin retirée ; absente : inchangée
+        endDate: dto.endDate === null ? null : dto.endDate ? new Date(dto.endDate) : undefined,
       },
     });
   }

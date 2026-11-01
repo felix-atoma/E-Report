@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { PurchasesService } from './purchases.service';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
+import { UpdatePurchaseDto } from './dto/update-purchase.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -34,7 +35,7 @@ export class PurchasesController {
 
   @Patch(':id')
   @Roles(Role.ADMIN)
-  update(@Param('id') id: string, @Body() dto: Partial<CreatePurchaseDto>, @CurrentUser() user: any) {
+  update(@Param('id') id: string, @Body() dto: UpdatePurchaseDto, @CurrentUser() user: any) {
     return this.service.update(id, dto, user.institutionId);
   }
 

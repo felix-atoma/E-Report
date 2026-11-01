@@ -13,6 +13,7 @@ import Textarea from '../../../components/common/Textarea/Textarea';
 import Select from '../../../components/common/Select/Select';
 import Loading from '../../../components/common/Loading/Loading';
 import EmptyState from '../../../components/common/EmptyState/EmptyState';
+import ConfirmDialog from '../../../components/common/ConfirmDialog/ConfirmDialog';
 import './StaffDirectoryPage.css';
 
 const ROLE_VARIANTS = { ADMIN: 'role--admin', TEACHER: 'role--teacher', BURSAR: 'role--bursar' };
@@ -108,6 +109,8 @@ function StaffDirectoryPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [hasProfile, setHasProfile] = useState(false);
+  const [confirmClear, setConfirmClear] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [search, setSearch] = useState('');
 
@@ -145,9 +148,22 @@ function StaffDirectoryPage() {
     onError: (err) => toast.error(err?.response?.data?.message ?? t('staffDir.toast.error')),
   });
 
+  // Effacer la fiche RH (le compte de l'utilisateur, lui, se gère dans « Utilisateurs »)
+  const clearMutation = useMutation({
+    mutationFn: (userId) => staffProfilesService.remove(userId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['staff-profiles'] });
+      toast.success(t('staffDir.toast.cleared'));
+      setConfirmClear(false);
+      setOpen(false);
+    },
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('staffDir.toast.error')),
+  });
+
   function openEdit(member) {
     const p = member.staffProfile;
     setSelectedUser(member.user);
+    setHasProfile(!!p);
     setForm({
       staffNumber:           p?.staffNumber ?? '',
       employmentDate:        p?.employmentDate ? p.employmentDate.slice(0, 10) : '',
@@ -225,6 +241,11 @@ function StaffDirectoryPage() {
         size="md"
         footer={
           <>
+            {hasProfile && (
+              <Button variant="danger" onClick={() => { setOpen(false); setConfirmClear(true); }} disabled={upsertMutation.isPending} style={{ marginRight: 'auto' }}>
+                {t('staffDir.clear')}
+              </Button>
+            )}
             <Button variant="ghost" onClick={() => setOpen(false)} disabled={upsertMutation.isPending}>
               {t('action.cancel')}
             </Button>
@@ -340,6 +361,17 @@ function StaffDirectoryPage() {
           />
         </div>
       </OffCanvas>
+
+      <ConfirmDialog
+        open={confirmClear}
+        onClose={() => setConfirmClear(false)}
+        onConfirm={() => clearMutation.mutate(selectedUser.id)}
+        loading={clearMutation.isPending}
+        title={t('staffDir.clear')}
+        message={t('staffDir.clearMessage', { name: selectedUser?.name ?? '' })}
+        confirmLabel={t('staffDir.clear')}
+        variant="danger"
+      />
     </AppShell>
   );
 }

@@ -226,3 +226,12 @@
   .classes-page__role-filter,
   .classes-page__filter      { width: 100%; }
 }
+
+/* Cible assez grande pour le doigt (32 px minimum) */
+.cls-subjects__remove {
+  min-width: 32px;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}

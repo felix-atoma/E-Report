@@ -471,3 +471,17 @@
 .acd__fiche-actions { display: flex; gap: 6px; align-items: center; }
 .acd__fiche-btn--open { background: #002347; color: #fff; text-decoration: none; display: inline-flex; align-items: center; }
 .acd__fiche-btn--open:hover { opacity: 0.88; }
+
+/* Retirer un élève de la classe */
+.acd__row-remove {
+  border: 1px solid #fecaca;
+  background: #fff;
+  color: #b91c1c;
+  border-radius: 6px;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 32px;
+}
+.acd__row-remove:hover { background: #fef2f2; }

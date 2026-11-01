@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
 import { SchoolDocumentsService } from './school-documents.service';
 import { CreateSchoolDocumentDto } from './dto/create-school-document.dto';
+import { UpdateSchoolDocumentDto } from './dto/update-school-document.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
 import { DocumentCategory } from '@prisma/client';
@@ -24,7 +25,7 @@ export class SchoolDocumentsController {
   @Roles(Role.ADMIN)
   update(
     @Param('id') id: string,
-    @Body() dto: Partial<CreateSchoolDocumentDto>,
+    @Body() dto: UpdateSchoolDocumentDto,
     @Req() req: any,
   ) {
     return this.service.update(id, dto, req.user.institutionId);

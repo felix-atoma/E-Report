@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { TransfersService } from './transfers.service';
 import { CreateTransferDto } from './dto/create-transfer.dto';
+import { UpdateTransferDto } from './dto/update-transfer.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -28,7 +29,7 @@ export class TransfersController {
 
   @Patch(':id')
   @Roles(Role.ADMIN)
-  update(@Param('id') id: string, @Body() dto: Partial<CreateTransferDto>, @CurrentUser() user: any) {
+  update(@Param('id') id: string, @Body() dto: UpdateTransferDto, @CurrentUser() user: any) {
     return this.service.update(id, dto, user.institutionId);
   }
 

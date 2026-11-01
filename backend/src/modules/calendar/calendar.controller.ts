@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/
 import { CalendarService } from './calendar.service';
 import { EvaluationRemindersService } from './evaluation-reminders.service';
 import { CreateCalendarEventDto } from './dto/create-calendar-event.dto';
+import { UpdateCalendarEventDto } from './dto/update-calendar-event.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
 
@@ -40,8 +41,8 @@ export class CalendarController {
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.TEACHER)
-  update(@Param('id') id: string, @Body() dto: Partial<CreateCalendarEventDto>, @Req() req: any) {
-    return this.service.update(id, dto, req.user.institutionId, req.user.role);
+  update(@Param('id') id: string, @Body() dto: UpdateCalendarEventDto, @Req() req: any) {
+    return this.service.update(id, dto, req.user.institutionId, req.user.role, req.user.id);
   }
 
   @Delete(':id')

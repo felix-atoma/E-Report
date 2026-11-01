@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateTransferDto } from './dto/create-transfer.dto';
+import { UpdateTransferDto } from './dto/update-transfer.dto';
 import { TransferDirection } from '@prisma/client';
 
 @Injectable()
@@ -76,7 +77,7 @@ export class TransfersService {
     });
   }
 
-  async update(id: string, dto: Partial<CreateTransferDto>, institutionId: string) {
+  async update(id: string, dto: UpdateTransferDto, institutionId: string) {
     const record = await this.prisma.studentTransfer.findFirst({ where: { id, institutionId } });
     if (!record) throw new NotFoundException('Transfer record not found');
     return this.prisma.studentTransfer.update({

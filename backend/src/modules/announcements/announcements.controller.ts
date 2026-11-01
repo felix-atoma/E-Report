@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
 import { AnnouncementsService } from './announcements.service';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
+import { UpdateAnnouncementDto } from './dto/update-announcement.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
 
@@ -21,7 +22,7 @@ export class AnnouncementsController {
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.TEACHER)
-  update(@Param('id') id: string, @Body() dto: Partial<CreateAnnouncementDto>, @Req() req: any) {
+  update(@Param('id') id: string, @Body() dto: UpdateAnnouncementDto, @Req() req: any) {
     return this.service.update(id, dto, req.user.institutionId, req.user.id, req.user.role);
   }
 

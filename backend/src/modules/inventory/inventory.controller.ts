@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 import { CreateInventoryItemDto } from './dto/create-inventory-item.dto';
+import { UpdateInventoryItemDto } from './dto/update-inventory-item.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -40,7 +41,7 @@ export class InventoryController {
 
   @Patch(':id')
   @Roles(Role.ADMIN)
-  update(@Param('id') id: string, @Body() dto: Partial<CreateInventoryItemDto>, @CurrentUser() user: any) {
+  update(@Param('id') id: string, @Body() dto: UpdateInventoryItemDto, @CurrentUser() user: any) {
     return this.service.update(id, dto, user.institutionId);
   }
 

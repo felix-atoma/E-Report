@@ -82,6 +82,7 @@ function CalendarPage() {
   const [typeFilter, setTypeFilter] = useState('');
   const [open, setOpen] = useState(false);
   const [confirm, setConfirm] = useState(null);
+  const [editing, setEditing] = useState(null); // événement en cours de modification (null : création)
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
 
@@ -114,14 +115,16 @@ function CalendarPage() {
 
   const grouped = useMemo(() => groupByMonth(filtered), [filtered]);
 
-  const createMutation = useMutation({
-    mutationFn: (data) => calendarService.create(data),
+  const saveMutation = useMutation({
+    mutationFn: (data) => (editing ? calendarService.update(editing.id, data) : calendarService.create(data)),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['calendar'] });
-      toast.success(t('calendar.toast.created'));
+      qc.invalidateQueries({ queryKey: ['my-evaluations'] });
+      toast.success(t(editing ? 'calendar.toast.updated' : 'calendar.toast.created'));
       setOpen(false);
+      setEditing(null);
     },
-    onError: () => toast.error(t('calendar.toast.error')),
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('calendar.toast.error')),
   });
 
   const deleteMutation = useMutation({
@@ -131,7 +134,7 @@ function CalendarPage() {
       toast.success(t('calendar.toast.deleted'));
       setConfirm(null);
     },
-    onError: () => toast.error(t('calendar.toast.error')),
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('calendar.toast.error')),
   });
 
   function handleChange(field, value) {
@@ -140,10 +143,31 @@ function CalendarPage() {
   }
 
   function openCreate() {
+    setEditing(null);
     setForm(EMPTY_FORM);
     setErrors({});
     setOpen(true);
   }
+
+  function openEdit(ev) {
+    setEditing(ev);
+    setForm({
+      title: ev.title ?? '',
+      type: ev.type,
+      startDate: ev.startDate?.slice(0, 10) ?? '',
+      endDate: ev.endDate?.slice(0, 10) ?? '',
+      allDay: ev.allDay ?? true,
+      description: ev.description ?? '',
+      isPublic: ev.isPublic ?? true,
+      color: ev.color ?? '',
+      classIds: ev.classIds?.length ? ev.classIds : ev.classId ? [ev.classId] : [],
+    });
+    setErrors({});
+    setOpen(true);
+  }
+
+  // Professeur : ses propres événements seulement (hors évaluations, réservées à l'administration)
+  const canEdit = (ev) => isAdmin || (ev.createdById === user?.id && !EVALUATION_TYPES.includes(ev.type));
 
   function validate() {
     const errs = {};
@@ -155,17 +179,31 @@ function CalendarPage() {
   function handleSubmit() {
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
-    createMutation.mutate({
+    const data = {
       title:       form.title.trim() || t(`calendar.types.${form.type}`),
       type:        form.type,
       startDate:   form.startDate,
-      endDate:     form.endDate || undefined,
       allDay:      form.allDay,
-      description: form.description || undefined,
       isPublic:    form.isPublic,
-      color:       form.color || undefined,
-      classIds:    isEvaluation && form.classIds.length ? form.classIds : undefined,
-    });
+    };
+    if (editing) {
+      // Modification : un champ vidé est effacé (null) ; les classes remplacent l'ancienne classe unique
+      Object.assign(data, {
+        endDate:     form.endDate || null,
+        description: form.description || null,
+        color:       form.color || null,
+        classIds:    isEvaluation ? form.classIds : [],
+        classId:     null,
+      });
+    } else {
+      Object.assign(data, {
+        endDate:     form.endDate || undefined,
+        description: form.description || undefined,
+        color:       form.color || undefined,
+        classIds:    isEvaluation && form.classIds.length ? form.classIds : undefined,
+      });
+    }
+    saveMutation.mutate(data);
   }
 
   return (
@@ -236,11 +274,22 @@ function CalendarPage() {
                           <p className="cal-event-row__desc">{ev.description}</p>
                         )}
                       </div>
+                      {canEdit(ev) && (
+                        <button
+                          className="cal-event-row__edit"
+                          onClick={() => openEdit(ev)}
+                          title={t('calendar.edit')}
+                          aria-label={t('calendar.edit')}
+                        >
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        </button>
+                      )}
                       {isAdmin && (
                         <button
                           className="cal-event-row__delete"
                           onClick={() => setConfirm(ev)}
                           title={t('calendar.confirmLabel')}
+                          aria-label={t('calendar.confirmLabel')}
                         >
                           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
                         </button>
@@ -256,16 +305,16 @@ function CalendarPage() {
 
       <OffCanvas
         open={open}
-        onClose={() => setOpen(false)}
-        title={t('calendar.form.offcanvasTitle')}
+        onClose={() => { setOpen(false); setEditing(null); }}
+        title={editing ? t('calendar.form.editTitle') : t('calendar.form.offcanvasTitle')}
         size="md"
         footer={
           <>
-            <Button variant="ghost" onClick={() => setOpen(false)} disabled={createMutation.isPending}>
+            <Button variant="ghost" onClick={() => setOpen(false)} disabled={saveMutation.isPending}>
               {t('action.cancel')}
             </Button>
-            <Button onClick={handleSubmit} disabled={createMutation.isPending}>
-              {createMutation.isPending ? t('action.saving') : t('action.save')}
+            <Button onClick={handleSubmit} disabled={saveMutation.isPending}>
+              {saveMutation.isPending ? t('action.saving') : t('action.save')}
             </Button>
           </>
         }

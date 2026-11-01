@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateInventoryItemDto } from './dto/create-inventory-item.dto';
+import { UpdateInventoryItemDto } from './dto/update-inventory-item.dto';
 import { InventoryCategory, InventoryCondition } from '@prisma/client';
 
 @Injectable()
@@ -66,7 +67,7 @@ export class InventoryService {
     });
   }
 
-  async update(id: string, dto: Partial<CreateInventoryItemDto>, institutionId: string) {
+  async update(id: string, dto: UpdateInventoryItemDto, institutionId: string) {
     const item = await this.prisma.inventoryItem.findFirst({ where: { id, institutionId } });
     if (!item) throw new NotFoundException('Inventory item not found');
     return this.prisma.inventoryItem.update({

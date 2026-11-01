@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/commo
 import { PrismaService } from '../../prisma/prisma.service';
 import { Role } from '../../common/enums/role.enum';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
+import { UpdateAnnouncementDto } from './dto/update-announcement.dto';
 
 @Injectable()
 export class AnnouncementsService {
@@ -53,7 +54,7 @@ export class AnnouncementsService {
     });
   }
 
-  async update(id: string, dto: Partial<CreateAnnouncementDto>, institutionId: string, userId: string, role: Role) {
+  async update(id: string, dto: UpdateAnnouncementDto, institutionId: string, userId: string, role: Role) {
     const ann = await this.prisma.announcement.findFirst({ where: { id, institutionId } });
     if (!ann) throw new NotFoundException('Announcement not found');
     if (role !== Role.ADMIN && ann.authorId !== userId) throw new ForbiddenException();

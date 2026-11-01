@@ -1301,6 +1301,7 @@
   },
 
   "classDetail": {
+    "unenroll": { "button": "Remove", "title": "Remove from class", "message": "Remove {{name}} from {{className}}? Marks already entered are kept; to move the student, then enrol them in the right class.", "done": "Student removed from the class" },
     "studentsSection": "Student list",
     "subjectsSection": "Subjects taught",
     "timetableSection":"Timetable",
@@ -1943,6 +1944,8 @@
   },
 
   "staffDir": {
+    "clear": "Clear the record",
+    "clearMessage": "Clear the HR record of {{name}} (contract, qualification, start date…)? The account itself is not deleted.",
     "title":   "Staff directory",
     "subtitle_one":   "{{count}} member",
     "subtitle_other": "{{count}} members",
@@ -1980,6 +1983,7 @@
       "notesPlaceholder": "Internal notes…"
     },
     "toast": {
+      "cleared": "Record cleared",
       "updated": "Profile updated",
       "error":   "Error"
     }
@@ -2106,6 +2110,7 @@
     "colorLabel":     "Colour (optional)",
     "confirmTitle":   "Delete event",
     "confirmMessage": "Remove \"{{title}}\" from the calendar?",
+    "edit":           "Edit",
     "confirmLabel":   "Delete",
     "types": {
       "HOLIDAY":       "Holiday/Break",
@@ -2122,6 +2127,7 @@
       "OTHER":         "Other"
     },
     "form": {
+      "editTitle":      "Edit event",
       "offcanvasTitle": "Add an event",
       "titleLabel":     "Title",
       "titlePlaceholder": "e.g. Parent meeting, Term exam…",
@@ -2139,6 +2145,7 @@
     },
     "toast": {
       "created": "Event added",
+      "updated": "Event updated",
       "deleted": "Event deleted",
       "error":   "Error"
     }
@@ -2567,6 +2574,7 @@
   },
 
   "mockExamGrade": {
+    "confirmUnpublish": "Unpublish this session? Result slips will be hidden and marks can be edited again.",
     "title": "Grade entry",
     "back": "← Back to exams",
     "statusPublished": "Published",
@@ -2583,6 +2591,7 @@
       "rank":    "Rank"
     },
     "actions": {
+      "unpublish": "↩ Unpublish",
       "saving":   "Saving…",
       "saved":    "✓ Saved",
       "savedAll": "✓ Grades saved",

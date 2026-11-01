@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
+import { UpdatePurchaseDto } from './dto/update-purchase.dto';
 
 @Injectable()
 export class PurchasesService {
@@ -48,7 +49,7 @@ export class PurchasesService {
     });
   }
 
-  async update(id: string, dto: Partial<CreatePurchaseDto>, institutionId: string) {
+  async update(id: string, dto: UpdatePurchaseDto, institutionId: string) {
     const item = await this.prisma.purchase.findFirst({ where: { id, institutionId } });
     if (!item) throw new NotFoundException('Purchase not found');
     return this.prisma.purchase.update({

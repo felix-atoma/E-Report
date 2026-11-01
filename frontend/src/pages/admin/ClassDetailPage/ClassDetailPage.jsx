@@ -12,6 +12,8 @@ import Table from '../../../components/common/Table/Table';
 import Avatar from '../../../components/common/Avatar/Avatar';
 import Badge from '../../../components/common/Badge/Badge';
 import Loading from '../../../components/common/Loading/Loading';
+import ConfirmDialog from '../../../components/common/ConfirmDialog/ConfirmDialog';
+import toast from 'react-hot-toast';
 import './ClassDetailPage.css';
 
 const DAYS = ['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI'];
@@ -268,7 +270,21 @@ export function FichesPanel({ classId, academicYear, t }) {
 function ClassDetailPage() {
   const { t } = useTranslation();
   const { id } = useParams();
+  const qc = useQueryClient();
   const [editingTimetable, setEditingTimetable] = useState(false);
+  const [unenrolling, setUnenrolling] = useState(null); // élève à retirer de la classe (confirmation)
+
+  // Retirer un élève inscrit par erreur : seule l'inscription est supprimée, ses notes restent enregistrées
+  const unenrollMutation = useMutation({
+    mutationFn: (studentId) => classesService.unenrollStudent(id, studentId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['class', id] });
+      qc.invalidateQueries({ queryKey: ['classes'] });
+      toast.success(t('classDetail.unenroll.done'));
+      setUnenrolling(null);
+    },
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('common.errorGeneric')),
+  });
 
   const { data: cls, isLoading } = useQuery({
     queryKey: ['class', id],
@@ -342,6 +358,16 @@ function ClassDetailPage() {
         cs.student?.dateOfBirth
           ? new Date(cs.student.dateOfBirth).toLocaleDateString('fr-FR')
           : <span className="acd__empty">—</span>,
+    },
+    {
+      key: 'actions',
+      label: '',
+      style: { width: '1%', whiteSpace: 'nowrap', textAlign: 'right' },
+      render: (cs) => (
+        <button type="button" className="acd__row-remove" onClick={() => setUnenrolling(cs)}>
+          {t('classDetail.unenroll.button')}
+        </button>
+      ),
     },
   ];
 
@@ -441,6 +467,20 @@ function ClassDetailPage() {
           emptyMessage={t('classDetail.noStudents')}
         />
       </section>
+
+      <ConfirmDialog
+        open={!!unenrolling}
+        onClose={() => setUnenrolling(null)}
+        onConfirm={() => unenrollMutation.mutate(unenrolling.studentId ?? unenrolling.student?.id)}
+        loading={unenrollMutation.isPending}
+        title={t('classDetail.unenroll.title')}
+        message={t('classDetail.unenroll.message', {
+          name: unenrolling?.student?.user?.name ?? unenrolling?.student?.admissionNumber ?? '',
+          className: cls.name,
+        })}
+        confirmLabel={t('classDetail.unenroll.button')}
+        variant="danger"
+      />
 
       <section className="acd__section">
         <h2 className="acd__section-title">

@@ -121,3 +121,11 @@
 }
 .meg-coeff-input:focus { outline: 2px solid var(--color-highlight, #fdc632); border-color: transparent; }
 .meg-coeff-input--error { border-color: #ef4444; background: #fef2f2; }
+
+/* Dépublier (administration) */
+.meg-btn--unpublish {
+  background: #fff;
+  color: #b91c1c;
+  border: 1.5px solid #fecaca;
+}
+.meg-btn--unpublish:hover { background: #fef2f2; }

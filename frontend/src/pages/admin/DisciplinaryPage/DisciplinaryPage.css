@@ -364,3 +364,16 @@
     flex-direction: column;
   }
 }
+
+/* Cible assez grande pour le doigt (32 px minimum) */
+.disc-card__delete-btn {
+  min-width: 32px;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #6b7280;
+}
+.disc-card__delete-btn:hover { border-color: #fecaca; }

@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { PrismaService } from '../../prisma/prisma.service';
 import { Role } from '../../common/enums/role.enum';
 import { CreateAssignmentDto } from './dto/create-assignment.dto';
+import { UpdateAssignmentDto } from './dto/update-assignment.dto';
 import { SubmitAssignmentDto } from './dto/submit-assignment.dto';
 import { GradeSubmissionDto } from './dto/grade-submission.dto';
 
@@ -63,7 +64,7 @@ export class AssignmentsService {
     });
   }
 
-  async update(id: string, dto: Partial<CreateAssignmentDto>, institutionId: string, userId: string, role: Role) {
+  async update(id: string, dto: UpdateAssignmentDto, institutionId: string, userId: string, role: Role) {
     const a = await this.prisma.assignment.findFirst({ where: { id, institutionId } });
     if (!a) throw new NotFoundException('Assignment not found');
     if (role !== Role.ADMIN && a.createdById !== userId) throw new ForbiddenException();

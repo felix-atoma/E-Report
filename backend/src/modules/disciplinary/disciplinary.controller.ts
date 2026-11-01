@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
 import { DisciplinaryService } from './disciplinary.service';
 import { CreateDisciplinaryDto } from './dto/create-disciplinary.dto';
+import { UpdateDisciplinaryDto } from './dto/update-disciplinary.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
 import { DisciplinaryType } from '@prisma/client';
@@ -39,7 +40,7 @@ export class DisciplinaryController {
 
   @Patch(':id')
   @Roles(Role.ADMIN)
-  update(@Param('id') id: string, @Body() dto: Partial<CreateDisciplinaryDto>, @Req() req: any) {
+  update(@Param('id') id: string, @Body() dto: UpdateDisciplinaryDto, @Req() req: any) {
     return this.service.update(id, dto, req.user.institutionId);
   }
 

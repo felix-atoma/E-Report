@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
 import { AssignmentsService } from './assignments.service';
 import { CreateAssignmentDto } from './dto/create-assignment.dto';
+import { UpdateAssignmentDto } from './dto/update-assignment.dto';
 import { SubmitAssignmentDto } from './dto/submit-assignment.dto';
 import { GradeSubmissionDto } from './dto/grade-submission.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -32,7 +33,7 @@ export class AssignmentsController {
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.TEACHER)
-  update(@Param('id') id: string, @Body() dto: Partial<CreateAssignmentDto>, @Req() req: any) {
+  update(@Param('id') id: string, @Body() dto: UpdateAssignmentDto, @Req() req: any) {
     return this.service.update(id, dto, req.user.institutionId, req.user.id, req.user.role);
   }
 

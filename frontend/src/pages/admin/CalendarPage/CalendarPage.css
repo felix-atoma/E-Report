@@ -129,22 +129,34 @@
   line-height: 1.5;
 }
 
+/* Modifier / supprimer : boutons visibles et assez grands pour le doigt */
+.cal-event-row__edit,
 .cal-event-row__delete {
-  background: none;
-  border: none;
-  color: #9ca3af;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  color: #6b7280;
   cursor: pointer;
-  padding: 4px;
-  border-radius: 6px;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
-  transition: color 0.15s, background 0.15s;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
   align-self: flex-start;
+}
+
+.cal-event-row__edit:hover {
+  color: #1d4ed8;
+  background: #eff6ff;
+  border-color: #bfdbfe;
 }
 
 .cal-event-row__delete:hover {
   color: #ef4444;
   background: #fee2e2;
+  border-color: #fecaca;
 }
 
 /* Event type chip */

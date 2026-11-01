@@ -1383,6 +1383,7 @@
   },
 
   "classDetail": {
+    "unenroll": { "button": "Retirer", "title": "Retirer de la classe", "message": "Retirer {{name}} de la classe {{className}} ? Ses notes déjà saisies sont conservées ; pour un changement de classe, inscrivez-le ensuite dans la bonne classe.", "done": "Élève retiré de la classe" },
     "studentsSection": "Liste des élèves",
     "subjectsSection": "Matières enseignées",
     "timetableSection":"Emploi du temps",
@@ -2025,6 +2026,8 @@
   },
 
   "staffDir": {
+    "clear": "Effacer la fiche",
+    "clearMessage": "Effacer la fiche RH de {{name}} (contrat, diplôme, date d'embauche…) ? Son compte n'est pas supprimé.",
     "title":   "Répertoire du personnel",
     "subtitle_one":   "{{count}} membre",
     "subtitle_other": "{{count}} membres",
@@ -2062,6 +2065,7 @@
       "notesPlaceholder": "Notes internes…"
     },
     "toast": {
+      "cleared": "Fiche effacée",
       "updated": "Profil mis à jour",
       "error":   "Erreur"
     }
@@ -2188,6 +2192,7 @@
     "colorLabel":     "Couleur (optionnel)",
     "confirmTitle":   "Supprimer l'événement",
     "confirmMessage": "Supprimer \"{{title}}\" du calendrier ?",
+    "edit":           "Modifier",
     "confirmLabel":   "Supprimer",
     "types": {
       "HOLIDAY":       "Congé/Fête",
@@ -2204,6 +2209,7 @@
       "OTHER":         "Autre"
     },
     "form": {
+      "editTitle":      "Modifier l'événement",
       "offcanvasTitle": "Ajouter un événement",
       "titleLabel":     "Titre",
       "titlePlaceholder": "ex: Réunion des parents, Examen trimestriel…",
@@ -2221,6 +2227,7 @@
     },
     "toast": {
       "created": "Événement ajouté",
+      "updated": "Événement modifié",
       "deleted": "Événement supprimé",
       "error":   "Erreur"
     }
@@ -2649,6 +2656,7 @@
   },
 
   "mockExamGrade": {
+    "confirmUnpublish": "Dépublier cette session ? Les relevés ne seront plus visibles et les notes redeviendront modifiables.",
     "title": "Saisie des notes",
     "back": "← Retour aux relevés",
     "statusPublished": "Publié",
@@ -2665,6 +2673,7 @@
       "rank": "Rang"
     },
     "actions": {
+      "unpublish": "↩ Dépublier",
       "saving": "Sauvegarde…",
       "saved": "✓ Sauvegardé",
       "savedAll": "✓ Notes sauvegardées",

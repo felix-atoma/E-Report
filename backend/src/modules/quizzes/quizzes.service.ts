@@ -2,7 +2,9 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { PrismaService } from '../../prisma/prisma.service';
 import { Role } from '../../common/enums/role.enum';
 import { CreateQuizDto } from './dto/create-quiz.dto';
+import { UpdateQuizDto } from './dto/update-quiz.dto';
 import { CreateQuestionDto } from './dto/create-question.dto';
+import { UpdateQuestionDto } from './dto/update-question.dto';
 import { SubmitAttemptDto } from './dto/submit-attempt.dto';
 
 @Injectable()
@@ -62,7 +64,7 @@ export class QuizzesService {
     });
   }
 
-  async update(id: string, dto: Partial<CreateQuizDto>, institutionId: string, userId: string, role: Role) {
+  async update(id: string, dto: UpdateQuizDto, institutionId: string, userId: string, role: Role) {
     const q = await this.prisma.quiz.findFirst({ where: { id, institutionId } });
     if (!q) throw new NotFoundException();
     if (role !== Role.ADMIN && q.createdById !== userId) throw new ForbiddenException();
@@ -123,7 +125,7 @@ export class QuizzesService {
     });
   }
 
-  async updateQuestion(quizId: string, questionId: string, dto: Partial<CreateQuestionDto>, institutionId: string, userId: string, role: Role) {
+  async updateQuestion(quizId: string, questionId: string, dto: UpdateQuestionDto, institutionId: string, userId: string, role: Role) {
     const quiz = await this.prisma.quiz.findFirst({ where: { id: quizId, institutionId } });
     if (!quiz) throw new NotFoundException();
     if (role !== Role.ADMIN && quiz.createdById !== userId) throw new ForbiddenException();
