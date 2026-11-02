@@ -1383,6 +1383,8 @@
   },
 
   "classDetail": {
+    "printAll": "Télécharger toutes les fiches",
+    "printOne": "Imprimer cette fiche",
     "unenroll": { "button": "Retirer", "title": "Retirer de la classe", "message": "Retirer {{name}} de la classe {{className}} ? Ses notes déjà saisies sont conservées ; pour un changement de classe, inscrivez-le ensuite dans la bonne classe.", "done": "Élève retiré de la classe" },
     "studentsSection": "Liste des élèves",
     "subjectsSection": "Matières enseignées",

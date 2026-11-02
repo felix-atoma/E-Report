@@ -127,37 +127,9 @@ export default function FicheDeNotesPrintPage() {
   if (!source && ficheLoading) return <Loading fullPage label="Chargement de la fiche…" />;
   if (!source && (ficheError || !ficheData)) return <div className="fdnp__error">Impossible de charger la fiche. Ouvrez la fiche en ligne avant de l'imprimer hors-ligne.</div>;
 
-  const cls            = snapshot ? null : classes.find((c) => c.id === classId);
-  const className      = cls?.name ?? params.get('className') ?? '—';
-  const subject        = source.subject;
-  const teacher        = source.teacher;
-  const fiche          = source.fiche;
-  const maxScore       = subject?.maxScore       ?? 20;
-  const hasCoefficient = subject?.hasCoefficient ?? true;
-  const coef           = snapshot?.coef ?? source.students?.find((s) => s.coefficient)?.coefficient ?? 1;
-  const effectiveCoef  = hasCoefficient ? coef : 1;
-
-  const rows = (source.students ?? []).map((s) => ({
-    ...s,
-    moyenneMatiere: s.moyenneMatiere ?? computeMoy(s, maxScore),
-  }));
-  const ranks = computeRanks(rows);
-
-  const rowsWithMoy = rows.filter((r) => r.moyenneMatiere !== null);
-  const moyClasse   = rowsWithMoy.length > 0
-    ? Math.round((rowsWithMoy.reduce((s, r) => s + r.moyenneMatiere, 0) / rowsWithMoy.length) * 100) / 100
-    : null;
-  const highest  = rowsWithMoy.length > 0 ? Math.max(...rowsWithMoy.map((r) => r.moyenneMatiere)) : null;
-  const lowest   = rowsWithMoy.length > 0 ? Math.min(...rowsWithMoy.map((r) => r.moyenneMatiere)) : null;
-  const passing  = rowsWithMoy.filter((r) => r.moyenneMatiere >= 10).length;
-  const passRate = rowsWithMoy.length > 0 ? Math.round((passing / rowsWithMoy.length) * 100) : null;
-
-  const hasAnyGrade = rowsWithMoy.length > 0;
-  // Barème de la matière : moyenne enregistrée sur 20, affichée sur 10 pour une matière notée sur 10 (primaire)
-  const sc = (v) => (v == null ? v : maxScore === 20 ? v : Math.round((v * maxScore / 20) * 100) / 100);
-  const f = (n) => String(n).replace('.', ',');
-  const scaleText = [[18, 'Excellent'], [16, 'TB'], [14, 'B'], [12, 'AB'], [10, 'P'], [8, 'Insuf.']]
-    .map(([t, l]) => `${l} ≥ ${f(t * maxScore / 20)}`).join(' · ') + ` · TI < ${f(8 * maxScore / 20)}`;
+  const cls       = snapshot ? null : classes.find((c) => c.id === classId);
+  const className = cls?.name ?? params.get('className') ?? '—';
+  const subject   = source.subject;
 
   return (
     <div className="fdnp__page">
@@ -191,6 +163,58 @@ export default function FicheDeNotesPrintPage() {
         </span>
       </div>
 
+      <FicheSheet
+        source={source}
+        coef={snapshot?.coef}
+        institution={institution}
+        className={className}
+        termName={termName}
+        academicYear={academicYear}
+      />
+    </div>
+  );
+}
+
+// ── Une fiche de notes (page imprimée) ────────────────────────────────────────
+
+/**
+ * Fiche de notes d'une matière : en-tête de l'établissement, classe, matière, professeur, coefficient,
+ * barème, liste des élèves et zone de signatures. Réutilisée par l'impression de toutes les fiches
+ * d'une classe (administration). `blank` : fiche vierge (noms et matricules seulement) à remplir à la main.
+ */
+export function FicheSheet({ source, coef: coefOverride, institution, className, termName, academicYear, blank = false }) {
+  const subject        = source.subject;
+  const teacher        = source.teacher;
+  const fiche          = blank ? null : source.fiche;
+  const maxScore       = subject?.maxScore       ?? 20;
+  const hasCoefficient = subject?.hasCoefficient ?? true;
+  // Coefficient renvoyé par le serveur (celui des notes, sinon le dernier utilisé dans la classe)
+  const coef           = coefOverride ?? source.coefficient ?? source.students?.find((s) => s.coefficient)?.coefficient ?? 1;
+  const effectiveCoef  = hasCoefficient ? coef : 1;
+
+  const NOTE_KEYS = ['noteInterro1', 'noteInterro2', 'noteInterro3', 'noteInterro4', 'noteDevoir', 'noteComposition'];
+  const rows = (source.students ?? []).map((s) => (blank
+    ? { ...s, ...Object.fromEntries(NOTE_KEYS.map((k) => [k, null])), moyenneMatiere: null }
+    : { ...s, moyenneMatiere: s.moyenneMatiere ?? computeMoy(s, maxScore) }));
+  const ranks = computeRanks(rows);
+
+  const rowsWithMoy = rows.filter((r) => r.moyenneMatiere !== null);
+  const moyClasse   = rowsWithMoy.length > 0
+    ? Math.round((rowsWithMoy.reduce((s, r) => s + r.moyenneMatiere, 0) / rowsWithMoy.length) * 100) / 100
+    : null;
+  const highest  = rowsWithMoy.length > 0 ? Math.max(...rowsWithMoy.map((r) => r.moyenneMatiere)) : null;
+  const lowest   = rowsWithMoy.length > 0 ? Math.min(...rowsWithMoy.map((r) => r.moyenneMatiere)) : null;
+  const passing  = rowsWithMoy.filter((r) => r.moyenneMatiere >= 10).length;
+  const passRate = rowsWithMoy.length > 0 ? Math.round((passing / rowsWithMoy.length) * 100) : null;
+
+  const hasAnyGrade = rowsWithMoy.length > 0;
+  // Barème de la matière : moyenne enregistrée sur 20, affichée sur 10 pour une matière notée sur 10 (primaire)
+  const sc = (v) => (v == null ? v : maxScore === 20 ? v : Math.round((v * maxScore / 20) * 100) / 100);
+  const f = (n) => String(n).replace('.', ',');
+  const scaleText = [[18, 'Excellent'], [16, 'TB'], [14, 'B'], [12, 'AB'], [10, 'P'], [8, 'Insuf.']]
+    .map(([t, l]) => `${l} ≥ ${f(t * maxScore / 20)}`).join(' · ') + ` · TI < ${f(8 * maxScore / 20)}`;
+
+  return (
       <div className="fdnp__sheet">
 
         {/* ── School header ── */}
@@ -219,9 +243,9 @@ export default function FicheDeNotesPrintPage() {
               <span>Trimestre&nbsp;: <strong>{termName}</strong></span>
               <span>Année&nbsp;: <strong>{academicYear}</strong></span>
             </div>
-            {teacher?.name && (
-              <div className="fdnp__teacher-tag">Professeur&nbsp;: <strong>{teacher.name}</strong></div>
-            )}
+            <div className="fdnp__teacher-tag">
+              Professeur&nbsp;: <strong>{teacher?.name ?? '……………………………………'}</strong>
+            </div>
           </div>
         </div>
 
@@ -241,7 +265,7 @@ export default function FicheDeNotesPrintPage() {
             <span className="fdnp__signed-badge">
               ✅ Fiche signée — {fiche.signedByName} · {fmtSignedAt(fiche.signedAt)}
             </span>
-          ) : (
+          ) : !blank && (
             <span className="fdnp__unsigned-badge">En attente de signature</span>
           )}
           {!hasAnyGrade && (
@@ -401,6 +425,5 @@ export default function FicheDeNotesPrintPage() {
         </div>
 
       </div>
-    </div>
   );
 }

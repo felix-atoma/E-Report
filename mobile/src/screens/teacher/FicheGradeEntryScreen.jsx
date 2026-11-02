@@ -59,7 +59,8 @@ export default function FicheGradeEntryScreen({ route, navigation }) {
         coefficient: s.coefficient ?? 1,
         values: Object.fromEntries(COLUMNS.map((c) => [c.key, toText(s[c.key])])),
       })));
-      setCoef(String(students.find((s) => s.coefficient != null)?.coefficient ?? 1));
+      // Coefficient du serveur : celui des notes, sinon le dernier utilisé pour cette matière dans la classe
+      setCoef(String(data?.coefficient ?? students.find((s) => s.coefficient != null)?.coefficient ?? 1));
       // Première colonne encore incomplète : celle que le professeur vient sans doute saisir
       const firstGap = COLUMNS.find((c) => students.some((s) => s[c.key] == null));
       setColumn(firstGap?.key ?? 'noteComposition');

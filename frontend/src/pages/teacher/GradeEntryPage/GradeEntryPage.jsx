@@ -200,7 +200,8 @@ export default function GradeEntryPage() {
   if (data && rows === null) {
     setRows(data.students.map((s) => ({ ...s })));
     if (data.subject?.hasCoefficient !== false) {
-      const firstCoef = data.students.find((s) => s.coefficient)?.coefficient;
+      // Coefficient du serveur : celui des notes, sinon le dernier utilisé pour cette matière dans la classe
+      const firstCoef = data.coefficient ?? data.students.find((s) => s.coefficient)?.coefficient;
       if (firstCoef) setCoef(firstCoef);
     }
   }

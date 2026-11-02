@@ -189,10 +189,24 @@ export class GradesService {
       }),
     );
 
+    // Coefficient de la matière pour cette fiche : celui des notes déjà saisies ; fiche encore vide (nouveau
+    // trimestre) : le dernier utilisé pour cette matière dans cette classe, pour imprimer la fiche vierge
+    const enteredCoef = await this.prisma.grade.findFirst({
+      where: { subjectId, reportCard: { classId, academicYear, termNumber } },
+      select: { coefficient: true },
+    });
+    const lastCoef = enteredCoef ? null : await this.prisma.grade.findFirst({
+      where: { subjectId, reportCard: { classId } },
+      orderBy: { updatedAt: 'desc' },
+      select: { coefficient: true },
+    });
+    const coefficient = subject.hasCoefficient === false ? 1 : (enteredCoef?.coefficient ?? lastCoef?.coefficient ?? 1);
+
     return {
       classId,
       subjectId,
       subject,
+      coefficient,
       teacher: classSubject?.teacher ?? null,
       academicYear,
       termNumber,

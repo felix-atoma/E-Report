@@ -1301,6 +1301,8 @@
   },
 
   "classDetail": {
+    "printAll": "Download all sheets",
+    "printOne": "Print this sheet",
     "unenroll": { "button": "Remove", "title": "Remove from class", "message": "Remove {{name}} from {{className}}? Marks already entered are kept; to move the student, then enrol them in the right class.", "done": "Student removed from the class" },
     "studentsSection": "Student list",
     "subjectsSection": "Subjects taught",

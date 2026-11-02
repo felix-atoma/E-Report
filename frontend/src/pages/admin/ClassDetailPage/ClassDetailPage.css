@@ -485,3 +485,31 @@
   min-height: 32px;
 }
 .acd__row-remove:hover { background: #fef2f2; }
+
+/* Télécharger / imprimer les fiches de notes */
+.acd__print-all-btn {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.35rem 0.85rem;
+  border-radius: 6px;
+  border: 1.5px solid #1e3a8a;
+  background: #fff;
+  color: #1e3a8a;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+}
+.acd__print-all-btn:hover { background: #eff6ff; }
+.acd__fiche-btn--print {
+  background: #fff;
+  color: #1e3a8a;
+  border: 1px solid #cbd5e1;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 32px;
+}
+.acd__fiche-btn--print:hover { background: #eff6ff; }

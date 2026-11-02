@@ -200,6 +200,16 @@ export function FichesPanel({ classId, academicYear, t }) {
               ? t('classDetail.allVerified')
               : t('classDetail.verifiedCount', { signed: signedCount, total: fiches.length })}
           </span>
+          {/* Toutes les fiches du trimestre à remettre aux professeurs (une matière par page) */}
+          <a
+            className="acd__print-all-btn"
+            href={`/admin/classes/${classId}/fiches/print?academicYear=${encodeURIComponent(academicYear)}&termNumber=${term}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Fiches de notes de toutes les matières : nom du professeur, coefficient, liste des élèves"
+          >
+            🖨 {t('classDetail.printAll')}
+          </a>
           {!allSigned && fiches.length > 0 && (
             <button className="acd__verify-all-btn" onClick={verifyAll} disabled={verifyingAll}>
               {verifyingAll ? t('classDetail.verifying') : t('classDetail.verifyAll', { count: fiches.length - signedCount })}
@@ -241,6 +251,16 @@ export function FichesPanel({ classId, academicYear, t }) {
                 >
                   ✏️ Corriger
                 </Link>
+                <a
+                  className="acd__fiche-btn acd__fiche-btn--print"
+                  href={`/teacher/classes/${classId}/grades/${f.subjectId}/print?academicYear=${encodeURIComponent(academicYear)}&termNumber=${term}&termName=${encodeURIComponent(`${term === 1 ? '1er' : `${term}e`} Trimestre`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={t('classDetail.printOne')}
+                  aria-label={t('classDetail.printOne')}
+                >
+                  🖨
+                </a>
                 {f.isSigned ? (
                   <button
                     className="acd__fiche-btn acd__fiche-btn--unsign"

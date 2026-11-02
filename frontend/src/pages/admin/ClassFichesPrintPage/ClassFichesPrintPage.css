@@ -1,0 +1,24 @@
+/* Impression de toutes les fiches d'une classe : barre d'outils, puis une fiche par page */
+.cfp__toolbar { flex-wrap: wrap; gap: 0.6rem; }
+.cfp__title { display: flex; flex-direction: column; margin-right: auto; font-size: 0.85rem; color: #374151; }
+.cfp__title strong { font-size: 1rem; color: #111827; }
+
+.cfp__modes { display: inline-flex; border: 1.5px solid #cbd5e1; border-radius: 8px; overflow: hidden; }
+.cfp__mode {
+  border: none; background: #fff; color: #334155; padding: 0.45rem 0.8rem;
+  font-size: 0.82rem; font-weight: 600; cursor: pointer; min-height: 36px;
+}
+.cfp__mode + .cfp__mode { border-left: 1.5px solid #cbd5e1; }
+.cfp__mode--on { background: #1e3a8a; color: #fff; }
+
+.cfp__teacher { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; font-weight: 600; color: #334155; }
+.cfp__teacher select {
+  border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 0.4rem 0.5rem; font-size: 0.85rem;
+  background: #fff; min-height: 36px; max-width: 14rem;
+}
+
+/* Plusieurs fiches : espacées à l'écran, chacune sur sa propre page à l'impression */
+.fdnp__sheet + .fdnp__sheet { margin-top: 1.5rem; }
+@media print {
+  .fdnp__sheet + .fdnp__sheet { margin-top: 0; break-before: page; page-break-before: always; }
+}
