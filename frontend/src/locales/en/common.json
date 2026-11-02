@@ -2138,6 +2138,7 @@
       "endDate":        "End date",
       "classLabel":     "Classes",
       "allClasses":     "All classes",
+      "interroHint":    "Put the number in the title (e.g. “2e interrogation du 1er trimestre”): the alert checks the matching Interro column of the grade sheets.",
       "evaluationHint": "Leave empty for all classes. Their teachers will get an alert on their dashboard to enter the marks.",
       "descPlaceholder":"Optional description…"
     },

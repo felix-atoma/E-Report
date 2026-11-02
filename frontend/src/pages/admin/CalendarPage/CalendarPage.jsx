@@ -348,6 +348,9 @@ function CalendarPage() {
                 onChange={(e) => handleChange('classIds', e.target.value)}
               />
               <p className="cal-form__hint">{t('calendar.form.evaluationHint')}</p>
+              {form.type === 'INTERROGATION' && (
+                <p className="cal-form__hint">{t('calendar.form.interroHint')}</p>
+              )}
             </>
           )}
           <div className="cal-form__row">

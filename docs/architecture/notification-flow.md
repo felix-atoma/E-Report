@@ -61,7 +61,7 @@ The admin schedules an Interrogation, Devoir, Composition or Examen in the schoo
 
 | Evaluation | Column of the term's grade sheet | Done when |
 |---|---|---|
-| n-th interrogation of the term for that class (by date) | Interro n (max 4) | every enrolled student has a mark |
+| Interrogation: the number in its title (« Deuxième interrogation », « Interro n°2 »); without a number, its rank by date among the term's interrogations for that class | Interro n (max 4) | every enrolled student has a mark |
 | Devoir | Devoir | every enrolled student has a mark |
 | Composition, Examen | Composition | every student has a mark **and** the sheet is signed |
 

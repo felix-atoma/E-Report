@@ -22,6 +22,26 @@ function concernsClass(ev: { classId: string | null; classIds: string[] }, class
   return !ev.classId || ev.classId === classId;
 }
 
+/**
+ * Numéro de l'interrogation (1 à 4) indiqué dans le titre, juste avant ou après le mot « interrogation » :
+ * « Deuxième interrogation du premier trimestre » → 2 (le « premier » du trimestre est ignoré),
+ * « 3e interro », « Interrogation n°4 », « Interro 1 ». Aucun numéro → null.
+ */
+export function interroNumberFromTitle(title: string | null | undefined): number | null {
+  const t = (title ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const WORDS: Array<[RegExp, number]> = [
+    [/(?:premiere|premier|1\s*(?:ere|re|er|e)?)/, 1],
+    [/(?:deuxieme|seconde|second|2\s*(?:eme|e|nd|nde)?)/, 2],
+    [/(?:troisieme|3\s*(?:eme|e)?)/, 3],
+    [/(?:quatrieme|4\s*(?:eme|e)?)/, 4],
+  ];
+  for (const [word, n] of WORDS) {
+    if (new RegExp(`(?:^|[^a-z0-9])${word.source}\\s+interro`).test(t)) return n;
+  }
+  const after = t.match(/interro\w*\s*(?:n\s*[o°]?\s*\.?\s*)?([1-4])(?![0-9])/);
+  return after ? Number(after[1]) : null;
+}
+
 function assertCanSchedule(type: string | undefined, role: Role) {
   if (type && EVALUATION_TYPES.includes(type) && role !== Role.ADMIN) {
     throw new ForbiddenException("Seule l'administration programme les évaluations");
@@ -85,6 +105,10 @@ export class CalendarService {
     const columnFor = (ev: (typeof events)[number], classId: string, academicYear: string, term: number): NoteColumn => {
       if (ev.type === 'DEVOIR') return 'noteDevoir';
       if (ev.type !== 'INTERROGATION') return 'noteComposition';
+      // Numéro écrit dans le titre (« Deuxième interrogation », « Interro n°2 ») : c'est la colonne que
+      // remplissent les professeurs, même si les interrogations précédentes ne sont pas au calendrier
+      const fromTitle = interroNumberFromTitle(ev.title);
+      if (fromTitle) return `noteInterro${fromTitle}` as NoteColumn;
       const sameTerm = events.filter((e) => e.type === 'INTERROGATION' && concernsClass(e, classId)
         && termOf(e, academicYear) === term);
       const rank = Math.min(4, Math.max(1, sameTerm.findIndex((e) => e.id === ev.id) + 1));

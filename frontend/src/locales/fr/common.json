@@ -2220,6 +2220,7 @@
       "endDate":        "Date de fin",
       "classLabel":     "Classes concernées",
       "allClasses":     "Toutes les classes",
+      "interroHint":    "Mettez le numéro dans le titre (ex. « 2e interrogation du 1er trimestre ») : l'alerte vérifie la colonne Interro correspondante des fiches.",
       "evaluationHint": "Laissez vide pour toutes les classes. Les professeurs de ces classes recevront une alerte sur leur tableau de bord pour saisir les notes.",
       "descPlaceholder":"Description optionnelle…"
     },
