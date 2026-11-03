@@ -197,9 +197,9 @@
 .fdnp__score--empty { background: #f1f5f9; color: #9ca3af; border-color: #e2e8f0; border-style: dashed; font-size: 11px; }
 
 /* Appreciation colors */
-/* Mêmes couleurs que la saisie et les relevés : vert ≥ 14, orange 10–14, rouge < 10 */
+/* Mêmes couleurs que la saisie et les relevés : vert à partir de Passable (≥ 10), rouge en dessous */
 .fdnp__appr--good { color: #15803d !important; font-weight: 700 !important; }
-.fdnp__appr--pass { color: #d97706 !important; font-weight: 700 !important; }
+.fdnp__appr--pass { color: #15803d !important; font-weight: 700 !important; }
 .fdnp__appr--fail { color: #dc2626 !important; font-weight: 700 !important; }
 
 /* Totals footer */

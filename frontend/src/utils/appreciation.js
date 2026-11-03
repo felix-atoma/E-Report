@@ -45,14 +45,13 @@ export function subjectLangFromName(subjectName) {
   return 'fr';
 }
 
-/** Couleurs des appréciations françaises (palmarès, grilles). */
 /**
  * Couleur d'une appréciation selon son niveau, la même partout (fiche de notes, relevés, examens) :
- * Bien et plus (≥ 14) en vert, Assez Bien et Passable (10 à 13,99) en orange, en dessous de 10 en rouge.
+ * Passable et plus (≥ 10) en vert, en dessous de 10 (Insuffisant, Très Insuffisant) en rouge.
  */
 export const APPRECIATION_TONES = {
   good: '#15803d',
-  pass: '#d97706',
+  pass: '#15803d',
   fail: '#dc2626',
 };
 
@@ -60,7 +59,7 @@ export const APPRECIATION_TONES = {
 export function appreciationTone(score20) {
   if (score20 == null || Number.isNaN(Number(score20))) return null;
   const v = Number(score20);
-  return v >= 14 ? 'good' : v >= 10 ? 'pass' : 'fail';
+  return v >= 10 ? 'good' : 'fail';
 }
 
 /** Couleur d'une note sur `scale` (10 ou 20). */
@@ -70,6 +69,7 @@ export function appreciationColor(score, scale = 20) {
   return tone ? APPRECIATION_TONES[tone] : undefined;
 }
 
+/** Couleurs des appréciations françaises (palmarès, grilles). */
 export const APPRECIATION_COLORS = {
   'Excellent':        { color: '#6d28d9', bg: '#ede9fe' },
   'Très Bien':        { color: '#15803d', bg: '#dcfce7' },

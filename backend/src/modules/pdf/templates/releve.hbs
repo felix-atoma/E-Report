@@ -11,7 +11,7 @@
   --c-primary-text:  color-mix(in srgb, var(--c-primary) 85%, black);
   --c-line: #3f3f46;
   --c-good: #15803d;
-  --c-pass: #d97706; /* orange : Assez Bien et Passable (comme sur la fiche de notes) */
+  --c-pass: #15803d; /* vert : Passable et plus, comme sur la fiche de notes (rouge en dessous de 10) */
   --c-fail: #b91c1c;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -93,7 +93,9 @@ body {
 .res td.lvl-fail { color:var(--c-fail); }
 .grades tfoot td { font-weight:800; font-size:14.5px; border-top:2px solid var(--c-line); white-space:nowrap; }
 .grades tfoot .t-label { text-align:right; letter-spacing:0.5px; }
-.grades tfoot .t-val { color:var(--c-fail); }
+.grades tfoot .t-val { color:#111; }
+.grades tfoot .t-val.pass { color:var(--c-good); }
+.grades tfoot .t-val.fail { color:var(--c-fail); }
 
 .bottom { display:flex; border-top:2px solid var(--c-line); }
 .bottom-left { flex:1.45; padding:8px 10px; border-right:2px solid var(--c-line); display:flex; flex-direction:column; gap:8px; }
@@ -257,7 +259,7 @@ body {
         <td class="t-label" colspan="3">{{L.totals}}</td>
         <td>{{totalCoef}}</td>
         <td class="t-val">{{totalPointsLabel}}{{#if isCm}} / {{totalMax}}{{/if}}</td>
-        <td class="t-val">{{#if averageLabel}}{{averageLabel}}{{avgSuffix}}{{else}}&mdash;{{/if}}</td>
+        <td class="t-val {{#if averageLabel}}{{#if isPassing}}pass{{else}}fail{{/if}}{{/if}}">{{#if averageLabel}}{{averageLabel}}{{avgSuffix}}{{else}}&mdash;{{/if}}</td>
       </tr>
     </tfoot>
   </table>

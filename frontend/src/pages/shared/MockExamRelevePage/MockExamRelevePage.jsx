@@ -217,7 +217,7 @@ function StudentCard({ student, subjects, exam, institution, teacherSignatures =
                 <td className="mrel-td mrel-td--center">
                   {pts != null ? num(pts) : '—'}
                 </td>
-                {/* Même couleur que sur la fiche de notes : vert ≥ 14, orange 10–14, rouge < 10 */}
+                {/* Même couleur que sur la fiche de notes : vert à partir de Passable (≥ 10), rouge en dessous */}
                 <td className="mrel-td mrel-td--appre" style={{ color: appreciationColor(score, subjMax(subj)) }}>
                   {apprec(score, subjMax(subj), T)}
                 </td>

@@ -288,12 +288,12 @@ const RELEVE_LARGE_CSS = [
   '.grades{font-size:16.5px}.grades th,.grades td{padding:3px 7px;border-width:1.5px}',
   '.grades thead th{font-size:13.5px;color:#000}.grades thead th small{color:#000;font-weight:700}',
   '.grades .c-num,.grades .c-mat,.grades .c-pts,.grades .c-appr,.grades td{font-weight:800;color:#000}',
-  '.grades .c-note{font-size:19.5px;font-weight:900}.grades .c-appr.lvl-good{color:#166534}.grades .c-appr.lvl-pass{color:#c2410c}.grades .c-appr.lvl-fail{color:#b91c1c}',
+  '.grades .c-note{font-size:19.5px;font-weight:900}.grades .c-appr.lvl-good{color:#166534}.grades .c-appr.lvl-pass{color:#166534}.grades .c-appr.lvl-fail{color:#b91c1c}',
   '.grades tfoot td{font-size:18px;font-weight:900}',
   '.bottom-left{padding:6px 10px;gap:6px}.result-box{padding:5px}.result-box .lbl{font-size:13.5px;color:#000}.result-box .val{font-size:24px}',
   '.scale,.scale-title{font-size:12.5px;color:#000;font-weight:700}',
   '.res-title{font-size:15px}.res{font-size:16px}.res td{padding:3px 10px;font-weight:700;color:#000}.res tr.grand td{font-size:19px}',
-  '.res td.lvl-good{color:#166534}.res td.lvl-pass{color:#c2410c}.res td.lvl-fail{color:#b91c1c}',
+  '.res td.lvl-good{color:#166534}.res td.lvl-pass{color:#166534}.res td.lvl-fail{color:#b91c1c}',
   '.sig-box{padding:4px 10px 6px}.sig-title{font-size:13.5px}.sig-hint{font-size:11.5px;color:#000;margin-bottom:12px}.sig-name{font-size:12.5px;color:#000;font-weight:700}',
   '.footer{font-size:11.5px;color:#000}',
 ].join('');
@@ -617,7 +617,7 @@ export class PdfService {
       // « 12,50 / 20 », « 6,25 / 10 » ou « 72,50 % » (composition d'anglais)
       avgSuffix: isPercent ? ' %' : ` / ${scale}`,
       appreciation: data.appreciation,
-      // Couleur de l'appréciation générale, comme pour chaque matière (vert ≥ 14, orange ≥ 10, rouge < 10)
+      // Couleur de l'appréciation générale, comme pour chaque matière (vert à partir de 10, rouge en dessous)
       appreciationLevel: avg == null ? '' : (avg * 20) / scale >= 14 ? 'lvl-good' : (avg * 20) / scale >= 10 ? 'lvl-pass' : 'lvl-fail',
       rankLabel,
       classSize: data.classSize,
@@ -699,7 +699,7 @@ export class PdfService {
         moyInterros,
         // Primaire : la moyenne de chaque matière est la moitié de son barème (10 / 20 une fois ramenée sur 20)
         passed: moy == null || moy >= (isPrimary ? 10 : (g.subject?.passMark ?? 10)),
-        // Couleur de l'appréciation selon le niveau (vert ≥ 14, orange ≥ 10, rouge < 10)
+        // Classe de niveau de l'appréciation (≥ 14, ≥ 10, < 10)
         levelClass: moy == null ? '' : moy >= 14 ? 'lvl-good' : moy >= 10 ? 'lvl-pass' : 'lvl-fail',
         rangLabel: g.rangMatiere ? (g.rangMatiere === 1 ? '1er' : `${g.rangMatiere}e`) : null,
         moyLabel: formatScore(moy),

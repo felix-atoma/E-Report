@@ -194,7 +194,7 @@
 
 /* ── Appreciation colours ────────────────────────────────────────────── */
 .appr--good { color: #15803d; }
-.appr--pass { color: #d97706; }
+.appr--pass { color: #15803d; }
 .appr--fail { color: #dc2626; }
 
 /* ── Hours panel ─────────────────────────────────────────────────────── */
