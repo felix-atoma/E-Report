@@ -193,9 +193,9 @@
 .fdn__btn--print:hover { background: #1e40af; box-shadow: 0 3px 10px rgba(30,58,138,0.3); }
 
 /* ── Appreciation colours ────────────────────────────────────────────── */
-.appr--good { color: #0f766e; }
+.appr--good { color: #15803d; }
 .appr--pass { color: #d97706; }
-.appr--fail { color: #ef4444; }
+.appr--fail { color: #dc2626; }
 
 /* ── Hours panel ─────────────────────────────────────────────────────── */
 .fdn__hours-panel {

@@ -288,11 +288,12 @@ const RELEVE_LARGE_CSS = [
   '.grades{font-size:16.5px}.grades th,.grades td{padding:3px 7px;border-width:1.5px}',
   '.grades thead th{font-size:13.5px;color:#000}.grades thead th small{color:#000;font-weight:700}',
   '.grades .c-num,.grades .c-mat,.grades .c-pts,.grades .c-appr,.grades td{font-weight:800;color:#000}',
-  '.grades .c-note{font-size:19.5px;font-weight:900}.grades .c-appr.lvl-good{color:#166534}.grades .c-appr.lvl-pass{color:#9a3412}.grades .c-appr.lvl-fail{color:#b91c1c}',
+  '.grades .c-note{font-size:19.5px;font-weight:900}.grades .c-appr.lvl-good{color:#166534}.grades .c-appr.lvl-pass{color:#c2410c}.grades .c-appr.lvl-fail{color:#b91c1c}',
   '.grades tfoot td{font-size:18px;font-weight:900}',
   '.bottom-left{padding:6px 10px;gap:6px}.result-box{padding:5px}.result-box .lbl{font-size:13.5px;color:#000}.result-box .val{font-size:24px}',
   '.scale,.scale-title{font-size:12.5px;color:#000;font-weight:700}',
   '.res-title{font-size:15px}.res{font-size:16px}.res td{padding:3px 10px;font-weight:700;color:#000}.res tr.grand td{font-size:19px}',
+  '.res td.lvl-good{color:#166534}.res td.lvl-pass{color:#c2410c}.res td.lvl-fail{color:#b91c1c}',
   '.sig-box{padding:4px 10px 6px}.sig-title{font-size:13.5px}.sig-hint{font-size:11.5px;color:#000;margin-bottom:12px}.sig-name{font-size:12.5px;color:#000;font-weight:700}',
   '.footer{font-size:11.5px;color:#000}',
 ].join('');
@@ -385,9 +386,12 @@ export class PdfService {
       + '.hd{padding:3px 8px 2px}.hd-logo{width:62px;height:62px}.hd-qr{width:54px;height:54px}.hd-photo{width:58px;height:70px}'
       + '.info{margin:0 0 3px}.info td{padding:1px 10px 1px 0}.grades th,.grades td{padding:2px 6px}'
       + '.bottom-left{padding:4px 8px;gap:4px}.result-box{padding:3px}.result-box .val{font-size:18px}.res td{padding:2px 8px}'
-      + '.sig-box{padding:3px 8px 4px}.sig-hint{margin-bottom:10px}.top-bar{padding-top:4px;padding-bottom:4px}</style></head>');
+      + '.sig-box{padding:3px 8px 4px}.sig-hint{margin-bottom:10px}.top-bar{padding-top:4px;padding-bottom:4px}'
+      // Relevé centré verticalement dans sa moitié de feuille (au lieu de rester collé en haut)
+      + '@media print{html,body{height:100%}body{display:flex;flex-direction:column;justify-content:center}}</style></head>');
 
-    if (fill) html = html.replace('</head>', '<style>@media print{.page{padding:6mm 7mm !important}}</style></head>');
+    // Marges intérieures (le gabarit imprime sans marge de page) : comme le bulletin, ~9 mm sur les côtés
+    if (fill) html = html.replace('</head>', '<style>@media print{.page{padding:7mm 9mm !important}}</style></head>');
 
     const browser = await getBrowser();
     const page = await browser.newPage();
@@ -419,6 +423,10 @@ export class PdfService {
           const extra = gap / rows.length;
           rows.forEach((tr) => { tr.style.height = `${tr.getBoundingClientRect().height + extra}px`; });
           if (el.getBoundingClientRect().height > maxH) rows.forEach((tr) => { tr.style.height = ''; });
+          // Centrage vertical : une partie de la marge de sécurité passe en haut (le reste absorbe l'écart
+          // entre la hauteur mesurée et la hauteur imprimée)
+          const rest = maxH / 0.985 - el.getBoundingClientRect().height;
+          if (rest > 0) el.style.marginTop = `${Math.floor(rest * 0.45)}px`;
         }, printableH * 0.985);
       }
 
@@ -609,6 +617,8 @@ export class PdfService {
       // « 12,50 / 20 », « 6,25 / 10 » ou « 72,50 % » (composition d'anglais)
       avgSuffix: isPercent ? ' %' : ` / ${scale}`,
       appreciation: data.appreciation,
+      // Couleur de l'appréciation générale, comme pour chaque matière (vert ≥ 14, orange ≥ 10, rouge < 10)
+      appreciationLevel: avg == null ? '' : (avg * 20) / scale >= 14 ? 'lvl-good' : (avg * 20) / scale >= 10 ? 'lvl-pass' : 'lvl-fail',
       rankLabel,
       classSize: data.classSize,
       result,
@@ -620,9 +630,11 @@ export class PdfService {
     });
     // Devoir surveillé et compositions du primaire (page entière) : gros caractères et tout en gras,
     // pour les personnes qui voient mal.
-    // Le contenu est agrandi pour remplir la page A4 ; s'il dépassait, renderOnePagePdf le ramènerait à une page.
     const large = !half && (exam.examType === 'DEVOIR_SURVEILLE' || isCm);
-    return this.renderOnePagePdf(large ? html.replace('</head>', `<style>${RELEVE_LARGE_CSS}</style></head>`) : html, half, large);
+    // Relevé sur une page entière : marges égales et contenu étiré sur toute la hauteur de la feuille A4
+    // (sinon le gabarit, imprimé sans marge, touchait les bords et laissait le bas de la page vide).
+    // S'il dépassait, renderOnePagePdf le ramènerait à une page.
+    return this.renderOnePagePdf(large ? html.replace('</head>', `<style>${RELEVE_LARGE_CSS}</style></head>`) : html, half, !half);
   }
 
   async generateReportCardPdfBuffer(reportData: ReportCardData): Promise<Buffer> {

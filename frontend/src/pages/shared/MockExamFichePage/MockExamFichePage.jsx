@@ -1,3 +1,4 @@
+import { appreciationColor } from '../../../utils/appreciation';
 import { fmtSignedAt } from '../../../utils/fmtSignedAt';
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
@@ -67,14 +68,10 @@ const TYPE_LABELS = {
 };
 
 
-/** Couleur selon le niveau ; `scale` = barème de la session (seuils définis sur 20). */
+/** Couleur selon le niveau, comme sur la fiche de notes ; `scale` = barème de la session (seuils sur 20). */
 function apprColor(score, scale = 20) {
   const raw = parseFloat(score);
-  if (isNaN(raw)) return undefined;
-  const v = (raw * 20) / scale;
-  if (v >= 14) return '#15803d';
-  if (v >= 10) return '#1d4ed8';
-  return '#dc2626';
+  return isNaN(raw) ? undefined : appreciationColor(raw, scale);
 }
 
 function fmtDate(iso) {

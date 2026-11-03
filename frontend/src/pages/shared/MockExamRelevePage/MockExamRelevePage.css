@@ -98,7 +98,7 @@
 .mrel-td--subject { font-weight: 600; }
 .mrel-td--score { font-weight: 700; color: #1e3a8a; }
 .mrel-max { font-size: 0.8em; font-weight: 500; color: #374151; }
-.mrel-td--appre { font-style: italic; font-size: 13px; }
+.mrel-td--appre { font-style: italic; font-size: 13px; font-weight: 700; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .mrel-td--bold  { font-weight: 900; }
 
 .mrel-row { background: #fff; }
@@ -150,6 +150,12 @@
     padding: 12mm 15mm;
     page-break-after: always;
     page-break-inside: avoid;
+    /* Une page par relevé, contenu centré verticalement (au lieu de rester en haut de la feuille) */
+    box-sizing: border-box;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 
   .mrel-card:last-child { page-break-after: auto; }

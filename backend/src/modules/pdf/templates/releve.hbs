@@ -11,7 +11,7 @@
   --c-primary-text:  color-mix(in srgb, var(--c-primary) 85%, black);
   --c-line: #3f3f46;
   --c-good: #15803d;
-  --c-pass: #b45309;
+  --c-pass: #d97706; /* orange : Assez Bien et Passable (comme sur la fiche de notes) */
   --c-fail: #b91c1c;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -88,6 +88,9 @@ body {
 .grades .lvl-good { color:var(--c-good); }
 .grades .lvl-pass { color:var(--c-pass); }
 .grades .lvl-fail { color:var(--c-fail); }
+.res td.lvl-good { color:var(--c-good); }
+.res td.lvl-pass { color:var(--c-pass); }
+.res td.lvl-fail { color:var(--c-fail); }
 .grades tfoot td { font-weight:800; font-size:14.5px; border-top:2px solid var(--c-line); white-space:nowrap; }
 .grades tfoot .t-label { text-align:right; letter-spacing:0.5px; }
 .grades tfoot .t-val { color:var(--c-fail); }
@@ -274,7 +277,7 @@ body {
       <div class="res-title">{{L.results}}</div>
       <table class="res">
         <tr><td>{{L.gradedSubjects}}</td><td>{{gradedCount}} / {{rows.length}}</td></tr>
-        <tr><td>{{L.appreciation}}</td><td>{{#if appreciation}}{{appreciation}}{{else}}&mdash;{{/if}}</td></tr>
+        <tr><td>{{L.appreciation}}</td><td class="{{appreciationLevel}}">{{#if appreciation}}{{appreciation}}{{else}}&mdash;{{/if}}</td></tr>
         <tr><td>{{L.rank}}</td><td>{{#if rankLabel}}{{rankLabel}}{{#if classSize}} / {{classSize}}{{/if}}{{else}}&mdash;{{/if}}</td></tr>
         <tr class="grand"><td>{{L.average}}</td><td class="{{#unless isPassing}}fail{{/unless}}">{{#if averageLabel}}{{averageLabel}}{{avgSuffix}}{{else}}&mdash;{{/if}}</td></tr>
       </table>

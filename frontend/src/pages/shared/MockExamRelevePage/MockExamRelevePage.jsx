@@ -1,4 +1,4 @@
-import { appreciationOn20 } from '../../../utils/appreciation';
+import { appreciationOn20, appreciationColor } from '../../../utils/appreciation';
 import Loading from '../../../components/common/Loading/Loading';
 import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
@@ -217,7 +217,10 @@ function StudentCard({ student, subjects, exam, institution, teacherSignatures =
                 <td className="mrel-td mrel-td--center">
                   {pts != null ? num(pts) : '—'}
                 </td>
-                <td className="mrel-td mrel-td--appre">{apprec(score, subjMax(subj), T)}</td>
+                {/* Même couleur que sur la fiche de notes : vert ≥ 14, orange 10–14, rouge < 10 */}
+                <td className="mrel-td mrel-td--appre" style={{ color: appreciationColor(score, subjMax(subj)) }}>
+                  {apprec(score, subjMax(subj), T)}
+                </td>
               </tr>
             );
           })}
@@ -246,7 +249,7 @@ function StudentCard({ student, subjects, exam, institution, teacherSignatures =
         </div>
         <div className="mrel-result__item">
           <span className="mrel-result__label">{T.mention}</span>
-          <span className="mrel-result__value">{mention || '—'}</span>
+          <span className="mrel-result__value" style={{ color: appreciationColor(avg, scale) }}>{mention || '—'}</span>
         </div>
         <div className={`mrel-result__item${student.rank === 1 ? ' mrel-result__item--gold' : student.rank === 2 ? ' mrel-result__item--silver' : student.rank === 3 ? ' mrel-result__item--bronze' : ''}`}>
           <span className="mrel-result__label">{T.rank}</span>

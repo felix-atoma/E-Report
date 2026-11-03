@@ -1,4 +1,4 @@
-import { appreciationOn20, APPRECIATION_COLORS } from '../../../utils/appreciation';
+import { appreciationOn20, appreciationColor } from '../../../utils/appreciation';
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -20,7 +20,6 @@ function showFicheSync(message) {
 }
 
 
-const APPRE_COLOR = Object.fromEntries(Object.entries(APPRECIATION_COLORS).map(([k, v]) => [k, v.color]));
 
 /** Appréciation d'une note sur `scale` (seuils définis sur 20). */
 function apprec(score, scale = 20) {
@@ -326,7 +325,7 @@ function MockExamGradePage() {
                       {avg != null ? (
                         <>
                           <span className="meg-avg">{avg.toFixed(2).replace('.', ',')}{isCaType(exam.examType) ? ' %' : ''}</span>
-                          <span className="meg-appre" style={{ color: APPRE_COLOR[app] }}>{app}</span>
+                          <span className="meg-appre" style={{ color: appreciationColor(avg, scale) }}>{app}</span>
                         </>
                       ) : '—'}
                     </td>
