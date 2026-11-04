@@ -82,6 +82,11 @@ export class UpdateAcademicSettingsDto {
   @Type(() => TermDateDto)
   termDates?: TermDateDto[];
 
+  @ApiPropertyOptional({ example: { '10': 'noteDevoir', '11': 'noteInterro1' }, description: "Compositions mensuelles et d'anglais : colonne de la fiche du trimestre alimentée selon le mois (1–12) ; « none » : pas de report. Par défaut : Devoir." })
+  @IsOptional()
+  @IsObject()
+  compositionColumns?: Record<string, string>;
+
   @ApiPropertyOptional({ enum: ['EQUAL', 'LAST_DOUBLE'], description: 'Moyenne annuelle : moyenne simple des périodes, ou dernière période comptée double' })
   @IsOptional()
   @IsEnum(['EQUAL', 'LAST_DOUBLE'])

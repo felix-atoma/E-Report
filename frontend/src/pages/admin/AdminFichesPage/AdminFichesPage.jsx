@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import AppShell from '../../../components/layout/AppShell/AppShell';
@@ -15,6 +16,9 @@ import './AdminFichesPage.css';
  * Fiches de notes de l'établissement (administrateur) : choisir une classe et un trimestre, voir quelles
  * fiches sont signées, les ouvrir et corriger notes ou coefficient — même une fiche déjà signée.
  */
+// Sessions dont les notes vont sur la fiche du trimestre (colonne choisie dans Paramètres pour les compositions)
+const FEEDS_FICHE = ['DEVOIR_SURVEILLE', 'COMPOSITION_MENSUELLE', 'COMPOSITION_ANGLAIS'];
+
 const EXAM_KIND = {
   DEVOIR_SURVEILLE: 'Devoir surveillé', COMPOSITION_MENSUELLE: 'Composition mensuelle', COMPOSITION_ANGLAIS: "Composition d'anglais",
   BLANC: 'Examen blanc', CEPE: 'CEPE blanc', BEPC: 'BEPC blanc', BAC1: 'BAC I blanc', BAC2: 'BAC II blanc',
@@ -26,6 +30,16 @@ function ClassExams({ classId }) {
     queryKey: ['mock-exams', 'class', classId],
     queryFn: () => mockExamsService.list({ classId }).then((r) => r.data),
   });
+  const [syncing, setSyncing] = useState(null);
+  async function syncToFiche(e) {
+    setSyncing(e.id);
+    try {
+      const { data } = await mockExamsService.syncTermFiche(e.id);
+      toast.success(data?.message ?? 'Notes reportées sur la fiche du trimestre.', { duration: 8000 });
+    } catch (err) {
+      toast.error(err?.response?.data?.message ?? 'Le report a échoué.');
+    } finally { setSyncing(null); }
+  }
   if (isLoading) return null;
   return (
     <section className="acd__section">
@@ -38,7 +52,15 @@ function ClassExams({ classId }) {
                 <div className="afp-exam__kind">{EXAM_KIND[e.examType] ?? e.examType}{e.status === 'PUBLISHED' ? ' · publié' : ''}</div>
                 <div className="afp-exam__label">{e.label}</div>
               </div>
-              <Link to={`/mock-exams/${e.id}/fiche`} className="acd__fiche-btn acd__fiche-btn--open">✏️ Corriger</Link>
+              <div className="afp-exam__actions">
+                {FEEDS_FICHE.includes(e.examType) && (
+                  <button type="button" className="acd__fiche-btn afp-sync-btn" onClick={() => syncToFiche(e)} disabled={syncing === e.id}
+                    title="Copier maintenant les notes de cette session sur la fiche de notes du trimestre">
+                    {syncing === e.id ? 'Report…' : '↪ Reporter sur la fiche'}
+                  </button>
+                )}
+                <Link to={`/mock-exams/${e.id}/fiche`} className="acd__fiche-btn acd__fiche-btn--open">✏️ Corriger</Link>
+              </div>
             </div>
           ))}
         </div>

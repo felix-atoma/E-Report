@@ -469,7 +469,7 @@ export default function PrintReportCardPage() {
                       <span className="pr-val-denom"> / {subjectMax(g)}</span>
                     </td>
                     <td className="pr-grades__col-rang">{g.rangMatiere ?? '—'}</td>
-                    <td className="pr-grades__col-appr">{g.appreciation ?? '—'}</td>
+                    <td className={`pr-grades__col-appr${g.appreciation ? (fail ? ' pr-appr--fail' : ' pr-appr--pass') : ''}`}>{g.appreciation ?? '—'}</td>
                   </tr>
                 );
               })}
@@ -554,7 +554,7 @@ export default function PrintReportCardPage() {
                     <td>{g.coefficient ?? '—'}</td>
                     <td className="pr-grades__col-pts">{fmt(g.weightedScore)}</td>
                     <td className="pr-grades__col-rang">{g.rangMatiere ?? '—'}</td>
-                    <td className="pr-grades__col-appr">{g.appreciation ?? '—'}</td>
+                    <td className={`pr-grades__col-appr${g.appreciation ? (fail ? ' pr-appr--fail' : ' pr-appr--pass') : ''}`}>{g.appreciation ?? '—'}</td>
                     <td className="pr-grades__col-prof">{g.teacherName ?? '—'}</td>
                     <td className="pr-grades__col-sig">
                       {fiche?.isSigned ? (

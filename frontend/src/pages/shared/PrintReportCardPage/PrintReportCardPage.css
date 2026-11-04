@@ -252,6 +252,9 @@
 .pr-grades__col-prof { text-align: left !important; min-width: 56px; font-size: 0.8em; font-weight: 800; padding-left: 3px !important; }
 .pr-grades__col-sig  { min-width: 48px; width: 52px; padding: 1px 2px !important; }
 .pr-grades__fail { color: #dc2626 !important; font-weight: 700; }
+/* Appréciation : vert à partir de la moyenne de la matière, rouge sur fond rouge clair en dessous */
+.pr-appr--pass { color: #15803d; }
+.pr-appr--fail { color: #b91c1c !important; background: #fee2e2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .pr-grades__pass { color: #15803d; }
 .pr-grades tbody tr:nth-child(even) { background: #f9fafb; }
 .pr-grades__foot td {

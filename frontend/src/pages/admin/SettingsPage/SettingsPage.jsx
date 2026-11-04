@@ -62,6 +62,10 @@ function SummaryRow({ label, value }) {
   );
 }
 
+// Mois de l'année scolaire et colonnes possibles pour le report des compositions mensuelles
+const COMPO_MONTHS = [['10', 'Octobre'], ['11', 'Novembre'], ['12', 'Décembre'], ['1', 'Janvier'], ['2', 'Février'], ['3', 'Mars'], ['4', 'Avril'], ['5', 'Mai'], ['6', 'Juin']];
+const COMPO_COLUMNS = [['noteDevoir', 'Devoir'], ['noteInterro1', 'Interro 1'], ['noteInterro2', 'Interro 2'], ['noteInterro3', 'Interro 3'], ['noteInterro4', 'Interro 4'], ['noteComposition', 'Composition'], ['none', 'Ne pas reporter']];
+
 function SettingsPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
@@ -122,6 +126,7 @@ function SettingsPage() {
       nextSchoolYearStart: s.nextSchoolYearStart ?? '',
       annualWeighting:   s.annualWeighting === 'LAST_DOUBLE' ? 'LAST_DOUBLE' : 'EQUAL',
       promotionThreshold: String(s.promotionThreshold ?? '10'),
+      compositionColumns: s.compositionColumns ?? {},
     });
   }, [institution]);
 
@@ -196,6 +201,7 @@ function SettingsPage() {
       nextSchoolYearStart: academicForm.nextSchoolYearStart || '',
       annualWeighting:   academicForm.annualWeighting,
       promotionThreshold: Number(academicForm.promotionThreshold) || 10,
+      compositionColumns: academicForm.compositionColumns ?? {},
     });
   }
 
@@ -615,6 +621,30 @@ function SettingsPage() {
                 {academicForm.feeGateEnabled ? t('settings.feeGateOn') : t('settings.feeGateOff')}
               </span>
             </label>
+          </div>
+
+          <div className="settings-section__divider" />
+
+          {/* Primaire : colonne de la fiche du trimestre remplie par les compositions mensuelles (et d'anglais) de chaque mois */}
+          <div>
+            <p className="settings-field__label" style={{ marginBottom: '0.25rem' }}>Compositions mensuelles → fiche de notes</p>
+            <p className="settings-section__desc" style={{ marginBottom: '0.75rem' }}>
+              Les notes des compositions mensuelles et d'anglais sont reportées automatiquement sur la fiche de notes du trimestre.
+              Choisissez la colonne pour chaque mois (par défaut : Devoir).
+            </p>
+            <div className="settings-compo-grid">
+              {COMPO_MONTHS.map(([m, label]) => (
+                <label key={m} className="settings-compo-month">
+                  <span>{label}</span>
+                  <select
+                    value={academicForm.compositionColumns?.[m] ?? 'noteDevoir'}
+                    onChange={(e) => setAcademic('compositionColumns', { ...(academicForm.compositionColumns ?? {}), [m]: e.target.value })}
+                  >
+                    {COMPO_COLUMNS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                  </select>
+                </label>
+              ))}
+            </div>
           </div>
 
           <div className="settings-section__divider" />

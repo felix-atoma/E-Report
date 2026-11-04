@@ -153,6 +153,9 @@ body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .pr-grades__col-sig  { min-width: 48px; width: 52px; padding: 1px 2px !important; }
 .pr-grades__fail { color: #dc2626 !important; font-weight: 700; }
 .pr-grades__pass { color: #15803d; }
+/* Appréciation : vert à partir de la moyenne de la matière, rouge sur fond rouge clair en dessous */
+.pr-appr--pass { color: #15803d; }
+.pr-appr--fail { color: #b91c1c !important; background: #fee2e2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .pr-grades tbody tr:nth-child(even) { background: #f9fafb; }
 .pr-grades__foot td { background: var(--bulletin-primary); color: #fff; font-weight: 900; font-size: 1em; padding: 2px; }
 .pr-grades__foot-label { text-align: right !important; padding-right: 5px !important; }
@@ -381,7 +384,7 @@ body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           <td class="pr-grades__col-matiere">{{#if subject.nameFr}}{{subject.nameFr}}{{else}}—{{/if}}</td>
           <td class="pr-grades__col-moy{{#if this.passed}} pr-grades__pass{{else}} pr-grades__fail{{/if}}">{{this.noteLabel}}<span class="pr-val-denom"> / {{this.noteMax}}</span></td>
           <td class="pr-grades__col-rang">{{#if this.rangMatiere}}{{this.rangMatiere}}{{else}}—{{/if}}</td>
-          <td class="pr-grades__col-appr">{{#if this.appreciation}}{{this.appreciation}}{{else}}—{{/if}}</td>
+          <td class="pr-grades__col-appr{{#if this.appreciation}}{{#if this.passed}} pr-appr--pass{{else}} pr-appr--fail{{/if}}{{/if}}">{{#if this.appreciation}}{{this.appreciation}}{{else}}—{{/if}}</td>
         </tr>
         {{/each}}
       </tbody>
@@ -449,7 +452,7 @@ body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           <td>{{this.coefficient}}</td>
           <td class="pr-grades__col-pts">{{fmtScore this.weightedScore}}</td>
           <td class="pr-grades__col-rang">{{#if this.rangMatiere}}{{this.rangMatiere}}{{else}}—{{/if}}</td>
-          <td class="pr-grades__col-appr">{{#if this.appreciation}}{{this.appreciation}}{{else}}—{{/if}}</td>
+          <td class="pr-grades__col-appr{{#if this.appreciation}}{{#if this.passed}} pr-appr--pass{{else}} pr-appr--fail{{/if}}{{/if}}">{{#if this.appreciation}}{{this.appreciation}}{{else}}—{{/if}}</td>
           <td class="pr-grades__col-prof">{{#if this.teacherName}}{{this.teacherName}}{{else}}—{{/if}}</td>
           <td class="pr-grades__col-sig">
             {{#if this.adminVerified}}<span class="pr-sig-verified">✓</span>

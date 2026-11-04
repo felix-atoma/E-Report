@@ -7,6 +7,8 @@ export const mockExamsService = {
   saveGrades: (id, grades) => api.patch(`/mock-exams/${id}/grades`, { grades }),
   publish: (id) => api.patch(`/mock-exams/${id}/publish`),
   unpublish: (id) => api.patch(`/mock-exams/${id}/unpublish`),
+  // Administration : reporter maintenant les notes de la session sur la fiche du trimestre
+  syncTermFiche: (id) => api.post(`/mock-exams/${id}/sync-term-fiche`),
   delete: (id) => api.delete(`/mock-exams/${id}`),
   getReleve: (id, studentId) =>
     api.get(`/mock-exams/${id}/releve`, { params: studentId ? { studentId } : {} }),

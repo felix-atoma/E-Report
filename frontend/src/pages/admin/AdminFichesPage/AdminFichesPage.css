@@ -11,3 +11,7 @@
 .afp-class { text-decoration: none; display: inline-flex; align-items: center; }
 .afp-warn { background: #fff7ed; border: 1px solid #fdba74; color: #9a3412; border-radius: 10px; padding: .6rem .9rem; margin: 0 0 1rem; font-weight: 600; font-size: .9rem; }
 .afp-warn a { color: #002347; font-weight: 800; }
+
+.afp-exam__actions { display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: flex-end; }
+.afp-sync-btn { background: #fff; color: #1e3a8a; border: 1.5px solid #bfdbfe !important; min-height: 32px; }
+.afp-sync-btn:hover:not(:disabled) { background: #eff6ff; }

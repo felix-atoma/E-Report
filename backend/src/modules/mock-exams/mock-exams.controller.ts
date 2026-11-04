@@ -122,6 +122,13 @@ export class MockExamsController {
     return this.service.updateDates(id, req.user.institutionId, body.examDate, body.examEndDate);
   }
 
+  // Administration : reporter maintenant les notes de la session sur la fiche du trimestre
+  @Roles(Role.ADMIN)
+  @Post(':id/sync-term-fiche')
+  resyncTermFiche(@Param('id') id: string, @Req() req: any) {
+    return this.service.resyncTermFiche(id, req.user.institutionId);
+  }
+
   @Roles(Role.ADMIN, Role.TEACHER)
   @Patch(':id/publish')
   async publish(@Param('id') id: string, @Req() req: any) {

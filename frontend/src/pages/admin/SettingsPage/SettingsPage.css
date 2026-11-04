@@ -256,3 +256,8 @@
   flex: 1;
   max-width: 220px;
 }
+
+/* Compositions mensuelles → colonne de la fiche, mois par mois */
+.settings-compo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.6rem; }
+.settings-compo-month { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.82rem; font-weight: 600; color: #374151; }
+.settings-compo-month select { border: 1.5px solid #d1d5db; border-radius: 8px; padding: 0.45rem 0.5rem; font-size: 0.88rem; background: #fff; min-height: 38px; }

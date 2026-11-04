@@ -42,6 +42,46 @@ export function feedsTermDevoir(examType: string | null | undefined): boolean {
   return examType === 'DEVOIR_SURVEILLE' || examType === 'COMPOSITION_MENSUELLE' || examType === 'COMPOSITION_ANGLAIS';
 }
 
+/** Colonnes de la fiche de notes du trimestre qu'une session peut alimenter. */
+export const FICHE_COLUMNS = ['noteInterro1', 'noteInterro2', 'noteInterro3', 'noteInterro4', 'noteDevoir', 'noteComposition'] as const;
+export type FicheColumn = (typeof FICHE_COLUMNS)[number];
+export const FICHE_COLUMN_LABEL: Record<FicheColumn, string> = {
+  noteInterro1: 'Interro 1', noteInterro2: 'Interro 2', noteInterro3: 'Interro 3', noteInterro4: 'Interro 4',
+  noteDevoir: 'Devoir', noteComposition: 'Composition',
+};
+
+const MONTHS: Array<[RegExp, number]> = [
+  [/janv|january/, 1], [/fevr|february/, 2], [/mars|march/, 3], [/avri|april/, 4], [/\bmai\b|\bmay\b/, 5], [/juin|june/, 6],
+  [/juil|july/, 7], [/aout|august/, 8], [/sept/, 9], [/octo/, 10], [/nove/, 11], [/dece/, 12],
+];
+
+/** Mois (1–12) d'une session : son nom (« … : Novembre 2026 »), sinon sa date de début, sinon de fin. */
+export function sessionMonth(exam: { label?: string | null; examDate?: Date | null; examEndDate?: Date | null }): number | null {
+  const label = (exam.label ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  for (const [re, m] of MONTHS) if (re.test(label)) return m;
+  const d = exam.examDate ?? exam.examEndDate;
+  return d ? new Date(d).getUTCMonth() + 1 : null;
+}
+
+/**
+ * Colonne de la fiche du trimestre alimentée par une session. Devoir surveillé : « Devoir ».
+ * Compositions mensuelles et d'anglais : « Devoir » par défaut, ou la colonne choisie par l'école pour
+ * le mois de la session (Paramètres → academicSettings.compositionColumns, ex. { "10": "noteDevoir",
+ * "11": "noteInterro1" }) ; « none » : la session n'est pas reportée. null : rien à reporter.
+ */
+export function ficheColumnFor(
+  exam: { examType: string; label?: string | null; examDate?: Date | null; examEndDate?: Date | null },
+  academicSettings?: unknown,
+): FicheColumn | null {
+  if (!feedsTermDevoir(exam.examType)) return null;
+  if (exam.examType === 'DEVOIR_SURVEILLE') return 'noteDevoir';
+  const map = ((academicSettings ?? {}) as { compositionColumns?: Record<string, string> }).compositionColumns ?? {};
+  const month = sessionMonth(exam);
+  const chosen = month ? map[String(month)] : undefined;
+  if (chosen === 'none') return null;
+  return (FICHE_COLUMNS as readonly string[]).includes(chosen ?? '') ? (chosen as FicheColumn) : 'noteDevoir';
+}
+
 /** Composition d'anglais : tous ses documents sont en anglais (relevé, appréciations, palmarès). */
 export function isEnglishSession(examType: string | null | undefined): boolean {
   return examType === 'COMPOSITION_ANGLAIS';
@@ -557,6 +597,22 @@ export class MockExamsService {
     };
   }
 
+  /**
+   * Administration : reporte maintenant sur la fiche du trimestre toutes les notes déjà saisies d'une session
+   * (devoir surveillé, composition mensuelle ou d'anglais), dans la colonne prévue — par exemple après une
+   * correction de l'année scolaire ou du réglage des colonnes. Une note différente déjà sur la fiche est gardée.
+   */
+  async resyncTermFiche(examId: string, institutionId: string) {
+    const exam = await this.findExamOrThrow(examId, institutionId);
+    if (!feedsTermDevoir(exam.examType)) throw new BadRequestException("Cette session n'alimente pas la fiche de notes du trimestre.");
+    const grades = await this.prisma.mockExamGrade.findMany({
+      where: { mockExamId: examId, score: { not: null } },
+      select: { studentId: true, subjectId: true, score: true, coefficient: true },
+    });
+    const message = await this.syncDsToTermFiche(exam, grades);
+    return { notes: grades.length, message: message.trim() || 'Aucune note à reporter.' };
+  }
+
   // ─── Devoir surveillé → fiche de notes du trimestre ────────────────────────
   /** Notes du DS avant l'enregistrement (élève:matière → note), pour reconnaître une correction. */
   private async previousDsScores(exam: { id?: string; examType: string }, keys: { studentId: string; subjectId: string }[]) {
@@ -588,7 +644,7 @@ export class MockExamsService {
    * Renvoie un court message à ajouter à « Notes sauvegardées. ».
    */
   private async syncDsToTermFiche(
-    exam: { examType: string; classId: string; academicYear: string; label?: string | null; examDate?: Date | null; institutionId?: string },
+    exam: { examType: string; classId: string; academicYear: string; label?: string | null; examDate?: Date | null; examEndDate?: Date | null; institutionId?: string },
     entries: { studentId: string; subjectId: string; score?: number | null; coefficient?: number | null }[],
     previous: Map<string, number | null> = new Map(),
   ): Promise<string> {
@@ -598,7 +654,12 @@ export class MockExamsService {
         where: { id: exam.classId },
         select: { institutionId: true, institution: { select: { academicSettings: true } } },
       });
-      const termNumber = this.dsTermNumber(exam, cls?.institution?.academicSettings);
+      // Colonne de la fiche : « Devoir », ou celle que l'école a choisie pour le mois de la composition
+      const column = ficheColumnFor(exam, cls?.institution?.academicSettings);
+      if (!column) return '';
+      const colLabel = FICHE_COLUMN_LABEL[column];
+      // Session sans date de début (ex. composition de novembre) : sa date de fin situe le trimestre
+      const termNumber = this.dsTermNumber({ ...exam, examDate: exam.examDate ?? exam.examEndDate ?? null }, cls?.institution?.academicSettings);
       const sample = await this.prisma.reportCard.findFirst({
         where: { classId: exam.classId, academicYear: exam.academicYear, termNumber },
         select: { termName: true, termType: true },
@@ -646,21 +707,27 @@ export class MockExamsService {
           // Barème de la session (DS sur 20, composition du primaire sur 10 ou 20) → barème de la matière sur la fiche
           const examMax = subjectScale(exam.examType, subject.maxScore);
           const toFiche = (v: number) => Math.round((v * maxScore / examMax) * 100) / 100;
-          const devoir = toFiche(e.score as number);
-          // Une autre note « Devoir » est déjà sur la fiche (pas celle de ce DS) : on n'écrase pas
+          const note = toFiche(e.score as number);
+          // Une autre note est déjà dans cette colonne de la fiche (pas celle de cette session) : on n'écrase pas
           const before = previous.get(`${e.studentId}:${subjectId}`);
-          const cur = existing?.noteDevoir;
-          if (cur != null && Math.abs(cur - devoir) > 0.001 && (before == null || Math.abs(cur - toFiche(before)) > 0.001)) {
+          const cur = existing?.[column] ?? null;
+          if (cur != null && Math.abs(cur - note) > 0.001 && (before == null || Math.abs(cur - toFiche(before)) > 0.001)) {
             kept++;
             continue;
           }
+          const notes: Record<FicheColumn, number | null> = {
+            noteInterro1: existing?.noteInterro1 ?? null, noteInterro2: existing?.noteInterro2 ?? null,
+            noteInterro3: existing?.noteInterro3 ?? null, noteInterro4: existing?.noteInterro4 ?? null,
+            noteDevoir: existing?.noteDevoir ?? null, noteComposition: existing?.noteComposition ?? null,
+            [column]: note,
+          };
           const moy = computeMoyenneMatiere(
-            existing?.noteInterro1 ?? null, existing?.noteInterro2 ?? null, existing?.noteInterro3 ?? null,
-            existing?.noteInterro4 ?? null, devoir, existing?.noteComposition ?? null, maxScore,
+            notes.noteInterro1, notes.noteInterro2, notes.noteInterro3, notes.noteInterro4,
+            notes.noteDevoir, notes.noteComposition, maxScore,
           );
           const coef = subject.hasCoefficient === false ? 1 : (existing?.coefficient ?? e.coefficient ?? 1);
           const data = {
-            noteDevoir: devoir,
+            [column]: note,
             moyenneMatiere: moy,
             coefficient: coef,
             weightedScore: moy !== null ? moy * coef : 0,
@@ -689,15 +756,15 @@ export class MockExamsService {
       }
 
       const term = termNumber === 1 ? '1er trimestre' : `${termNumber}e trimestre`;
-      let msg = copied ? ` Notes reportées dans la colonne « Devoir » de la fiche du ${term}.` : '';
-      if (copied && signedSubjects.length) msg += ` (Fiche déjà signée pour ${signedSubjects.join(', ')} : note « Devoir » reportée, signature conservée.)`;
+      let msg = copied ? ` Notes reportées dans la colonne « ${colLabel} » de la fiche du ${term}.` : '';
+      if (copied && signedSubjects.length) msg += ` (Fiche déjà signée pour ${signedSubjects.join(', ')} : note « ${colLabel} » reportée, signature conservée.)`;
       // Bulletins déjà publiés de la classe : moyennes, rangs et PDF recalculés
       if (copied) this.events?.emit('grades.corrected', { classId: exam.classId, academicYear: exam.academicYear, termNumber, institutionId: cls?.institutionId });
-      if (kept) msg += ` ${kept} élève(s) avai(en)t déjà une autre note « Devoir » sur la fiche : laissée(s) telle(s) quelle(s).`;
+      if (kept) msg += ` ${kept} élève(s) avai(en)t déjà une autre note « ${colLabel} » sur la fiche : laissée(s) telle(s) quelle(s).`;
       return msg;
     } catch (err) {
       this.logger.warn(`Report du DS sur la fiche trimestrielle impossible : ${err}`);
-      return ' (Le report sur la fiche du trimestre a échoué : saisissez la note « Devoir » sur la fiche.)';
+      return ' (Le report sur la fiche du trimestre a échoué : saisissez la note sur la fiche.)';
     }
   }
 
