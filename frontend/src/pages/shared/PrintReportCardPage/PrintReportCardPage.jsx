@@ -261,7 +261,13 @@ export default function PrintReportCardPage() {
   const canEditDecision = user?.role === 'ADMIN' || (user?.role === 'TEACHER' && report.class?.teacher?.id === user?.id);
   // Primaire : chaque matière garde son barème (« Noté sur » 10 ou 20) ; total = somme des notes sur
   // la somme des barèmes, moyenne /10 = total ÷ maximum × 10. Même calcul que primaryTotals() côté PDF.
-  const subjectMax = (g) => ((g.subject?.maxScore ?? 20) <= 10 ? 10 : 20);
+  const level = report.class?.level ?? '';
+  const isTextStudy = (g) => /[ée]tude\s+de\s+texte/i.test(g.subject?.nameFr ?? '');
+  const cmCoef2 = (g) => /mathematiques\s*1|dictee\s+questions|probleme/i.test((g.subject?.nameFr ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase());
+  const isCe12 = /^\s*CE\s*[12]\s*$/i.test(level);
+  const isCm12 = /^\s*CM\s*[12]\s*$/i.test(level);
+  const subjectMax = (g) => (isCe12 && isTextStudy(g) ? 10 : isCm12 && cmCoef2(g) ? 20 : (g.subject?.maxScore ?? 20) <= 10 ? 10 : 20);
+  const displayCoefficient = (g) => (isCe12 && isTextStudy(g) ? 1 : isCm12 && cmCoef2(g) ? 2 : g.coefficient);
   // L'anglais est noté à part au primaire : encadré à côté du tableau, hors total, moyenne et rang
   // (même règle que isPrimaryEnglish() côté PDF)
   // (catégorie « Section anglaise » dans Matières, ou nom contenant « anglais » / « english »)
@@ -278,15 +284,18 @@ export default function PrintReportCardPage() {
   });
   let primaryTotal = 0;
   let primaryTotalMax = 0;
+  let primaryTotalCoefficient = 0;
   primaryGrades.forEach((g) => {
     const m20 = g.moyenneMatiere ?? g.score;
     if (m20 == null) return;
+    const coefficient = isCe12 && isTextStudy(g) ? 1 : isCm12 && cmCoef2(g) ? 2 : subjectMax(g) <= 10 ? 1 : 2;
     primaryTotal += (m20 * subjectMax(g)) / 20;
-    primaryTotalMax += subjectMax(g);
+    primaryTotalMax += 10 * coefficient;
+    primaryTotalCoefficient += coefficient;
   });
   // Moyenne affichée au primaire : celle des totaux imprimés (stockée sur 20, comme au secondaire)
   const displayAverage = isPrimary && primaryTotalMax > 0
-    ? Math.round((primaryTotal / primaryTotalMax) * 20 * 100) / 100
+    ? Math.floor((primaryTotal / primaryTotalCoefficient) * 100) / 100 * 2
     : report.overallAverage;
   const absences = report.attendanceDays != null && report.attendancePresent != null
     ? report.attendanceDays - report.attendancePresent
@@ -551,7 +560,7 @@ export default function PrintReportCardPage() {
                     <td className={`pr-grades__col-moy${fail ? ' pr-grades__fail' : ' pr-grades__pass'}`}>
                       {fmt(moy)}
                     </td>
-                    <td>{g.coefficient ?? '—'}</td>
+                    <td>{displayCoefficient(g) ?? '—'}</td>
                     <td className="pr-grades__col-pts">{fmt(g.weightedScore)}</td>
                     <td className="pr-grades__col-rang">{g.rangMatiere ?? '—'}</td>
                     <td className={`pr-grades__col-appr${g.appreciation ? (fail ? ' pr-appr--fail' : ' pr-appr--pass') : ''}`}>{g.appreciation ?? '—'}</td>

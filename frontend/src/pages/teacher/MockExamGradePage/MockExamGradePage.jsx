@@ -31,19 +31,23 @@ function apprec(score, scale = 20) {
 
 // Points obtenus ÷ points possibles, ramenés au barème de la session : chaque matière a son propre
 // barème aux compositions mensuelles (/10 ou /20) — même calcul que le serveur.
-function computeAvg(gradesRow, subjects, scale = 20) {
+function computeAvg(gradesRow, subjects, scale = 20, isMonthly = false) {
   let totalPts = 0, totalMax = 0;
+  let totalCoeff = 0;
   subjects.forEach((subj) => {
     const raw = gradesRow[subj.id];
     if (raw == null || raw === '') return;
     const v = parseFloat(raw);
     if (!isNaN(v)) {
-      totalPts += v * subj.coefficient;
-      totalMax += (subj.maxScore ?? scale) * subj.coefficient;
+      totalPts += v * (isMonthly ? 1 : subj.coefficient);
+      totalMax += isMonthly ? 10 * subj.coefficient : (subj.maxScore ?? scale) * subj.coefficient;
+      totalCoeff += subj.coefficient;
     }
   });
   if (totalMax === 0) return null;
-  return Math.round((totalPts / totalMax) * scale * 100) / 100;
+  return isMonthly
+    ? Math.floor((totalPts / totalCoeff) * 100) / 100
+    : Math.round((totalPts / totalMax) * scale * 100) / 100;
 }
 
 function MockExamGradePage() {
@@ -89,10 +93,12 @@ function MockExamGradePage() {
     setSaved(false);
   };
   const coeffOk = (v) => { const n = parseInt(v, 10); return n >= 1 && n <= 20; };
+  const isMonthly = data?.exam?.examType === 'COMPOSITION_MENSUELLE';
   // Matières avec le coefficient en cours de saisie (pour moyennes, rangs et enregistrement)
   const liveSubjects = useMemo(() => (data?.subjects ?? []).map((s) => (
-    coeffOk(coeffs[s.id]) ? { ...s, coefficient: parseInt(coeffs[s.id], 10) } : s
-  )), [data, coeffs]);
+    isMonthly ? { ...s, coefficient: (s.maxScore ?? 20) <= 10 ? 1 : 2 }
+      : coeffOk(coeffs[s.id]) ? { ...s, coefficient: parseInt(coeffs[s.id], 10) } : s
+  )), [data, coeffs, isMonthly]);
 
   const setScore = (studentId, subjectId, val) => {
     setGrades((prev) => ({
@@ -108,7 +114,7 @@ function MockExamGradePage() {
     if (!data) return {};
     const avgs = data.students.map((s) => ({
       id: s.studentId,
-      avg: computeAvg(grades[s.studentId] ?? {}, liveSubjects, examScale(data.exam.examType)),
+      avg: computeAvg(grades[s.studentId] ?? {}, liveSubjects, examScale(data.exam.examType), data.exam.examType === 'COMPOSITION_MENSUELLE'),
     }));
     const sorted = avgs.filter((a) => a.avg != null).sort((a, b) => (b.avg ?? 0) - (a.avg ?? 0));
     const map = {};
@@ -261,7 +267,7 @@ function MockExamGradePage() {
                     <div className="meg-subject-name">{subj.nameFr}</div>
                     <div className="meg-subject-coeff">
                       {t('mockExamGrade.columns.coeff')}{' '}
-                      {canEditSubject(subj.id) ? (
+                      {canEditSubject(subj.id) && !isMonthly ? (
                         <input
                           type="text" inputMode="numeric"
                           className={`meg-coeff-input${coeffOk(coeffs[subj.id]) ? '' : ' meg-coeff-input--error'}`}
@@ -286,7 +292,7 @@ function MockExamGradePage() {
             </thead>
             <tbody>
               {students.map((student) => {
-                const avg = computeAvg(grades[student.studentId] ?? {}, subjects, scale);
+                const avg = computeAvg(grades[student.studentId] ?? {}, subjects, scale, isMonthly);
                 const rank = ranks[student.studentId];
                 const app = apprec(avg, scale);
 

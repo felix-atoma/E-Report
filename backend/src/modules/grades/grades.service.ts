@@ -8,6 +8,9 @@ import { BulkGradesDto } from './dto/bulk-grades.dto';
 import { SaveClassGradesDto } from './dto/save-class-grades.dto';
 import { examTermNumber } from '../../common/utils/exam-term.util';
 
+const isPrimaryClass = (level?: string | null) => /^\s*(CI|CP\s*[12]?|CE\s*[12]|CM\s*[12])\s*$/i.test(level ?? '');
+const primaryCoefficient = (maxScore?: number | null) => (maxScore != null && maxScore <= 10 ? 1 : 2);
+
 /** Appréciation de la moyenne (sur 20) dans la langue de la matière — barème commun (appreciation.util). */
 export function computeAppreciation(moy: number | null, subjectName?: string): string | null {
   if (moy === null) return null;
@@ -134,6 +137,8 @@ export class GradesService {
       select: { id: true, nameFr: true, code: true, passMark: true, maxScore: true, hasCoefficient: true },
     });
     if (!subject) throw new NotFoundException('Subject not found');
+    const cls = await this.prisma.class.findUnique({ where: { id: classId }, select: { level: true } });
+    const primary = isPrimaryClass(cls?.level);
 
     // Get the teacher assigned to this class/subject for name pre-fill
     const classSubject = await this.prisma.classSubject.findUnique({
@@ -180,7 +185,7 @@ export class GradesService {
           noteDevoir: grade?.noteDevoir ?? null,
           noteComposition: grade?.noteComposition ?? null,
           moyenneMatiere: grade?.moyenneMatiere ?? null,
-          coefficient: grade?.coefficient ?? 1,
+          coefficient: primary ? primaryCoefficient(subject.maxScore) : (grade?.coefficient ?? 1),
           rangMatiere: grade?.rangMatiere ?? null,
           appreciation: grade?.appreciation ?? null,
           teacherComment: grade?.teacherComment ?? null,
@@ -200,10 +205,13 @@ export class GradesService {
       orderBy: { updatedAt: 'desc' },
       select: { coefficient: true },
     });
-    const coefficient = subject.hasCoefficient === false ? 1 : (enteredCoef?.coefficient ?? lastCoef?.coefficient ?? 1);
+    const coefficient = primary
+      ? primaryCoefficient(subject.maxScore)
+      : (subject.hasCoefficient === false ? 1 : (enteredCoef?.coefficient ?? lastCoef?.coefficient ?? 1));
 
     return {
       classId,
+      classLevel: cls?.level ?? null,
       subjectId,
       subject,
       coefficient,
@@ -382,7 +390,9 @@ export class GradesService {
         );
 
         // Primary school subjects have no coefficient weighting
-        const coef = subject.hasCoefficient === false ? 1 : (row.coefficient ?? 1);
+        const coef = isPrimaryClass(cls.level)
+          ? primaryCoefficient(maxScore)
+          : (subject.hasCoefficient === false ? 1 : (row.coefficient ?? 1));
 
         const gradeData = {
           noteInterro1: row.noteInterro1,

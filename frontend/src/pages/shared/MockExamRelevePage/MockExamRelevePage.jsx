@@ -87,6 +87,7 @@ function StudentCard({ student, subjects, exam, institution, teacherSignatures =
       : teacherSignatures.filter((t) => !t.classTeacher);
   const scale = examScale(exam?.examType); // 10 pour les compositions mensuelles
   const isCm = isPrimaryCompoType(exam?.examType); // chaque matière sur son barème (10 ou 20)
+  const isMonthly = exam?.examType === 'COMPOSITION_MENSUELLE';
   const totalCoeff = subjects.reduce((s, subj) => s + subj.coefficient, 0);
   const gradeMap = new Map(student.grades.map((g) => [g.subjectId, g]));
 
@@ -98,11 +99,14 @@ function StudentCard({ student, subjects, exam, institution, teacherSignatures =
   subjects.forEach((subj) => {
     const g = gradeMap.get(subj.id);
     if (g?.score != null) {
-      totalPts += g.score * subj.coefficient;
-      filledMax += subjMax(subj) * subj.coefficient;
+      totalPts += g.score * (isMonthly ? 1 : subj.coefficient);
+      filledMax += (isMonthly ? 10 * subj.coefficient : subjMax(subj) * subj.coefficient);
     }
   });
-  const avg = filledMax > 0 ? Math.round((totalPts / filledMax) * scale * 100) / 100 : null;
+  const filledCoeff = subjects.reduce((sum, subj) => sum + (gradeMap.get(subj.id)?.score != null ? subj.coefficient : 0), 0);
+  const avg = isMonthly
+    ? (filledCoeff > 0 ? Math.floor((totalPts / filledCoeff) * 100) / 100 : null)
+    : (filledMax > 0 ? Math.round((totalPts / filledMax) * scale * 100) / 100 : null);
   // Composition d'anglais : relevé en anglais, décimales avec un point
   const en = isCaType(exam?.examType);
   const T = en ? T_EN : T_FR;
@@ -205,7 +209,7 @@ function StudentCard({ student, subjects, exam, institution, teacherSignatures =
           {subjects.map((subj, i) => {
             const g = gradeMap.get(subj.id);
             const score = g?.score ?? null;
-            const pts = score != null ? score * subj.coefficient : null;
+            const pts = score != null ? score * (isMonthly ? 1 : subj.coefficient) : null;
             return (
               <tr key={subj.id} className={i % 2 === 0 ? 'mrel-row' : 'mrel-row mrel-row--alt'}>
                 <td className="mrel-td mrel-td--subject">{subj.nameFr}</td>

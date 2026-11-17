@@ -127,7 +127,7 @@ describe('MockExamsService', () => {
   describe('primary: English is its own composition', () => {
     const cs = (id: string, nameFr: string, maxScore: number, category: string | null = null) =>
       ({ subject: { id, nameFr, nameEn: nameFr, code: id, maxScore, category } });
-    const grade = (studentId: string, subjectId: string, score: number) => ({ studentId, subjectId, score, coefficient: 1 });
+    const grade = (studentId: string, subjectId: string, score: number, coefficient = subjectId === 'calc' ? 1 : 2) => ({ studentId, subjectId, score, coefficient });
     const primaryExam = (examType: string) => ({ ...exam, examType, class: { name: 'CM2' } });
 
     beforeEach(() => {
@@ -147,9 +147,23 @@ describe('MockExamsService', () => {
       const sheet = await service.getGradeSheet(exam.id, INST);
 
       expect(sheet.subjects.map((s: any) => s.id)).toEqual(['fr', 'calc']);
+      expect(sheet.subjects.map((s: any) => s.coefficient)).toEqual([2, 1]);
       const s1 = sheet.students.find((s) => s.studentId === 'stu-1')!;
       expect(s1.average).toBe(8);   // (16 + 8) / 30 × 10
       expect(s1.rank).toBe(1);
+    });
+
+    it('uses coefficients for the primary maximum without multiplying the marks again', async () => {
+      prisma.mockExam.findFirst.mockResolvedValue(primaryExam('COMPOSITION_MENSUELLE'));
+      prisma.mockExamGrade.findMany.mockResolvedValue([
+        grade('stu-1', 'fr', 10, 2), // /20 subject already represented at coefficient 2
+        grade('stu-1', 'calc', 10, 1),
+      ]);
+
+      const sheet = await service.getGradeSheet(exam.id, INST);
+      const s1 = sheet.students.find((s) => s.studentId === 'stu-1')!;
+
+      expect(s1.average).toBe(6.66); // (10 + 10) / (2 + 1), truncated to 2 decimals
     });
 
     it('composition anglais: only English subjects, average in %, own rank', async () => {

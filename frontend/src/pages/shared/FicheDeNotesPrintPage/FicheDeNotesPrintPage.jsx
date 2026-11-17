@@ -188,9 +188,10 @@ export function FicheSheet({ source, coef: coefOverride, institution, className,
   const fiche          = blank ? null : source.fiche;
   const maxScore       = subject?.maxScore       ?? 20;
   const hasCoefficient = subject?.hasCoefficient ?? true;
+  const isPrimary = /^\s*(CI|CP\s*[12]?|CE\s*[12]|CM\s*[12])\s*$/i.test(source.classLevel ?? className ?? '');
   // Coefficient renvoyé par le serveur (celui des notes, sinon le dernier utilisé dans la classe)
   const coef           = coefOverride ?? source.coefficient ?? source.students?.find((s) => s.coefficient)?.coefficient ?? 1;
-  const effectiveCoef  = hasCoefficient ? coef : 1;
+  const effectiveCoef  = isPrimary ? (maxScore <= 10 ? 1 : 2) : (hasCoefficient ? coef : 1);
 
   const NOTE_KEYS = ['noteInterro1', 'noteInterro2', 'noteInterro3', 'noteInterro4', 'noteDevoir', 'noteComposition'];
   const rows = (source.students ?? []).map((s) => (blank
@@ -253,8 +254,8 @@ export function FicheSheet({ source, coef: coefOverride, institution, className,
 
         {/* ── Status bar ── */}
         <div className="fdnp__status-bar">
-          {hasCoefficient ? (
-            <span className="fdnp__coef-badge">Coefficient&nbsp;: <strong>{coef}</strong></span>
+          {hasCoefficient || isPrimary ? (
+            <span className="fdnp__coef-badge">Coefficient&nbsp;: <strong>{effectiveCoef}</strong></span>
           ) : (
             <span className="fdnp__nocoef-badge">Cours Primaire — Sans coefficient</span>
           )}
@@ -286,7 +287,7 @@ export function FicheSheet({ source, coef: coefOverride, institution, className,
                 <th className="fdnp__th fdnp__th--note" rowSpan={2}>Examen<br /><span className="fdnp__th-sub">/{maxScore}</span></th>
                 <th className="fdnp__th fdnp__th--moy" rowSpan={2}>Moy.<br /><span className="fdnp__th-sub">/{maxScore}</span></th>
                 {hasCoefficient && (
-                  <th className="fdnp__th fdnp__th--total" rowSpan={2}>Total<br /><span className="fdnp__th-sub">×{coef}</span></th>
+                  <th className="fdnp__th fdnp__th--total" rowSpan={2}>Total<br /><span className="fdnp__th-sub">×{effectiveCoef}</span></th>
                 )}
                 <th className="fdnp__th fdnp__th--rang" rowSpan={2}>Rang</th>
                 <th className="fdnp__th fdnp__th--appr" rowSpan={2}>Appréciation</th>

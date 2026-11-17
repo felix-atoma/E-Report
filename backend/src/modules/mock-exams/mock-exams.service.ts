@@ -4,7 +4,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import archiver = require('archiver');
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { PrismaService } from '../../prisma/prisma.service';
-import { PdfService, ReleveData, isPrimaryLevel, isSecondaryLevel, primarySubjectMax, isPrimaryEnglish } from '../pdf/pdf.service';
+import { PdfService, ReleveData, isPrimaryLevel, isSecondaryLevel, primarySubjectMax, primarySubjectMaxForSubject, isPrimaryTextStudy, isCmSubjectWithCoef2, isPrimaryEnglish } from '../pdf/pdf.service';
 import { byStudentName } from '../../common/utils/student-order.util';
 import { releveCode, parseReleveCode, releveCodeMatches } from './releve-code.util';
 import { CreateMockExamDto } from './dto/create-mock-exam.dto';
@@ -33,6 +33,11 @@ export function examScale(examType: string | null | undefined): number {
 export function subjectScale(examType: string | null | undefined, subjectMaxScore: number | null | undefined): number {
   return isPrimaryComposition(examType) ? primarySubjectMax(subjectMaxScore) : examScale(examType);
 }
+
+const primaryCompositionCoefficient = (maxScore?: number | null, nameFr?: string | null, level?: string | null) =>
+  (/^\s*CE\s*[12]\s*$/i.test(level ?? '') && isPrimaryTextStudy({ nameFr })) ? 1
+    : (/^\s*CM\s*[12]\s*$/i.test(level ?? '') && isCmSubjectWithCoef2({ nameFr })) ? 2
+    : primarySubjectMax(maxScore) <= 10 ? 1 : 2;
 
 /**
  * Sessions dont les notes vont dans la colonne « Devoir » de la fiche de notes du trimestre : devoirs
@@ -237,9 +242,13 @@ export class MockExamsService {
       nameFr: cs.subject.nameFr,
       nameEn: cs.subject.nameEn,
       code: cs.subject.code,
-      coefficient: subjectCoeffMap.get(cs.subject.id) ?? 1,
+      coefficient: exam.examType === 'COMPOSITION_MENSUELLE'
+        ? primaryCompositionCoefficient(cs.subject.maxScore, cs.subject.nameFr, exam.class?.level)
+        : (subjectCoeffMap.get(cs.subject.id) ?? 1),
       // Barème de la matière pour cette session (/10 ou /20 aux compositions mensuelles)
-      maxScore: subjectScale(exam.examType, cs.subject.maxScore),
+      maxScore: exam.examType === 'COMPOSITION_MENSUELLE'
+        ? primarySubjectMaxForSubject(cs.subject, exam.class?.level)
+        : subjectScale(exam.examType, cs.subject.maxScore),
     }));
 
     const scale = examScale(exam.examType);
@@ -249,7 +258,7 @@ export class MockExamsService {
         const g = gradeMap.get(`${student.id}:${subj.id}`);
         return {
           subjectId: subj.id,
-          coefficient: g?.coefficient ?? subj.coefficient,
+          coefficient: exam.examType === 'COMPOSITION_MENSUELLE' ? subj.coefficient : (g?.coefficient ?? subj.coefficient),
           maxScore: subj.maxScore,
           score: g?.score ?? null,
           appreciation: appreciation(g?.score ?? null, subj.maxScore, isEnglishSession(exam.examType)),
@@ -260,9 +269,13 @@ export class MockExamsService {
       // Toutes les matières sur 20 → moyenne pondérée classique ; compositions mensuelles → total des
       // notes (chacune sur 10 ou 20) ÷ total des barèmes × 10.
       const filled = gradesForStudent.filter((g) => g.score != null);
-      const totalMax = filled.reduce((s, g) => s + g.maxScore * g.coefficient, 0);
-      const totalPoints = filled.reduce((s, g) => s + (g.score ?? 0) * g.coefficient, 0);
-      const average = totalMax > 0 ? round2((totalPoints / totalMax) * scale) : null;
+      const primaryComposition = exam.examType === 'COMPOSITION_MENSUELLE';
+      const totalMax = filled.reduce((s, g) => s + (primaryComposition ? 10 * g.coefficient : g.maxScore * g.coefficient), 0);
+      const totalPoints = filled.reduce((s, g) => s + (g.score ?? 0) * (primaryComposition ? 1 : g.coefficient), 0);
+      const totalCoefficient = filled.reduce((s, g) => s + g.coefficient, 0);
+      const average = primaryComposition
+        ? (totalCoefficient > 0 ? Math.floor((totalPoints / totalCoefficient) * 100) / 100 : null)
+        : (totalMax > 0 ? round2((totalPoints / totalMax) * scale) : null);
 
       return {
         studentId: student.id,
@@ -426,6 +439,12 @@ export class MockExamsService {
     userId?: string,
   ) {
     const exam = await this.findExamOrThrow(examId, institutionId);
+    const subject = exam.examType === 'COMPOSITION_MENSUELLE'
+      ? await this.prisma.subject.findUnique({ where: { id: subjectId }, select: { maxScore: true, nameFr: true } })
+      : null;
+    const coefficientForSubject = exam.examType === 'COMPOSITION_MENSUELLE'
+      ? primaryCompositionCoefficient(subject?.maxScore, subject?.nameFr, exam.class?.level)
+      : coefficient;
     await this.assertSubjectAccess(exam.classId, subjectId, userId, userRole);
     // Examen publié : seul l'administrateur peut encore corriger (coefficient mal mis, note erronée)
     if (exam.status === 'PUBLISHED' && userRole !== 'ADMIN') {
@@ -435,7 +454,7 @@ export class MockExamsService {
       const signed = await this.prisma.mockExamSubjectFiche.findUnique({ where: { mockExamId_subjectId: { mockExamId: examId, subjectId } }, select: { signedAt: true } });
       if (signed?.signedAt || exam.status === 'PUBLISHED') {
         await this.prisma.auditLog.create({
-          data: { userId: userId ?? null, action: 'ADMIN_CORRECTION', resource: 'MockExamFiche', resourceId: `${examId}:${subjectId}`, metadata: { coefficient, published: exam.status === 'PUBLISHED' } as any },
+          data: { userId: userId ?? null, action: 'ADMIN_CORRECTION', resource: 'MockExamFiche', resourceId: `${examId}:${subjectId}`, metadata: { coefficient: coefficientForSubject, published: exam.status === 'PUBLISHED' } as any },
         }).catch(() => undefined);
       }
     }
@@ -448,7 +467,7 @@ export class MockExamsService {
         throw new ForbiddenException('Cette fiche est signée. Annulez la signature avant de modifier les notes.');
       }
     }
-    this.assertValidEntries([...grades, { coefficient }]);
+    this.assertValidEntries([...grades, { coefficient: coefficientForSubject }]);
     await this.assertStudentsInSheet(exam.classId, exam.academicYear, grades.map((g) => g.studentId));
     await this.assertWithinScale(exam.examType, grades.map((g) => ({ subjectId, score: g.score })));
     const previous = await this.previousDsScores(exam, grades.map((g) => ({ studentId: g.studentId, subjectId })));
@@ -462,12 +481,12 @@ export class MockExamsService {
               subjectId,
             },
           },
-          update:  { score: g.score ?? null, coefficient },
-          create:  { mockExamId: examId, studentId: g.studentId, subjectId, score: g.score ?? null, coefficient },
+          update:  { score: g.score ?? null, coefficient: coefficientForSubject },
+          create:  { mockExamId: examId, studentId: g.studentId, subjectId, score: g.score ?? null, coefficient: coefficientForSubject },
         }),
       ),
     );
-    const synced = await this.syncDsToTermFiche(exam, grades.map((g) => ({ ...g, subjectId, coefficient })), previous);
+    const synced = await this.syncDsToTermFiche(exam, grades.map((g) => ({ ...g, subjectId, coefficient: coefficientForSubject })), previous);
     return { message: `Notes sauvegardées.${synced}` };
   }
 
@@ -558,6 +577,14 @@ export class MockExamsService {
       }
       entries = dto.grades.filter((g) => !signedIds.has(g.subjectId));
       skippedSigned = signedIds.size;
+    }
+    if (exam.examType === 'COMPOSITION_MENSUELLE' && entries.length) {
+      const subjects = await this.prisma.subject.findMany({
+        where: { id: { in: [...new Set(entries.map((g) => g.subjectId))] } },
+        select: { id: true, maxScore: true, nameFr: true },
+      });
+      const coefficientBySubject = new Map(subjects.map((s) => [s.id, primaryCompositionCoefficient(s.maxScore, s.nameFr, exam.class?.level)]));
+      entries = entries.map((g) => ({ ...g, coefficient: coefficientBySubject.get(g.subjectId) ?? 2 }));
     }
     this.assertValidEntries(entries);
     await this.assertStudentsInSheet(exam.classId, exam.academicYear, entries.map((g) => g.studentId));

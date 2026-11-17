@@ -428,7 +428,7 @@ export class ReportsService {
    */
   private computeOverallAverage(grades: Parameters<typeof primaryTotals>[0], level: string | null | undefined): number | null {
     // Primaire : total des points (chaque matière sur 10 ou sur 20) ÷ total des barèmes
-    if (isPrimaryLevel(level)) return primaryTotals(grades).average20;
+    if (isPrimaryLevel(level)) return primaryTotals(grades, level).average20;
     if (!grades.length) return null;
     const totalWeighted = grades.reduce((sum, g: any) => sum + (g.weightedScore ?? 0), 0);
     const totalCoef = grades.reduce((sum, g: any) => sum + g.coefficient, 0);
@@ -1398,7 +1398,7 @@ export class ReportsService {
     const totalCoef = graded.reduce((s, g) => s + g.coefficient, 0);
     const avg = isPrimaryLevel(report.class.level)
       // Primaire : total des points ÷ total des barèmes (chaque matière sur 10 ou sur 20)
-      ? (primaryTotals(report.grades).average20 ?? 0)
+      ? (primaryTotals(report.grades, report.class.level).average20 ?? 0)
       : report.overallAverage
         ?? (totalCoef > 0 ? graded.reduce((s, g) => s + g.score * g.coefficient, 0) / totalCoef : 0);
 

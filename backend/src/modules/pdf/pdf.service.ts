@@ -187,6 +187,22 @@ export function primarySubjectMax(maxScore: number | null | undefined): number {
   return maxScore != null && maxScore <= 10 ? 10 : 20;
 }
 
+/** Étude de texte en CE1/CE2 : toujours notée sur 10, coefficient 1. */
+export function isPrimaryTextStudy(subject: { nameFr?: string | null } | null | undefined): boolean {
+  return /[ée]tude\s+de\s+texte/i.test(subject?.nameFr ?? '');
+}
+
+export function primarySubjectMaxForSubject(subject: { maxScore?: number | null; nameFr?: string | null } | null | undefined, level?: string | null): number {
+  if (/^\s*CE\s*[12]\s*$/i.test(level ?? '') && isPrimaryTextStudy(subject)) return 10;
+  if (/^\s*CM\s*[12]\s*$/i.test(level ?? '') && isCmSubjectWithCoef2(subject)) return 20;
+  return primarySubjectMax(subject?.maxScore);
+}
+
+export function isCmSubjectWithCoef2(subject: { nameFr?: string | null } | null | undefined): boolean {
+  const name = (subject?.nameFr ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  return /mathematiques\s*1/.test(name) || /dictee\s+questions/.test(name) || /probleme/.test(name);
+}
+
 /**
  * Primaire : l'anglais est une discipline notée à part — encadré à côté du tableau des notes,
  * sans compter dans le total des points, la moyenne ni le rang.
@@ -207,7 +223,7 @@ export function englishTotals(grades: Parameters<typeof primaryTotals>[0]) {
     count++;
     const moy20 = g.moyenneMatiere ?? g.score;
     if (moy20 == null) continue;
-    const m = primarySubjectMax(g.subject?.maxScore);
+    const m = primarySubjectMaxForSubject(g.subject);
     total += (moy20 * m) / 20;
     max += m;
   }
@@ -215,26 +231,32 @@ export function englishTotals(grades: Parameters<typeof primaryTotals>[0]) {
 }
 
 /**
- * Totaux du primaire, à la togolaise : somme des notes (chacune sur son barème) sur la somme des
- * barèmes ; moyenne sur 10 = total ÷ maximum × 10. Les matières non notées sont ignorées.
+ * Totaux du primaire : la note obtenue est comptée une fois ; le coefficient intervient dans le
+ * maximum possible de la matière. Moyenne sur 10 = points obtenus ÷ maximum pondéré × 10.
+ * Matières non notées ignorées.
  */
-export function primaryTotals(grades: Array<{ moyenneMatiere?: number | null; score?: number | null; subject?: { maxScore?: number | null; nameFr?: string | null; category?: string | null } | null }>) {
+export function primaryTotals(grades: Array<{ moyenneMatiere?: number | null; score?: number | null; coefficient?: number | null; subject?: { maxScore?: number | null; nameFr?: string | null; category?: string | null } | null }>, level?: string | null) {
   let total = 0;
   let max = 0;
+  let totalCoefficient = 0;
   for (const g of grades) {
     const moy20 = g.moyenneMatiere ?? g.score;
     if (moy20 == null) continue;
     // L'anglais est noté à part au primaire : hors total, moyenne et rang
     if (isPrimaryEnglish(g.subject)) continue;
-    const m = primarySubjectMax(g.subject?.maxScore);
+    const m = primarySubjectMaxForSubject(g.subject, level);
+    const coefficient = (/^\s*CE\s*[12]\s*$/i.test(level ?? '') && isPrimaryTextStudy(g.subject)) ? 1
+      : (/^\s*CM\s*[12]\s*$/i.test(level ?? '') && isCmSubjectWithCoef2(g.subject)) ? 2
+      : m <= 10 ? 1 : 2;
     total += (moy20 * m) / 20;
-    max += m;
+    max += 10 * coefficient;
+    totalCoefficient += coefficient;
   }
   return {
     total: Math.round(total * 100) / 100,
     max,
-    /** Moyenne générale sur 20 (stockée), soit total ÷ maximum × 20 */
-    average20: max > 0 ? Math.round(((total / max) * 20) * 100) / 100 : null,
+    /** Moyenne sur 20 (stockée) : moyenne sur 10 = total ÷ somme des coefficients. */
+    average20: totalCoefficient > 0 ? Math.floor((total / totalCoefficient) * 100) / 100 * 2 : null,
   };
 }
 
@@ -515,6 +537,7 @@ export class PdfService {
     // Devoir surveillé et composition mensuelle : pas d'« admis / ajourné » (ce ne sont pas des examens)
     // Compositions du primaire (mensuelle, anglais) : chaque matière sur son barème (10 ou 20)
     const isCm = exam.examType === 'COMPOSITION_MENSUELLE' || exam.examType === 'COMPOSITION_ANGLAIS';
+    const isMonthly = exam.examType === 'COMPOSITION_MENSUELLE';
     // Composition d'anglais : moyenne en pourcentage
     const isPercent = exam.examType === 'COMPOSITION_ANGLAIS';
     // Composition d'anglais : relevé entièrement en anglais (textes, dates, décimales avec un point)
@@ -533,16 +556,16 @@ export class PdfService {
         ...r,
         max,
         scoreLabel: num(r.score),
-        pointsLabel: r.score != null ? num(r.score * r.coefficient) : '—',
+        pointsLabel: r.score != null ? num(r.score * (isMonthly ? 1 : r.coefficient)) : '—',
         passed: on20 == null || on20 >= 10,
         levelClass: on20 == null ? '' : on20 >= 14 ? 'lvl-good' : on20 >= 10 ? 'lvl-pass' : 'lvl-fail',
       };
     });
     const graded = rows.filter((r) => r.score != null);
     const totalCoef = graded.reduce((s, r) => s + r.coefficient, 0);
-    const totalPoints = graded.reduce((s, r) => s + (r.score as number) * r.coefficient, 0);
+    const totalPoints = graded.reduce((s, r) => s + (r.score as number) * (isMonthly ? 1 : r.coefficient), 0);
     // Points possibles (compositions mensuelles : chaque matière sur 10 ou 20)
-    const totalMax = graded.reduce((s, r) => s + r.max * r.coefficient, 0);
+    const totalMax = graded.reduce((s, r) => s + (isMonthly ? 10 * r.coefficient : r.max * r.coefficient), 0);
 
     const L = en ? RELEVE_LABELS_EN : RELEVE_LABELS_FR;
 
@@ -696,6 +719,9 @@ export class PdfService {
       const moy = g.moyenneMatiere ?? g.score;
       return {
         ...g,
+        coefficient: /^\s*CM\s*[12]\s*$/i.test(data.classLevel ?? '') && isCmSubjectWithCoef2(g.subject) ? 2
+          : /^\s*CE\s*[12]\s*$/i.test(data.classLevel ?? '') && isPrimaryTextStudy(g.subject) ? 1
+          : g.coefficient,
         moyInterros,
         // Primaire : la moyenne de chaque matière est la moitié de son barème (10 / 20 une fois ramenée sur 20)
         passed: moy == null || moy >= (isPrimary ? 10 : (g.subject?.passMark ?? 10)),
@@ -704,9 +730,9 @@ export class PdfService {
         rangLabel: g.rangMatiere ? (g.rangMatiere === 1 ? '1er' : `${g.rangMatiere}e`) : null,
         moyLabel: formatScore(moy),
         // Primaire : note ramenée au barème de la matière (/10 ou /20) ; secondaire : sur 20
-        noteMax: primarySubjectMax(g.subject?.maxScore),
+        noteMax: primarySubjectMaxForSubject(g.subject, data.classLevel),
         noteLabel: isPrimary
-          ? (moy == null ? '—' : formatScore((moy * primarySubjectMax(g.subject?.maxScore)) / 20))
+          ? (moy == null ? '—' : formatScore((moy * primarySubjectMaxForSubject(g.subject, data.classLevel)) / 20))
           : fmtScaled(moy),
         ficheSignedAt: g.ficheSignedAt
           ? new Date(g.ficheSignedAt).toLocaleDateString('fr-FR')
@@ -724,7 +750,7 @@ export class PdfService {
 
     // Primaire : somme des notes (chaque matière sur son barème) sur la somme des barèmes,
     // moyenne sur 10 = total ÷ maximum × 10 (ex. 132,50 / 180 → 7,36 / 10)
-    const pt = primaryTotals(enrichedGrades);
+    const pt = primaryTotals(enrichedGrades, data.classLevel);
     const primaryTotal = pt.total;
     const primaryTotalMax = pt.max;
     // Moyenne affichée : au primaire, toujours celle des totaux imprimés (cohérente avec la page)

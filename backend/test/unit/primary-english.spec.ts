@@ -2,7 +2,7 @@ import { PdfService, ReportCardData, isPrimaryEnglish, primaryTotals } from '../
 
 /** Primaire : l'anglais est noté à part (encadré à côté du tableau), hors total, moyenne et rang. */
 describe('primary school — English graded separately', () => {
-  const g = (nameFr: string, moy20: number, maxScore = 20) => ({ moyenneMatiere: moy20, subject: { nameFr, maxScore } });
+  const g = (nameFr: string, moy20: number, maxScore = 20) => ({ moyenneMatiere: moy20, coefficient: maxScore <= 10 ? 1 : 2, subject: { nameFr, maxScore } });
 
   it('recognises the English subject', () => {
     expect(isPrimaryEnglish({ nameFr: 'Anglais' })).toBe(true);
@@ -13,6 +13,16 @@ describe('primary school — English graded separately', () => {
     // Section anglaise choisie dans Matières : Reading Comprehension, Dictation…
     expect(isPrimaryEnglish({ nameFr: 'Reading Comprehension', category: 'ANGLAIS' })).toBe(true);
     expect(isPrimaryEnglish({ nameFr: 'Reading Comprehension', category: 'LANGUES' })).toBe(false);
+  });
+
+  it('applies subject coefficients to the maximum, not again to earned points', () => {
+    const grades = [
+      { moyenneMatiere: 10, coefficient: 2, subject: { nameFr: 'Maths', maxScore: 20 } },
+      { moyenneMatiere: 10, coefficient: 2, subject: { nameFr: 'Français', maxScore: 20 } },
+      { moyenneMatiere: 10, coefficient: 2, subject: { nameFr: 'Sciences', maxScore: 20 } },
+      ...[3, 3, 3, 2, 2, 2, 2].map((mark, i) => ({ moyenneMatiere: mark * 2, coefficient: 1, subject: { nameFr: `Matière ${i}`, maxScore: 10 } })),
+    ];
+    expect(primaryTotals(grades)).toEqual({ total: 47, max: 130, average20: 7.22 });
   });
 
   it('leaves English out of the total and the average', () => {
@@ -26,7 +36,7 @@ describe('primary school — English graded separately', () => {
   describe('bulletin HTML', () => {
     const service = new PdfService({ get: (_k: string, d?: any) => d } as any, { enabled: false } as any);
     const grade = (nameFr: string, moy: number, extra: Record<string, any> = {}) => ({
-      subjectId: nameFr, moyenneMatiere: moy, score: moy, coefficient: 1, weightedScore: moy,
+      subjectId: nameFr, moyenneMatiere: moy, score: moy, coefficient: 2, weightedScore: moy,
       subject: { nameFr, maxScore: 20 }, ...extra,
     });
     const data = (classLevel: string): ReportCardData => ({
