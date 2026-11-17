@@ -54,6 +54,12 @@ export class CloudinaryService {
     });
   }
 
+  /** Deliver a profile photo with its background removed and replaced by sky blue. */
+  withSkyBlueBackground(url: string): string {
+    if (!url?.includes('/image/upload/')) return url;
+    return url.replace('/image/upload/', '/image/upload/e_background_removal/b_rgb:87CEEB,c_pad,w_1.0/');
+  }
+
   async deleteByUrl(url: string): Promise<void> {
     try {
       if (!url || !url.includes('cloudinary.com')) return;

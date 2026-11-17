@@ -10,6 +10,18 @@ import { examTermNumber } from '../../common/utils/exam-term.util';
 
 const isPrimaryClass = (level?: string | null) => /^\s*(CI|CP\s*[12]?|CE\s*[12]|CM\s*[12])\s*$/i.test(level ?? '');
 const primaryCoefficient = (maxScore?: number | null) => (maxScore != null && maxScore <= 10 ? 1 : 2);
+const normalizedSubjectName = (name?: string | null) => (name ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const isEnglishSubject = (subject: { nameFr?: string | null; category?: string | null }) => subject.category === 'ANGLAIS' || /anglais|english/.test(normalizedSubjectName(subject.nameFr));
+const primarySheetMax = (subject: { nameFr?: string | null; category?: string | null; maxScore?: number | null }, level?: string | null) => {
+  if (isEnglishSubject(subject)) return subject.maxScore ?? 20;
+  const name = normalizedSubjectName(subject.nameFr);
+  if (/^\s*CE\s*[12]\s*$/i.test(level ?? '') && /etude\s+de\s+texte/.test(name)) return 10;
+  if (/^\s*CM\s*[12]\s*$/i.test(level ?? '') && /mathematiques\s*1|dictee\s+questions|probleme/.test(name)) return 20;
+  // The primary bulletin and monthly exam logic use only the /10 or /20 scale.
+  return subject.maxScore != null && subject.maxScore <= 10 ? 10 : 20;
+};
+const primarySheetCoefficient = (subject: { nameFr?: string | null; category?: string | null; maxScore?: number | null }, level?: string | null) =>
+  primaryCoefficient(primarySheetMax(subject, level));
 
 /** Appréciation de la moyenne (sur 20) dans la langue de la matière — barème commun (appreciation.util). */
 export function computeAppreciation(moy: number | null, subjectName?: string): string | null {
@@ -134,7 +146,7 @@ export class GradesService {
     // Get subject info
     const subject = await this.prisma.subject.findUnique({
       where: { id: subjectId },
-      select: { id: true, nameFr: true, code: true, passMark: true, maxScore: true, hasCoefficient: true },
+      select: { id: true, nameFr: true, code: true, passMark: true, maxScore: true, hasCoefficient: true, category: true },
     });
     if (!subject) throw new NotFoundException('Subject not found');
     const cls = await this.prisma.class.findUnique({ where: { id: classId }, select: { level: true } });
@@ -185,7 +197,7 @@ export class GradesService {
           noteDevoir: grade?.noteDevoir ?? null,
           noteComposition: grade?.noteComposition ?? null,
           moyenneMatiere: grade?.moyenneMatiere ?? null,
-          coefficient: primary ? primaryCoefficient(subject.maxScore) : (grade?.coefficient ?? 1),
+          coefficient: primary ? primarySheetCoefficient(subject, cls?.level) : (grade?.coefficient ?? 1),
           rangMatiere: grade?.rangMatiere ?? null,
           appreciation: grade?.appreciation ?? null,
           teacherComment: grade?.teacherComment ?? null,
@@ -206,14 +218,14 @@ export class GradesService {
       select: { coefficient: true },
     });
     const coefficient = primary
-      ? primaryCoefficient(subject.maxScore)
+      ? primarySheetCoefficient(subject, cls?.level)
       : (subject.hasCoefficient === false ? 1 : (enteredCoef?.coefficient ?? lastCoef?.coefficient ?? 1));
 
     return {
       classId,
       classLevel: cls?.level ?? null,
       subjectId,
-      subject,
+      subject: { ...subject, maxScore: primary ? primarySheetMax(subject, cls?.level) : subject.maxScore },
       coefficient,
       teacher: classSubject?.teacher ?? null,
       academicYear,
@@ -243,7 +255,7 @@ export class GradesService {
 
     const subject = await this.prisma.subject.findUnique({
       where: { id: subjectId },
-      select: { id: true, nameFr: true, maxScore: true, hasCoefficient: true },
+      select: { id: true, nameFr: true, maxScore: true, hasCoefficient: true, category: true },
     });
     if (!subject) throw new NotFoundException('Subject not found');
     const csvMaxScore = subject.maxScore ?? 20;
@@ -320,10 +332,9 @@ export class GradesService {
       select: { id: true, nameFr: true, maxScore: true, hasCoefficient: true },
     });
     if (!subject) throw new NotFoundException('Subject not found');
-    const maxScore = subject.maxScore ?? 20;
-
     const cls = await this.prisma.class.findUnique({ where: { id: classId } });
     if (!cls) throw new NotFoundException('Class not found');
+    const maxScore = isPrimaryClass(cls.level) ? primarySheetMax(subject, cls.level) : subject.maxScore ?? 20;
 
     // Colonne « Devoir » avant cet enregistrement (report vers la fiche du devoir surveillé)
     const previousDevoir = new Map(
@@ -391,7 +402,7 @@ export class GradesService {
 
         // Primary school subjects have no coefficient weighting
         const coef = isPrimaryClass(cls.level)
-          ? primaryCoefficient(maxScore)
+          ? primarySheetCoefficient(subject, cls.level)
           : (subject.hasCoefficient === false ? 1 : (row.coefficient ?? 1));
 
         const gradeData = {

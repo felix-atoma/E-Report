@@ -186,7 +186,15 @@ export function FicheSheet({ source, coef: coefOverride, institution, className,
   const subject        = source.subject;
   const teacher        = source.teacher;
   const fiche          = blank ? null : source.fiche;
-  const maxScore       = subject?.maxScore       ?? 20;
+  const level          = source.classLevel ?? className;
+  const normalizedSubjectName = (subject?.nameFr ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const isEnglish = subject?.category === 'ANGLAIS' || /anglais|english/.test(normalizedSubjectName);
+  const isCe12 = /^\s*CE\s*[12]\s*$/i.test(level);
+  const isCm12 = /^\s*CM\s*[12]\s*$/i.test(level);
+  const subjectScale = !isEnglish && isCe12 && /etude\s+de\s+texte/.test(normalizedSubjectName) ? 10
+    : !isEnglish && isCm12 && /mathematiques\s*1|dictee\s+questions|probleme/.test(normalizedSubjectName) ? 20
+    : subject?.maxScore ?? 20;
+  const maxScore       = subjectScale;
   const hasCoefficient = subject?.hasCoefficient ?? true;
   const isPrimary = /^\s*(CI|CP\s*[12]?|CE\s*[12]|CM\s*[12])\s*$/i.test(source.classLevel ?? className ?? '');
   // Coefficient renvoyé par le serveur (celui des notes, sinon le dernier utilisé dans la classe)

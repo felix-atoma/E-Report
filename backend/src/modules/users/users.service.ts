@@ -164,12 +164,19 @@ export class UsersService {
     }
 
     let profileImage: string;
+    const institution = await this.prisma.institution.findUnique({
+      where: { id: institutionId },
+      select: { name: true },
+    });
+    const isSaintPierreClaver = /pierre\s+claver/i.test(institution?.name ?? '');
 
     if (this.cloudinary.enabled) {
       // Uploads directly to Cloudinary — gives a permanent URL that survives
       // redeploys/restarts, unlike Render's ephemeral local disk.
       const folder = `novabulletin/${institutionId}/profile-photos`;
       profileImage = await this.cloudinary.uploadFile(file.path, folder, 'image');
+      // Keep all new Saint Pierre Claver identity photos consistent with the school's sky-blue backdrop.
+      if (isSaintPierreClaver) profileImage = this.cloudinary.withSkyBlueBackground(profileImage);
       try { fs.unlinkSync(file.path); } catch {}
     } else {
       // Local fallback (dev only). Uses copyFileSync + unlinkSync instead of
