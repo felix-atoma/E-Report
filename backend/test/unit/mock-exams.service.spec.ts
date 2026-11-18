@@ -124,6 +124,43 @@ describe('MockExamsService', () => {
     });
   });
 
+  describe('monthly comparison PDF', () => {
+    const sheet = (id: string, score: number) => ({
+      exam: {
+        id,
+        label: id === 'oct' ? 'Octobre' : 'Novembre',
+        examDate: new Date(id === 'oct' ? '2026-10-01' : '2026-11-01'),
+        examType: 'COMPOSITION_MENSUELLE',
+        academicYear: '2026-2027',
+        class: { id: 'class-1', name: 'CM2' },
+      },
+      subjects: [{ id: 'math', nameFr: 'Mathématiques', nameEn: 'Mathematics', code: 'MATH' }],
+      students: [{
+        studentId: 'stu-1', studentName: 'Awa', admissionNumber: 'M-1',
+        grades: [{ subjectId: 'math', score, maxScore: 20 }],
+      }],
+    });
+
+    it('generates a readable PDF for compositions from the same class and year', async () => {
+      jest.spyOn(service, 'getGradeSheet')
+        .mockResolvedValueOnce(sheet('oct', 12) as any)
+        .mockResolvedValueOnce(sheet('nov', 16) as any);
+
+      const result = await service.monthlyComparisonPdf(['oct', 'nov'], INST, 'teacher-1', 'TEACHER');
+
+      expect(result.filename).toBe('comparaison-compositions-CM2.pdf');
+      expect(result.buffer.subarray(0, 5).toString()).toBe('%PDF-');
+    });
+
+    it('rejects compositions from different classes', async () => {
+      jest.spyOn(service, 'getGradeSheet')
+        .mockResolvedValueOnce(sheet('oct', 12) as any)
+        .mockResolvedValueOnce({ ...sheet('nov', 16), exam: { ...sheet('nov', 16).exam, class: { id: 'class-2', name: 'CM2' } } } as any);
+
+      await expect(service.monthlyComparisonPdf(['oct', 'nov'], INST)).rejects.toThrow(BadRequestException);
+    });
+  });
+
   describe('primary: English is its own composition', () => {
     const cs = (id: string, nameFr: string, maxScore: number, category: string | null = null) =>
       ({ subject: { id, nameFr, nameEn: nameFr, code: id, maxScore, category } });
