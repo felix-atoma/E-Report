@@ -290,6 +290,68 @@ export class MockExamsService {
       drawStatsRow(bucket.label, values, bucketIndex + 1);
     });
 
+    const trendsByStudent = new Map<string, { name: string; first: number | null; last: number | null; observations: number }>();
+    for (const sheet of sheets) {
+      for (const student of sheet.students) {
+        if (student.average == null || !Number.isFinite(Number(student.average))) continue;
+        const trend = trendsByStudent.get(student.studentId) ?? {
+          name: student.studentName || student.admissionNumber || '', first: null, last: null, observations: 0,
+        };
+        const average = Number(student.average);
+        if (trend.first == null) trend.first = average;
+        trend.last = average;
+        trend.observations += 1;
+        trendsByStudent.set(student.studentId, trend);
+      }
+    }
+    const comparedStudents = [...trendsByStudent.values()]
+      .filter((student): student is { name: string; first: number; last: number; observations: number } => student.observations >= 2 && student.first != null && student.last != null)
+      .map((student) => ({ ...student, change: Math.round((student.last - student.first) * 100) / 100 }));
+    const progressed = comparedStudents.filter((student) => student.change > 0).sort((a, b) => b.change - a.change || a.name.localeCompare(b.name, 'fr'));
+    const declined = comparedStudents.filter((student) => student.change < 0).sort((a, b) => a.change - b.change || a.name.localeCompare(b.name, 'fr'));
+    const strongestProgress = progressed[0]?.change;
+    const largestDecline = declined[0]?.change;
+    const strongestNames = strongestProgress == null ? [] : progressed.filter((student) => student.change === strongestProgress).map((student) => student.name);
+    const declineNames = largestDecline == null ? [] : declined.filter((student) => student.change === largestDecline).map((student) => student.name);
+    const trendPages = Math.max(1, Math.ceil(progressed.length / 24), Math.ceil(declined.length / 24));
+    for (let trendPageIndex = 0; trendPageIndex < trendPages; trendPageIndex++) {
+      const trendPage = pdf.addPage([1191, 842]);
+      text(trendPage, `Progression des élèves — ${first.exam.class.name} (${first.exam.academicYear})`, margin, 842 - margin - 14, 19, true);
+      text(trendPage, 'Comparaison de la première et de la dernière moyenne disponible, sur 10. Élèves notés dans au moins deux compositions.', margin, 842 - margin - 38, 10, true);
+      const trendColWidth = (1191 - margin * 2 - 24) / 2;
+      const leftX = margin;
+      const rightX = margin + trendColWidth + 24;
+      const highlightY = 842 - margin - 68;
+      trendPage.drawRectangle({ x: leftX, y: highlightY - 56, width: trendColWidth, height: 56, color: rgb(0.88, 0.96, 0.9) });
+      trendPage.drawRectangle({ x: rightX, y: highlightY - 56, width: trendColWidth, height: 56, color: rgb(0.99, 0.91, 0.91) });
+      const strongestLabel = strongestProgress == null ? 'Aucune hausse enregistrée' : `+${strongestProgress.toFixed(2).replace('.', ',')} point(s) : ${strongestNames.join(', ')}`;
+      const declineLabel = largestDecline == null ? 'Aucune baisse enregistrée' : `${largestDecline.toFixed(2).replace('.', ',')} point(s) : ${declineNames.join(', ')}`;
+      text(trendPage, `Plus forte progression (${strongestNames.length})`, leftX + 10, highlightY - 17, 11, true, trendColWidth - 20);
+      text(trendPage, strongestLabel, leftX + 10, highlightY - 39, 10, true, trendColWidth - 20);
+      text(trendPage, `Plus forte régression (${declineNames.length})`, rightX + 10, highlightY - 17, 11, true, trendColWidth - 20);
+      text(trendPage, declineLabel, rightX + 10, highlightY - 39, 10, true, trendColWidth - 20);
+
+      const listsTop = highlightY - 76;
+      const drawTrendList = (x: number, heading: string, students: typeof progressed, color: ReturnType<typeof rgb>) => {
+        trendPage.drawRectangle({ x, y: listsTop - 34, width: trendColWidth, height: 34, color });
+        text(trendPage, `${heading} (${students.length})`, x + 8, listsTop - 22, 11, true, trendColWidth - 16);
+        const pageStudents = students.slice(trendPageIndex * 24, (trendPageIndex + 1) * 24);
+        if (!pageStudents.length) {
+          text(trendPage, students.length ? 'Suite sur la page précédente.' : 'Aucun élève.', x + 8, listsTop - 58, 10, true, trendColWidth - 16);
+          return;
+        }
+        pageStudents.forEach((student, index) => {
+          const y = listsTop - 57 - index * 24;
+          text(trendPage, `${student.name}  (${student.change > 0 ? '+' : ''}${student.change.toFixed(2).replace('.', ',')})`, x + 8, y, 10, true, trendColWidth - 16);
+          if (index < pageStudents.length - 1) trendPage.drawLine({ start: { x: x + 8, y: y - 6 }, end: { x: x + trendColWidth - 8, y: y - 6 }, thickness: 0.3, color: rgb(0.86, 0.89, 0.92) });
+        });
+      };
+      drawTrendList(leftX, 'Ont progressé', progressed, rgb(0.9, 0.96, 0.91));
+      drawTrendList(rightX, 'Ont régressé', declined, rgb(0.99, 0.93, 0.93));
+      text(trendPage, `Élèves comparés : ${comparedStudents.length} · Progression : ${progressed.length} · Baisse : ${declined.length}`,
+        margin, margin - 2, 9, true);
+    }
+
     const safeClass = first.exam.class.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9-]+/g, '-');
     return { buffer: Buffer.from(await pdf.save()), filename: `comparaison-compositions-${safeClass}.pdf` };
   }

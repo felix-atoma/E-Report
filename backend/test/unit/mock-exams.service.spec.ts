@@ -153,7 +153,7 @@ describe('MockExamsService', () => {
       expect(result.filename).toBe('comparaison-compositions-CM2.pdf');
       expect(result.buffer.subarray(0, 5).toString()).toBe('%PDF-');
       const pdf = await PDFDocument.load(result.buffer);
-      expect(pdf.getPageCount()).toBe(2);
+      expect(pdf.getPageCount()).toBe(3);
     });
 
     it('rejects compositions from different classes', async () => {
