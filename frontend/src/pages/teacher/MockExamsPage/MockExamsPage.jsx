@@ -425,7 +425,7 @@ function TypeSection({ typeCfg, exams, isAdmin, canManage = true, onDelete, onCr
           {classGroups.map((group) => (
             <button key={`${group[0].classId}:${group[0].academicYear}`} className="mex-section__compare-btn"
               disabled={comparisonBusy || group.length < 2} onClick={viewMonthlyComparisonPdf(group, group[0].class?.name || 'classe', setComparisonBusy)}>
-              {comparisonBusy ? 'Préparation…' : `📄 Voir / télécharger le PDF — ${group[0].class?.name || 'Classe'} · ${group[0].academicYear} (${group.length} compositions${group.length < 2 ? ', 2 minimum' : ''})`}
+              {comparisonBusy ? 'Préparation…' : `📄 Voir / télécharger le PDF comparatif et statistique — ${group[0].class?.name || 'Classe'} · ${group[0].academicYear} (${group.length} compositions${group.length < 2 ? ', 2 minimum' : ''})`}
             </button>
           ))}
           {typeExams.length === 0 ? (

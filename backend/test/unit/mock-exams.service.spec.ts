@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { PDFDocument } from 'pdf-lib';
 import { MockExamsService } from '../../src/modules/mock-exams/mock-exams.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { PdfService } from '../../src/modules/pdf/pdf.service';
@@ -138,6 +139,7 @@ describe('MockExamsService', () => {
       students: [{
         studentId: 'stu-1', studentName: 'Awa', admissionNumber: 'M-1',
         grades: [{ subjectId: 'math', score, maxScore: 20 }],
+        average: score / 2,
       }],
     });
 
@@ -150,6 +152,8 @@ describe('MockExamsService', () => {
 
       expect(result.filename).toBe('comparaison-compositions-CM2.pdf');
       expect(result.buffer.subarray(0, 5).toString()).toBe('%PDF-');
+      const pdf = await PDFDocument.load(result.buffer);
+      expect(pdf.getPageCount()).toBe(2);
     });
 
     it('rejects compositions from different classes', async () => {

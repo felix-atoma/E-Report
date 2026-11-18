@@ -236,6 +236,60 @@ export class MockExamsService {
       y -= rowHeight;
     }
 
+    // Fiche statistique propre au primaire : les moyennes de composition mensuelle sont sur 10.
+    const buckets = [
+      { label: 'Moyenne < 4', test: (average: number) => average < 4 },
+      { label: '4 à moins de 5', test: (average: number) => average >= 4 && average < 5 },
+      { label: '5 à moins de 6', test: (average: number) => average >= 5 && average < 6 },
+      { label: '6 à moins de 7', test: (average: number) => average >= 6 && average < 7 },
+      { label: '7 à moins de 8', test: (average: number) => average >= 7 && average < 8 },
+      { label: '8 à moins de 9', test: (average: number) => average >= 8 && average < 9 },
+      { label: '9 à 10', test: (average: number) => average >= 9 && average <= 10 },
+    ];
+    const classified = sheets.map((sheet) => sheet.students
+      .map((student) => student.average)
+      .filter((average): average is number => average != null && Number.isFinite(Number(average)))
+      .map(Number));
+    const statsPage = pdf.addPage([1191, 842]);
+    const statsWidth = 1191 - margin * 2;
+    const labelWidth = 150;
+    const statsExamWidth = (statsWidth - labelWidth) / sheets.length;
+    const statsRowHeight = 38;
+    text(statsPage, `Statistiques des moyennes — ${first.exam.class.name} (${first.exam.academicYear})`, margin, 842 - margin - 10, 15, true);
+    text(statsPage, 'Compositions mensuelles du primaire · moyennes sur 10 · pourcentages calculés sur les élèves ayant une moyenne', margin, 842 - margin - 29, 8);
+    let statsY = 842 - margin - 42;
+    const statsHeaders = ['Catégorie de moyenne', ...examHeaders];
+    const statsWidths = [labelWidth, ...sheets.map(() => statsExamWidth)];
+    let statsX = margin;
+    statsHeaders.forEach((header, index) => {
+      statsPage.drawRectangle({ x: statsX, y: statsY - 42, width: statsWidths[index], height: 42, color: rgb(0.08, 0.24, 0.42) });
+      text(statsPage, header, statsX + 5, statsY - 16, 8, true, statsWidths[index] - 10);
+      statsX += statsWidths[index];
+    });
+    statsY -= 42;
+    const drawStatsRow = (label: string, values: string[], index: number, emphasize = false) => {
+      statsPage.drawRectangle({ x: margin, y: statsY - statsRowHeight, width: statsWidth, height: statsRowHeight,
+        color: emphasize ? rgb(0.88, 0.93, 0.97) : (index % 2 ? rgb(0.97, 0.98, 0.99) : rgb(1, 1, 1)) });
+      let x = margin;
+      [label, ...values].forEach((value, cellIndex) => {
+        statsPage.drawLine({ start: { x, y: statsY }, end: { x, y: statsY - statsRowHeight }, thickness: 0.35, color: rgb(0.82, 0.86, 0.9) });
+        text(statsPage, value, x + 5, statsY - 23, 9, emphasize, statsWidths[cellIndex] - 10);
+        x += statsWidths[cellIndex];
+      });
+      statsPage.drawLine({ start: { x, y: statsY }, end: { x, y: statsY - statsRowHeight }, thickness: 0.35, color: rgb(0.82, 0.86, 0.9) });
+      statsPage.drawLine({ start: { x: margin, y: statsY - statsRowHeight }, end: { x: margin + statsWidth, y: statsY - statsRowHeight }, thickness: 0.35, color: rgb(0.82, 0.86, 0.9) });
+      statsY -= statsRowHeight;
+    };
+    drawStatsRow('Élèves avec moyenne', classified.map((averages) => String(averages.length)), 0, true);
+    buckets.forEach((bucket, bucketIndex) => {
+      const values = classified.map((averages) => {
+        const count = averages.filter(bucket.test).length;
+        const percentage = averages.length ? Math.round((count / averages.length) * 1000) / 10 : 0;
+        return `${count} (${percentage.toFixed(1).replace('.', ',')} %)`;
+      });
+      drawStatsRow(bucket.label, values, bucketIndex + 1);
+    });
+
     const safeClass = first.exam.class.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9-]+/g, '-');
     return { buffer: Buffer.from(await pdf.save()), filename: `comparaison-compositions-${safeClass}.pdf` };
   }
