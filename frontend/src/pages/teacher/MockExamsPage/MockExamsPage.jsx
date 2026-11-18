@@ -14,6 +14,7 @@ import Select from '../../../components/common/Select/Select';
 import Button from '../../../components/common/Button/Button';
 import toast from 'react-hot-toast';
 import { fmtSessionDates } from '../../../utils/fmtSessionDates';
+import { buildMonthlyComparisonRows, rowsToSemicolonCsv } from '../../../utils/monthlyComparisonCsv';
 import { DS_TYPE_CFG, CM_TYPE_CFG, CA_TYPE_CFG, KIND_TEXT, isNonExamType, isPrimaryCompoType, isDsType, isPrimaryLevel, isSecondaryLevel, typesForKind } from '../../../utils/examKinds';
 import './MockExamsPage.css';
 
@@ -61,9 +62,35 @@ const EXAM_TYPES = [
   },
 ];
 
-function fmtDate(iso) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+function downloadMonthlyComparison(exams, className, onBusy) {
+  return async () => {
+    if (exams.length < 2) {
+      toast.error('Il faut au moins deux compositions mensuelles pour comparer les moyennes.');
+      return;
+    }
+    onBusy(true);
+    try {
+      const sheets = await Promise.all(exams.map((exam) => mockExamsService.getGradeSheet(exam.id).then((r) => r.data)));
+      const ordered = sheets.map((sheet, index) => ({ ...sheet, source: exams[index] }))
+        .sort((a, b) => new Date(a.exam.examDate || a.source.createdAt) - new Date(b.exam.examDate || b.source.createdAt));
+      const rows = buildMonthlyComparisonRows(ordered);
+      if (!rows.length) {
+        toast.error('Aucune note saisie pour ces compositions.');
+        return;
+      }
+      const csv = rowsToSemicolonCsv(rows);
+      const url = URL.createObjectURL(new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `comparaison-compositions-${className.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9-]+/g, '-')}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Impossible de générer la fiche de comparaison.');
+    } finally {
+      onBusy(false);
+    }
+  };
 }
 
 /* ── Create form ──────────────────────────────────────────────────────────── */
@@ -195,7 +222,7 @@ function CreateForm({ examType, classes, classesLoading, onClose, onCreate, serv
 }
 
 /* ── Single exam row ──────────────────────────────────────────────────────── */
-function ExamRow({ exam, isAdmin, canManage = true, onDelete, color, onDatesUpdated }) {
+function ExamRow({ exam, isAdmin, canManage = true, onDelete, onDatesUpdated }) {
   const { t } = useTranslation();
   const [editingDates, setEditingDates] = useState(false);
   const [dateStart, setDateStart] = useState(exam.examDate ? exam.examDate.slice(0, 10) : '');
@@ -347,10 +374,14 @@ function ExamRow({ exam, isAdmin, canManage = true, onDelete, color, onDatesUpda
 }
 
 /* ── Type section ─────────────────────────────────────────────────────────── */
-function TypeSection({ typeCfg, exams, classes, isAdmin, canManage = true, onDelete, onCreateClick, onDatesUpdated }) {
+function TypeSection({ typeCfg, exams, isAdmin, canManage = true, onDelete, onCreateClick, onDatesUpdated }) {
   const { t } = useTranslation();
   const typeExams = exams.filter((e) => e.examType === typeCfg.value);
   const [open, setOpen] = useState(true);
+  const [comparisonBusy, setComparisonBusy] = useState(false);
+  const classGroups = typeCfg.value === 'COMPOSITION_MENSUELLE'
+    ? [...new Map(typeExams.map((exam) => [`${exam.classId}:${exam.academicYear}`, typeExams.filter((item) => item.classId === exam.classId && item.academicYear === exam.academicYear)])).values()]
+    : [];
 
   return (
     <div className="mex-section" style={{ '--type-color': typeCfg.color, '--type-bg': typeCfg.bg, '--type-border': typeCfg.border }}>
@@ -380,6 +411,12 @@ function TypeSection({ typeCfg, exams, classes, isAdmin, canManage = true, onDel
 
       {open && (
         <div className="mex-section__body">
+          {classGroups.map((group) => (
+            <button key={`${group[0].classId}:${group[0].academicYear}`} className="mex-section__compare-btn"
+              disabled={comparisonBusy || group.length < 2} onClick={downloadMonthlyComparison(group, group[0].class?.name || 'classe', setComparisonBusy)}>
+              {comparisonBusy ? 'Préparation…' : `⬇ Fiche de comparaison — ${group[0].class?.name || 'Classe'} · ${group[0].academicYear} (${group.length} compositions${group.length < 2 ? ', 2 minimum' : ''})`}
+            </button>
+          ))}
           {typeExams.length === 0 ? (
             <div className="mex-section__empty">
               <span>{typeCfg.desc} — </span>
@@ -393,7 +430,6 @@ function TypeSection({ typeCfg, exams, classes, isAdmin, canManage = true, onDel
                 isAdmin={isAdmin}
                 canManage={canManage}
                 onDelete={onDelete}
-                color={typeCfg.color}
                 onDatesUpdated={onDatesUpdated}
               />
             ))
@@ -500,7 +536,6 @@ function MockExamsPage({ kind = 'ESSAI' }) {
               key={typeCfg.value}
               typeCfg={typeCfg}
               exams={exams}
-              classes={classes}
               isAdmin={isAdmin}
               canManage={canManage}
               onDelete={(id) => deleteMutation.mutate(id)}
