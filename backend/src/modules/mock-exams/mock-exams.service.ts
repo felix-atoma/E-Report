@@ -190,8 +190,8 @@ export class MockExamsService {
     const tableWidth = pageSize[0] - margin * 2;
     const fixedWidths = [112, 66, 100, 58];
     const examWidth = (tableWidth - fixedWidths.reduce((sum, width) => sum + width, 0)) / sheets.length;
-    const headerHeight = 34;
-    const rowHeight = sheets.length > 7 ? 20 : 18;
+    const headerHeight = 38;
+    const rowHeight = sheets.length > 7 ? 22 : 20;
     const title = `Comparaison des compositions mensuelles — ${first.exam.class.name} (${first.exam.academicYear})`;
     const text = (page: any, value: string, x: number, y: number, size: number, useBold = false, maxWidth?: number) => {
       const selected = useBold ? bold : font;
@@ -205,7 +205,7 @@ export class MockExamsService {
       let x = margin;
       headers.forEach((header, i) => {
         page.drawRectangle({ x, y: top - headerHeight, width: widths[i], height: headerHeight, color: rgb(0.08, 0.24, 0.42) });
-        text(page, header, x + 4, top - 13, Math.min(8, Math.max(5.5, examWidth / 10)), true, widths[i] - 8);
+        text(page, header, x + 4, top - 14, Math.min(9, Math.max(7, examWidth / 9)), true, widths[i] - 8);
         x += widths[i];
       });
       return top - headerHeight;
@@ -216,9 +216,9 @@ export class MockExamsService {
     for (let index = 0; index < rows.length; index++) {
       if (!page || y - rowHeight < margin + 20) {
         page = pdf.addPage(pageSize);
-        text(page, title, margin, pageSize[1] - margin - 10, 14, true);
-        text(page, 'Notes ramenées sur 10', margin, pageSize[1] - margin - 27, 8);
-        y = drawHeader(page, pageSize[1] - margin - 38);
+        text(page, title, margin, pageSize[1] - margin - 12, 16, true);
+        text(page, 'Notes ramenées sur 10', margin, pageSize[1] - margin - 32, 10, true);
+        y = drawHeader(page, pageSize[1] - margin - 43);
       }
       const row = rows[index];
       const isAverage = Boolean(row.classAverage);
@@ -228,7 +228,7 @@ export class MockExamsService {
       let x = margin;
       values.forEach((value, i) => {
         page.drawLine({ start: { x, y }, end: { x, y: y - rowHeight }, thickness: 0.35, color: rgb(0.82, 0.86, 0.9) });
-        text(page, value, x + 4, y - 12, 7, isAverage, widths[i] - 8);
+        text(page, value, x + 4, y - 14, 8.5, true, widths[i] - 8);
         x += widths[i];
       });
       page.drawLine({ start: { x, y }, end: { x, y: y - rowHeight }, thickness: 0.35, color: rgb(0.82, 0.86, 0.9) });
@@ -254,26 +254,26 @@ export class MockExamsService {
     const statsWidth = 1191 - margin * 2;
     const labelWidth = 150;
     const statsExamWidth = (statsWidth - labelWidth) / sheets.length;
-    const statsRowHeight = 38;
+    const statsRowHeight = 46;
     text(statsPage, `Statistiques des moyennes — ${first.exam.class.name} (${first.exam.academicYear})`, margin, 842 - margin - 10, 15, true);
     text(statsPage, 'Compositions mensuelles du primaire · moyennes sur 10 · pourcentages calculés sur les élèves ayant une moyenne', margin, 842 - margin - 29, 8);
-    let statsY = 842 - margin - 42;
+    let statsY = 842 - margin - 62;
     const statsHeaders = ['Catégorie de moyenne', ...examHeaders];
     const statsWidths = [labelWidth, ...sheets.map(() => statsExamWidth)];
     let statsX = margin;
     statsHeaders.forEach((header, index) => {
-      statsPage.drawRectangle({ x: statsX, y: statsY - 42, width: statsWidths[index], height: 42, color: rgb(0.08, 0.24, 0.42) });
-      text(statsPage, header, statsX + 5, statsY - 16, 8, true, statsWidths[index] - 10);
+      statsPage.drawRectangle({ x: statsX, y: statsY - 50, width: statsWidths[index], height: 50, color: rgb(0.08, 0.24, 0.42) });
+      text(statsPage, header, statsX + 5, statsY - 18, index === 0 ? 12 : 10, true, statsWidths[index] - 10);
       statsX += statsWidths[index];
     });
-    statsY -= 42;
+    statsY -= 50;
     const drawStatsRow = (label: string, values: string[], index: number, emphasize = false) => {
       statsPage.drawRectangle({ x: margin, y: statsY - statsRowHeight, width: statsWidth, height: statsRowHeight,
         color: emphasize ? rgb(0.88, 0.93, 0.97) : (index % 2 ? rgb(0.97, 0.98, 0.99) : rgb(1, 1, 1)) });
       let x = margin;
       [label, ...values].forEach((value, cellIndex) => {
         statsPage.drawLine({ start: { x, y: statsY }, end: { x, y: statsY - statsRowHeight }, thickness: 0.35, color: rgb(0.82, 0.86, 0.9) });
-        text(statsPage, value, x + 5, statsY - 23, 9, emphasize, statsWidths[cellIndex] - 10);
+        text(statsPage, value, x + 5, statsY - 29, 12, true, statsWidths[cellIndex] - 10);
         x += statsWidths[cellIndex];
       });
       statsPage.drawLine({ start: { x, y: statsY }, end: { x, y: statsY - statsRowHeight }, thickness: 0.35, color: rgb(0.82, 0.86, 0.9) });
