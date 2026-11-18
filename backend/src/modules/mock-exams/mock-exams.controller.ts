@@ -32,6 +32,18 @@ export class MockExamsController {
   }
 
   @Roles(Role.ADMIN, Role.TEACHER)
+  @Get('monthly-comparison/pdf')
+  async monthlyComparisonPdf(@Query('examIds') examIds: string, @Req() req: any, @Res() res: Response) {
+    const result = await this.service.monthlyComparisonPdf((examIds ?? '').split(','), req.user.institutionId, req.user.id, req.user.role);
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `inline; filename="${result.filename}"`,
+      'Content-Length': result.buffer.length,
+    });
+    res.end(result.buffer);
+  }
+
+  @Roles(Role.ADMIN, Role.TEACHER)
   @Post()
   async create(@Body() dto: CreateMockExamDto, @Req() req: any) {
     await this.service.assertCanManage({ examType: dto.examType }, req.user.role, req.user.institutionId);

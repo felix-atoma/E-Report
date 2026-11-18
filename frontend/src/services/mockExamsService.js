@@ -4,6 +4,8 @@ export const mockExamsService = {
   list: (params) => api.get('/mock-exams', { params }),
   create: (data) => api.post('/mock-exams', data),
   getGradeSheet: (id) => api.get(`/mock-exams/${id}/grade-sheet`),
+  getMonthlyComparisonPdf: (examIds) =>
+    api.get('/mock-exams/monthly-comparison/pdf', { params: { examIds: examIds.join(',') }, responseType: 'blob' }),
   saveGrades: (id, grades) => api.patch(`/mock-exams/${id}/grades`, { grades }),
   publish: (id) => api.patch(`/mock-exams/${id}/publish`),
   unpublish: (id) => api.patch(`/mock-exams/${id}/unpublish`),

@@ -14,7 +14,6 @@ import Select from '../../../components/common/Select/Select';
 import Button from '../../../components/common/Button/Button';
 import toast from 'react-hot-toast';
 import { fmtSessionDates } from '../../../utils/fmtSessionDates';
-import { buildMonthlyComparisonRows, rowsToSemicolonCsv } from '../../../utils/monthlyComparisonCsv';
 import { DS_TYPE_CFG, CM_TYPE_CFG, CA_TYPE_CFG, KIND_TEXT, isNonExamType, isPrimaryCompoType, isDsType, isPrimaryLevel, isSecondaryLevel, typesForKind } from '../../../utils/examKinds';
 import './MockExamsPage.css';
 
@@ -62,30 +61,42 @@ const EXAM_TYPES = [
   },
 ];
 
-function downloadMonthlyComparison(exams, className, onBusy) {
+function viewMonthlyComparisonPdf(exams, className, onBusy) {
   return async () => {
     if (exams.length < 2) {
       toast.error('Il faut au moins deux compositions mensuelles pour comparer les moyennes.');
       return;
     }
+    const viewer = window.open('', '_blank');
+    if (!viewer) {
+      toast.error('Autorisez les fenêtres contextuelles pour afficher le PDF.');
+      return;
+    }
     onBusy(true);
     try {
-      const sheets = await Promise.all(exams.map((exam) => mockExamsService.getGradeSheet(exam.id).then((r) => r.data)));
-      const ordered = sheets.map((sheet, index) => ({ ...sheet, source: exams[index] }))
-        .sort((a, b) => new Date(a.exam.examDate || a.source.createdAt) - new Date(b.exam.examDate || b.source.createdAt));
-      const rows = buildMonthlyComparisonRows(ordered);
-      if (!rows.length) {
-        toast.error('Aucune note saisie pour ces compositions.');
-        return;
-      }
-      const csv = rowsToSemicolonCsv(rows);
-      const url = URL.createObjectURL(new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8' }));
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `comparaison-compositions-${className.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9-]+/g, '-')}.csv`;
-      link.click();
-      URL.revokeObjectURL(url);
+      viewer.document.title = 'Comparaison des compositions mensuelles';
+      viewer.document.body.innerHTML = '<p style="font:16px Arial,sans-serif;padding:24px">Préparation du PDF…</p>';
+      const { data } = await mockExamsService.getMonthlyComparisonPdf(exams.map((exam) => exam.id));
+      const url = URL.createObjectURL(new Blob([data], { type: 'application/pdf' }));
+      viewer.addEventListener('pagehide', () => URL.revokeObjectURL(url), { once: true });
+      const safeClass = className.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9-]+/g, '-');
+      viewer.document.body.innerHTML = '';
+      viewer.document.body.style.cssText = 'margin:0;font:14px Arial,sans-serif;background:#e8edf2';
+      const toolbar = viewer.document.createElement('div');
+      toolbar.style.cssText = 'height:48px;display:flex;align-items:center;padding:0 16px;background:#123456;color:#fff';
+      const download = viewer.document.createElement('a');
+      download.href = url;
+      download.download = `comparaison-compositions-${safeClass}.pdf`;
+      download.textContent = 'Télécharger le PDF';
+      download.style.cssText = 'color:#fff;font-weight:700;text-decoration:none';
+      const frame = viewer.document.createElement('iframe');
+      frame.src = url;
+      frame.title = 'Comparaison des compositions mensuelles en PDF';
+      frame.style.cssText = 'display:block;width:100%;height:calc(100vh - 48px);border:0;background:#fff';
+      viewer.document.body.append(toolbar, frame);
+      toolbar.append(download);
     } catch (error) {
+      viewer.close();
       toast.error(error.response?.data?.message || 'Impossible de générer la fiche de comparaison.');
     } finally {
       onBusy(false);
@@ -413,8 +424,8 @@ function TypeSection({ typeCfg, exams, isAdmin, canManage = true, onDelete, onCr
         <div className="mex-section__body">
           {classGroups.map((group) => (
             <button key={`${group[0].classId}:${group[0].academicYear}`} className="mex-section__compare-btn"
-              disabled={comparisonBusy || group.length < 2} onClick={downloadMonthlyComparison(group, group[0].class?.name || 'classe', setComparisonBusy)}>
-              {comparisonBusy ? 'Préparation…' : `⬇ Fiche de comparaison — ${group[0].class?.name || 'Classe'} · ${group[0].academicYear} (${group.length} compositions${group.length < 2 ? ', 2 minimum' : ''})`}
+              disabled={comparisonBusy || group.length < 2} onClick={viewMonthlyComparisonPdf(group, group[0].class?.name || 'classe', setComparisonBusy)}>
+              {comparisonBusy ? 'Préparation…' : `📄 Voir / télécharger le PDF — ${group[0].class?.name || 'Classe'} · ${group[0].academicYear} (${group.length} compositions${group.length < 2 ? ', 2 minimum' : ''})`}
             </button>
           ))}
           {typeExams.length === 0 ? (

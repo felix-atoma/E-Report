@@ -131,6 +131,115 @@ export class MockExamsService {
     });
   }
 
+  async monthlyComparisonPdf(examIds: string[], institutionId: string, userId?: string, userRole?: string) {
+    const ids = [...new Set(examIds.map((id) => id.trim()).filter(Boolean))];
+    if (ids.length < 2) throw new BadRequestException('Au moins deux compositions sont requises.');
+    if (ids.length > 12) throw new BadRequestException('La comparaison est limitée à 12 compositions.');
+
+    const sheets = await Promise.all(ids.map((id) => this.getGradeSheet(id, institutionId, userId, userRole)));
+    const first = sheets[0];
+    if (sheets.some((sheet) => sheet.exam.examType !== 'COMPOSITION_MENSUELLE')) {
+      throw new BadRequestException('Seules les compositions mensuelles peuvent être comparées.');
+    }
+    if (sheets.some((sheet) => sheet.exam.class.id !== first.exam.class.id || sheet.exam.academicYear !== first.exam.academicYear)) {
+      throw new BadRequestException('Les compositions doivent concerner la même classe et la même année scolaire.');
+    }
+    sheets.sort((a, b) => new Date(a.exam.examDate ?? 0).getTime() - new Date(b.exam.examDate ?? 0).getTime());
+
+    const subjectNames = new Map<string, string>();
+    const students = new Map<string, { name: string; admissionNumber: string }>();
+    for (const sheet of sheets) {
+      for (const subject of sheet.subjects) subjectNames.set(subject.id, subject.nameFr || subject.nameEn || subject.code);
+      for (const student of sheet.students) students.set(student.studentId, {
+        name: student.studentName || student.admissionNumber || '',
+        admissionNumber: student.admissionNumber || '',
+      });
+    }
+
+    const examHeaders = sheets.map((sheet) => `${sheet.exam.label} (${sheet.exam.examDate
+      ? new Date(sheet.exam.examDate).toLocaleDateString('fr-FR') : 'date inconnue'})`);
+    const scoreMap = new Map<string, (number | null)[]>();
+    sheets.forEach((sheet, examIndex) => sheet.students.forEach((student) => student.grades.forEach((grade) => {
+      if (grade.score == null || !(Number(grade.maxScore) > 0)) return;
+      const key = `${student.studentId}:${grade.subjectId}`;
+      if (!scoreMap.has(key)) scoreMap.set(key, Array(sheets.length).fill(null));
+      scoreMap.get(key)![examIndex] = Number(grade.score) / Number(grade.maxScore) * 10;
+    })));
+
+    type Row = { student: string; admission: string; subject: string; scores: (number | null)[]; classAverage?: boolean };
+    const rows: Row[] = [];
+    for (const [subjectId, subjectName] of subjectNames) {
+      const scoresForSubject = [...scoreMap.entries()].filter(([key]) => key.endsWith(`:${subjectId}`)).map(([, scores]) => scores);
+      const classAverages = sheets.map((_, examIndex) => {
+        const values = scoresForSubject.map((scores) => scores[examIndex]).filter((score): score is number => score != null);
+        return values.length ? values.reduce((sum, score) => sum + score, 0) / values.length : null;
+      });
+      rows.push({ student: 'MOYENNE DE CLASSE', admission: '', subject: subjectName, scores: classAverages, classAverage: true });
+      for (const [studentId, student] of [...students.entries()].sort((a, b) => a[1].name.localeCompare(b[1].name, 'fr'))) {
+        const scores = scoreMap.get(`${studentId}:${subjectId}`) ?? Array(sheets.length).fill(null);
+        if (scores.some((score) => score != null)) rows.push({ student: student.name, admission: student.admissionNumber, subject: subjectName, scores });
+      }
+    }
+    if (!rows.length) throw new BadRequestException('Aucune note saisie pour ces compositions.');
+
+    const pdf = await PDFDocument.create();
+    const font = await pdf.embedFont(StandardFonts.Helvetica);
+    const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
+    const pageSize: [number, number] = sheets.length > 7 ? [1191, 842] : [842, 595];
+    const margin = 28;
+    const tableWidth = pageSize[0] - margin * 2;
+    const fixedWidths = [112, 66, 100, 58];
+    const examWidth = (tableWidth - fixedWidths.reduce((sum, width) => sum + width, 0)) / sheets.length;
+    const headerHeight = 34;
+    const rowHeight = sheets.length > 7 ? 20 : 18;
+    const title = `Comparaison des compositions mensuelles — ${first.exam.class.name} (${first.exam.academicYear})`;
+    const text = (page: any, value: string, x: number, y: number, size: number, useBold = false, maxWidth?: number) => {
+      const selected = useBold ? bold : font;
+      let output = String(value ?? '').replace(/[\r\n]+/g, ' ');
+      if (maxWidth) while (output.length > 1 && selected.widthOfTextAtSize(output, size) > maxWidth) output = `${output.slice(0, -2)}…`;
+      page.drawText(output, { x, y, size, font: selected, color: rgb(0.12, 0.18, 0.27) });
+    };
+    const headers = ['Élève', 'N° matricule', 'Matière', ...examHeaders, 'Évolution'];
+    const widths = [...fixedWidths.slice(0, 3), ...examHeaders.map(() => examWidth), fixedWidths[3]];
+    const drawHeader = (page: any, top: number) => {
+      let x = margin;
+      headers.forEach((header, i) => {
+        page.drawRectangle({ x, y: top - headerHeight, width: widths[i], height: headerHeight, color: rgb(0.08, 0.24, 0.42) });
+        text(page, header, x + 4, top - 13, Math.min(8, Math.max(5.5, examWidth / 10)), true, widths[i] - 8);
+        x += widths[i];
+      });
+      return top - headerHeight;
+    };
+
+    let page: any;
+    let y = 0;
+    for (let index = 0; index < rows.length; index++) {
+      if (!page || y - rowHeight < margin + 20) {
+        page = pdf.addPage(pageSize);
+        text(page, title, margin, pageSize[1] - margin - 10, 14, true);
+        text(page, 'Notes ramenées sur 10', margin, pageSize[1] - margin - 27, 8);
+        y = drawHeader(page, pageSize[1] - margin - 38);
+      }
+      const row = rows[index];
+      const isAverage = Boolean(row.classAverage);
+      page.drawRectangle({ x: margin, y: y - rowHeight, width: tableWidth, height: rowHeight, color: isAverage ? rgb(0.88, 0.93, 0.97) : (index % 2 ? rgb(0.97, 0.98, 0.99) : rgb(1, 1, 1)) });
+      const values = [row.student, row.admission, row.subject, ...row.scores.map((score) => score == null ? '' : score.toFixed(2)),
+        row.scores.length > 1 && row.scores.at(-1) != null && row.scores.at(-2) != null ? (row.scores.at(-1)! - row.scores.at(-2)!).toFixed(2) : ''];
+      let x = margin;
+      values.forEach((value, i) => {
+        page.drawLine({ start: { x, y }, end: { x, y: y - rowHeight }, thickness: 0.35, color: rgb(0.82, 0.86, 0.9) });
+        text(page, value, x + 4, y - 12, 7, isAverage, widths[i] - 8);
+        x += widths[i];
+      });
+      page.drawLine({ start: { x, y }, end: { x, y: y - rowHeight }, thickness: 0.35, color: rgb(0.82, 0.86, 0.9) });
+      page.drawLine({ start: { x: margin, y: y - rowHeight }, end: { x: margin + tableWidth, y: y - rowHeight }, thickness: 0.35, color: rgb(0.82, 0.86, 0.9) });
+      y -= rowHeight;
+    }
+
+    const safeClass = first.exam.class.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9-]+/g, '-');
+    return { buffer: Buffer.from(await pdf.save()), filename: `comparaison-compositions-${safeClass}.pdf` };
+  }
+
   /**
    * L'administrateur crée et gère toutes les sessions — examens blancs comme devoirs surveillés
    * (création, dates, type, publication, suppression). Les professeurs appliquent : ils saisissent
