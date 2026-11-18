@@ -138,13 +138,17 @@ export class MockExamsService {
 
     const sheets = await Promise.all(ids.map((id) => this.getGradeSheet(id, institutionId, userId, userRole)));
     const first = sheets[0];
-    if (sheets.some((sheet) => sheet.exam.examType !== 'COMPOSITION_MENSUELLE')) {
-      throw new BadRequestException('Seules les compositions mensuelles peuvent être comparées.');
+    const examType = first.exam.examType;
+    if (!['COMPOSITION_MENSUELLE', 'COMPOSITION_ANGLAIS'].includes(examType)
+      || sheets.some((sheet) => sheet.exam.examType !== examType)) {
+      throw new BadRequestException('Comparez uniquement des compositions mensuelles entre elles, ou des compositions d’anglais entre elles.');
     }
     if (sheets.some((sheet) => sheet.exam.class.id !== first.exam.class.id || sheet.exam.academicYear !== first.exam.academicYear)) {
       throw new BadRequestException('Les compositions doivent concerner la même classe et la même année scolaire.');
     }
     sheets.sort((a, b) => new Date(a.exam.examDate ?? 0).getTime() - new Date(b.exam.examDate ?? 0).getTime());
+    const scoreScale = examType === 'COMPOSITION_ANGLAIS' ? 100 : 10;
+    const isEnglishComposition = examType === 'COMPOSITION_ANGLAIS';
 
     const subjectNames = new Map<string, string>();
     const students = new Map<string, { name: string; admissionNumber: string }>();
@@ -163,7 +167,7 @@ export class MockExamsService {
       if (grade.score == null || !(Number(grade.maxScore) > 0)) return;
       const key = `${student.studentId}:${grade.subjectId}`;
       if (!scoreMap.has(key)) scoreMap.set(key, Array(sheets.length).fill(null));
-      scoreMap.get(key)![examIndex] = Number(grade.score) / Number(grade.maxScore) * 10;
+      scoreMap.get(key)![examIndex] = Number(grade.score) / Number(grade.maxScore) * scoreScale;
     })));
 
     type Row = { student: string; admission: string; subject: string; scores: (number | null)[]; classAverage?: boolean };
@@ -192,7 +196,7 @@ export class MockExamsService {
     const examWidth = (tableWidth - fixedWidths.reduce((sum, width) => sum + width, 0)) / sheets.length;
     const headerHeight = 38;
     const rowHeight = sheets.length > 7 ? 22 : 20;
-    const title = `Comparaison des compositions mensuelles — ${first.exam.class.name} (${first.exam.academicYear})`;
+    const title = `Comparaison des compositions ${isEnglishComposition ? 'd’anglais' : 'mensuelles'} — ${first.exam.class.name} (${first.exam.academicYear})`;
     const text = (page: any, value: string, x: number, y: number, size: number, useBold = false, maxWidth?: number) => {
       const selected = useBold ? bold : font;
       let output = String(value ?? '').replace(/[\r\n]+/g, ' ');
@@ -217,7 +221,7 @@ export class MockExamsService {
       if (!page || y - rowHeight < margin + 20) {
         page = pdf.addPage(pageSize);
         text(page, title, margin, pageSize[1] - margin - 12, 16, true);
-        text(page, 'Notes ramenées sur 10', margin, pageSize[1] - margin - 32, 10, true);
+        text(page, `Notes ramenées sur ${scoreScale}`, margin, pageSize[1] - margin - 32, 10, true);
         y = drawHeader(page, pageSize[1] - margin - 43);
       }
       const row = rows[index];
@@ -237,14 +241,16 @@ export class MockExamsService {
     }
 
     // Fiche statistique propre au primaire : les moyennes de composition mensuelle sont sur 10.
+    const bandStep = scoreScale / 10;
+    const bandUnit = isEnglishComposition ? ' %' : '';
+    const bandValue = (value: number) => `${value * bandStep}${bandUnit}`;
     const buckets = [
-      { label: 'Moyenne < 4', test: (average: number) => average < 4 },
-      { label: '4 à moins de 5', test: (average: number) => average >= 4 && average < 5 },
-      { label: '5 à moins de 6', test: (average: number) => average >= 5 && average < 6 },
-      { label: '6 à moins de 7', test: (average: number) => average >= 6 && average < 7 },
-      { label: '7 à moins de 8', test: (average: number) => average >= 7 && average < 8 },
-      { label: '8 à moins de 9', test: (average: number) => average >= 8 && average < 9 },
-      { label: '9 à 10', test: (average: number) => average >= 9 && average <= 10 },
+      { label: `Moyenne < ${bandValue(4)}`, test: (average: number) => average < 4 * bandStep },
+      ...[4, 5, 6, 7, 8].map((start) => ({
+        label: `${bandValue(start)} à moins de ${bandValue(start + 1)}`,
+        test: (average: number) => average >= start * bandStep && average < (start + 1) * bandStep,
+      })),
+      { label: `${bandValue(9)} à ${scoreScale}${bandUnit}`, test: (average: number) => average >= 9 * bandStep && average <= scoreScale },
     ];
     const classified = sheets.map((sheet) => sheet.students
       .map((student) => student.average)
@@ -256,7 +262,7 @@ export class MockExamsService {
     const statsExamWidth = (statsWidth - labelWidth) / sheets.length;
     const statsRowHeight = 46;
     text(statsPage, `Statistiques des moyennes — ${first.exam.class.name} (${first.exam.academicYear})`, margin, 842 - margin - 10, 15, true);
-    text(statsPage, 'Compositions mensuelles du primaire · moyennes sur 10 · pourcentages calculés sur les élèves ayant une moyenne', margin, 842 - margin - 29, 8);
+    text(statsPage, `${isEnglishComposition ? 'Compositions d’anglais' : 'Compositions mensuelles'} du primaire · moyennes sur ${scoreScale} · pourcentages calculés sur les élèves ayant une moyenne`, margin, 842 - margin - 29, 8);
     let statsY = 842 - margin - 62;
     const statsHeaders = ['Catégorie de moyenne', ...examHeaders];
     const statsWidths = [labelWidth, ...sheets.map(() => statsExamWidth)];
@@ -317,15 +323,16 @@ export class MockExamsService {
     for (let trendPageIndex = 0; trendPageIndex < trendPages; trendPageIndex++) {
       const trendPage = pdf.addPage([1191, 842]);
       text(trendPage, `Progression des élèves — ${first.exam.class.name} (${first.exam.academicYear})`, margin, 842 - margin - 14, 19, true);
-      text(trendPage, 'Comparaison de la première et de la dernière moyenne disponible, sur 10. Élèves notés dans au moins deux compositions.', margin, 842 - margin - 38, 10, true);
+      text(trendPage, `Comparaison de la première et de la dernière moyenne disponible, sur ${scoreScale}. Élèves notés dans au moins deux compositions.`, margin, 842 - margin - 38, 10, true);
       const trendColWidth = (1191 - margin * 2 - 24) / 2;
       const leftX = margin;
       const rightX = margin + trendColWidth + 24;
       const highlightY = 842 - margin - 68;
       trendPage.drawRectangle({ x: leftX, y: highlightY - 56, width: trendColWidth, height: 56, color: rgb(0.88, 0.96, 0.9) });
       trendPage.drawRectangle({ x: rightX, y: highlightY - 56, width: trendColWidth, height: 56, color: rgb(0.99, 0.91, 0.91) });
-      const strongestLabel = strongestProgress == null ? 'Aucune hausse enregistrée' : `+${strongestProgress.toFixed(2).replace('.', ',')} point(s) : ${strongestNames.join(', ')}`;
-      const declineLabel = largestDecline == null ? 'Aucune baisse enregistrée' : `${largestDecline.toFixed(2).replace('.', ',')} point(s) : ${declineNames.join(', ')}`;
+      const pointUnit = isEnglishComposition ? ' point(s) de pourcentage' : ' point(s)';
+      const strongestLabel = strongestProgress == null ? 'Aucune hausse enregistrée' : `+${strongestProgress.toFixed(2).replace('.', ',')}${pointUnit} : ${strongestNames.join(', ')}`;
+      const declineLabel = largestDecline == null ? 'Aucune baisse enregistrée' : `${largestDecline.toFixed(2).replace('.', ',')}${pointUnit} : ${declineNames.join(', ')}`;
       text(trendPage, `Plus forte progression (${strongestNames.length})`, leftX + 10, highlightY - 17, 11, true, trendColWidth - 20);
       text(trendPage, strongestLabel, leftX + 10, highlightY - 39, 10, true, trendColWidth - 20);
       text(trendPage, `Plus forte régression (${declineNames.length})`, rightX + 10, highlightY - 17, 11, true, trendColWidth - 20);
@@ -342,7 +349,7 @@ export class MockExamsService {
         }
         pageStudents.forEach((student, index) => {
           const y = listsTop - 57 - index * 24;
-          text(trendPage, `${student.name}  (${student.change > 0 ? '+' : ''}${student.change.toFixed(2).replace('.', ',')})`, x + 8, y, 10, true, trendColWidth - 16);
+          text(trendPage, `${student.name}  (${student.change > 0 ? '+' : ''}${student.change.toFixed(2).replace('.', ',')}${isEnglishComposition ? ' %' : ''})`, x + 8, y, 10, true, trendColWidth - 16);
           if (index < pageStudents.length - 1) trendPage.drawLine({ start: { x: x + 8, y: y - 6 }, end: { x: x + trendColWidth - 8, y: y - 6 }, thickness: 0.3, color: rgb(0.86, 0.89, 0.92) });
         });
       };

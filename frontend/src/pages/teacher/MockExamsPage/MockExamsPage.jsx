@@ -390,7 +390,7 @@ function TypeSection({ typeCfg, exams, isAdmin, canManage = true, onDelete, onCr
   const typeExams = exams.filter((e) => e.examType === typeCfg.value);
   const [open, setOpen] = useState(true);
   const [comparisonBusy, setComparisonBusy] = useState(false);
-  const classGroups = typeCfg.value === 'COMPOSITION_MENSUELLE'
+  const classGroups = ['COMPOSITION_MENSUELLE', 'COMPOSITION_ANGLAIS'].includes(typeCfg.value)
     ? [...new Map(typeExams.map((exam) => [`${exam.classId}:${exam.academicYear}`, typeExams.filter((item) => item.classId === exam.classId && item.academicYear === exam.academicYear)])).values()]
     : [];
 

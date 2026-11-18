@@ -126,20 +126,20 @@ describe('MockExamsService', () => {
   });
 
   describe('monthly comparison PDF', () => {
-    const sheet = (id: string, score: number) => ({
+    const sheet = (id: string, score: number, examType = 'COMPOSITION_MENSUELLE') => ({
       exam: {
         id,
         label: id === 'oct' ? 'Octobre' : 'Novembre',
         examDate: new Date(id === 'oct' ? '2026-10-01' : '2026-11-01'),
-        examType: 'COMPOSITION_MENSUELLE',
+        examType,
         academicYear: '2026-2027',
         class: { id: 'class-1', name: 'CM2' },
       },
       subjects: [{ id: 'math', nameFr: 'Mathématiques', nameEn: 'Mathematics', code: 'MATH' }],
       students: [{
         studentId: 'stu-1', studentName: 'Awa', admissionNumber: 'M-1',
-        grades: [{ subjectId: 'math', score, maxScore: 20 }],
-        average: score / 2,
+        grades: [{ subjectId: 'math', score, maxScore: examType === 'COMPOSITION_ANGLAIS' ? 100 : 20 }],
+        average: examType === 'COMPOSITION_ANGLAIS' ? score : score / 2,
       }],
     });
 
@@ -162,6 +162,17 @@ describe('MockExamsService', () => {
         .mockResolvedValueOnce({ ...sheet('nov', 16), exam: { ...sheet('nov', 16).exam, class: { id: 'class-2', name: 'CM2' } } } as any);
 
       await expect(service.monthlyComparisonPdf(['oct', 'nov'], INST)).rejects.toThrow(BadRequestException);
+    });
+
+    it('generates the statistical sheet for English compositions scored as percentages', async () => {
+      jest.spyOn(service, 'getGradeSheet')
+        .mockResolvedValueOnce(sheet('oct', 62, 'COMPOSITION_ANGLAIS') as any)
+        .mockResolvedValueOnce(sheet('nov', 74, 'COMPOSITION_ANGLAIS') as any);
+
+      const result = await service.monthlyComparisonPdf(['oct', 'nov'], INST);
+      const pdf = await PDFDocument.load(result.buffer);
+
+      expect(pdf.getPageCount()).toBe(3);
     });
   });
 
