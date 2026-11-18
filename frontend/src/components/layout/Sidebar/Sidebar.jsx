@@ -92,6 +92,7 @@ const NAV = {
     { to: '/teacher/devoirs-surveilles',           icon: 'exam',     labelKey: 'nav.dsList', secondaryOnly: true },
     { to: '/teacher/devoirs-surveilles/fiches',    icon: 'fichexam', labelKey: 'nav.dsFiches', secondaryOnly: true },
     { to: '/teacher/devoirs-surveilles/resultats', icon: 'trophy',   labelKey: 'nav.dsResults', secondaryOnly: true },
+    { to: '/teacher/compositions-mensuelles',      icon: 'exam',     labelKey: 'nav.cmList', primaryOnly: true },
     { to: '/teacher/compositions-anglais/fiches',    icon: 'fichexam', labelKey: 'nav.caFiches', primaryOnly: true },
     { to: '/teacher/compositions-anglais/resultats', icon: 'trophy',   labelKey: 'nav.caResults', primaryOnly: true },
     { to: '/teacher/epreuves',          icon: 'fichexam',  labelKey: 'nav.examPapers' },
