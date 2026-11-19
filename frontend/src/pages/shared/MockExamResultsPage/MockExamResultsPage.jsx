@@ -98,10 +98,12 @@ function MockExamResultsPage({ kind = 'ESSAI' }) {
 
   return (
     <AppShell title={text.resultsTitle}>
-      <PageHeader
-        title={text.resultsTitle}
-        subtitle={text.resultsSubtitle}
-      />
+      <div className="mres-page-header">
+        <PageHeader
+          title={text.resultsTitle}
+          subtitle={text.resultsSubtitle}
+        />
+      </div>
 
       {isLoading && (
         <Loading />
