@@ -193,14 +193,22 @@ export function isPrimaryTextStudy(subject: { nameFr?: string | null } | null | 
 }
 
 export function primarySubjectMaxForSubject(subject: { maxScore?: number | null; nameFr?: string | null } | null | undefined, level?: string | null): number {
-  if (/^\s*CE\s*[12]\s*$/i.test(level ?? '') && isPrimaryTextStudy(subject)) return 10;
-  if (/^\s*CM\s*[12]\s*$/i.test(level ?? '') && isCmSubjectWithCoef2(subject)) return 20;
-  return primarySubjectMax(subject?.maxScore);
+  return primarySubjectCoefficient(subject, level) === 2 ? 20 : 10;
 }
 
 export function isCmSubjectWithCoef2(subject: { nameFr?: string | null } | null | undefined): boolean {
   const name = (subject?.nameFr ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-  return /mathematiques\s*1/.test(name) || /dictee\s+questions/.test(name) || /probleme/.test(name);
+  return /dictee.*question|question.*dictee|etude\s+de\s+texte|probleme|calcul\s+ecrit/.test(name);
+}
+
+/** Coefficients and mark scales used by every primary workflow. */
+export function primarySubjectCoefficient(subject: { maxScore?: number | null; nameFr?: string | null; category?: string | null } | null | undefined, level?: string | null): number {
+  if (isPrimaryEnglish(subject)) return 1;
+  const lvl = (level ?? '').replace(/\s/g, '').toUpperCase();
+  if (/^(CI|CP1?|CP2?)$/.test(lvl)) return 1;
+  if (/^CE[12]$/.test(lvl)) return /dictee.*question|question.*dictee|calcul\s+ecrit|probleme/.test((subject?.nameFr ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()) ? 2 : 1;
+  if (/^CM[12]$/.test(lvl)) return isCmSubjectWithCoef2(subject) ? 2 : 1;
+  return primarySubjectMax(subject?.maxScore) <= 10 ? 1 : 2;
 }
 
 /**
@@ -244,11 +252,8 @@ export function primaryTotals(grades: Array<{ moyenneMatiere?: number | null; sc
     if (moy20 == null) continue;
     // L'anglais est noté à part au primaire : hors total, moyenne et rang
     if (isPrimaryEnglish(g.subject)) continue;
-    const m = primarySubjectMaxForSubject(g.subject, level);
-    const coefficient = (/^\s*CE\s*[12]\s*$/i.test(level ?? '') && isPrimaryTextStudy(g.subject)) ? 1
-      : (/^\s*CM\s*[12]\s*$/i.test(level ?? '') && isCmSubjectWithCoef2(g.subject)) ? 2
-      : m <= 10 ? 1 : 2;
-    total += (moy20 * m) / 20;
+    const coefficient = primarySubjectCoefficient(g.subject, level);
+    total += (moy20 / 2) * coefficient;
     max += 10 * coefficient;
     totalCoefficient += coefficient;
   }
@@ -719,9 +724,7 @@ export class PdfService {
       const moy = g.moyenneMatiere ?? g.score;
       return {
         ...g,
-        coefficient: /^\s*CM\s*[12]\s*$/i.test(data.classLevel ?? '') && isCmSubjectWithCoef2(g.subject) ? 2
-          : /^\s*CE\s*[12]\s*$/i.test(data.classLevel ?? '') && isPrimaryTextStudy(g.subject) ? 1
-          : g.coefficient,
+        coefficient: isPrimary ? primarySubjectCoefficient(g.subject, data.classLevel) : g.coefficient,
         moyInterros,
         // Primaire : la moyenne de chaque matière est la moitié de son barème (10 / 20 une fois ramenée sur 20)
         passed: moy == null || moy >= (isPrimary ? 10 : (g.subject?.passMark ?? 10)),

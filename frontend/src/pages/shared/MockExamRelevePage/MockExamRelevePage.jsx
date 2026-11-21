@@ -61,10 +61,10 @@ function fmtDate(iso) {
   return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
-function getResult(avg, examType, sex, T = T_FR) {
+function getResult(avg, examType, sex, scale = examScale(examType), T = T_FR) {
   const f = sex === 'F';
   if (avg == null) return { text: '—', cls: '' };
-  const pass = examScale(examType) / 2;
+  const pass = scale / 2;
   // Devoir surveillé / composition mensuelle : pas d'« admis / ajourné » (ce ne sont pas des examens)
   if (isNonExamType(examType)) {
     return avg >= pass ? { text: T.passed, cls: 'pass' } : { text: T.below, cls: 'fail' };
@@ -85,9 +85,10 @@ function StudentCard({ student, subjects, exam, institution, teacherSignatures =
     : englishTest
       ? teacherSignatures.filter((t) => t.fromSession !== false)
       : teacherSignatures.filter((t) => !t.classTeacher);
-  const scale = examScale(exam?.examType); // 10 pour les compositions mensuelles
-  const isCm = isPrimaryCompoType(exam?.examType); // chaque matière sur son barème (10 ou 20)
-  const isMonthly = exam?.examType === 'COMPOSITION_MENSUELLE';
+  const scale = exam?.scale ?? examScale(exam?.examType);
+  const isCm = isPrimaryCompoType(exam?.examType) || scale === 10; // chaque matière sur son barème (10 ou 20)
+  const isMonthly = exam?.examType === 'COMPOSITION_MENSUELLE'
+    || (exam?.scale === 10 && ['BLANC', 'CEPE'].includes(exam?.examType));
   const totalCoeff = subjects.reduce((s, subj) => s + subj.coefficient, 0);
   const gradeMap = new Map(student.grades.map((g) => [g.subjectId, g]));
 
@@ -112,7 +113,7 @@ function StudentCard({ student, subjects, exam, institution, teacherSignatures =
   const T = en ? T_EN : T_FR;
   const num = (v) => (en ? v.toFixed(2) : v.toFixed(2).replace('.', ','));
   const mention = apprec(avg, scale, T);
-  const result = getResult(avg, exam.examType, student.sex, T);
+  const result = getResult(avg, exam.examType, student.sex, scale, T);
 
   // QR code : ouvre la page de vérification avec le code du relevé (comme sur le PDF)
   const [qrDataUri, setQrDataUri] = useState(null);

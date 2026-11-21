@@ -8,7 +8,7 @@ import { mockExamsService } from '../../../services/mockExamsService';
 import { useAuth } from '../../../context/AuthContext';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import Loading from '../../../components/common/Loading/Loading';
-import { examScale, isCaType } from '../../../utils/examKinds';
+import { examScale, isCaType, isPrimaryLevel } from '../../../utils/examKinds';
 import './MockExamGradePage.css';
 
 // Devoir surveillé : le serveur indique si les notes ont été reportées sur la fiche du trimestre
@@ -93,10 +93,11 @@ function MockExamGradePage() {
     setSaved(false);
   };
   const coeffOk = (v) => { const n = parseInt(v, 10); return n >= 1 && n <= 20; };
-  const isMonthly = data?.exam?.examType === 'COMPOSITION_MENSUELLE';
+  const isMonthly = data?.exam?.examType === 'COMPOSITION_MENSUELLE'
+    || (isPrimaryLevel(data?.exam?.class?.level) && ['BLANC', 'CEPE'].includes(data?.exam?.examType));
   // Matières avec le coefficient en cours de saisie (pour moyennes, rangs et enregistrement)
   const liveSubjects = useMemo(() => (data?.subjects ?? []).map((s) => (
-    isMonthly ? { ...s, coefficient: (s.maxScore ?? 20) <= 10 ? 1 : 2 }
+    isMonthly ? s
       : coeffOk(coeffs[s.id]) ? { ...s, coefficient: parseInt(coeffs[s.id], 10) } : s
   )), [data, coeffs, isMonthly]);
 
@@ -114,7 +115,7 @@ function MockExamGradePage() {
     if (!data) return {};
     const avgs = data.students.map((s) => ({
       id: s.studentId,
-      avg: computeAvg(grades[s.studentId] ?? {}, liveSubjects, examScale(data.exam.examType), data.exam.examType === 'COMPOSITION_MENSUELLE'),
+      avg: computeAvg(grades[s.studentId] ?? {}, liveSubjects, data.exam.scale ?? examScale(data.exam.examType), isMonthly),
     }));
     const sorted = avgs.filter((a) => a.avg != null).sort((a, b) => (b.avg ?? 0) - (a.avg ?? 0));
     const map = {};
@@ -185,7 +186,7 @@ function MockExamGradePage() {
   const { exam, students, editableSubjectIds } = data;
   const subjects = liveSubjects;
   const isPublished = exam.status === 'PUBLISHED';
-  const scale = examScale(exam.examType); // 10 pour les compositions mensuelles
+  const scale = exam.scale ?? examScale(exam.examType);
   // null = admin (all editable); array = teacher (only assigned subjects)
   const canEditSubject = (subjId) =>
     !isPublished && (editableSubjectIds === null || editableSubjectIds.includes(subjId));

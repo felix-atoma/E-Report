@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { mockExamsService } from '../../../services/mockExamsService';
 import PrintFormatPicker from '../../../components/common/PrintFormatPicker/PrintFormatPicker';
 import { fmtSessionDates } from '../../../utils/fmtSessionDates';
-import { examScale, isNonExamType, isCaType, fmtAvg } from '../../../utils/examKinds';
+import { examScale, isNonExamType, isCaType } from '../../../utils/examKinds';
 import './MockExamPalmaresPage.css';
 
 const TYPE_LABELS = {
@@ -41,7 +41,7 @@ function MockExamPalmaresPage() {
   const isBac = exam.examType === 'BAC1' || exam.examType === 'BAC2';
   // Devoir surveillé / composition mensuelle : pas d'« admis / ajourné » (ce ne sont pas des examens)
   const isDs = isNonExamType(exam.examType);
-  const scale = examScale(exam.examType); // 10 pour les compositions mensuelles
+  const scale = exam.scale ?? examScale(exam.examType);
   const pass = scale / 2;
   // Composition d'anglais : palmarès entièrement en anglais (décimales avec un point)
   const en = isCaType(exam.examType);
@@ -166,7 +166,7 @@ function MockExamPalmaresPage() {
                 let totalPts = 0;
                 subjects.forEach((subj) => {
                   const g = gradeMap.get(subj.id);
-                  if (g?.score != null) totalPts += g.score * subj.coefficient;
+                  if (g?.score != null) totalPts += g.score * (scale === 10 ? 1 : subj.coefficient);
                 });
 
                 return (
@@ -261,7 +261,7 @@ function MockExamPalmaresPage() {
                   <div key={s.studentId} className={`mpal-podium__item mpal-podium__item--${s.rank === 1 ? 'gold' : s.rank === 2 ? 'silver' : 'bronze'}`}>
                     <span className="mpal-podium__medal">{medals[s.rank]}</span>
                     <span className="mpal-podium__sname">{s.studentName}</span>
-                    <span className="mpal-podium__avg">{en && s.average != null ? `${num(s.average)} %` : fmtAvg(s.average, exam.examType)}</span>
+                    <span className="mpal-podium__avg">{en && s.average != null ? `${num(s.average)} %` : s.average != null ? `${num(s.average)} / ${scale}` : '—'}</span>
                   </div>
                 ))}
               </div>

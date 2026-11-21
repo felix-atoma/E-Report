@@ -1,4 +1,4 @@
-import { PdfService, ReportCardData, isPrimaryEnglish, primaryTotals } from '../../src/modules/pdf/pdf.service';
+import { PdfService, ReportCardData, isPrimaryEnglish, primarySubjectCoefficient, primarySubjectMaxForSubject, primaryTotals } from '../../src/modules/pdf/pdf.service';
 
 /** Primaire : l'anglais est noté à part (encadré à côté du tableau), hors total, moyenne et rang. */
 describe('primary school — English graded separately', () => {
@@ -13,6 +13,19 @@ describe('primary school — English graded separately', () => {
     // Section anglaise choisie dans Matières : Reading Comprehension, Dictation…
     expect(isPrimaryEnglish({ nameFr: 'Reading Comprehension', category: 'ANGLAIS' })).toBe(true);
     expect(isPrimaryEnglish({ nameFr: 'Reading Comprehension', category: 'LANGUES' })).toBe(false);
+  });
+
+  it('uses class and subject rules for primary coefficients and scales', () => {
+    const coef = (nameFr: string, level: string) => primarySubjectCoefficient({ nameFr }, level);
+    expect(coef('Lecture', 'CP1')).toBe(1);
+    expect(primarySubjectMaxForSubject({ nameFr: 'Lecture', maxScore: 20 }, 'CP2')).toBe(10);
+    expect(coef('Dictée et Questions', 'CE1')).toBe(2);
+    expect(coef('Calcul écrit', 'CE2')).toBe(2);
+    expect(coef('Problème', 'CE2')).toBe(2);
+    expect(coef('Étude de texte', 'CE1')).toBe(1);
+    expect(coef('Étude de texte', 'CM1')).toBe(2);
+    expect(coef('Calcul écrit', 'CM2')).toBe(2);
+    expect(coef('Lecture', 'CM2')).toBe(1);
   });
 
   it('applies subject coefficients to the maximum, not again to earned points', () => {
@@ -57,9 +70,8 @@ describe('primary school — English graded separately', () => {
       expect(table).toContain('Français');
       expect(table).not.toContain('Anglais');
       const box = out.slice(out.indexOf('class="pr-extra"'));
-      expect(box).toContain('18');
-      expect(table).toContain('14,00 / 20'); // total des points : le français seul
-      expect(table).toContain('7,00 / 10');  // moyenne sans l'anglais (18/20 l'aurait relevée)
+      expect(box).toContain('9,00');
+      expect(table).toContain('7,00 / 10'); // le français est une matière de coefficient 1, sur 10
     });
 
     it('several English subjects: listed in the box with their own total', async () => {
@@ -73,7 +85,7 @@ describe('primary school — English graded separately', () => {
       const box = out.slice(out.indexOf('class="pr-extra"'));
       expect(box).toContain('English Grammar');
       expect(box).toContain('Reading Comprehension');
-      expect(box).toContain('28,00 / 40');           // total de la partie anglaise
+      expect(box).toContain('14,00 / 20');           // deux matières d'anglais sur 10
       expect(out).toContain('7,00 / 10');            // moyenne : le français seul
     });
 

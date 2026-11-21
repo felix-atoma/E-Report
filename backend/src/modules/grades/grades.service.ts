@@ -7,21 +7,17 @@ import { byStudentName } from '../../common/utils/student-order.util';
 import { BulkGradesDto } from './dto/bulk-grades.dto';
 import { SaveClassGradesDto } from './dto/save-class-grades.dto';
 import { examTermNumber } from '../../common/utils/exam-term.util';
+import { primarySubjectCoefficient, primarySubjectMaxForSubject } from '../pdf/pdf.service';
 
 const isPrimaryClass = (level?: string | null) => /^\s*(CI|CP\s*[12]?|CE\s*[12]|CM\s*[12])\s*$/i.test(level ?? '');
-const primaryCoefficient = (maxScore?: number | null) => (maxScore != null && maxScore <= 10 ? 1 : 2);
 const normalizedSubjectName = (name?: string | null) => (name ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 const isEnglishSubject = (subject: { nameFr?: string | null; category?: string | null }) => subject.category === 'ANGLAIS' || /anglais|english/.test(normalizedSubjectName(subject.nameFr));
 const primarySheetMax = (subject: { nameFr?: string | null; category?: string | null; maxScore?: number | null }, level?: string | null) => {
   if (isEnglishSubject(subject)) return subject.maxScore ?? 20;
-  const name = normalizedSubjectName(subject.nameFr);
-  if (/^\s*CE\s*[12]\s*$/i.test(level ?? '') && /etude\s+de\s+texte/.test(name)) return 10;
-  if (/^\s*CM\s*[12]\s*$/i.test(level ?? '') && /mathematiques\s*1|dictee\s+questions|probleme/.test(name)) return 20;
-  // The primary bulletin and monthly exam logic use only the /10 or /20 scale.
-  return subject.maxScore != null && subject.maxScore <= 10 ? 10 : 20;
+  return primarySubjectMaxForSubject(subject, level);
 };
 const primarySheetCoefficient = (subject: { nameFr?: string | null; category?: string | null; maxScore?: number | null }, level?: string | null) =>
-  primaryCoefficient(primarySheetMax(subject, level));
+  primarySubjectCoefficient(subject, level);
 
 /** Appréciation de la moyenne (sur 20) dans la langue de la matière — barème commun (appreciation.util). */
 export function computeAppreciation(moy: number | null, subjectName?: string): string | null {
