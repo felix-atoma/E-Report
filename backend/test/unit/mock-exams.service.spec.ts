@@ -274,6 +274,26 @@ describe('MockExamsService', () => {
     });
   });
 
+  describe('primary exam palmares statistics', () => {
+    it('uses the /10 passing threshold for a primary mock exam', async () => {
+      (service as any).resultsSheet = jest.fn().mockResolvedValue({
+        exam: { examType: 'BLANC', scale: 10 },
+        subjects: [],
+        students: [
+          { studentId: 'stu-1', average: 5, rank: 1 },
+          { studentId: 'stu-2', average: 4.99, rank: 2 },
+        ],
+      });
+      prisma.institution.findUnique.mockResolvedValue({ name: 'Ecole' } as any);
+
+      const result = await service.getPalmares(exam.id, INST);
+
+      expect(result.summary.admitted).toBe(1);
+      expect(result.summary.ajourne).toBe(1);
+      expect(result.summary.passingRate).toBe(50);
+    });
+  });
+
   describe('teacher signatures on relevés', () => {
     const sign = (signedById: string, name: string, image: string) =>
       ({ signedById, signedByName: name, signatureData: image, signedBy: { name } });

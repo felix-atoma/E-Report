@@ -249,7 +249,7 @@ function StudentCard({ student, subjects, exam, institution, teacherSignatures =
         <div className="mrel-result__item">
           <span className="mrel-result__label">{T.average}</span>
           <span className="mrel-result__value mrel-result__value--avg">
-            {en && avg != null ? `${num(avg)} %` : fmtAvg(avg, exam.examType, ' / ')}
+            {en && avg != null ? `${num(avg)} %` : fmtAvg(avg, exam.examType, ' / ', scale)}
           </span>
         </div>
         <div className="mrel-result__item">

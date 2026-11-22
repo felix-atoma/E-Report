@@ -53,10 +53,10 @@ export const isNonExamType = (examType) => isDsType(examType) || isPrimaryCompoT
 export const examScale = (examType) => (isCmType(examType) ? 10 : isCaType(examType) ? 100 : 20);
 
 /** Moyenne affichée : « 12,50/20 », « 6,25/10 » ou « 72,50 % » (composition d'anglais). */
-export const fmtAvg = (avg, examType, sep = '/') => {
+export const fmtAvg = (avg, examType, sep = '/', scale = examScale(examType)) => {
   if (avg == null) return '—';
   const v = Number(avg).toFixed(2).replace('.', ',');
-  return isCaType(examType) ? `${v} %` : `${v}${sep}${examScale(examType)}`;
+  return isCaType(examType) ? `${v} %` : `${v}${sep}${scale}`;
 };
 
 /** Note ramenée sur 20 (les seuils d'appréciation sont définis sur 20). */

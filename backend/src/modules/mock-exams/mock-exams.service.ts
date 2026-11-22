@@ -756,7 +756,7 @@ export class MockExamsService {
 
     const isBac = sheet.exam.examType === 'BAC1' || sheet.exam.examType === 'BAC2';
     const withGrades  = students.filter((s) => s.average != null).length;
-    const pass = examScale(sheet.exam.examType) / 2; // 10/20, ou 5/10 pour les compositions mensuelles
+    const pass = (sheet.exam.scale ?? examScale(sheet.exam.examType)) / 2;
     const admitted    = students.filter((s) => s.average != null && s.average >= pass).length;
     const admissible  = isBac
       ? students.filter((s) => s.average != null && s.average >= 9 && s.average < 10).length
