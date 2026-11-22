@@ -70,6 +70,8 @@
 .mres-btn--palmares:hover { background: #ccfbf1; }
 .mres-btn--releve   { background: #faf5ff; color: #7e22ce; border-color: #e9d5ff; }
 .mres-btn--releve:hover { background: #f3e8ff; }
+.mres-btn--stats { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+.mres-btn--stats:hover { background: #ffedd5; }
 
 /* ── States ───────────────────────────────────────────────────────────────── */
 .mres-empty {

@@ -46,6 +46,9 @@ function SessionRow({ exam }) {
         <Link to={`/mock-exams/${exam.id}/releve`} className="mres-btn mres-btn--releve">
           📄 Relevés
         </Link>
+        <Link to={`/mock-exams/${exam.id}/statistiques`} className="mres-btn mres-btn--stats">
+          📊 Statistiques
+        </Link>
       </div>
     </div>
   );

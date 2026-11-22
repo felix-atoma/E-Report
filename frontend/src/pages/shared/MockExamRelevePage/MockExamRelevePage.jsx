@@ -395,6 +395,9 @@ function MockExamRelevePage() {
             ))}
           </select>
         </div>
+        <Link to={`/mock-exams/${id}/statistiques`} className="mrel-print-btn">
+          📊 Statistiques
+        </Link>
         <PrintFormatPicker defaultFormat="A4 portrait" />
         <button className="mrel-print-btn mrel-download-btn" onClick={() => handleDownload()} disabled={!!downloading}>
           {downloading === true
