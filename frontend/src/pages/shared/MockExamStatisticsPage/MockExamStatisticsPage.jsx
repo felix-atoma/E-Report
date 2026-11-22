@@ -20,6 +20,9 @@ const TYPE_LABELS = {
 const formatPercent = (value) => (
   value == null ? '—' : `${value.toFixed(2).replace('.', ',')} %`
 );
+const formatScore = (value, scale) => (
+  value == null ? '—' : `${value.toFixed(2).replace('.', ',')} / ${scale}`
+);
 
 function MockExamStatisticsPage() {
   const { id } = useParams();
@@ -34,9 +37,10 @@ function MockExamStatisticsPage() {
   }
 
   const { exam, students, summary, institution } = data;
-  const stats = getMockExamStatistics(students, exam.scale ?? examScale(exam.examType));
+  const scale = exam.scale ?? examScale(exam.examType);
+  const stats = getMockExamStatistics(students, scale);
   const reached = stats.withAverage
-    ? students.filter((student) => Number(student.average) >= (exam.scale ?? examScale(exam.examType)) / 2).length
+    ? students.filter((student) => student.average != null && Number(student.average) >= scale / 2).length
     : 0;
   const below = stats.withAverage - reached;
   const metrics = [
@@ -45,13 +49,15 @@ function MockExamStatisticsPage() {
     { label: 'Moyenne générale', value: formatPercent(stats.average), accent: true },
     {
       label: 'Plus forte moyenne obtenue',
-      value: formatPercent(stats.highest),
-      detail: stats.highestStudents.join(', '),
+      value: formatScore(stats.highest, scale),
+      detail: formatPercent(stats.highestPercentage),
+      students: stats.highestStudents,
     },
     {
       label: 'Plus faible moyenne obtenue',
-      value: formatPercent(stats.lowest),
-      detail: stats.lowestStudents.join(', '),
+      value: formatScore(stats.lowest, scale),
+      detail: formatPercent(stats.lowestPercentage),
+      students: stats.lowestStudents,
     },
     { label: 'Taux de réussite', value: `${summary.passingRate}%`, accent: true },
   ];
@@ -81,7 +87,10 @@ function MockExamStatisticsPage() {
             <article key={metric.label} className={`mest-metric${metric.accent ? ' mest-metric--accent' : ''}`}>
               <span className="mest-metric__label">{metric.label}</span>
               <strong className="mest-metric__value">{metric.value}</strong>
-              {metric.detail && <span className="mest-metric__detail">Obtenue par {metric.detail}</span>}
+              {metric.detail && <span className="mest-metric__detail">{metric.detail}</span>}
+              {metric.students?.length > 0 && (
+                <span className="mest-metric__detail">Obtenue par {metric.students.join(', ')}</span>
+              )}
             </article>
           ))}
         </section>
@@ -90,7 +99,7 @@ function MockExamStatisticsPage() {
           <div className="mest-card__heading">
             <div>
               <h2>Répartition des moyennes obtenues</h2>
-              <p>Pour chaque moyenne sur 20, effectif et pourcentage des élèves ayant une moyenne.</p>
+              <p>Chaque moyenne exacte, le pourcentage correspondant, l&apos;effectif et les élèves concernés.</p>
             </div>
             <span className="mest-total">{stats.withAverage} moyenne{stats.withAverage !== 1 ? 's' : ''}</span>
           </div>
@@ -98,24 +107,29 @@ function MockExamStatisticsPage() {
           {stats.withAverage === 0 ? (
             <p className="mest-empty">Aucune moyenne disponible pour cette session.</p>
           ) : (
-            <div className="mest-bands">
-              {stats.bands.map((band) => (
-                <div className="mest-band" key={band.label}>
-                  <span className="mest-band__label">{band.label}</span>
-                  <div
-                    className="mest-band__track"
-                    role="progressbar"
-                    aria-label={`${band.label} : ${band.count} élève(s)`}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-valuenow={band.percentage}
-                  >
-                    <span className="mest-band__fill" style={{ width: `${band.percentage}%` }} />
-                  </div>
-                  <strong className="mest-band__count">{band.count}</strong>
-                  <span className="mest-band__percentage">{formatPercent(band.percentage)}</span>
-                </div>
-              ))}
+            <div className="mest-table-wrap">
+              <table className="mest-table">
+                <thead>
+                  <tr>
+                    <th>Moyenne obtenue</th>
+                    <th>Équivalent en %</th>
+                    <th>Effectif</th>
+                    <th>Part des élèves</th>
+                    <th>Obtenue par</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stats.distribution.map((result) => (
+                    <tr key={result.score.toFixed(2)}>
+                      <td><strong>{formatScore(result.score, scale)}</strong></td>
+                      <td>{formatPercent(result.percentage)}</td>
+                      <td>{result.count}</td>
+                      <td>{formatPercent(result.share)}</td>
+                      <td>{result.students.join(', ')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </section>

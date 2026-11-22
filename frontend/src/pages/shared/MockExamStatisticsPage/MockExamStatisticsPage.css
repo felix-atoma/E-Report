@@ -42,13 +42,12 @@
 .mest-card__heading h2 { margin: 0; color: #172554; font-size: 1.15rem; }
 .mest-card__heading p { margin: 0.35rem 0 0; color: #64748b; font-size: 0.85rem; }
 .mest-total { flex-shrink: 0; padding: 0.35rem 0.7rem; border-radius: 20px; background: #eff6ff; color: #1d4ed8; font-size: 0.8rem; font-weight: 800; }
-.mest-bands { display: flex; flex-direction: column; gap: 0.9rem; }
-.mest-band { display: grid; grid-template-columns: minmax(155px, 1.2fr) minmax(100px, 3fr) 42px 85px; align-items: center; gap: 0.85rem; }
-.mest-band__label { color: #334155; font-size: 0.84rem; }
-.mest-band__track { height: 10px; overflow: hidden; border-radius: 10px; background: #e2e8f0; }
-.mest-band__fill { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #60a5fa, #2563eb); transition: width 0.25s ease; }
-.mest-band__count { text-align: right; color: #172554; }
-.mest-band__percentage { text-align: right; color: #64748b; font-size: 0.84rem; }
+.mest-table-wrap { overflow-x: auto; }
+.mest-table { width: 100%; border-collapse: collapse; text-align: left; }
+.mest-table th, .mest-table td { padding: 0.75rem 0.65rem; border-bottom: 1px solid #e2e8f0; }
+.mest-table th { background: #f8fafc; color: #475569; font-size: 0.78rem; text-transform: uppercase; }
+.mest-table td { color: #334155; font-size: 0.87rem; }
+.mest-table tbody tr:last-child td { border-bottom: 0; }
 .mest-empty { margin: 0; padding: 2rem 1rem; color: #64748b; text-align: center; }
 
 .mest-outcomes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.9rem; margin-top: 1rem; }
@@ -74,11 +73,7 @@
   .mest-metric__label { font-size: 0.74rem; }
   .mest-metric__value { font-size: 1.2rem; }
   .mest-card { padding: 1rem 0.8rem; }
-  .mest-band { grid-template-columns: minmax(0, 1fr) 38px 70px; gap: 0.5rem; }
-  .mest-band__label { grid-column: 1 / -1; }
-  .mest-band__track { grid-column: 1; }
-  .mest-band__count { grid-column: 2; }
-  .mest-band__percentage { grid-column: 3; }
+  .mest-table { min-width: 700px; }
 }
 
 @media print {
