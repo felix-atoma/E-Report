@@ -62,6 +62,7 @@ export class ExportService {
         status: 'PUBLISHED',
       },
       include: {
+        class: { select: { name: true, level: true } },
         student: {
           include: {
             user:    { select: { name: true } },
@@ -74,17 +75,18 @@ export class ExportService {
 
     const headers = [
       'Rang', 'N° Matricule', 'Nom complet', 'Classe',
-      'Année scolaire', 'Trimestre', 'Moyenne /20', 'Mention',
+      'Année scolaire', 'Trimestre', 'Moyenne', 'Barème', 'Mention',
     ];
 
     const rows = reports.map((r: any, idx: number) => [
       idx + 1,
       r.student?.admissionNumber ?? '',
       r.student?.user?.name ?? '',
-      r.student?.classes?.[0]?.class?.name ?? '',
+      r.class?.name ?? r.student?.classes?.[0]?.class?.name ?? '',
       r.academicYear ?? '',
       r.termName ?? '',
       r.overallAverage != null ? Number(r.overallAverage).toFixed(2) : '',
+      /^\s*(CI|CP\s*[12]?|CE\s*[12]|CM\s*[12])\s*$/i.test(r.class?.level ?? '') ? 10 : 20,
       r.mention ?? '',
     ]);
 

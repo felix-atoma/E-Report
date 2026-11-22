@@ -11,6 +11,7 @@ import Card from '../../../components/common/Card/Card';
 import Badge from '../../../components/common/Badge/Badge';
 import Loading from '../../../components/common/Loading/Loading';
 import EmptyState from '../../../components/common/EmptyState/EmptyState';
+import { isPrimaryLevel } from '../../../utils/examKinds';
 import './MyReportCardsPage.css';
 
 async function downloadPdf(reportId, termNumber) {
@@ -36,6 +37,8 @@ function ReportItem({ report }) {
   const [downloading, setDownloading] = useState(false);
   const termLabel = report.termName ?? `Trimestre ${report.termNumber}`;
   const avg       = report.overallAverage;
+  const scale     = isPrimaryLevel(report.class?.level) ? 10 : 20;
+  const displayAvg = avg == null ? null : Number(avg);
 
   return (
     <Card className="student-report-item">
@@ -53,8 +56,8 @@ function ReportItem({ report }) {
         </div>
         <div className="student-report-item__right">
           {avg != null && (
-            <Badge variant={MENTION_VARIANT(avg)}>
-              {String(avg).replace('.', ',')} / 20
+            <Badge variant={MENTION_VARIANT(scale === 10 ? avg * 2 : avg)}>
+              {displayAvg.toFixed(2).replace('.', ',')} / {scale}
             </Badge>
           )}
           <span className="student-report-item__chevron">{expanded ? '▲' : '▼'}</span>
@@ -88,7 +91,7 @@ function ReportItem({ report }) {
                   <tr className="student-grades-table__avg-row">
                     <td colSpan={2}>{t('myReports.overallAvg')}</td>
                     <td className="student-grades-table__score">
-                      <strong>{String(avg).replace('.', ',')} / 20</strong>
+                      <strong>{displayAvg.toFixed(2).replace('.', ',')} / {scale}</strong>
                     </td>
                   </tr>
                 </tfoot>

@@ -14,7 +14,7 @@ import { PdfService, isPrimaryLevel, primaryTotals, nextTermStart, primarySubjec
 import { AttendanceService, resolveTermRange } from '../attendance/attendance.service';
 import { suggestConduct, ConductSuggestion } from './conduct-suggestion';
 import {
-  annualSettings, annualAverage as computeAnnualAverage, proposedDecision, expectedTermCount as termCountFor, rankWithTies,
+  annualSettings, annualAverage as computeAnnualAverage, proposedDecision, expectedTermCount as termCountFor, rankWithTies, thresholdOnScale,
 } from './annual';
 import { AiService } from '../ai/ai.service';
 
@@ -27,9 +27,9 @@ import { UpdateReportDto } from './dto/update-report.dto';
 import { TitulaireEntryDto } from './dto/titulaire-entry.dto';
 import { BulkZipDto } from './dto/bulk-zip.dto';
 
-/** Mention du bulletin d'après la moyenne générale (sur 20) — barème commun (appreciation.util). */
-function computeMention(avg: number): string {
-  return appreciationOn20(avg, 'fr');
+/** Mention calculée avec la moyenne générale de la classe convertie sur 20 pour le barème commun. */
+function computeMention(avg: number, level?: string | null): string {
+  return appreciationOn20(isPrimaryLevel(level) ? avg * 2 : avg, 'fr');
 }
 
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -72,7 +72,7 @@ export class ReportsService {
       where,
       include: {
         student: { include: { user: { select: { name: true } } } },
-        class: { select: { id: true, name: true } },
+        class: { select: { id: true, name: true, level: true } },
       },
       orderBy: [{ classRank: 'asc' }, { overallAverage: 'desc' }],
     });
@@ -111,7 +111,7 @@ export class ReportsService {
       where,
       include: {
         student: { include: { user: { select: { name: true } } } },
-        class: { select: { id: true, name: true } },
+        class: { select: { id: true, name: true, level: true } },
         createdBy: { select: { id: true, name: true } },
       },
       orderBy: [{ academicYear: 'desc' }, { termNumber: 'desc' }, { student: { admissionNumber: 'asc' } }],
@@ -226,7 +226,7 @@ export class ReportsService {
     const conductSuggestion = role === Role.TEACHER || role === Role.ADMIN
       ? (await this.conductSuggestions(institutionId, [report as any])).get(report.id) ?? null
       : null;
-    const termRecap = await this.termRecap(report, institutionId);
+    const termRecap = await this.termRecap({ ...report, classLevel: report.class?.level }, institutionId);
     // Avant publication, l'aperçu montre déjà les absences / retards calculés depuis les appels
     const attendanceFill = report.status !== 'PUBLISHED' ? await this.autoAttendanceFill(report as any, institutionId) : {};
     return { ...report, ...attendanceFill, classTeacherSignature, nextTerm, conductSuggestion, termRecap };
@@ -240,7 +240,7 @@ export class ReportsService {
   async termRecap(
     report: {
       studentId: string; academicYear: string; termNumber: number; termType?: string | null;
-      overallAverage: number | null; councilDecision?: string | null; councilDecisionManual?: boolean | null;
+      overallAverage: number | null; councilDecision?: string | null; councilDecisionManual?: boolean | null; classLevel?: string | null;
     },
     institutionId: string,
   ) {
@@ -269,11 +269,12 @@ export class ReportsService {
     const annual = isLastTerm
       ? computeAnnualAverage([...previousReports, { termNumber: report.termNumber, overallAverage: report.overallAverage }], expected!, settings.weighting)
       : null;
-    const proposed = isLastTerm ? proposedDecision(annual, settings.promotionThreshold) : null;
+    const promotionThreshold = thresholdOnScale(settings.promotionThreshold, isPrimaryLevel(report.classLevel));
+    const proposed = isLastTerm ? proposedDecision(annual, promotionThreshold) : null;
     const decisionManual = isLastTerm && !!report.councilDecisionManual;
     const councilDecision = decisionManual ? report.councilDecision ?? null : proposed;
     return {
-      previous, isLastTerm, annualAverage: annual, councilDecision, promotionThreshold: settings.promotionThreshold,
+      previous, isLastTerm, annualAverage: annual, councilDecision, promotionThreshold,
       proposedDecision: proposed, councilDecisionManual: decisionManual,
     };
   }
@@ -393,13 +394,13 @@ export class ReportsService {
           const annualAverage = computeAnnualAverage([...prior, { termNumber: r.termNumber, overallAverage: avg }], expected, settings.weighting);
           annual = {
             annualAverage,
-            councilDecision: (r as any).councilDecisionManual ? (r as any).councilDecision : proposedDecision(annualAverage, settings.promotionThreshold),
+            councilDecision: (r as any).councilDecisionManual ? (r as any).councilDecision : proposedDecision(annualAverage, thresholdOnScale(settings.promotionThreshold, isPrimaryLevel(r.class.level))),
           };
         }
         await this.prisma.reportCard.update({
           where: { id: r.id },
           data: {
-            overallAverage: avg, mention: avg !== null ? computeMention(avg) : null,
+            overallAverage: avg, mention: avg !== null ? computeMention(avg, r.class.level) : null,
             classRank: rankMap.get(r.id), classSize: reports.length, classHighest, classLowest, classAverage, ...annual,
           },
         });
@@ -428,7 +429,7 @@ export class ReportsService {
    */
   private computeOverallAverage(grades: Parameters<typeof primaryTotals>[0], level: string | null | undefined): number | null {
     // Primaire : total des points (chaque matière sur 10 ou sur 20) ÷ total des barèmes
-    if (isPrimaryLevel(level)) return primaryTotals(grades, level).average20;
+    if (isPrimaryLevel(level)) return primaryTotals(grades, level).average10;
     if (!grades.length) return null;
     const totalWeighted = grades.reduce((sum, g: any) => sum + (g.weightedScore ?? 0), 0);
     const totalCoef = grades.reduce((sum, g: any) => sum + g.coefficient, 0);
@@ -529,7 +530,7 @@ export class ReportsService {
       ),
     );
 
-    const mention = overallAverage !== null ? computeMention(overallAverage) : null;
+    const mention = overallAverage !== null ? computeMention(overallAverage, report.class.level) : null;
 
     // Compute annual average on the last term
     const expectedTermCount =
@@ -562,7 +563,7 @@ export class ReportsService {
       // Une décision saisie par l'admin ou le titulaire n'est pas écrasée
       councilDecision = (report as any).councilDecisionManual
         ? (report as any).councilDecision
-        : proposedDecision(annualAverage, settings.promotionThreshold);
+        : proposedDecision(annualAverage, thresholdOnScale(settings.promotionThreshold, isPrimaryLevel(report.class.level)));
     }
 
     // Absences et retards : pré-remplis depuis les appels des professeurs ; une valeur corrigée par
@@ -647,7 +648,7 @@ export class ReportsService {
     if (!institution) return;
 
     const pdfUrl = await this.pdf.generateReportCardPdf({
-      termRecap: await this.termRecap(published as any, institutionId),
+      termRecap: await this.termRecap({ ...(published as any), classLevel: reportWithGrades.class?.level }, institutionId),
       report: {
         id: published.id,
         termName: published.termName,
@@ -749,6 +750,7 @@ export class ReportsService {
       studentName: report.student?.user?.name ?? report.student?.admissionNumber ?? '—',
       admissionNumber: report.student?.admissionNumber,
       className: report.class?.name,
+      classLevel: report.class?.level,
       academicYear: report.academicYear,
       termName: report.termName,
       overallAverage: report.overallAverage,
@@ -1047,7 +1049,7 @@ export class ReportsService {
     const classAverages = classAnnual.map((c) => c.average).filter((v): v is number => v != null);
     const round2 = (v: number) => Math.round(v * 100) / 100;
 
-    const proposed = proposedDecision(annualAvg, settings.promotionThreshold);
+    const proposed = proposedDecision(annualAvg, thresholdOnScale(settings.promotionThreshold, isPrimary));
     const manual = !!(lastTerm as any).councilDecisionManual;
 
     return {
@@ -1097,8 +1099,8 @@ export class ReportsService {
       councilDecision: manual ? lastTerm.councilDecision : proposed,
       councilDecisionManual: manual,
       proposedDecision: proposed,
-      promotionThreshold: settings.promotionThreshold,
-      mention: annualAvg != null ? computeMention(annualAvg) : null,
+      promotionThreshold: thresholdOnScale(settings.promotionThreshold, isPrimary),
+      mention: annualAvg != null ? computeMention(annualAvg, lastTerm.class?.level) : null,
       canEditDecision: viewer?.role === Role.ADMIN || (viewer?.role === Role.TEACHER && lastTerm.class?.teacher?.id === viewer.id),
     };
   }
@@ -1114,6 +1116,7 @@ export class ReportsService {
       select: {
         id: true, classId: true, studentId: true, academicYear: true, termNumber: true, termType: true,
         overallAverage: true, councilDecision: true, councilDecisionManual: true, status: true,
+        class: { select: { level: true } },
       },
     });
     if (!report) throw new NotFoundException('Report card not found');
@@ -1131,9 +1134,9 @@ export class ReportsService {
     const text = decision?.trim();
     const data = text
       ? { councilDecision: text.slice(0, 200), councilDecisionManual: true }
-      : { councilDecision: (await this.termRecap({ ...report, councilDecisionManual: false }, institutionId)).councilDecision, councilDecisionManual: false };
+      : { councilDecision: (await this.termRecap({ ...report, classLevel: report.class?.level, councilDecisionManual: false }, institutionId)).councilDecision, councilDecisionManual: false };
     await this.prisma.reportCard.update({ where: { id: report.id }, data });
-    return this.termRecap({ ...report, ...data }, institutionId);
+    return this.termRecap({ ...report, classLevel: report.class?.level, ...data }, institutionId);
   }
 
   /**
@@ -1180,7 +1183,7 @@ export class ReportsService {
       const last = own.find((x) => x.termNumber === termCount) ?? null;
       // Pas de décision proposée tant que toutes les périodes n'ont pas de moyenne (en cours d'année)
       const complete = terms.every((t) => t.average != null);
-      const proposed = complete ? proposedDecision(annual, settings.promotionThreshold) : null;
+      const proposed = complete ? proposedDecision(annual, thresholdOnScale(settings.promotionThreshold, isPrimaryLevel(cls.level))) : null;
       const manual = !!last?.councilDecisionManual;
       return {
         studentId: e.studentId,
@@ -1211,7 +1214,7 @@ export class ReportsService {
       termType,
       termCount,
       isPrimary: isPrimaryLevel(cls.level),
-      promotionThreshold: settings.promotionThreshold,
+      promotionThreshold: thresholdOnScale(settings.promotionThreshold, isPrimaryLevel(cls.level)),
       weighting: settings.weighting,
       rows: withRank,
     };
@@ -1398,7 +1401,7 @@ export class ReportsService {
     const totalCoef = graded.reduce((s, g) => s + g.coefficient, 0);
     const avg = isPrimaryLevel(report.class.level)
       // Primaire : total des points ÷ total des barèmes (chaque matière sur 10 ou sur 20)
-      ? (primaryTotals(report.grades, report.class.level).average20 ?? 0)
+      ? (primaryTotals(report.grades, report.class.level).average10 ?? 0)
       : report.overallAverage
         ?? (totalCoef > 0 ? graded.reduce((s, g) => s + g.score * g.coefficient, 0) / totalCoef : 0);
 
@@ -1412,7 +1415,7 @@ export class ReportsService {
       termName: report.termName,
       isPrimary: isPrimaryLevel(report.class.level),
       avg,
-      mention: report.mention ?? computeMention(avg),
+      mention: report.mention ?? computeMention(avg, report.class.level),
       rank: report.classRank,
       classSize: report.classSize,
       classAverage: report.classAverage,

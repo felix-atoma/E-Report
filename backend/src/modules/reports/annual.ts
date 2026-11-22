@@ -1,6 +1,6 @@
 /**
  * Bulletin annuel : moyenne annuelle, rang annuel et décision proposée.
- * Toutes les moyennes sont sur 20 (comme en base) ; le primaire les affiche sur 10.
+ * Les moyennes annuelles restent sur l'échelle propre à la classe : primaire /10, secondaire /20.
  */
 
 /** Poids des périodes : EQUAL = moyenne simple ; LAST_DOUBLE = la dernière période compte double. */
@@ -22,6 +22,11 @@ export function annualSettings(academicSettings: unknown): { weighting: AnnualWe
   const weighting: AnnualWeighting = s.annualWeighting === 'LAST_DOUBLE' ? 'LAST_DOUBLE' : 'EQUAL';
   const t = Number(s.promotionThreshold);
   return { weighting, promotionThreshold: Number.isFinite(t) && t > 0 && t <= 20 ? t : 10 };
+}
+
+/** School settings keep the threshold on the secondary /20 scale; primary averages use /10. */
+export function thresholdOnScale(thresholdOn20: number, isPrimary: boolean): number {
+  return isPrimary ? thresholdOn20 / 2 : thresholdOn20;
 }
 
 /**

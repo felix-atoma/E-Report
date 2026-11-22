@@ -18,6 +18,7 @@ import ZoomableAvatar from '../../../components/common/ZoomableAvatar/ZoomableAv
 import Badge from '../../../components/common/Badge/Badge';
 import Loading from '../../../components/common/Loading/Loading';
 import AttendanceInput from '../../../components/reports/AttendanceInput/AttendanceInput';
+import { isPrimaryLevel } from '../../../utils/examKinds';
 import './StudentProfilePage.css';
 
 const FEE_VARIANT      = { PAID: 'success', PARTIAL: 'warning', UNPAID: 'danger', EXEMPT: 'info' };
@@ -130,13 +131,14 @@ function AdminStudentProfilePage() {
   const name = student?.user?.name ?? student?.admissionNumber ?? '—';
   const reportCards = student?.reportCards ?? [];
   const published   = reportCards.filter((r) => r.status === 'PUBLISHED');
+  const displayedAverage = (r) => Number(r.overallAverage);
 
   const avgAll = published.length
-    ? published.reduce((s, r) => s + Number(r.overallAverage ?? 0), 0) / published.length
+    ? published.reduce((s, r) => s + displayedAverage(r), 0) / published.length
     : null;
 
   const bestAvg = published.length
-    ? Math.max(...published.map((r) => Number(r.overallAverage ?? 0)))
+    ? Math.max(...published.map(displayedAverage))
     : null;
 
   const avgRank = published.length
@@ -448,8 +450,8 @@ function AdminStudentProfilePage() {
                         <td><strong>{r.termName ?? `T${r.termNumber}`}</strong></td>
                         <td>{r.academicYear}</td>
                         <td>
-                          <strong className={Number(r.overallAverage) >= 10 ? 'asp-text--pass' : 'asp-text--fail'}>
-                            {r.overallAverage != null ? Number(r.overallAverage).toFixed(2).replace('.', ',') : '—'}
+                          <strong className={displayedAverage(r) >= (isPrimaryLevel(r.class?.level) ? 5 : 10) ? 'asp-text--pass' : 'asp-text--fail'}>
+                            {r.overallAverage != null ? `${displayedAverage(r).toFixed(2).replace('.', ',')} / ${isPrimaryLevel(r.class?.level) ? 10 : 20}` : '—'}
                           </strong>
                         </td>
                         <td>{r.classRank ? `${r.classRank}e / ${r.classSize ?? '?'}` : '—'}</td>

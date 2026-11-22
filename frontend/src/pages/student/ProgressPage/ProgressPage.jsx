@@ -11,6 +11,7 @@ import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Card from '../../../components/common/Card/Card';
 import Loading from '../../../components/common/Loading/Loading';
 import EmptyState from '../../../components/common/EmptyState/EmptyState';
+import { isPrimaryLevel } from '../../../utils/examKinds';
 import './ProgressPage.css';
 
 const SUBJECT_COLORS = [
@@ -36,7 +37,7 @@ function CustomTooltip({ active, payload, label, t }) {
       {payload.map((p) => (
         <div key={p.dataKey} className="progress-tooltip__line" style={{ color: p.color }}>
           <span className="progress-tooltip__name">{p.name}:</span>
-          <span className="progress-tooltip__avg"> {String(p.value ?? '—').replace('.', ',')} / 20</span>
+          <span className="progress-tooltip__avg"> {String(p.value ?? '—').replace('.', ',')} / {p.payload?.scale ?? 20}</span>
         </div>
       ))}
     </div>
@@ -70,19 +71,22 @@ function ProgressPage() {
 
   if (isLoading) return <AppShell title={t('progress.title')}><Loading /></AppShell>;
 
+  const displayedAverage = (r) => Number(r.overallAverage);
   const chartData = published.map((r) => ({
     name: r.termName ?? `T${r.termNumber} ${r.academicYear?.slice(-4) ?? ''}`,
-    avg:  r.overallAverage,
+    avg: displayedAverage(r),
+    scale: isPrimaryLevel(r.class?.level) ? 10 : 20,
   }));
+  const chartMax = chartData.some((point) => point.scale === 20) ? 20 : 10;
 
   const avgAll = published.length
-    ? Math.round(published.reduce((s, r) => s + r.overallAverage, 0) / published.length * 100) / 100
+    ? Math.round(published.reduce((s, r) => s + displayedAverage(r), 0) / published.length * 100) / 100
     : null;
   const best = published.length
-    ? Math.max(...published.map((r) => r.overallAverage))
+    ? Math.max(...published.map(displayedAverage))
     : null;
   const trend = published.length >= 2
-    ? published[published.length - 1].overallAverage - published[0].overallAverage
+    ? displayedAverage(published[published.length - 1]) - displayedAverage(published[0])
     : null;
 
   // Build multi-subject chart data from annual report
@@ -138,14 +142,14 @@ function ProgressPage() {
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="name" tick={{ fontSize: 12 }} tickLine={false} />
                 <YAxis
-                  domain={[0, 20]}
-                  ticks={[0, 5, 10, 12, 14, 16, 18, 20]}
+                  domain={[0, chartMax]}
+                  ticks={chartMax === 10 ? [0, 2.5, 5, 6, 7, 8, 9, 10] : [0, 5, 10, 12, 14, 16, 18, 20]}
                   tick={{ fontSize: 12 }}
                   tickLine={false}
                 />
                 <Tooltip content={<CustomTooltip t={t} />} />
                 <ReferenceLine
-                  y={10}
+                  y={chartMax / 2}
                   stroke="#f59e0b"
                   strokeDasharray="4 4"
                   label={{ value: t('progress.threshold'), position: 'insideTopRight', fontSize: 11, fill: '#f59e0b' }}
@@ -228,11 +232,15 @@ function ProgressPage() {
                             </td>
                             {s.termAverages.map((avg, j) => (
                               <td key={j} className={avg !== null && avg < 10 ? 'progress-subject-table__fail' : ''}>
-                                {avg !== null ? String(avg).replace('.', ',') : '—'}
+                                {avg !== null
+                                  ? (avg * (isPrimaryLevel(annualReport?.class?.level) ? s.max / 20 : 1)).toFixed(2).replace('.', ',')
+                                  : '—'}
                               </td>
                             ))}
                             <td className="progress-subject-table__annual">
-                              {s.annualAverage !== null ? String(s.annualAverage).replace('.', ',') : '—'}
+                              {s.annualAverage !== null
+                                ? `${(s.annualAverage * (isPrimaryLevel(annualReport?.class?.level) ? s.max / 20 : 1)).toFixed(2).replace('.', ',')} / ${isPrimaryLevel(annualReport?.class?.level) ? s.max : 20}`
+                                : '—'}
                             </td>
                           </tr>
                         ))}
@@ -248,7 +256,7 @@ function ProgressPage() {
             <h3 className="progress-breakdown__title">{t('progress.breakdownTitle')}</h3>
             <div className="progress-breakdown__list">
               {published.map((r) => {
-                const m = getMention(r.overallAverage, t);
+                const m = getMention(isPrimaryLevel(r.class?.level) ? r.overallAverage * 2 : r.overallAverage, t);
                 return (
                   <div key={r.id} className="progress-breakdown__row">
                     <div>
@@ -259,9 +267,9 @@ function ProgressPage() {
                     </div>
                     <div className="progress-breakdown__right">
                       <span className="progress-breakdown__avg">
-                        {String(r.overallAverage).replace('.', ',')} / 20
+                        {displayedAverage(r).toFixed(2).replace('.', ',')} / {isPrimaryLevel(r.class?.level) ? 10 : 20}
                       </span>
-                      <span className={`progress-breakdown__mention progress-breakdown__mention--${r.overallAverage >= 10 ? 'pass' : 'fail'}`}>
+                      <span className={`progress-breakdown__mention progress-breakdown__mention--${r.overallAverage >= (isPrimaryLevel(r.class?.level) ? 5 : 10) ? 'pass' : 'fail'}`}>
                         {m}
                       </span>
                     </div>

@@ -28,6 +28,14 @@ describe('primary school — English graded separately', () => {
     expect(coef('Lecture', 'CM2')).toBe(1);
   });
 
+  it('returns the primary overall average directly on 10', () => {
+    const result = primaryTotals([
+      { moyenneMatiere: 20, subject: { nameFr: 'Dictée et questions' } },
+      { moyenneMatiere: 10, subject: { nameFr: 'Lecture' } },
+    ], 'CE1');
+    expect(result.average10).toBe(8.33);
+  });
+
   it('applies subject coefficients to the maximum, not again to earned points', () => {
     const grades = [
       { moyenneMatiere: 10, coefficient: 2, subject: { nameFr: 'Maths', maxScore: 20 } },
@@ -35,7 +43,7 @@ describe('primary school — English graded separately', () => {
       { moyenneMatiere: 10, coefficient: 2, subject: { nameFr: 'Sciences', maxScore: 20 } },
       ...[3, 3, 3, 2, 2, 2, 2].map((mark, i) => ({ moyenneMatiere: mark * 2, coefficient: 1, subject: { nameFr: `Matière ${i}`, maxScore: 10 } })),
     ];
-    expect(primaryTotals(grades)).toEqual({ total: 47, max: 130, average20: 7.22 });
+    expect(primaryTotals(grades)).toEqual({ total: 47, max: 130, average10: 3.61 });
   });
 
   it('leaves English out of the total and the average', () => {
@@ -43,7 +51,7 @@ describe('primary school — English graded separately', () => {
     const without = primaryTotals([g('Français', 16), g('Calcul', 16, 10)]);
     const withEnglish = primaryTotals([g('Français', 16), g('Calcul', 16, 10), g('Anglais', 4)]);
     expect(withEnglish).toEqual(without);
-    expect(withEnglish).toEqual({ total: 24, max: 30, average20: 16 });
+    expect(withEnglish).toEqual({ total: 24, max: 30, average10: 8 });
   });
 
   describe('bulletin HTML', () => {

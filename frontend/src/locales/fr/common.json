@@ -1681,7 +1681,7 @@
     "academic": {
       "noReports":    "Aucun bulletin créé pour cet élève.",
       "noPublished":  "Aucun bulletin publié.",
-      "overallLabel": "moyenne générale / 20",
+      "overallLabel": "moyenne générale",
       "columns": {
         "term":        "Période",
         "year":        "Année",

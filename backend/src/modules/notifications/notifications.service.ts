@@ -213,8 +213,10 @@ export class NotificationsService {
       const parentName = log.recipient?.name ?? null;
       // Pays de l'école : indicatif ajouté aux numéros saisis sans indicatif
       const country = (log.student as any)?.institution?.country ?? null;
+      const reportLevel = (log.reportCard as any)?.class?.level ?? '';
+      const reportScale = /^\s*(CI|CP\s*[12]?|CE\s*[12]|CM\s*[12])\s*$/i.test(reportLevel) ? 10 : 20;
       const average = log.reportCard?.overallAverage != null
-        ? log.reportCard.overallAverage.toFixed(2).replace('.', ',')
+        ? `${log.reportCard.overallAverage.toFixed(2).replace('.', ',')} / ${reportScale}`
         : '—';
       const mention = log.reportCard?.mention ?? '—';
       const termName = log.reportCard?.termName ?? '';

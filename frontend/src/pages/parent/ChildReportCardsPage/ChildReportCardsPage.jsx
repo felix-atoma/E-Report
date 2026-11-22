@@ -13,6 +13,7 @@ import Badge from '../../../components/common/Badge/Badge';
 import PaywallNotice from '../../../components/parent/PaywallNotice/PaywallNotice';
 import Loading from '../../../components/common/Loading/Loading';
 import EmptyState from '../../../components/common/EmptyState/EmptyState';
+import { isPrimaryLevel } from '../../../utils/examKinds';
 import './ChildReportCardsPage.css';
 
 const MENTION_VARIANT = (avg) => {
@@ -42,6 +43,8 @@ function ReportCard({ report, feeSummary }) {
   const isHeld       = report.deliveryStatus === 'HELD_UNPAID' || report.deliveryStatus === 'HELD_PARTIAL';
   const showPaywall  = !isPaid || isHeld;
   const avg          = report.overallAverage;
+  const scale        = isPrimaryLevel(report.class?.level) ? 10 : 20;
+  const displayAvg   = avg == null ? null : Number(avg);
 
   return (
     <Card className="report-card-item">
@@ -59,8 +62,8 @@ function ReportCard({ report, feeSummary }) {
         </div>
         <div className="report-card-item__right">
           {avg != null && (
-            <Badge variant={MENTION_VARIANT(avg)}>
-              {String(avg).replace('.', ',')} / 20
+            <Badge variant={MENTION_VARIANT(scale === 10 ? avg * 2 : avg)}>
+              {displayAvg.toFixed(2).replace('.', ',')} / {scale}
             </Badge>
           )}
           {showPaywall ? (
@@ -138,7 +141,7 @@ function ReportCard({ report, feeSummary }) {
                         <tr className="report-grades-table__avg-row">
                           <td colSpan={2}>{t('childReports.overallAvg')}</td>
                           <td className="report-grades-table__score">
-                            <strong>{String(avg).replace('.', ',')} / 20</strong>
+                            <strong>{displayAvg.toFixed(2).replace('.', ',')} / {scale}</strong>
                           </td>
                         </tr>
                       </tfoot>

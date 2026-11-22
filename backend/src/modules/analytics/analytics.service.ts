@@ -384,9 +384,10 @@ export class AnalyticsService {
     ]);
 
     const round2 = (v: number) => Math.round(v * 100) / 100;
-    // Primaire : moyennes générales sur 10, comme sur le bulletin (stockées sur 20 ; tranches identiques)
+    // Moyennes primaires et secondaires sont désormais stockées sur leur échelle d'affichage.
     const scale = isPrimaryLevel(cls.level) ? 10 : 20;
-    const k = scale / 20;
+    const k = 1;
+    const bandScale = scale / 20;
     const sv = (v: number) => round2(v * k);
     const num = (v: number) => String(round2(v * k)).replace('.', ',');
     const rows = current
@@ -396,11 +397,11 @@ export class AnalyticsService {
     const pct = (k: number) => (n ? Math.round((k / n) * 1000) / 10 : 0);   // une décimale
 
     const bands = [
-      { label: `Moyenne ≥ ${num(10)}`,                test: (a: number) => a >= 10 },
-      { label: `${num(9)} ≤ moyenne < ${num(10)}`,   test: (a: number) => a >= 9 && a < 10 },
-      { label: `${num(8)} ≤ moyenne < ${num(9)}`,    test: (a: number) => a >= 8 && a < 9 },
-      { label: `${num(7)} ≤ moyenne < ${num(8)}`,    test: (a: number) => a >= 7 && a < 8 },
-      { label: `Moyenne < ${num(7)}`,                 test: (a: number) => a < 7 },
+      { label: `Moyenne ≥ ${num(10 * bandScale)}`,                test: (a: number) => a >= 10 * bandScale },
+      { label: `${num(9 * bandScale)} ≤ moyenne < ${num(10 * bandScale)}`, test: (a: number) => a >= 9 * bandScale && a < 10 * bandScale },
+      { label: `${num(8 * bandScale)} ≤ moyenne < ${num(9 * bandScale)}`, test: (a: number) => a >= 8 * bandScale && a < 9 * bandScale },
+      { label: `${num(7 * bandScale)} ≤ moyenne < ${num(8 * bandScale)}`, test: (a: number) => a >= 7 * bandScale && a < 8 * bandScale },
+      { label: `Moyenne < ${num(7 * bandScale)}`, test: (a: number) => a < 7 * bandScale },
     ].map((b) => { const count = rows.filter((r) => b.test(r.avg)).length; return { label: b.label, count, percentage: pct(count) }; });
 
     const classAverage = n ? round2(rows.reduce((s, r) => s + r.avg, 0) / n) : null;
@@ -427,7 +428,7 @@ export class AnalyticsService {
     let rank = 0;
     const ranked = rows.map((r, i) => {
       if (i === 0 || r.avg !== rows[i - 1].avg) rank = i + 1;
-      return { rank: r.storedRank ?? rank, name: r.name, average: round2(r.avg), appreciation: appreciationOn20(r.avg, 'fr') };
+      return { rank: r.storedRank ?? rank, name: r.name, average: round2(r.avg), appreciation: appreciationOn20(r.avg / bandScale, 'fr') };
     });
     const top5 = ranked.filter((r) => r.rank <= 5).slice(0, Math.max(5, ranked.filter((r) => r.rank <= 5).length));
 
@@ -457,8 +458,8 @@ export class AnalyticsService {
     };
 
     const termLabel = termNumber === 1 ? '1er trimestre' : `${termNumber}e trimestre`;
-    // Valeurs affichées sur le barème de la classe (sur 10 au primaire)
-    const scaleBack = (v: number | null) => (v == null ? null : sv(v));
+    // Valeurs déjà stockées sur le barème de la classe.
+    const scaleBack = (v: number | null) => (v == null ? null : v);
     return {
       scale,
       institution: cls.institution,
@@ -484,9 +485,10 @@ export class AnalyticsService {
 
   async getClassStats(institutionId: string, classId: string, academicYear: string, termNumber: number) {
     const clsLevel = await this.prisma.class.findFirst({ where: { id: classId, institutionId }, select: { level: true } });
-    // Primaire : moyennes générales sur 10, comme sur le bulletin (stockées sur 20)
+    // Moyennes primaires sont stockées sur 10.
     const scale = isPrimaryLevel(clsLevel?.level) ? 10 : 20;
-    const k = scale / 20;
+    const k = 1;
+    const bandScale = scale / 20;
     const [currentReports, previousReports] = await Promise.all([
       this.prisma.reportCard.findMany({
         where: { classId, academicYear, termNumber, overallAverage: { not: null }, class: { institutionId } },
@@ -563,16 +565,16 @@ export class AnalyticsService {
 
     // Répartition selon le barème des appréciations (7 niveaux)
     const distribution = {
-      EX:        averages.filter((a) => a >= 18).length,
-      TB:        averages.filter((a) => a >= 16 && a < 18).length,
-      B:         averages.filter((a) => a >= 14 && a < 16).length,
-      AB:        averages.filter((a) => a >= 12 && a < 14).length,
-      P:         averages.filter((a) => a >= 10 && a < 12).length,
-      Insuf:     averages.filter((a) => a >= 8 && a < 10).length,
-      TresInsuf: averages.filter((a) => a < 8).length,
+      EX:        averages.filter((a) => a >= 18 * bandScale).length,
+      TB:        averages.filter((a) => a >= 16 * bandScale && a < 18 * bandScale).length,
+      B:         averages.filter((a) => a >= 14 * bandScale && a < 16 * bandScale).length,
+      AB:        averages.filter((a) => a >= 12 * bandScale && a < 14 * bandScale).length,
+      P:         averages.filter((a) => a >= 10 * bandScale && a < 12 * bandScale).length,
+      Insuf:     averages.filter((a) => a >= 8 * bandScale && a < 10 * bandScale).length,
+      TresInsuf: averages.filter((a) => a < 8 * bandScale).length,
     };
 
-    const passingCount = averages.filter((a) => a >= 10).length;
+    const passingCount = averages.filter((a) => a >= 10 * bandScale).length;
     const passingRate = n > 0 ? Math.round((passingCount / n) * 100) : null;
     const failingCount = n - passingCount;   // moyenne < 10 (toutes tranches confondues)
 

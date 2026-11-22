@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { reportsService } from '../../../services/reportsService';
 import { gradesService } from '../../../services/gradesService';
 import { aiService } from '../../../services/aiService';
+import { isPrimaryLevel } from '../../../utils/examKinds';
 import AppShell from '../../../components/layout/AppShell/AppShell';
 import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Card from '../../../components/common/Card/Card';
@@ -332,6 +333,8 @@ function EditReportCardPage() {
   }
 
   const avg = calculateAverage(gradeRows);
+  const averageScale = isPrimaryLevel(report.class?.level) ? 10 : 20;
+  const displayAverage = avg == null ? null : avg / (averageScale === 10 ? 2 : 1);
   const mention = getMention(avg);
 
   const termLabel = report.termName ?? `Trimestre ${report.termNumber}`;
@@ -389,9 +392,9 @@ function EditReportCardPage() {
             {avg !== null && (
               <div className="edit-report__avg">
                 <span className="edit-report__avg-value">
-                  {avg.toFixed(2).replace('.', ',')}
+                  {displayAverage.toFixed(2).replace('.', ',')}
                 </span>
-                <span className="edit-report__avg-label">/20</span>
+                <span className="edit-report__avg-label">/{averageScale}</span>
                 <span className={`edit-report__mention edit-report__mention--${avg >= 10 ? 'pass' : 'fail'}`}>
                   {mention ? t(mention) : ''}
                 </span>
@@ -486,7 +489,7 @@ function EditReportCardPage() {
               <h3 className="edit-report__section-title">Récapitulatif</h3>
               <div className="edit-report__summary-row">
                 <span>Moyenne générale</span>
-                <strong>{avg.toFixed(2).replace('.', ',')} / 20</strong>
+                <strong>{displayAverage.toFixed(2).replace('.', ',')} / {averageScale}</strong>
               </div>
               <div className="edit-report__summary-row">
                 <span>Mention</span>

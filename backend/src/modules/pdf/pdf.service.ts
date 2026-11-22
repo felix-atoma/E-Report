@@ -174,7 +174,7 @@ export function digitalStampFor(branding: unknown, stamp: string | null | undefi
   return (branding as Record<string, unknown> | null)?.stampMode === 'DIGITAL' && !!stamp && status === 'PUBLISHED';
 }
 
-/** Primaire (CI → CM2) : notes sur 10, sans coefficients. Les moyennes restent stockées sur 20. */
+/** Primaire (CI → CM2) : moyennes générales sur 10 ; moyennes par matière restent normalisées sur 20. */
 export function isPrimaryLevel(level: string | null | undefined): boolean {
   return /^\s*(CI|CP\s*[12]?|CE\s*[12]|CM\s*[12])\s*$/i.test(level ?? '');
 }
@@ -260,8 +260,8 @@ export function primaryTotals(grades: Array<{ moyenneMatiere?: number | null; sc
   return {
     total: Math.round(total * 100) / 100,
     max,
-    /** Moyenne sur 20 (stockée) : moyenne sur 10 = total ÷ somme des coefficients. */
-    average20: totalCoefficient > 0 ? Math.floor((total / totalCoefficient) * 100) / 100 * 2 : null,
+    /** Moyenne générale primaire stockée et renvoyée sur 10. */
+    average10: totalCoefficient > 0 ? Math.floor((total / totalCoefficient) * 100) / 100 : null,
   };
 }
 
@@ -706,9 +706,9 @@ export class PdfService {
     const ident = schoolIdentity(data.institution.brandingSettings, data.institution.name, data.classLevel);
     const institution = { ...data.institution, name: ident.name };
     const isPrimary = isPrimaryLevel(data.classLevel);
-    // Toutes les moyennes sont stockées sur 20 ; au primaire on les affiche sur 10.
+    // Les moyennes du primaire sont stockées et affichées sur 10.
     const denom = isPrimary ? 10 : 20;
-    const toScale = (v: number | null | undefined) => (v == null ? null : isPrimary ? v / 2 : v);
+    const toScale = (v: number | null | undefined) => (v == null ? null : v);
     const fmtScaled = (v: number | null | undefined) => formatScore(toScale(v));
 
     const branding = (institution.brandingSettings as Record<string, unknown>) ?? {};
@@ -757,7 +757,7 @@ export class PdfService {
     const primaryTotal = pt.total;
     const primaryTotalMax = pt.max;
     // Moyenne affichée : au primaire, toujours celle des totaux imprimés (cohérente avec la page)
-    const displayAverage = isPrimary ? (pt.average20 ?? report.overallAverage) : report.overallAverage;
+    const displayAverage = isPrimary ? (pt.average10 ?? report.overallAverage) : report.overallAverage;
 
     const absences =
       report.attendanceDays != null && report.attendancePresent != null
@@ -835,11 +835,11 @@ export class PdfService {
       report: {
         ...report,
         conductLabel: report.conductRating ? CONDUCT_LABELS[report.conductRating] : '—',
-        isPassing: (displayAverage ?? 0) >= 10,
+        isPassing: (displayAverage ?? 0) >= (isPrimary ? 5 : 10),
         rankLabel,
         averageLabel: displayAverage != null ? fmtScaled(displayAverage) : null,
         hasDistinctions: !!(report.honorCouncil || report.commendations || report.warnings),
-        annualIsPassing: report.annualAverage != null ? report.annualAverage >= 10 : null,
+        annualIsPassing: report.annualAverage != null ? report.annualAverage >= (isPrimary ? 5 : 10) : null,
         absences,
         attendanceRate,
         lateHours,
@@ -892,8 +892,8 @@ export class PdfService {
       nextTerm: isPrimary
         ? nextTermStart((institution as any).academicSettings, report.academicYear, report.termType, report.termNumber)
         : null,
-      averageFailing: displayAverage != null && displayAverage < 10,
-      annualFailing: report.annualAverage != null && report.annualAverage < 10,
+      averageFailing: displayAverage != null && displayAverage < (isPrimary ? 5 : 10),
+      annualFailing: report.annualAverage != null && report.annualAverage < (isPrimary ? 5 : 10),
       totalPointsLabel: formatScore(Math.round(totalPoints * 100) / 100),
       lateLabel: lateHours != null ? `${lateHours} h`
         : report.attendanceLate != null ? String(report.attendanceLate) : '—',

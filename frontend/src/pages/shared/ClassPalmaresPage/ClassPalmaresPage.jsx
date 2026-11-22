@@ -10,6 +10,7 @@ import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Card from '../../../components/common/Card/Card';
 import Select from '../../../components/common/Select/Select';
 import Button from '../../../components/common/Button/Button';
+import { isPrimaryLevel } from '../../../utils/examKinds';
 import './ClassPalmaresPage.css';
 
 const MEDALS = ['🥇', '🥈', '🥉'];
@@ -79,16 +80,18 @@ export default function ClassPalmaresPage() {
 
   const classOptions  = classes.map((c) => ({ value: c.id, label: c.name }));
   const selectedClass = classes.find((c) => c.id === classId);
+  const averageScale = isPrimaryLevel(selectedClass?.level) ? 10 : 20;
+  const displayAverage = (value) => value == null ? '—' : Number(value).toFixed(2).replace('.', ',');
 
   function printPalmares() {
     const rows = ranked.map((r, i) => {
       const name = r.student?.user?.name ?? r.student?.admissionNumber ?? '—';
-      const avg  = r.overallAverage != null ? Number(r.overallAverage).toFixed(2).replace('.', ',') : '—';
+      const avg  = displayAverage(r.overallAverage);
       const medal = i < 3 ? MEDALS[i] : '';
       return `<tr class="${i < 3 ? 'top3' : ''}">
         <td class="rank">${r.classRank}${medal}</td>
         <td>${name}</td>
-        <td class="avg">${avg} / 20</td>
+        <td class="avg">${avg} / ${averageScale}</td>
         <td>${r.mention ?? '—'}</td>
       </tr>`;
     }).join('');
@@ -194,13 +197,13 @@ export default function ClassPalmaresPage() {
           <div className="pal-podium">
             {ranked.slice(0, 3).map((r, i) => {
               const name = r.student?.user?.name ?? r.student?.admissionNumber ?? '—';
-              const avg  = r.overallAverage != null ? Number(r.overallAverage).toFixed(2).replace('.', ',') : '—';
+              const avg  = displayAverage(r.overallAverage);
               return (
                 <div key={r.id} className={`pal-podium__card pal-podium__card--${i + 1}`}>
                   <div className="pal-podium__medal">{MEDALS[i]}</div>
                   <div className="pal-podium__rank">{i + 1}er rang</div>
                   <div className="pal-podium__name">{name}</div>
-                  <div className="pal-podium__avg">{avg} / 20</div>
+                  <div className="pal-podium__avg">{avg} / {averageScale}</div>
                   <MentionBadge mention={r.mention} />
                 </div>
               );
@@ -223,14 +226,14 @@ export default function ClassPalmaresPage() {
               <tbody>
                 {ranked.map((r, i) => {
                   const name = r.student?.user?.name ?? r.student?.admissionNumber ?? '—';
-                  const avg  = r.overallAverage != null ? Number(r.overallAverage).toFixed(2).replace('.', ',') : '—';
+                  const avg  = displayAverage(r.overallAverage);
                   return (
                     <tr key={r.id} className={i < 3 ? 'pal-table__row--top3' : ''}>
                       <td className="pal-table__rank">
                         {i < 3 ? MEDALS[i] : ''} {r.classRank}
                       </td>
                       <td className="pal-table__name">{name}</td>
-                      <td className="pal-table__avg">{avg} / 20</td>
+                      <td className="pal-table__avg">{avg} / {averageScale}</td>
                       <td><MentionBadge mention={r.mention} /></td>
                       <td className="pal-table__muted">
                         {r.attendanceAbsent != null ? r.attendanceAbsent : '—'}

@@ -12,6 +12,7 @@ import Loading from '../../../components/common/Loading/Loading';
 import PrintFormatPicker from '../../../components/common/PrintFormatPicker/PrintFormatPicker';
 import { scoreToFrench } from '../../../utils/numberToFrench';
 import './PrintReportCardPage.css';
+import { isPrimaryLevel } from '../../../utils/examKinds';
 
 const CONDUCT_LABELS = {
   TRES_BIEN: 'Très Bien', BIEN: 'Bien', PASSABLE: 'Passable', MEDIOCRE: 'Médiocre',
@@ -248,11 +249,11 @@ export default function PrintReportCardPage() {
   const totalCoef   = grades.reduce((s, g) => s + (g.coefficient ?? 0), 0);
   const totalPoints = grades.reduce((s, g) => s + (g.weightedScore ?? 0), 0);
 
-  // Primaire (CI → CM2) : notes et moyennes affichées sur 10 (stockées sur 20), sans coefficients.
+  // Primaire (CI → CM2) : moyenne générale sur 10 ; moyennes par matière restent normalisées sur 20.
   // Même règle que isPrimaryLevel() côté PDF (backend/src/modules/pdf/pdf.service.ts).
-  const isPrimary = /^\s*(CI|CP\s*[12]?|CE\s*[12]|CM\s*[12])\s*$/i.test(report.class?.level ?? '');
+  const isPrimary = isPrimaryLevel(report.class?.level);
   const denom = isPrimary ? 10 : 20;
-  const fmtS = (v) => (v == null ? '—' : fmt(isPrimary ? v / 2 : v));
+  const fmtS = (v) => (v == null ? '—' : fmt(v));
   // Rappel des périodes précédentes / moyenne annuelle (calculés côté serveur, réglages de l'école)
   const recap = report.termRecap ?? null;
   const threshold = recap?.promotionThreshold ?? 10;
@@ -262,12 +263,14 @@ export default function PrintReportCardPage() {
   // Primaire : chaque matière garde son barème (« Noté sur » 10 ou 20) ; total = somme des notes sur
   // la somme des barèmes, moyenne /10 = total ÷ maximum × 10. Même calcul que primaryTotals() côté PDF.
   const level = report.class?.level ?? '';
-  const isTextStudy = (g) => /[ée]tude\s+de\s+texte/i.test(g.subject?.nameFr ?? '');
-  const cmCoef2 = (g) => /mathematiques\s*1|dictee\s+questions|probleme/i.test((g.subject?.nameFr ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase());
+  const normalizedName = (g) => (g.subject?.nameFr ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const ceCoef2 = (g) => /dictee.*question|question.*dictee|calcul\s+ecrit|probleme/.test(normalizedName(g));
+  const cmCoef2 = (g) => /dictee.*question|question.*dictee|etude\s+de\s+texte|calcul\s+ecrit|probleme/.test(normalizedName(g));
   const isCe12 = /^\s*CE\s*[12]\s*$/i.test(level);
   const isCm12 = /^\s*CM\s*[12]\s*$/i.test(level);
-  const subjectMax = (g) => (isCe12 && isTextStudy(g) ? 10 : isCm12 && cmCoef2(g) ? 20 : (g.subject?.maxScore ?? 20) <= 10 ? 10 : 20);
-  const displayCoefficient = (g) => (isCe12 && isTextStudy(g) ? 1 : isCm12 && cmCoef2(g) ? 2 : g.coefficient);
+  const primaryCoefficient = (g) => isCe12 ? (ceCoef2(g) ? 2 : 1) : isCm12 ? (cmCoef2(g) ? 2 : 1) : 1;
+  const subjectMax = (g) => primaryCoefficient(g) === 2 ? 20 : 10;
+  const displayCoefficient = (g) => primaryCoefficient(g);
   // L'anglais est noté à part au primaire : encadré à côté du tableau, hors total, moyenne et rang
   // (même règle que isPrimaryEnglish() côté PDF)
   // (catégorie « Section anglaise » dans Matières, ou nom contenant « anglais » / « english »)
@@ -288,14 +291,14 @@ export default function PrintReportCardPage() {
   primaryGrades.forEach((g) => {
     const m20 = g.moyenneMatiere ?? g.score;
     if (m20 == null) return;
-    const coefficient = isCe12 && isTextStudy(g) ? 1 : isCm12 && cmCoef2(g) ? 2 : subjectMax(g) <= 10 ? 1 : 2;
-    primaryTotal += (m20 * subjectMax(g)) / 20;
+    const coefficient = primaryCoefficient(g);
+    primaryTotal += (m20 / 2) * coefficient;
     primaryTotalMax += 10 * coefficient;
     primaryTotalCoefficient += coefficient;
   });
-  // Moyenne affichée au primaire : celle des totaux imprimés (stockée sur 20, comme au secondaire)
+  // La valeur interne est conservée sur 20 ; le bulletin l'affiche sur 10 au primaire.
   const displayAverage = isPrimary && primaryTotalMax > 0
-    ? Math.floor((primaryTotal / primaryTotalCoefficient) * 100) / 100 * 2
+    ? Math.floor((primaryTotal / primaryTotalCoefficient) * 100) / 100
     : report.overallAverage;
   const absences = report.attendanceDays != null && report.attendancePresent != null
     ? report.attendanceDays - report.attendancePresent
@@ -438,7 +441,7 @@ export default function PrintReportCardPage() {
             </tr>
             <tr>
               <td className="prh__lbl">Moyenne générale</td><td className="prh__sep">:</td>
-              <td className={`prh__val prh__val--strong${displayAverage != null && displayAverage < 10 ? ' prh__val--fail' : ''}`}>
+              <td className={`prh__val prh__val--strong${displayAverage != null && displayAverage < denom / 2 ? ' prh__val--fail' : ''}`}>
                 {displayAverage != null ? `${fmtS(displayAverage)} / ${denom}` : '—'}
               </td>
               <td className="prh__lbl">Période</td><td className="prh__sep">:</td><td className="prh__val">{termLabel}</td>
@@ -598,7 +601,7 @@ export default function PrintReportCardPage() {
             <div className="pr-results__cells">
               <div className="pr-results__cell pr-results__cell--big pr-results__cell--red">
                 <label>Moyenne Générale</label>
-                <strong className={displayAverage >= 10 ? 'pr-val--pass' : 'pr-val--fail'}>
+                <strong className={displayAverage >= denom / 2 ? 'pr-val--pass' : 'pr-val--fail'}>
                   {fmtS(displayAverage)}<span className="pr-val-denom"> / {denom}</span>
                 </strong>
               </div>

@@ -62,7 +62,7 @@ export default function ClassCouncilPage({ embedded = false }) {
 
   const isPrimary = sheet?.isPrimary;
   const denom = isPrimary ? 10 : 20;
-  const scaled = (v) => (v == null ? null : isPrimary ? v / 2 : v);
+  const scaled = (v) => (v == null ? null : v);
   const threshold = sheet?.promotionThreshold ?? 10;
   const termLabel = (n) => `${sheet?.termType === 'SEMESTRE' ? 'S' : 'T'}${n}`;
   const decisionOf = (r) => (r.studentId in edits ? edits[r.studentId] : r.councilDecision) ?? '';

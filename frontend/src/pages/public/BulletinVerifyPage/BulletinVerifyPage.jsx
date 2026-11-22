@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import api from '../../../services/api';
 import './BulletinVerifyPage.css';
+import { isPrimaryLevel } from '../../../utils/examKinds';
 
 function fmt(v) {
   if (v == null) return '—';
@@ -147,8 +148,8 @@ export default function BulletinVerifyPage() {
                 </div>
                 <div className="bv-valid__row">
                   <span className="bv-valid__label">Moyenne générale</span>
-                  <span className={`bv-valid__val bv-valid__val--avg ${(result.overallAverage ?? 0) >= 10 ? 'bv-pass' : 'bv-fail'}`}>
-                    {fmt(result.overallAverage)} / 20
+                  <span className={`bv-valid__val bv-valid__val--avg ${(result.overallAverage ?? 0) >= (isPrimaryLevel(result.classLevel) ? 5 : 10) ? 'bv-pass' : 'bv-fail'}`}>
+                    {fmt(result.overallAverage)} / {isPrimaryLevel(result.classLevel) ? 10 : 20}
                   </span>
                 </div>
                 <div className="bv-valid__row">

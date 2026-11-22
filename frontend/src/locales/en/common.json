@@ -1599,7 +1599,7 @@
     "academic": {
       "noReports":    "No report cards created for this student.",
       "noPublished":  "No published report cards.",
-      "overallLabel": "overall average / 20",
+      "overallLabel": "overall average",
       "columns": {
         "term":        "Period",
         "year":        "Year",

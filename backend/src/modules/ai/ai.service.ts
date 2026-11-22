@@ -100,7 +100,7 @@ export class AiService {
     // Au primaire, chaque matière est présentée sur son barème (/10 ou /20) ; la moyenne générale sur 10.
     // Les notes sont stockées sur 20.
     const scale = opts.isPrimary ? 10 : 20;
-    const fmt = (v: number) => (opts.isPrimary ? v / 2 : v).toFixed(2).replace('.', ',');
+    const fmt = (v: number) => v.toFixed(2).replace('.', ',');
     const subjectMax = (g: { maxScore?: number | null }) => (opts.isPrimary && (g.maxScore ?? 20) <= 10 ? 10 : 20);
     const fmtSubject = (g: { score: number; maxScore?: number | null }) =>
       `${((g.score * subjectMax(g)) / 20).toFixed(2).replace('.', ',')}/${subjectMax(g)}`;

@@ -53,6 +53,7 @@ export class StudentsService {
             id: true, academicYear: true, termNumber: true, termName: true,
             status: true, overallAverage: true, classRank: true, classSize: true,
             mention: true,
+            class: { select: { level: true } },
           },
           orderBy: [{ academicYear: 'desc' }, { termNumber: 'desc' }],
         },
@@ -77,6 +78,7 @@ export class StudentsService {
           select: {
             id: true, academicYear: true, termNumber: true, termName: true,
             status: true, overallAverage: true, mention: true, deliveryStatus: true,
+            class: { select: { level: true } },
           },
           orderBy: [{ academicYear: 'desc' }, { termNumber: 'desc' }],
           take: 3,
@@ -175,6 +177,7 @@ export class StudentsService {
             status: true, overallAverage: true, classRank: true, classSize: true,
             classHighest: true, classLowest: true, classAverage: true,
             mention: true, conductRating: true,
+            class: { select: { level: true } },
             warnings: true, commendations: true, honorCouncil: true,
             attendanceDays: true, attendancePresent: true,
             attendanceLate: true, attendanceAbsent: true,

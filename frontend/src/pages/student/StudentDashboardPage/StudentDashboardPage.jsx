@@ -9,6 +9,7 @@ import PageHeader from '../../../components/layout/PageHeader/PageHeader';
 import Card from '../../../components/common/Card/Card';
 import Badge from '../../../components/common/Badge/Badge';
 import Loading from '../../../components/common/Loading/Loading';
+import { isPrimaryLevel } from '../../../utils/examKinds';
 import './StudentDashboardPage.css';
 
 function StudentDashboardPage() {
@@ -40,7 +41,9 @@ function StudentDashboardPage() {
 
   const published    = reports.filter((r) => r.status === 'PUBLISHED');
   const latestReport = published[0] ?? null;
-  const mention      = getMention(latestReport?.overallAverage);
+  const mention      = getMention(latestReport?.overallAverage == null ? null : latestReport.overallAverage * (isPrimaryLevel(latestReport?.class?.level) ? 2 : 1));
+  const reportScale  = isPrimaryLevel(latestReport?.class?.level) ? 10 : 20;
+  const displayedAverage = latestReport?.overallAverage == null ? null : Number(latestReport.overallAverage);
   const announcementList = bulletins.filter((b) => b.publishedAt);
 
   return (
@@ -61,9 +64,9 @@ function StudentDashboardPage() {
               {latestReport.overallAverage != null && (
                 <div className="student-dash__latest-avg">
                   <span className="student-dash__avg-value">
-                    {String(latestReport.overallAverage).replace('.', ',')}
+                    {displayedAverage.toFixed(2).replace('.', ',')}
                   </span>
-                  <span className="student-dash__avg-label">/ 20</span>
+                  <span className="student-dash__avg-label">/ {reportScale}</span>
                   {mention && <Badge variant={mention.variant}>{mention.label}</Badge>}
                 </div>
               )}

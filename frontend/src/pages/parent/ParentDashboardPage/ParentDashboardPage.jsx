@@ -13,6 +13,7 @@ import Badge from '../../../components/common/Badge/Badge';
 import StatusPill from '../../../components/common/StatusPill/StatusPill';
 import Loading from '../../../components/common/Loading/Loading';
 import './ParentDashboardPage.css';
+import { isPrimaryLevel } from '../../../utils/examKinds';
 
 const PAYMENT_VARIANT = { PAID: 'success', PARTIAL: 'warning', UNPAID: 'danger', EXEMPT: 'default' };
 
@@ -102,6 +103,8 @@ function ParentDashboardPage() {
               {children.map((child) => {
                 const cls      = child.classes?.[0]?.class;
                 const lastRep  = child.reportCards?.[0];
+                const reportScale = isPrimaryLevel(lastRep?.class?.level) ? 10 : 20;
+                const displayedAverage = lastRep?.overallAverage == null ? null : Number(lastRep.overallAverage);
                 const balance  = child.feeBalance;
                 const locale   = 'fr-FR';
                 return (
@@ -112,8 +115,8 @@ function ParentDashboardPage() {
                       <span className="parent-dash__child-class">
                         {cls?.name ?? '—'}
                         {lastRep?.overallAverage != null && (
-                          <span style={{ marginLeft: 6, color: Number(lastRep.overallAverage) >= 10 ? '#15803d' : '#dc2626', fontWeight: 700 }}>
-                            · Moy. {Number(lastRep.overallAverage).toFixed(2)}/20
+                          <span style={{ marginLeft: 6, color: displayedAverage >= reportScale / 2 ? '#15803d' : '#dc2626', fontWeight: 700 }}>
+                            · Moy. {displayedAverage.toFixed(2)}/{reportScale}
                           </span>
                         )}
                       </span>
