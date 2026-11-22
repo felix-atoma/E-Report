@@ -75,6 +75,7 @@ const MyClassesPage          = lazy(() => import('../pages/teacher/MyClassesPage
 const ClassDetailPage        = lazy(() => import('../pages/teacher/ClassDetailPage/ClassDetailPage'));
 const FichesPage             = lazy(() => import('../pages/teacher/FichesPage/FichesPage'));
 const GradeEntryPage         = lazy(() => import('../pages/teacher/GradeEntryPage/GradeEntryPage'));
+const AssistedCorrectionPage = lazy(() => import('../pages/teacher/AssistedCorrectionPage/AssistedCorrectionPage'));
 const ReportCardsPage        = lazy(() => import('../pages/teacher/ReportCardsPage/ReportCardsPage'));
 const CreateReportCardPage   = lazy(() => import('../pages/teacher/CreateReportCardPage/CreateReportCardPage'));
 const EditReportCardPage     = lazy(() => import('../pages/teacher/EditReportCardPage/EditReportCardPage'));
@@ -248,6 +249,7 @@ function AppRouter() {
         {/* Teacher */}
         <Route path="/teacher"                    element={<ProtectedRoute roles={['TEACHER']}><TeacherDashboardPage /></ProtectedRoute>} />
         <Route path="/teacher/fiches"                              element={<ProtectedRoute roles={['TEACHER']}><FichesPage /></ProtectedRoute>} />
+        <Route path="/teacher/correction-assistee"                 element={<ProtectedRoute roles={['TEACHER']}><AssistedCorrectionPage /></ProtectedRoute>} />
         <Route path="/teacher/classes"                              element={<ProtectedRoute roles={['TEACHER']}><MyClassesPage /></ProtectedRoute>} />
         <Route path="/teacher/classes/:id"                         element={<ProtectedRoute roles={['TEACHER']}><ClassDetailPage /></ProtectedRoute>} />
         <Route path="/teacher/classes/:classId/grades/:subjectId"  element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><GradeEntryPage /></ProtectedRoute>} />

@@ -1,6 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Anthropic from '@anthropic-ai/sdk';
+import { AssistedCorrectionDto } from './dto/assisted-correction.dto';
 
 const SYSTEM_PROMPT = `Tu es l'assistant IA de NovaBulletin, une plateforme de gestion scolaire numérique pour les écoles d'Afrique francophone (principalement le Togo).
 
@@ -70,6 +71,115 @@ export class AiService {
 
   get isEnabled(): boolean {
     return this.enabled;
+  }
+
+  async assistedCorrection(input: AssistedCorrectionDto): Promise<{
+    transcription: string;
+    criterionScores: number[];
+    score: number;
+    feedback: string;
+    confidence: number;
+  }> {
+    if (!this.enabled || !this.client) {
+      throw new ServiceUnavailableException("Le service d'IA n'est pas configuré. La correction locale reste disponible.");
+    }
+
+    if (
+      !input.question.trim() ||
+      input.criteria.some((criterion) => !criterion.label.trim()) ||
+      (!input.responseText?.trim() && !input.imageBase64) ||
+      (input.imageBase64 && !input.imageMime)
+    ) {
+      throw new BadRequestException('Fournissez une réponse ou une image de réponse recadrée.');
+    }
+    const criteriaTotal = input.criteria.reduce((sum, criterion) => sum + criterion.points, 0);
+    if (
+      input.criteria.length === 0 ||
+      input.criteria.some((criterion) => criterion.points > input.maxPoints) ||
+      Math.abs(criteriaTotal - input.maxPoints) > 0.001
+    ) {
+      throw new BadRequestException('Le total des critères doit correspondre au barème maximal de la question.');
+    }
+    if (input.imageBase64) {
+      const image = Buffer.from(input.imageBase64, 'base64');
+      if (image.length > 2 * 1024 * 1024 || image.toString('base64') !== input.imageBase64) {
+        throw new BadRequestException("L'image doit faire 2 Mo maximum et être encodée en base64.");
+      }
+    }
+
+    const criterionList = input.criteria
+      .map((criterion, index) => `${index + 1}. ${criterion.label} (${criterion.points} point(s))`)
+      .join('\n');
+    const content: any[] = [];
+    if (input.imageBase64 && input.imageMime) {
+      content.push({
+        type: 'image',
+        source: { type: 'base64', media_type: input.imageMime, data: input.imageBase64 },
+      });
+    }
+    if (input.responseText?.trim()) {
+      content.push({ type: 'text', text: `Réponse transcrite :\n${input.responseText.trim()}` });
+    }
+    content.push({
+      type: 'text',
+      text: [
+        `Question : ${input.question}`,
+        `Réponse attendue : ${input.expectedAnswer?.trim() || 'non fournie'}`,
+        `Variantes acceptées : ${input.acceptedVariants?.trim() || 'aucune indiquée'}`,
+        `Barème maximal : ${input.maxPoints} points`,
+        `Critères, dans l'ordre :\n${criterionList}`,
+        'Évalue uniquement cette réponse. Ne déduis aucun nom ni aucune identité. La note est une proposition à faire vérifier par un enseignant.',
+        'Réponds uniquement en JSON avec les clés transcription (texte lu, chaîne vide si aucune image), criterionScores (un nombre par critère dans le même ordre), feedback (commentaire bref en français), confidence (nombre entre 0 et 1).',
+      ].join('\n\n'),
+    });
+
+    try {
+      const response = await this.client.messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1200,
+        system:
+          "Tu aides un enseignant à évaluer une réponse d'élève. Applique strictement le corrigé et le barème fournis. " +
+          "N'invente pas de contenu illisible, accorde les points critère par critère, et signale toute incertitude dans la confiance.",
+        messages: [{ role: 'user', content }],
+      });
+      const text = response.content.map((block: any) => (block.type === 'text' ? block.text : '')).join('').trim();
+      const result = JSON.parse(text);
+      if (
+        !Array.isArray(result.criterionScores) ||
+        result.criterionScores.length !== input.criteria.length ||
+        result.criterionScores.some((score: unknown, index: number) =>
+          typeof score !== 'number' || !Number.isFinite(score) || score < 0 || score > input.criteria[index].points,
+        ) ||
+        typeof result.confidence !== 'number' ||
+        result.confidence < 0 ||
+        result.confidence > 1 ||
+        typeof result.feedback !== 'string' ||
+        typeof result.transcription !== 'string'
+      ) {
+        throw new Error('Invalid AI correction response');
+      }
+      const score = result.criterionScores.reduce((sum: number, value: number) => sum + value, 0);
+      return {
+        transcription: result.transcription.slice(0, 12000),
+        criterionScores: result.criterionScores,
+        score: Math.min(score, input.maxPoints),
+        feedback: result.feedback.slice(0, 1000),
+        confidence: result.confidence,
+      };
+    } catch (error: any) {
+      if (error instanceof Anthropic.RateLimitError) {
+        throw new ServiceUnavailableException("Trop de demandes d'IA en même temps. Réessayez plus tard.");
+      }
+      if (error instanceof Anthropic.APIError) {
+        this.logger.error(`Assisted correction API error ${error.status}: ${error.message}`);
+        throw new ServiceUnavailableException("La correction par l'IA a échoué. Vérifiez la réponse ou réessayez.");
+      }
+      if (error instanceof SyntaxError || error?.message === 'Invalid AI correction response') {
+        this.logger.error('Assisted correction returned an invalid response');
+        throw new ServiceUnavailableException("La réponse de l'IA est inexploitable. Corrigez la copie manuellement.");
+      }
+      throw error;
+    }
   }
 
   /**

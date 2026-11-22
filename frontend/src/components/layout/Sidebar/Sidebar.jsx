@@ -82,6 +82,7 @@ const NAV = {
     { to: '/teacher/roadmap',    icon: 'roadmap',   labelKey: 'nav.roadmap' },
     { divider: true,              sectionKey: 'section.pedagogy' },
     { to: '/teacher/fiches',      icon: 'notes',     labelKey: 'nav.gradeSheets' },
+    { to: '/teacher/correction-assistee', icon: 'exam', labelKey: 'nav.assistedCorrection' },
     { to: '/teacher/reports',     icon: 'clipboard', labelKey: 'nav.reports' },
     { to: '/teacher/statistics',  icon: 'stats',     labelKey: 'nav.statistics' },
     { to: '/palmares',            icon: 'trophy',    labelKey: 'nav.palmares' },

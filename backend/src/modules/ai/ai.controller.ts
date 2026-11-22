@@ -1,6 +1,7 @@
 import { Body, Controller, Post, HttpCode } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { AiService } from './ai.service';
+import { AssistedCorrectionDto } from './dto/assisted-correction.dto';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
@@ -37,5 +38,13 @@ export class AiController {
   ) {
     const comment = await this.ai.generateReportComment(body);
     return { comment };
+  }
+
+  @Post('assisted-correction')
+  @HttpCode(200)
+  @Roles(Role.TEACHER, Role.ADMIN)
+  @ApiOperation({ summary: 'Suggest a score for one anonymized written answer' })
+  async assistedCorrection(@Body() body: AssistedCorrectionDto) {
+    return this.ai.assistedCorrection(body);
   }
 }
