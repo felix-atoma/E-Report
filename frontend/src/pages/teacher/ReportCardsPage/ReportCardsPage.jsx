@@ -260,6 +260,9 @@ function ReportCardsPage() {
           <Link to={isAdmin ? `/admin/reports/${r.id}` : `/teacher/reports/${r.id}`}>
             <Button size="sm" variant="ghost">{t('reportCardsFull.open')}</Button>
           </Link>
+          <Link to={`/reports/${r.id}/statistiques`}>
+            <Button size="sm" variant="ghost">📊 Stats</Button>
+          </Link>
           {(r.status === 'REVIEW' || r.status === 'PUBLISHED') && (
             <Link to={`/reports/${r.id}/print`} target="_blank" rel="noreferrer">
               <Button size="sm" variant="ghost">{t('reportCardsFull.printBtn')}</Button>

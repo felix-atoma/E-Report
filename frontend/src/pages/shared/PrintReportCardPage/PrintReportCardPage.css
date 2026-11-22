@@ -43,6 +43,7 @@
   color: #78350f; font-size: 0.9rem; line-height: 1.45;
 }
 .print-page__btn--print { background: var(--color-primary); color: #fff; }
+.print-page__btn--stats { background: #eff6ff; color: #1e3a8a; text-decoration: none; }
 .print-page__btn--close  { background: transparent; color: #cbd5e1; border: 1px solid #475569; }
 
 /* ════════════════════════════════════════════════════════════════════

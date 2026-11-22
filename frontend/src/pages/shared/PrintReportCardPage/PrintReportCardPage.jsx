@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import QRCode from 'qrcode';
@@ -331,6 +331,11 @@ export default function PrintReportCardPage() {
     <div className="print-page">
       {/* Toolbar — hidden on print */}
       <div className="print-page__toolbar no-print">
+        {(user?.role === 'ADMIN' || user?.role === 'TEACHER') && (
+          <Link className="print-page__btn print-page__btn--stats" to={`/reports/${id}/statistiques`}>
+            📊 Statistiques de la classe
+          </Link>
+        )}
         <PrintFormatPicker defaultFormat="A4 portrait" />
         <button className="print-page__btn print-page__btn--print" onClick={() => window.print()}>
           🖨️ Imprimer / Enregistrer PDF

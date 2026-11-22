@@ -121,6 +121,7 @@ const HelpPage               = lazy(() => import('../pages/shared/HelpPage/HelpP
 const ClassPalmaresPage      = lazy(() => import('../pages/shared/ClassPalmaresPage/ClassPalmaresPage'));
 const ClassCouncilPage       = lazy(() => import('../pages/shared/ClassCouncilPage/ClassCouncilPage'));
 const PrintReportCardPage    = lazy(() => import('../pages/shared/PrintReportCardPage/PrintReportCardPage'));
+const ReportCardStatisticsPage = lazy(() => import('../pages/shared/ReportCardStatisticsPage/ReportCardStatisticsPage'));
 const MockExamRelevePage     = lazy(() => import('../pages/shared/MockExamRelevePage/MockExamRelevePage'));
 const MockExamPalmaresPage   = lazy(() => import('../pages/shared/MockExamPalmaresPage/MockExamPalmaresPage'));
 const MockExamStatisticsPage = lazy(() => import('../pages/shared/MockExamStatisticsPage/MockExamStatisticsPage'));
@@ -319,6 +320,7 @@ function AppRouter() {
         <Route path="/council/statistiques" element={<ProtectedRoute roles={['ADMIN','TEACHER']}><StatsSheetPage /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route path="/reports/:id/print" element={<ProtectedRoute><PrintReportCardPage /></ProtectedRoute>} />
+        <Route path="/reports/:id/statistiques" element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><ReportCardStatisticsPage /></ProtectedRoute>} />
         <Route path="/classes/:id/cartes"          element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><StudentCardsPage /></ProtectedRoute>} />
         <Route path="/classes/:id/liste"           element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><ClassListPage /></ProtectedRoute>} />
         <Route path="/mock-exams/:id/fiche"          element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><MockExamFichePage /></ProtectedRoute>} />
