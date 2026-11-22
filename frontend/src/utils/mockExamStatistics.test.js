@@ -4,23 +4,28 @@ import { getMockExamStatistics } from './mockExamStatistics';
 describe('mock exam statistics', () => {
   it('converts averages to percentages and counts each average in one band', () => {
     const stats = getMockExamStatistics([
-      { average: 8 },
-      { average: 10 },
-      { average: 18 },
+      { studentName: 'Awa', average: 4 },
+      { studentName: 'Binta', average: 5 },
+      { studentName: 'Koffi', average: 18 },
       { average: null },
     ], 20);
 
     expect(stats).toMatchObject({
       total: 4,
       withAverage: 3,
-      average: 60,
+      average: 45,
       highest: 90,
-      lowest: 40,
+      lowest: 20,
+      lowestStudents: ['Awa'],
+      highestStudents: ['Koffi'],
     });
-    expect(stats.bands.map(({ count }) => count)).toEqual([0, 1, 1, 0, 0, 0, 1]);
-    expect(stats.bands[1].percentage).toBeCloseTo(100 / 3);
-    expect(stats.bands[2].percentage).toBeCloseTo(100 / 3);
-    expect(stats.bands[6].percentage).toBeCloseTo(100 / 3);
+    expect(stats.bands).toHaveLength(20);
+    expect(stats.bands[4]).toMatchObject({ count: 1, label: 'De 4 à moins de 5 / 20' });
+    expect(stats.bands[5]).toMatchObject({ count: 1, label: 'De 5 à moins de 6 / 20' });
+    expect(stats.bands[18]).toMatchObject({ count: 1, label: 'De 18 à moins de 19 / 20' });
+    expect(stats.bands[4].percentage).toBeCloseTo(100 / 3);
+    expect(stats.bands[5].percentage).toBeCloseTo(100 / 3);
+    expect(stats.bands[18].percentage).toBeCloseTo(100 / 3);
   });
 
   it('returns zero-valued bands when no student has an average', () => {

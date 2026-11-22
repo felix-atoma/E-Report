@@ -43,8 +43,16 @@ function MockExamStatisticsPage() {
     { label: 'Élèves inscrits', value: stats.total },
     { label: 'Moyennes disponibles', value: stats.withAverage },
     { label: 'Moyenne générale', value: formatPercent(stats.average), accent: true },
-    { label: 'Meilleure moyenne', value: formatPercent(stats.highest) },
-    { label: 'Moyenne la plus basse', value: formatPercent(stats.lowest) },
+    {
+      label: 'Plus forte moyenne obtenue',
+      value: formatPercent(stats.highest),
+      detail: stats.highestStudents.join(', '),
+    },
+    {
+      label: 'Plus faible moyenne obtenue',
+      value: formatPercent(stats.lowest),
+      detail: stats.lowestStudents.join(', '),
+    },
     { label: 'Taux de réussite', value: `${summary.passingRate}%`, accent: true },
   ];
 
@@ -73,6 +81,7 @@ function MockExamStatisticsPage() {
             <article key={metric.label} className={`mest-metric${metric.accent ? ' mest-metric--accent' : ''}`}>
               <span className="mest-metric__label">{metric.label}</span>
               <strong className="mest-metric__value">{metric.value}</strong>
+              {metric.detail && <span className="mest-metric__detail">Obtenue par {metric.detail}</span>}
             </article>
           ))}
         </section>
@@ -81,7 +90,7 @@ function MockExamStatisticsPage() {
           <div className="mest-card__heading">
             <div>
               <h2>Répartition des moyennes obtenues</h2>
-              <p>Pourcentage de la moyenne de chaque élève par rapport au barème de l&apos;examen.</p>
+              <p>Pour chaque moyenne sur 20, effectif et pourcentage des élèves ayant une moyenne.</p>
             </div>
             <span className="mest-total">{stats.withAverage} moyenne{stats.withAverage !== 1 ? 's' : ''}</span>
           </div>
