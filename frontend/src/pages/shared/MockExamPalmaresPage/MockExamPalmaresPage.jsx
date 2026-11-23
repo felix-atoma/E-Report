@@ -18,11 +18,6 @@ const TYPE_LABELS = {
   COMPOSITION_ANGLAIS: "Composition d'anglais",
 };
 
-function fmtDate(iso) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
-}
-
 function MockExamPalmaresPage() {
   const { id } = useParams();
 
@@ -87,7 +82,7 @@ function MockExamPalmaresPage() {
         <div className="mpal-toolbar__center">
           <span className="mpal-toolbar__title">{T.titleBar} — {exam.label}</span>
         </div>
-        <PrintFormatPicker defaultFormat="A4 landscape" />
+        <PrintFormatPicker defaultFormat="A3 landscape" pageMargin="8mm" />
         <button className="mpal-print-btn" onClick={() => window.print()}>
           {T.print}
         </button>

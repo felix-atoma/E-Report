@@ -13,7 +13,7 @@ const FORMATS = [
 
 const STYLE_ID = '__dynamic-print-format__';
 
-export default function PrintFormatPicker({ defaultFormat = 'A4 portrait' }) {
+export default function PrintFormatPicker({ defaultFormat = 'A4 portrait', pageMargin = '0' }) {
   const [format, setFormat] = useState(defaultFormat);
 
   useEffect(() => {
@@ -23,8 +23,8 @@ export default function PrintFormatPicker({ defaultFormat = 'A4 portrait' }) {
       el.id = STYLE_ID;
       document.head.appendChild(el);
     }
-    el.textContent = `@page { size: ${format}; margin: 0; }`;
-  }, [format]);
+    el.textContent = `@page { size: ${format}; margin: ${pageMargin}; }`;
+  }, [format, pageMargin]);
 
   // Clean up when component unmounts so it doesn't affect other pages
   useEffect(() => {
