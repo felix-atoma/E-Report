@@ -24,11 +24,13 @@ describe('ReportsService', () => {
   let prisma: PrismaMock;
   let events: { emit: jest.Mock };
   let pdf: { generateReportCardPdf: jest.Mock };
+  let ai: { isEnabled: boolean; generateReportComment: jest.Mock };
 
   beforeEach(async () => {
     prisma = createPrismaMock();
     events = { emit: jest.fn() };
     pdf = { generateReportCardPdf: jest.fn().mockResolvedValue('http://localhost/uploads/report-001.pdf') };
+    ai = { isEnabled: true, generateReportComment: jest.fn().mockResolvedValue('Élève sérieuse et appliquée.') };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -37,7 +39,7 @@ describe('ReportsService', () => {
         { provide: EventEmitter2, useValue: events },
         { provide: PdfService, useValue: pdf },
         { provide: AttendanceService, useValue: { computeTermAttendance: jest.fn().mockResolvedValue(new Map()) } },
-        { provide: AiService, useValue: {} },
+        { provide: AiService, useValue: ai },
       ],
     }).compile();
 
@@ -80,6 +82,84 @@ describe('ReportsService', () => {
           teacherUserFixture.id,
         ),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  // ─── automatic titulaire observations ──────────────────────────────────
+
+  describe('prepareClassBulletins', () => {
+    it('generates and saves an observation after all grade sheets are signed', async () => {
+      jest.spyOn(service, 'classStatus').mockResolvedValue({
+        subjects: 2,
+        signedSubjects: 2,
+        unsignedSubjects: [],
+        allSigned: true,
+        reports: { draft: 1, review: 0, published: 0 },
+      });
+      prisma.classStudent.findMany.mockResolvedValue([{ studentId: studentFixture.id }]);
+      prisma.reportCard.findMany
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([{
+          ...reportCardFixture,
+          status: 'REVIEW',
+          student: {
+            ...studentFixture,
+            sex: 'F',
+            user: { name: 'Ama Kofi' },
+          },
+          class: { name: classFixture.name, level: classFixture.level },
+          grades: [{
+            moyenneMatiere: 16,
+            score: 16,
+            coefficient: 1,
+            subject: { nameFr: 'Mathématiques', maxScore: 20 },
+          }],
+        }]);
+      prisma.reportCard.updateMany.mockResolvedValue({ count: 1 });
+
+      const result = await service.prepareClassBulletins({
+        classId: classFixture.id,
+        academicYear: '2024-2025',
+        termNumber: 1,
+        institutionId: institutionFixture.id,
+      });
+
+      expect(result).toEqual({ prepared: 1 });
+      expect(ai.generateReportComment).toHaveBeenCalledWith(expect.objectContaining({
+        sex: 'F',
+        grades: [expect.objectContaining({ subject: 'Mathématiques', score: 16 })],
+      }));
+      expect(prisma.reportCard.updateMany).toHaveBeenLastCalledWith({
+        where: {
+          id: reportCardFixture.id,
+          status: 'REVIEW',
+          OR: [{ teacherComment: null }, { teacherComment: '' }],
+        },
+        data: { teacherComment: 'Élève sérieuse et appliquée.' },
+      });
+    });
+
+    it('does not request AI comments when the AI service is disabled', async () => {
+      ai.isEnabled = false;
+      jest.spyOn(service, 'classStatus').mockResolvedValue({
+        subjects: 1,
+        signedSubjects: 1,
+        unsignedSubjects: [],
+        allSigned: true,
+        reports: { draft: 1, review: 0, published: 0 },
+      });
+      prisma.classStudent.findMany.mockResolvedValue([{ studentId: studentFixture.id }]);
+      prisma.reportCard.findMany.mockResolvedValueOnce([]);
+      prisma.reportCard.updateMany.mockResolvedValue({ count: 1 });
+
+      await service.prepareClassBulletins({
+        classId: classFixture.id,
+        academicYear: '2024-2025',
+        termNumber: 1,
+        institutionId: institutionFixture.id,
+      });
+
+      expect(ai.generateReportComment).not.toHaveBeenCalled();
     });
   });
 

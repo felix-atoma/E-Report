@@ -27,6 +27,26 @@ import { UpdateReportDto } from './dto/update-report.dto';
 import { TitulaireEntryDto } from './dto/titulaire-entry.dto';
 import { BulkZipDto } from './dto/bulk-zip.dto';
 
+type TitulaireCommentReport = {
+  student: { sex: string | null; admissionNumber: string; user: { name: string } | null };
+  class: { name: string; level: string | null };
+  grades: Array<{
+    moyenneMatiere: number | null;
+    score: number;
+    coefficient: number;
+    subject: { nameFr: string; maxScore: number | null; category: string | null };
+  }>;
+  termName: string;
+  overallAverage: number | null;
+  mention: string | null;
+  classRank: number | null;
+  classSize: number | null;
+  classAverage: number | null;
+  conductRating: string | null;
+  attendanceAbsent: number | null;
+  attendanceLateMinutes: number | null;
+};
+
 /** Mention calculée avec la moyenne générale de la classe convertie sur 20 pour le barème commun. */
 function computeMention(avg: number, level?: string | null): string {
   return appreciationOn20(isPrimaryLevel(level) ? avg * 2 : avg, 'fr');
@@ -1360,6 +1380,7 @@ export class ReportsService {
         data: { status: 'REVIEW' },
       });
       this.logger.log(`Class ${classId} T${termNumber}: all fiches signed — ${count} bulletin(s) ready for review`);
+      await this.generateMissingTitulaireComments(classId, academicYear, termNumber, institutionId);
       return { prepared: count };
     } catch (err: any) {
       this.logger.error(`prepareClassBulletins failed for class ${classId}: ${err?.message ?? err}`);
@@ -1392,6 +1413,10 @@ export class ReportsService {
     await this.assertTitulaireOrAdmin(report.classId, institutionId, userId, role);
     if (report.status === 'PUBLISHED') throw new BadRequestException('Ce bulletin est déjà publié');
 
+    return { comment: await this.createTitulaireComment(report) };
+  }
+
+  private async createTitulaireComment(report: TitulaireCommentReport): Promise<string> {
     const graded = report.grades
       .map((g) => ({ subject: g.subject.nameFr, score: (g.moyenneMatiere ?? g.score) as number, coefficient: g.coefficient, maxScore: g.subject.maxScore }))
       .filter((g) => g.score != null);
@@ -1429,7 +1454,55 @@ export class ReportsService {
       // Message lisible côté titulaire (sinon « Internal server error »)
       throw new ServiceUnavailableException(err?.message ?? "Impossible de générer l'observation.");
     });
-    return { comment };
+    return comment;
+  }
+
+  private async generateMissingTitulaireComments(
+    classId: string,
+    academicYear: string,
+    termNumber: number,
+    institutionId: string,
+  ) {
+    if (!this.ai.isEnabled) {
+      this.logger.warn(`Automatic report observations skipped for class ${classId}: AI is not configured`);
+      return;
+    }
+
+    const reports = await this.prisma.reportCard.findMany({
+      where: {
+        classId,
+        academicYear,
+        termNumber,
+        status: 'REVIEW',
+        OR: [{ teacherComment: null }, { teacherComment: '' }],
+      },
+      include: {
+        student: { select: { sex: true, admissionNumber: true, user: { select: { name: true } } } },
+        class: { select: { name: true, level: true } },
+        grades: { include: { subject: { select: { nameFr: true, maxScore: true, category: true } } }, orderBy: { coefficient: 'desc' } },
+      },
+    });
+
+    for (const report of reports) {
+      if (!report.grades.length) {
+        this.logger.warn(`Automatic report observation skipped for report ${report.id}: no grades are available`);
+        continue;
+      }
+
+      try {
+        const comment = await this.createTitulaireComment(report);
+        await this.prisma.reportCard.updateMany({
+          where: {
+            id: report.id,
+            status: 'REVIEW',
+            OR: [{ teacherComment: null }, { teacherComment: '' }],
+          },
+          data: { teacherComment: comment },
+        });
+      } catch (err: any) {
+        this.logger.error(`Automatic report observation failed for report ${report.id}: ${err?.message ?? err}`);
+      }
+    }
   }
 
   async bulkZip(dto: BulkZipDto, institutionId: string): Promise<Buffer> {
