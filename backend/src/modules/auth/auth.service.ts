@@ -73,6 +73,7 @@ export class AuthService {
       select: {
         id: true,
         name: true,
+        sex: true,
         email: true,
         role: true,
         institutionId: true,
@@ -139,6 +140,7 @@ export class AuthService {
         id: true,
         name: true,
         email: true,
+        sex: true,
         role: true,
         institutionId: true,
         language: true,

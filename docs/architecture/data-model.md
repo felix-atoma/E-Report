@@ -24,7 +24,7 @@ Institution ─┬─ User (role: SUPERADMIN | ADMIN | TEACHER | BURSAR | PARENT
 | Model | Notes |
 |---|---|
 | `Institution` | `status` (PENDING → ACTIVE, or SUSPENDED / REJECTED — set by the super-admin); `academicSettings` JSON (term system, term dates, pass mark, fee gate…); `brandingSettings` JSON (names per cycle, logos, colours, director signature); subscription fields (`subscriptionStatus`, `subscriptionExpiry`…). |
-| `User` | every login. `whatsappNumber` is used for WhatsApp **and** SMS; `language` FR / EN; `notificationPreferences` JSON. |
+| `User` | every login. `sex` (optional M / F) supports gender agreement in report comments; `whatsappNumber` is used for WhatsApp **and** SMS; `language` FR / EN; `notificationPreferences` JSON. |
 | `Student` | administrative file (parents' names and phones, health, birth details, photo). Linked to a `User` only if the student logs in. |
 | `ClassStudent` | enrolment per school year — a student's class history. |
 | `ClassSubject` | which subjects a class takes and **which teacher teaches each** (`teacherId`). This drives what a teacher may see, enter and sign. |

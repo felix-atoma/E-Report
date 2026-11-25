@@ -22,7 +22,7 @@ function ProfilePage() {
   const { user, updateUser } = useAuth();
   const fileInputRef = useRef(null);
 
-  const [infoForm, setInfo] = useState({ name: '', whatsappNumber: '' });
+  const [infoForm, setInfo] = useState({ name: '', whatsappNumber: '', sex: '' });
   const [infoErrors, setInfoErrors] = useState({});
 
   const [pwForm, setPw] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
@@ -32,7 +32,7 @@ function ProfilePage() {
 
   useEffect(() => {
     if (!user) return;
-    setInfo({ name: user.name ?? '', whatsappNumber: user.whatsappNumber ?? '' });
+    setInfo({ name: user.name ?? '', whatsappNumber: user.whatsappNumber ?? '', sex: user.sex ?? '' });
   }, [user]);
 
   const infoMutation = useMutation({
@@ -85,6 +85,7 @@ function ProfilePage() {
     infoMutation.mutate({
       name:           infoForm.name,
       whatsappNumber: infoForm.whatsappNumber || undefined,
+      sex:            infoForm.sex || null,
     });
   }
 
@@ -212,6 +213,22 @@ function ProfilePage() {
               placeholder="+228 XX XX XX XX"
               onChange={setInfoField('whatsappNumber')}
             />
+            {['TEACHER', 'ADMIN'].includes(user.role) && (
+              <div className="form-field">
+                <label htmlFor="p-sex" className="form-field__label">{t('profile.sex')}</label>
+                <select
+                  id="p-sex"
+                  className="input-field__control"
+                  value={infoForm.sex}
+                  onChange={setInfoField('sex')}
+                >
+                  <option value="">{t('profile.sexUnknown')}</option>
+                  <option value="F">{t('profile.sexFemale')}</option>
+                  <option value="M">{t('profile.sexMale')}</option>
+                </select>
+                <p className="form-field__hint">{t('profile.sexHint')}</p>
+              </div>
+            )}
             <div className="profile__actions">
               <Button onClick={handleInfoSave} disabled={infoMutation.isPending}>
                 {infoMutation.isPending ? t('action.saving') : t('action.save')}

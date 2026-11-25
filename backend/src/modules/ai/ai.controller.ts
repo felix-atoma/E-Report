@@ -30,13 +30,20 @@ export class AiController {
   async generateReportComment(
     @Body() body: {
       studentName: string;
+      sex?: 'M' | 'F' | null;
+      teacherSex?: 'M' | 'F' | null;
       className: string;
+      isPrimary?: boolean;
       avg: number;
       mention: string;
       grades: { subject: string; score: number; coefficient: number }[];
     },
+    @CurrentUser() user: any,
   ) {
-    const comment = await this.ai.generateReportComment(body);
+    const comment = await this.ai.generateReportComment({
+      ...body,
+      teacherSex: body.teacherSex ?? user.sex ?? null,
+    });
     return { comment };
   }
 

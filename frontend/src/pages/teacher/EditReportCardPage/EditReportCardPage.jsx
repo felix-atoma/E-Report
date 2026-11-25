@@ -17,40 +17,51 @@ import Loading from '../../../components/common/Loading/Loading';
 import './EditReportCardPage.css';
 
 // ── Appreciation templates ─────────────────────────────────────────────────
-const APPRECIATION_TEMPLATES = {
-  '🟢 Excellent': [
-    'Élève brillant(e), sérieux(se) et très travailleur(se). Continuez ainsi !',
-    'Résultats excellents. Très bonne maîtrise des matières. Élève exemplaire.',
-    'Félicitations ! Un travail remarquable et une attitude irréprochable en classe.',
-    'Très bon(ne) élève. Régulier(e) dans l\'effort et toujours attentif(ve).',
-    'Travail excellent, participation active. Digne d\'être un modèle pour la classe.',
-  ],
-  '🔵 Bien': [
-    'Bons résultats. Élève sérieux(se) qui mérite d\'être encouragé(e).',
-    'Bonne trimestre dans l\'ensemble. Peut encore progresser en s\'investissant davantage.',
-    'Des efforts notables ont été fournis. Continuez sur cette lancée.',
-    'Bon(ne) élève, mais doit être plus régulier(e) dans le travail.',
-    'Résultats satisfaisants. Il/Elle a les capacités pour faire encore mieux.',
-  ],
-  '🟡 Passable': [
-    'Résultats moyens. Un effort supplémentaire est nécessaire pour progresser.',
-    'Peut mieux faire. Doit se montrer plus attentif(ve) et plus régulier(e) dans le travail.',
-    'Des lacunes persistent. Un travail sérieux à la maison est indispensable.',
-    'Trimestre mitigé. Les capacités sont là, mais le travail n\'est pas régulier.',
-    'Résultats insuffisants dans certaines matières. Besoin de renforcement.',
-  ],
-  '🔴 Insuffisant': [
-    'Résultats très insuffisants. Un travail sérieux est indispensable pour rattraper le retard.',
-    'Élève qui ne fournit pas les efforts nécessaires. Une remise en question s\'impose.',
-    'Attention ! Le niveau actuel risque de compromettre le passage en classe supérieure.',
-    'Des absences répétées et un manque de travail pénalisent les résultats.',
-    'Doit impérativement revoir ses méthodes de travail et solliciter de l\'aide.',
-  ],
-};
+function appreciationTemplatesFor(sex) {
+  const neutral = {
+    '🟢 Excellent': [
+      'Résultats excellents. Très bonne maîtrise des matières.',
+      'Félicitations ! Le travail fourni est remarquable et l’attitude en classe irréprochable.',
+      'Travail excellent et participation active. Un modèle pour la classe.',
+    ],
+    '🔵 Bien': [
+      'Bons résultats. Des efforts supplémentaires sont encouragés.',
+      'Bon trimestre dans l’ensemble. Une plus grande régularité permettrait de progresser.',
+      'Des efforts notables ont été fournis. Les résultats peuvent encore progresser.',
+    ],
+    '🟡 Passable': [
+      'Résultats moyens. Un effort supplémentaire est nécessaire pour progresser.',
+      'Les résultats peuvent progresser avec davantage d’attention et de régularité.',
+      'Des lacunes persistent. Un travail régulier à la maison est indispensable.',
+    ],
+    '🔴 Insuffisant': [
+      'Les résultats restent très insuffisants. Un travail régulier est indispensable pour rattraper le retard.',
+      'Les efforts fournis restent insuffisants. Une remise en question des méthodes de travail s’impose.',
+      'Des absences répétées et un manque de travail pénalisent les résultats.',
+    ],
+  };
+  if (sex !== 'M' && sex !== 'F') return neutral;
 
-function TemplatesPicker({ onSelect, disabled }) {
+  const isFemale = sex === 'F';
+  return {
+    ...neutral,
+    '🟢 Excellent': [
+      `Élève ${isFemale ? 'brillante, sérieuse et très travailleuse' : 'brillant, sérieux et très travailleur'}.`,
+      ...neutral['🟢 Excellent'],
+      `Très ${isFemale ? 'bonne' : 'bon'} élève, ${isFemale ? 'régulière' : 'régulier'} dans l’effort et toujours ${isFemale ? 'attentive' : 'attentif'}.`,
+    ],
+    '🔵 Bien': [
+      `Élève ${isFemale ? 'sérieuse' : 'sérieux'} qui mérite d’être ${isFemale ? 'encouragée' : 'encouragé'}.`,
+      ...neutral['🔵 Bien'],
+      `${isFemale ? 'Bonne' : 'Bon'} élève, mais doit être plus ${isFemale ? 'régulière' : 'régulier'} dans le travail.`,
+    ],
+  };
+}
+
+function TemplatesPicker({ onSelect, disabled, sex }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
+  const templates = appreciationTemplatesFor(sex);
 
   useEffect(() => {
     function handler(e) {
@@ -83,7 +94,7 @@ function TemplatesPicker({ onSelect, disabled }) {
 
       {open && (
         <div className="appr-picker__panel">
-          {Object.entries(APPRECIATION_TEMPLATES).map(([category, phrases]) => (
+          {Object.entries(templates).map(([category, phrases]) => (
             <div key={category} className="appr-picker__group">
               <p className="appr-picker__category">{category}</p>
               {phrases.map((phrase) => (
@@ -315,6 +326,9 @@ function EditReportCardPage() {
     try {
       const res = await aiService.generateReportComment({
         studentName: report.student?.user?.name ?? report.student?.admissionNumber ?? 'Élève',
+        sex: report.student?.sex ?? null,
+        teacherSex: report.class?.teacher?.sex ?? null,
+        isPrimary: isPrimaryLevel(report.class?.level),
         className:   report.class?.name ?? 'la classe',
         avg,
         mention,
@@ -446,6 +460,7 @@ function EditReportCardPage() {
                 <TemplatesPicker
                   onSelect={(phrase) => { setComment(phrase); setDirty(true); }}
                   disabled={locked}
+                  sex={report.student?.sex}
                 />
                 <Button
                   size="sm"

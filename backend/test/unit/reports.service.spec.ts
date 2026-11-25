@@ -107,7 +107,7 @@ describe('ReportsService', () => {
             sex: 'F',
             user: { name: 'Ama Kofi' },
           },
-          class: { name: classFixture.name, level: classFixture.level },
+          class: { name: classFixture.name, level: classFixture.level, teacher: { sex: 'F' } },
           grades: [{
             moyenneMatiere: 16,
             score: 16,
@@ -127,6 +127,7 @@ describe('ReportsService', () => {
       expect(result).toEqual({ prepared: 1 });
       expect(ai.generateReportComment).toHaveBeenCalledWith(expect.objectContaining({
         sex: 'F',
+        teacherSex: 'F',
         grades: [expect.objectContaining({ subject: 'Mathématiques', score: 16 })],
       }));
       expect(prisma.reportCard.updateMany).toHaveBeenLastCalledWith({

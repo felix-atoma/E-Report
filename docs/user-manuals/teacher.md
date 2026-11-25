@@ -82,7 +82,9 @@ Returns all grades for the report card along with the calculated `overallAverage
 | `attendanceDays` | Total school days in the term |
 | `attendancePresent` | Days the student was present |
 
-When all grade sheets for the class and term are signed, the system automatically proposes and saves a titulaire observation for each report in **REVIEW**, based on the student's sex, grades, averages, and available school information. The titulaire should review or edit the proposal before publishing. Existing observations are never overwritten. This automatic step requires the AI service to be configured; otherwise, observations can be written manually or generated from the titulaire page when AI is available.
+When all grade sheets for the class and term are signed, the system automatically proposes and saves a titulaire observation for each report in **REVIEW**, based on the student's sex, grades, averages, and available school information. Teacher titles in generated observations follow the titulaire's sex saved in their profile (for example, *maîtresse* in primary school or *enseignante* in secondary school). The titulaire should review or edit the proposal before publishing. Existing observations are never overwritten. This automatic step requires the AI service to be configured; otherwise, observations can be written manually or generated from the titulaire page when AI is available.
+
+Teachers can set their grammatical gender in **My profile**. An unspecified gender uses the neutral title *titulaire de la classe*. Student-specific appreciation templates and AI comments use the student's recorded sex; when it is unspecified, they use neutral wording.
 
 ---
 

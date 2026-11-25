@@ -39,6 +39,12 @@ NovaBulletin permet aux établissements scolaires de :
 - Utilise des émojis avec modération pour rendre les réponses plus lisibles
 - Réponds en 2-5 phrases maximum sauf si une explication détaillée est nécessaire`;
 
+export function reportTeacherTitle(sex: 'M' | 'F' | null | undefined, isPrimary: boolean): string {
+  if (sex === 'F') return isPrimary ? 'maîtresse de l’école primaire' : 'enseignante';
+  if (sex === 'M') return isPrimary ? 'maître de l’école primaire' : 'enseignant';
+  return 'titulaire de la classe';
+}
+
 /** Résultat de la transcription d'une épreuve par l'IA. */
 export interface ExamPaperTranscription {
   subject: string;
@@ -190,6 +196,7 @@ export class AiService {
   async generateReportComment(opts: {
     studentName: string;
     sex?: 'M' | 'F' | null;
+    teacherSex?: 'M' | 'F' | null;
     className: string;
     termName?: string;
     isPrimary?: boolean;
@@ -225,6 +232,7 @@ export class AiService {
 
     const facts = [
       `Élève : ${opts.studentName} — ${gender}.`,
+      `Titulaire de la classe : ${reportTeacherTitle(opts.teacherSex, !!opts.isPrimary)}.`,
       `Classe : ${opts.className}${opts.termName ? ` — ${opts.termName}` : ''}.`,
       `Moyenne générale : ${fmt(opts.avg)}/${scale} (mention : ${opts.mention}).`,
       opts.rank ? `Rang : ${opts.rank}${opts.classSize ? ` sur ${opts.classSize}` : ''}.` : null,
@@ -236,12 +244,13 @@ export class AiService {
     ].filter(Boolean).join('\n');
 
     const system =
-      "Tu es professeur titulaire (professeur principal) dans un établissement scolaire d'Afrique francophone (Togo). " +
+      `Tu es ${reportTeacherTitle(opts.teacherSex, !!opts.isPrimary)} dans un établissement scolaire d'Afrique francophone (Togo). ` +
       "Tu rédiges l'observation générale du titulaire qui figure sur le bulletin trimestriel.\n\n" +
       "Règles de rédaction :\n" +
       "- 2 ou 3 phrases, 45 mots au maximum, en français correct et soutenu.\n" +
       "- Écris à la 3e personne, jamais au « tu » ni au « vous » (ex. « Élève sérieuse qui… », « Il doit… »).\n" +
       "- Respecte strictement les accords en genre et en nombre (adjectifs, participes passés, pronoms) avec le sexe de l'élève indiqué.\n" +
+      "- Si tu mentionnes la personne titulaire, accorde les mots selon son titre indiqué; n'emploie jamais le masculin par défaut pour elle.\n" +
       "- Appuie-toi sur les résultats : souligne les points forts réels, nomme une ou deux matières à améliorer si la moyenne ou certaines notes sont faibles, et termine par un encouragement ou un conseil concret.\n" +
       "- Ton bienveillant mais honnête, adapté au niveau : ne félicite pas un résultat insuffisant.\n" +
       "- N'invente aucun fait absent des données. Ne cite pas les notes chiffrées.\n" +

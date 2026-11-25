@@ -29,7 +29,7 @@ import { BulkZipDto } from './dto/bulk-zip.dto';
 
 type TitulaireCommentReport = {
   student: { sex: string | null; admissionNumber: string; user: { name: string } | null };
-  class: { name: string; level: string | null };
+  class: { name: string; level: string | null; teacher?: { sex: string | null } | null };
   grades: Array<{
     moyenneMatiere: number | null;
     score: number;
@@ -200,7 +200,7 @@ export class ReportsService {
         class: {
           select: {
             id: true, name: true, level: true, series: true,
-            teacher: { select: { id: true, name: true } },
+            teacher: { select: { id: true, name: true, sex: true } },
             subjects: { include: { subject: { select: { id: true, nameFr: true, code: true, passMark: true } } }, orderBy: { subject: { nameFr: 'asc' } } },
           },
         },
@@ -1406,7 +1406,7 @@ export class ReportsService {
       where: { id: reportId, class: { institutionId } },
       include: {
         student: { select: { sex: true, admissionNumber: true, user: { select: { name: true } } } },
-        class: { select: { name: true, level: true, teacher: { select: { id: true, name: true } } } },
+        class: { select: { name: true, level: true, teacher: { select: { id: true, name: true, sex: true } } } },
         grades: { include: { subject: { select: { nameFr: true, maxScore: true, category: true } } }, orderBy: { coefficient: 'desc' } },
       },
     });
@@ -1437,6 +1437,7 @@ export class ReportsService {
     const comment = await this.ai.generateReportComment({
       studentName: report.student.user?.name ?? report.student.admissionNumber,
       sex: (report.student.sex as 'M' | 'F' | null) ?? null,
+      teacherSex: (report.class.teacher?.sex as 'M' | 'F' | null) ?? null,
       className: report.class.name,
       termName: report.termName,
       isPrimary: isPrimaryLevel(report.class.level),
@@ -1479,7 +1480,7 @@ export class ReportsService {
       },
       include: {
         student: { select: { sex: true, admissionNumber: true, user: { select: { name: true } } } },
-        class: { select: { name: true, level: true } },
+        class: { select: { name: true, level: true, teacher: { select: { sex: true } } } },
         grades: { include: { subject: { select: { nameFr: true, maxScore: true, category: true } } }, orderBy: { coefficient: 'desc' } },
       },
     });

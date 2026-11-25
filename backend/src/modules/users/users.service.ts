@@ -22,6 +22,7 @@ const USER_SELECT = {
   name: true,
   email: true,
   role: true,
+  sex: true,
   institutionId: true,
   language: true,
   profileImage: true,

@@ -239,6 +239,7 @@ model User {
   email                   String    @unique
   password                String
   name                    String
+  sex                     Sex?
   role                    Role
   profileImage            String?
   whatsappNumber          String?
