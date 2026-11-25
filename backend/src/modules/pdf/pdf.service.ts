@@ -1,5 +1,5 @@
 ﻿import { formatSessionDays } from '../../common/utils/session-dates.util';
-import { schoolIdentity } from '../../common/utils/school-identity.util';
+import { directorTitleFor, schoolIdentity } from '../../common/utils/school-identity.util';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
@@ -877,6 +877,7 @@ export class PdfService {
       // Signature du directeur (enregistrée une fois dans Personnalisation) : bulletins publiés seulement
       directorSignature: report.status === 'PUBLISHED' ? ident.directorSignature : null,
       directorName: ident.directorName,
+      directorTitle: directorTitleFor(data.directorSex),
       // Rappel des périodes précédentes (2e et 3e trimestres) ; au dernier : moyenne annuelle + décision
       recap: data.termRecap && (data.termRecap.previous.length || data.termRecap.isLastTerm)
         ? {
@@ -913,6 +914,7 @@ export class PdfService {
 export interface ReportCardData {
   /** Electronic parent copy includes the stamp; school print copies leave its box blank. */
   stampDelivery?: 'ELECTRONIC' | 'PRINT';
+  directorSex?: string | null;
   report: {
     id: string;
     termName: string;

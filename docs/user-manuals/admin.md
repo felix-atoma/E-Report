@@ -38,6 +38,8 @@ Upload and attach the assets that appear on PDF bulletins:
 
 Files must be JPEG, PNG, WebP, or SVG and under 5 MB. Upload via `POST /api/upload/file?type=<type>`, then save the returned URL with `PATCH /api/institutions/me/branding`.
 
+Set the administrator's sex in **My profile** so report cards display the matching director title (**Le Directeur** or **La Directrice**). If it is not set, report cards use the neutral title **La Direction**.
+
 ---
 
 ## 2. User Management

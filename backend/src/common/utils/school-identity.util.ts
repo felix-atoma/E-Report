@@ -6,6 +6,12 @@
  */
 const PRIMARY = /^\s*(CI|CP\s*[12]?|CE\s*[12]|CM\s*[12])\s*$/i;
 
+export function directorTitleFor(sex: string | null | undefined): string {
+  if (sex === 'F') return 'La Directrice';
+  if (sex === 'M') return 'Le Directeur';
+  return 'La Direction';
+}
+
 export function schoolIdentity(branding: unknown, institutionName: string, level?: string | null) {
   const b = (branding as Record<string, any>) ?? {};
   const primary = PRIMARY.test(level ?? '');

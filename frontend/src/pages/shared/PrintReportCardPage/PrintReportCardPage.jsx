@@ -753,7 +753,7 @@ export default function PrintReportCardPage() {
               : <div className="pr-sig__area" />}
             <div className="pr-sig__line" />
             <div className="pr-sig__name">{ident.directorName || (ident.name ? `Direction — ${ident.name}` : 'Le Directeur')}</div>
-            <div className="pr-sig__label">Le Directeur</div>
+            <div className="pr-sig__label">{report.directorSex === 'F' ? 'La Directrice' : report.directorSex === 'M' ? 'Le Directeur' : 'La Direction'}</div>
           </div>
           <div className="pr-sig pr-sig--visa">
             <div className="pr-sig__area" />

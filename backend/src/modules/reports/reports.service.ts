@@ -237,6 +237,7 @@ export class ReportsService {
     const classTeacherSignature = await this.titulaireSignature(
       report.class?.teacher?.id, report.classId, report.academicYear, report.termNumber,
     );
+    const directorSex = await this.directorSex(institutionId);
     // Primaire : date de la rentrée suivante (dates réglées dans Paramètres)
     let nextTerm: { label: string; dateLabel: string } | null = null;
     if (isPrimaryLevel(report.class?.level)) {
@@ -249,7 +250,16 @@ export class ReportsService {
     const termRecap = await this.termRecap({ ...report, classLevel: report.class?.level }, institutionId);
     // Avant publication, l'aperçu montre déjà les absences / retards calculés depuis les appels
     const attendanceFill = report.status !== 'PUBLISHED' ? await this.autoAttendanceFill(report as any, institutionId) : {};
-    return { ...report, ...attendanceFill, classTeacherSignature, nextTerm, conductSuggestion, termRecap };
+    return { ...report, ...attendanceFill, classTeacherSignature, directorSex, nextTerm, conductSuggestion, termRecap };
+  }
+
+  private async directorSex(institutionId: string): Promise<string | null> {
+    const director = await this.prisma.user.findFirst({
+      where: { institutionId, role: Role.ADMIN, isActive: true, sex: { not: null } },
+      select: { sex: true },
+      orderBy: { createdAt: 'asc' },
+    });
+    return director?.sex ?? null;
   }
 
   /**
@@ -669,6 +679,7 @@ export class ReportsService {
 
     const pdfUrl = await this.pdf.generateReportCardPdf({
       stampDelivery: 'ELECTRONIC',
+      directorSex: await this.directorSex(institutionId),
       termRecap: await this.termRecap({ ...(published as any), classLevel: reportWithGrades.class?.level }, institutionId),
       report: {
         id: published.id,
@@ -1531,6 +1542,7 @@ export class ReportsService {
       select: { name: true, country: true, countryMotto: true, address: true, phone: true, email: true, website: true, motto: true, logo: true, crest: true, stamp: true, brandingSettings: true, academicSettings: true },
     });
     if (!institution) throw new NotFoundException('Institution introuvable');
+    const directorSex = await this.directorSex(institutionId);
 
     // Fetch all grade fiches once per class
     const classCombos = [...new Set(reports.map((r) => `${r.classId}|${r.academicYear}|${r.termNumber}`))];
@@ -1559,6 +1571,7 @@ export class ReportsService {
           const ficheMap = fichesByCombo.get(ficheKey) ?? new Map();
           const buf = await this.pdf.generateReportCardPdfBuffer({
             stampDelivery: 'PRINT',
+            directorSex,
             termRecap: await this.termRecap(r as any, institutionId),
             report: {
               id: r.id, termName: (r as any).termName, academicYear: r.academicYear, termNumber: r.termNumber, termType: (r as any).termType,
@@ -1634,6 +1647,7 @@ export class ReportsService {
       select: { name: true, country: true, countryMotto: true, address: true, phone: true, email: true, website: true, motto: true, logo: true, crest: true, stamp: true, brandingSettings: true, academicSettings: true },
     });
     if (!institution) throw new NotFoundException('Institution not found');
+    const directorSex = await this.directorSex(institutionId);
 
     const fiches = await this.prisma.gradeFiche.findMany({
       where: { classId: report.classId, academicYear: report.academicYear, termNumber: report.termNumber },
@@ -1643,6 +1657,7 @@ export class ReportsService {
     const r = report as any;
     const buffer = await this.pdf.generateReportCardPdfBuffer({
       stampDelivery: role === Role.PARENT || role === Role.STUDENT ? 'ELECTRONIC' : 'PRINT',
+      directorSex,
       termRecap: await this.termRecap(r as any, institutionId),
       report: {
         id: r.id, termName: r.termName, academicYear: r.academicYear, termNumber: r.termNumber, termType: (r as any).termType,

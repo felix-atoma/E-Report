@@ -1,6 +1,15 @@
 import { PdfService, digitalStampFor, ReportCardData } from '../../src/modules/pdf/pdf.service';
+import { directorTitleFor } from '../../src/common/utils/school-identity.util';
 
 const STAMP = 'https://example.com/cachet.png';
+
+describe('director title on report cards', () => {
+  it('uses the administrator sex and a neutral title when it is unknown', () => {
+    expect(directorTitleFor('F')).toBe('La Directrice');
+    expect(directorTitleFor('M')).toBe('Le Directeur');
+    expect(directorTitleFor(null)).toBe('La Direction');
+  });
+});
 
 describe('digital school stamp on report cards', () => {
   it('is off by default (manual stamp)', () => {
@@ -23,7 +32,8 @@ describe('digital school stamp on report cards', () => {
 
   describe('bulletin HTML', () => {
     const service = new PdfService({ get: (_k: string, d?: any) => d } as any, { enabled: false } as any);
-    const data = (status: string, stampMode?: string): ReportCardData => ({
+    const data = (status: string, stampMode?: string, directorSex?: string): ReportCardData => ({
+      directorSex,
       report: {
         id: 'r1', termName: '1er trimestre', academicYear: '2026-2027', termNumber: 1, status,
         overallAverage: 12, classRank: 1, classSize: 10, classHighest: 15, classLowest: 5, classAverage: 10,
@@ -52,6 +62,11 @@ describe('digital school stamp on report cards', () => {
         .toContain('class="pr-sig__stamp-img"');
       expect(await html({ ...data('PUBLISHED', 'DIGITAL'), stampDelivery: 'PRINT' }))
         .not.toContain('class="pr-sig__stamp-img"');
+    });
+
+    it('renders the director title from the administrator sex', async () => {
+      expect(await html(data('PUBLISHED', undefined, 'F'))).toContain('pr-sig__label">La Directrice</div>');
+      expect(await html(data('PUBLISHED', undefined, 'M'))).toContain('pr-sig__label">Le Directeur</div>');
     });
   });
 });
