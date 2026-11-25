@@ -166,11 +166,19 @@ export function countPdfPages(pdf: Buffer): number {
 }
 
 /**
- * Cachet de l'établissement imprimé sur le bulletin ? Réglage de l'école (brandingSettings.stampMode) :
- * « MANUAL » par défaut (case vide, cachet humide après impression) ou « DIGITAL » (image du cachet),
- * l'image n'apparaissant alors que sur un bulletin publié.
+ * Les copies électroniques publiées portent l'image du cachet ; les copies destinées à l'impression
+ * par l'école gardent une zone vide pour le cachet manuel. Sans mode de livraison explicite, le réglage
+ * de l'école reste utilisé pour préserver les autres usages du générateur.
  */
-export function digitalStampFor(branding: unknown, stamp: string | null | undefined, status: string | null | undefined): boolean {
+export function digitalStampFor(
+  branding: unknown,
+  stamp: string | null | undefined,
+  status: string | null | undefined,
+  delivery?: 'ELECTRONIC' | 'PRINT',
+): boolean {
+  if (status !== 'PUBLISHED' || !stamp) return false;
+  if (delivery === 'ELECTRONIC') return true;
+  if (delivery === 'PRINT') return false;
   return (branding as Record<string, unknown> | null)?.stampMode === 'DIGITAL' && !!stamp && status === 'PUBLISHED';
 }
 
@@ -864,9 +872,8 @@ export class PdfService {
       serial: securityCode ?? fallbackSerial(report),
       classTeacherName: data.classTeacherName ?? '',
       classTeacherSignature: data.classTeacherSignature ?? null,
-      // Cachet numérique : seulement si l'école l'a choisi, et seulement sur un bulletin publié
-      // (jamais sur un brouillon). Sinon, case vide à tamponner à la main.
-      digitalStamp: digitalStampFor(branding, inst.stamp, report.status) ? pdfImage(inst.stamp) : null,
+      digitalStamp: digitalStampFor(branding, inst.stamp, report.status, data.stampDelivery)
+        ? pdfImage(inst.stamp) : null,
       // Signature du directeur (enregistrée une fois dans Personnalisation) : bulletins publiés seulement
       directorSignature: report.status === 'PUBLISHED' ? ident.directorSignature : null,
       directorName: ident.directorName,
@@ -904,6 +911,8 @@ export class PdfService {
 }
 
 export interface ReportCardData {
+  /** Electronic parent copy includes the stamp; school print copies leave its box blank. */
+  stampDelivery?: 'ELECTRONIC' | 'PRINT';
   report: {
     id: string;
     termName: string;

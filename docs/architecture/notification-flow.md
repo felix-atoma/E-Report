@@ -34,6 +34,7 @@ Teacher signs grade sheet ──► event "fiche.signed"
       SENT  or  FAILED
 ```
 
+- The linked PDF for parents is the electronic copy and includes the school's stamp image when one is configured. PDFs downloaded by school staff or exported for printing leave the stamp area blank for the school to stamp manually.
 - Code: `backend/src/modules/notifications/notifications.service.ts`, `backend/src/modules/reports/reports.service.ts`, `backend/src/modules/payments/payments.service.ts`.
 - **Payment status:** sum of payments vs sum of fees due for the school year. Any exemption → EXEMPT; nothing due → PAID.
 - **Recipient:** the parent linked to the student (`Student.parent`). No parent account → no message.

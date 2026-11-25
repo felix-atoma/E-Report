@@ -17,7 +17,7 @@ export class UpdateBrandingDto {
   @ApiPropertyOptional() @IsOptional() @IsString() website?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() circonscription?: string;
 
-  /** Cachet sur les bulletins : MANUAL (case vide, tampon à la main) ou DIGITAL (image du cachet, bulletins publiés) */
+  /** Mode par défaut du cachet pour les PDF sans mode de remise explicite. */
   @ApiPropertyOptional({ enum: ['MANUAL', 'DIGITAL'] }) @IsOptional() @IsIn(['MANUAL', 'DIGITAL']) stampMode?: 'MANUAL' | 'DIGITAL';
 
   /** Signature du directeur (image PNG en data URL) — chaîne vide pour la retirer */

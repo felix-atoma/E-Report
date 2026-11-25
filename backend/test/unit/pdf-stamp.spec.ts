@@ -15,6 +15,12 @@ describe('digital school stamp on report cards', () => {
     expect(digitalStampFor({ stampMode: 'DIGITAL' }, null, 'PUBLISHED')).toBe(false);
   });
 
+  it('prints the stamp on electronic published copies and leaves school print copies blank', () => {
+    expect(digitalStampFor({ stampMode: 'MANUAL' }, STAMP, 'PUBLISHED', 'ELECTRONIC')).toBe(true);
+    expect(digitalStampFor({ stampMode: 'DIGITAL' }, STAMP, 'PUBLISHED', 'PRINT')).toBe(false);
+    expect(digitalStampFor({ stampMode: 'MANUAL' }, STAMP, 'DRAFT', 'ELECTRONIC')).toBe(false);
+  });
+
   describe('bulletin HTML', () => {
     const service = new PdfService({ get: (_k: string, d?: any) => d } as any, { enabled: false } as any);
     const data = (status: string, stampMode?: string): ReportCardData => ({
@@ -39,6 +45,13 @@ describe('digital school stamp on report cards', () => {
     it('leaves the empty box on a draft, or for a MANUAL school', async () => {
       expect(await html(data('DRAFT', 'DIGITAL'))).not.toContain('class="pr-sig__stamp-img"');
       expect(await html(data('PUBLISHED'))).not.toContain('class="pr-sig__stamp-img"');
+    });
+
+    it('can include the stamp electronically even when the school print mode is MANUAL', async () => {
+      expect(await html({ ...data('PUBLISHED'), stampDelivery: 'ELECTRONIC' }))
+        .toContain('class="pr-sig__stamp-img"');
+      expect(await html({ ...data('PUBLISHED', 'DIGITAL'), stampDelivery: 'PRINT' }))
+        .not.toContain('class="pr-sig__stamp-img"');
     });
   });
 });

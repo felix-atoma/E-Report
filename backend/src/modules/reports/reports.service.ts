@@ -668,6 +668,7 @@ export class ReportsService {
     if (!institution) return;
 
     const pdfUrl = await this.pdf.generateReportCardPdf({
+      stampDelivery: 'ELECTRONIC',
       termRecap: await this.termRecap({ ...(published as any), classLevel: reportWithGrades.class?.level }, institutionId),
       report: {
         id: published.id,
@@ -1556,6 +1557,7 @@ export class ReportsService {
           const ficheKey = `${r.classId}|${r.academicYear}|${r.termNumber}`;
           const ficheMap = fichesByCombo.get(ficheKey) ?? new Map();
           const buf = await this.pdf.generateReportCardPdfBuffer({
+            stampDelivery: 'PRINT',
             termRecap: await this.termRecap(r as any, institutionId),
             report: {
               id: r.id, termName: (r as any).termName, academicYear: r.academicYear, termNumber: r.termNumber, termType: (r as any).termType,
@@ -1639,6 +1641,7 @@ export class ReportsService {
 
     const r = report as any;
     const buffer = await this.pdf.generateReportCardPdfBuffer({
+      stampDelivery: role === Role.PARENT || role === Role.STUDENT ? 'ELECTRONIC' : 'PRINT',
       termRecap: await this.termRecap(r as any, institutionId),
       report: {
         id: r.id, termName: r.termName, academicYear: r.academicYear, termNumber: r.termNumber, termType: (r as any).termType,
